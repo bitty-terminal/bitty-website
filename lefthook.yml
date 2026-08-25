@@ -1,0 +1,13 @@
+# Git hooks are managed by lefthook. Install them with: just hooks-install
+pre-commit:
+  commands:
+    format-check:
+      glob: "*.{astro,css,json,jsonc,mjs,ts,yaml,yml,md}"
+      run: just fmt-check-files {staged_files}
+    markdownlint:
+      run: just markdownlint
+
+commit-msg:
+  commands:
+    commitlint:
+      run: just commit-lint {1}

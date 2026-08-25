@@ -2,8 +2,6 @@ set shell := ["bash", "-euo", "pipefail", "-c"]
 
 default: check
 
-lefthook_version := "2.1.10"
-
 install:
     bun install --frozen-lockfile
 
@@ -25,7 +23,7 @@ commit-lint FILE:
     bunx --bun commitlint < "{{FILE}}"
 
 hooks-install:
-    bunx --bun lefthook@{{lefthook_version}} install
+    lefthook install
 
 typecheck:
     bun run typecheck

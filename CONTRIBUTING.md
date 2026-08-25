@@ -14,6 +14,7 @@ must follow.
 - `just` — command runner; all quality gates run through the repository justfile
 - Wrangler (pinned via devDependencies) — used by local dry-run checks only
 - `actionlint` — GitHub Actions workflow validation
+- `lefthook` 2.x — Git hook runner, required by `just hooks-install`
 
 ## Setup
 
@@ -23,9 +24,9 @@ just hooks-install
 ```
 
 `hooks-install` registers the lefthook-managed Git hooks. The pre-commit hook
-checks formatting and lints Markdown on staged files; the commit-msg hook
-validates Conventional Commits. Both run through justfile targets, so no tool
-is invoked directly and every version pin stays in its single declared place.
+checks formatting on staged files and lints all repository Markdown; the
+commit-msg hook validates Conventional Commits. Every hook command runs
+through a justfile target, so no tool is invoked directly by Git.
 
 ## Development loop
 

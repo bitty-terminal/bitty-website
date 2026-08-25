@@ -29,10 +29,14 @@ Run the same logical quality gates used by CI:
 just check
 ```
 
-The aggregate check verifies formatting, TypeScript 7.0.2 with its native
-compiler, the Astro static build, the expected `dist/index.html` output,
-Wrangler's deployment configuration in dry-run mode, and both GitHub Actions
-workflows.
+The aggregate check verifies formatting, Markdown linting, TypeScript 7.0.2
+with its native compiler, the Astro static build, the expected `dist/index.html`
+output, Wrangler's deployment configuration in dry-run mode, and both GitHub
+Actions workflows.
+
+Git hooks managed by lefthook enforce Conventional Commits messages and
+pre-commit formatting plus Markdown linting on staged files. Install them once
+per clone with `just hooks-install`; every hook runs through a justfile target.
 
 Astro 7.2.6 cannot currently run `astro check` with TypeScript 7 because its
 language service depends on a programmatic API that the native compiler does

@@ -19,14 +19,20 @@ must follow.
 
 ```bash
 just install
+just hooks-install
 ```
+
+`hooks-install` registers the lefthook-managed Git hooks. The pre-commit hook
+checks formatting and lints Markdown on staged files; the commit-msg hook
+validates Conventional Commits. Both run through justfile targets, so no tool
+is invoked directly and every version pin stays in its single declared place.
 
 ## Development loop
 
 All checks go through the justfile:
 
 ```bash
-just check   # format + typecheck + build + dist validation + wrangler dry-run + actionlint
+just check   # format + Markdown lint + typecheck + build + dist validation + wrangler dry-run + actionlint
 just fmt     # write formatting fixes
 just build   # static production build into dist/
 ```

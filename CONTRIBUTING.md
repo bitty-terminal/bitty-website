@@ -70,6 +70,14 @@ Implementers stop at review; a separate reviewer verifies evidence before
 merge. Commits, pushes, deployments, and publication require explicit task
 authority.
 
+### Branch and worktree naming
+
+Branches use `ctx-XXXX/<type>-<short-slug>` where `XXXX` is the owning CarryCtx
+task number, `<type>` is one of feat|fix|chore|docs, and the slug is short
+kebab-case (for example `ctx-0031/feat-isolation-rfc`). CarryCtx-bound worktrees
+live at `.worktrees/ctx-XXXX-<type>-<short-slug>` with `/` mapped to `-`. One
+branch per task; commander housekeeping branches may use `cmd/<slug>`.
+
 ## Quality gates
 
 `just check` is the merge gate. Changes remain incomplete while affected

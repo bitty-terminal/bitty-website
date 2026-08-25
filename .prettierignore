@@ -1,0 +1,8 @@
+.astro/
+.carryctx/
+.wrangler/
+dist/
+node_modules/
+bun.lock
+AGENTS.md
+justfile

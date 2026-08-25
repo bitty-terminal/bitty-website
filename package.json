@@ -1,0 +1,25 @@
+{
+  "name": "bitty-website",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.4.0",
+  "scripts": {
+    "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
+    "format": "prettier --write README.md package.json tsconfig.json astro.config.mjs wrangler.jsonc .prettierrc.json '.github/workflows/*.yml' 'src/**/*.astro' 'src/**/*.css'",
+    "format:check": "prettier --check README.md package.json tsconfig.json astro.config.mjs wrangler.jsonc .prettierrc.json '.github/workflows/*.yml' 'src/**/*.astro' 'src/**/*.css'",
+    "typecheck": "tsc --noEmit --project tsconfig.json",
+    "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
+    "validate:dist": "test -f dist/index.html && test ! -e dist/_worker.js",
+    "wrangler:dry-run": "bash -euo pipefail -c 'mkdir -p ../tmp/bitty-website/wrangler-dry-run; log=../tmp/bitty-website/wrangler-dry-run.log; timeout --signal=INT --kill-after=5s --preserve-status 15s env WRANGLER_SEND_METRICS=false wrangler deploy --dry-run --outdir ../tmp/bitty-website/wrangler-dry-run 2>&1 | tee \"$log\"; grep -Fq -- \"--dry-run: exiting now.\" \"$log\"; grep -Fq -- \"No bindings found.\" \"$log\"'",
+    "check": "bun run format:check && bun run typecheck && bun run build && bun run validate:dist && bun run wrangler:dry-run",
+    "deploy": "WRANGLER_SEND_METRICS=false wrangler deploy"
+  },
+  "devDependencies": {
+    "astro": "7.2.6",
+    "prettier": "3.9.6",
+    "prettier-plugin-astro": "0.14.1",
+    "typescript": "7.0.2",
+    "wrangler": "4.125.0"
+  }
+}

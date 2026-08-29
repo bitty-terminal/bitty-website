@@ -9,7 +9,7 @@
     "format": "prettier --write README.md package.json tsconfig.json astro.config.mjs wrangler.jsonc .prettierrc.json \".github/workflows/*.yml\" \"src/**/*.astro\" \"src/**/*.ts\" \"src/**/*.css\" \"scripts/**/*.mjs\"",
     "format:check": "prettier --check README.md package.json tsconfig.json astro.config.mjs wrangler.jsonc .prettierrc.json \".github/workflows/*.yml\" \"src/**/*.astro\" \"src/**/*.ts\" \"src/**/*.css\" \"scripts/**/*.mjs\"",
     "lint:md": "markdownlint-cli2",
-    "typecheck": "tsc --noEmit --project tsconfig.json",
+    "typecheck": "ASTRO_TELEMETRY_DISABLED=1 astro sync && tsc --noEmit --project tsconfig.json",
     "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
     "validate:dist": "test -f dist/index.html && test ! -e dist/_worker.js",
     "wrangler:dry-run": "bash -euo pipefail -c 'mkdir -p ../tmp/bitty-website/wrangler-dry-run; log=../tmp/bitty-website/wrangler-dry-run.log; timeout --signal=INT --kill-after=5s --preserve-status 15s env WRANGLER_SEND_METRICS=false wrangler deploy --dry-run --outdir ../tmp/bitty-website/wrangler-dry-run 2>&1 | tee \"$log\"; grep -Fq -- \"--dry-run: exiting now.\" \"$log\"; grep -Fq -- \"No bindings found.\" \"$log\"'",

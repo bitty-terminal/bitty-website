@@ -1,0 +1,12 @@
+{
+  "latest": "0.1.0",
+  "stable": "0.1.0",
+  "versions": [
+    {
+      "version": "0.1.0",
+      "revision": "847725635893fad0fa120128aabab3918807fc0f",
+      "label": "latest — 2026-08-29T12:50:39Z",
+      "prerelease": false
+    }
+  ]
+}

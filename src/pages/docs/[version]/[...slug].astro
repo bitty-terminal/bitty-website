@@ -1,0 +1,104 @@
+---
+import { getCollection, render } from "astro:content";
+import { assertValidRevisionPin } from "../../../lib/docsValidation.ts";
+import { getVersions, isValidVersionSegment } from "../../../lib/versions.ts";
+import VersionSelector from "../../../components/VersionSelector.astro";
+
+// Astro glob ids for docs/<path>.md under base src/content/docs:
+//   docs/README.md           -> id docs/readme
+//   docs/decisions/index.md  -> id docs/decisions
+//   docs/specifications/foo.md -> id docs/specifications/foo
+// The id already encodes the version-less route after normalizing lowercase
+// and stripping trailing "/index" (RM-1 / RM-2).
+export async function getStaticPaths() {
+  function slugFromId(id: string): string | undefined {
+    const withoutDocs = id.startsWith("docs/") ? id.slice("docs/".length) : id;
+    if (withoutDocs.toLowerCase() === "readme") return undefined;
+    return withoutDocs;
+  }
+  assertValidRevisionPin();
+  const versions = getVersions();
+  const docs = await getCollection("docs");
+
+  // Only eligible entries (website_publish:true after validation per LD-3)
+  const eligible = docs.filter((e) => e.data.website_publish === true);
+
+  const versionSegments = [
+    "latest",
+    "stable",
+    ...versions.versions.map((v) => v.version),
+  ];
+
+  const paths: Array<{
+    params: { version: string; slug: string | undefined };
+    props: { entry: (typeof eligible)[number]; version: string };
+  }> = [];
+
+  for (const version of versionSegments) {
+    const seen = new Set<string>();
+    for (const entry of eligible) {
+      const rawId = entry.id as string;
+      const slug = slugFromId(rawId);
+      const candidate = slug ?? "";
+      if (seen.has(candidate)) continue;
+      seen.add(candidate);
+      paths.push({
+        params: { version, slug },
+        props: { entry, version },
+      });
+    }
+  }
+
+  return paths;
+}
+
+const { entry, version } = Astro.props as {
+  entry: Awaited<ReturnType<typeof getCollection>>[number];
+  version: string;
+};
+const { Content } = await render(entry);
+const versions = getVersions();
+const versionLabels = new Map(
+  versions.versions.map((v) => [v.version, v.label]),
+);
+
+if (!isValidVersionSegment(version)) {
+  throw new Response("Not Found", { status: 404 });
+}
+
+const slugParam = Astro.params.slug ?? "";
+const currentRoute = `/docs/${version}/${slugParam}${slugParam ? "/" : ""}`;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>{entry.data.title} — Bitty {version}</title>
+    <meta name="description" content={entry.data.description} />
+    {
+      version !== versions.latest && (
+        <link
+          rel="canonical"
+          href={currentRoute.replace(`/docs/${version}/`, `/docs/latest/`)}
+        />
+      )
+    }
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <VersionSelector currentRoute={currentRoute} currentVersion={version} />
+    <main id="main-content">
+      <p class="eyebrow">
+        {entry.data.category} · {versionLabels.get(version) ?? version}
+      </p>
+      <h1>{entry.data.title}</h1>
+      <p class="route-meta">
+        {entry.data.category} · {entry.data.document_type} · {entry.data.status}
+      </p>
+      <article class="prose">
+        <Content />
+      </article>
+    </main>
+  </body>
+</html>

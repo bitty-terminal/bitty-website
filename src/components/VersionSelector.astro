@@ -1,0 +1,89 @@
+---
+/**
+ * Release selector (RS-2 .. RS-4): data-driven navigation control.
+ *
+ * Data source: src/content/versions.json (RS-1 — single enumeration).
+ * Renders links ordered newest-first, marks current version active,
+ * and rewrites only the version segment per RS-3 navigation behavior.
+ *
+ * Does not copy specification prose (LD-6).
+ */
+import { getVersions, rewriteVersionInRoute } from "../lib/versions.ts";
+
+const versions = getVersions();
+
+type Props = {
+  currentRoute: string; // e.g. /docs/0.1.0/specifications/foo/
+  currentVersion: string; // e.g. 0.1.0
+};
+
+const { currentRoute, currentVersion } = Astro.props as Props;
+
+function targetFor(toVersion: string): string {
+  try {
+    return rewriteVersionInRoute(currentRoute, toVersion);
+  } catch {
+    return `/docs/${toVersion}/`;
+  }
+}
+---
+
+<nav class="version-selector" aria-label="Documentation version">
+  <label for="version-select">Version</label>
+  <select id="version-select" data-current-route={currentRoute}>
+    {
+      versions.versions.map((v) => (
+        <option value={v.version} selected={v.version === currentVersion}>
+          {v.label}
+          {v.prerelease ? " (prerelease)" : ""}
+        </option>
+      ))
+    }
+  </select>
+  <ul>
+    {
+      versions.versions.map((v) => {
+        const href = targetFor(v.version);
+        const isCurrent = v.version === currentVersion;
+        return (
+          <li>
+            <a href={href} aria-current={isCurrent ? "page" : undefined}>
+              {v.label}
+              {v.prerelease ? " (prerelease)" : ""}
+            </a>
+          </li>
+        );
+      })
+    }
+  </ul>
+</nav>
+
+<script>
+  const sel = document.getElementById(
+    "version-select",
+  ) as HTMLSelectElement | null;
+  if (sel) {
+    sel.addEventListener("change", () => {
+      const toVersion = sel.value;
+      const currentRoute = sel.dataset.currentRoute ?? window.location.pathname;
+      const rewritten = currentRoute.replace(
+        /^\/docs\/[^/]+(\/.*)?$/,
+        `/docs/${toVersion}$1`,
+      );
+      window.location.assign(rewritten);
+    });
+  }
+</script>
+
+<style>
+  .version-selector {
+    border: 1px solid #d7dce3;
+    border-radius: 0.375rem;
+    padding: 0.75rem;
+  }
+  .version-selector ul {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0 0;
+  }
+</style>

@@ -50,6 +50,28 @@ after that support is available.
 Use `just fmt` only when intentionally updating formatting. Generated build and
 Wrangler dry-run output are not repository content.
 
+## Workflow mirror restore
+
+CarryCtx runtime state (`.git/carryctx/state.sqlite`) is never cloned. The
+engineering workflow is mirrored to
+[bitty-website-workflow](https://github.com/bitty-terminal/bitty-website-workflow)
+as redacted ctxpack snapshots, with `LATEST` naming the newest snapshot. A
+fresh clone can restore its local CarryCtx DB from that mirror:
+
+```sh
+just workflow-import-dry   # fetch + validate the LATEST snapshot; no DB writes
+just workflow-import       # initialize CarryCtx state if needed, then import
+```
+
+The import validates snapshot shape, per-table row counts, and the v2 redacted
+stamp before any write, refuses to replace a non-empty local DB without
+`--force` (`just workflow-import --force`, or pass flags directly to
+`scripts/fetch-ctxpack.sh`), and prints provenance (snapshot id + source
+commit) plus restored counts. Mirror snapshots are redacted publication
+artifacts: CarryCtx refuses them as merge sources, so restore always uses
+replace mode, and a secret that leaked before rotation must still be rotated
+at the source.
+
 ## Deployment boundary
 
 The deployment workflow is manual, restricted to the main branch, and guarded

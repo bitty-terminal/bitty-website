@@ -43,3 +43,11 @@ actionlint:
 check:
     bun run check
     actionlint .github/workflows/*.yml
+
+# Publish a ctxpack snapshot to the bitty-website-workflow mirror (commander
+# merge closeout only; never a git hook). Dry run exports + validates without push.
+workflow-publish *args:
+    bash scripts/publish-ctxpack.sh {{args}}
+
+workflow-publish-dry *args:
+    bash scripts/publish-ctxpack.sh --dry-run {{args}}

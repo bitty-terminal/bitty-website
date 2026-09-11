@@ -98,8 +98,12 @@ product implementation evidence:
   `bitty-website`, `bitty-devtools`, `bitty-mcp`, `bitty-plugin-sdk`, and
   `bitty-plugin-template`.
 - At the time of the repository inventory, those remotes had no commits.
-- The local umbrella root and `bitty-plugins/` are routing/grouping directories,
-  not Git repositories. SDK and template children are independent repositories.
+- The local umbrella root, `bitty-plugins/`, and `bitty-ai/` are
+  routing/grouping directories, not Git repositories. SDK, template, and MCP
+  children under `bitty-plugins/` are independent repositories. The
+  `bitty-mcp` remote is unchanged; its local checkout is grouped at
+  `bitty-plugins/bitty-mcp`. `bitty-ai/` is empty, reserved for future
+  AI-core subsystems.
 
 Current topology and observation dates belong in the
 [repository map](../project/repository-map.md); re-verify drift-prone remote
@@ -114,6 +118,13 @@ the historical conversation:
   [Plugin Platform RFC](../specifications/plugin-platform-rfc.md) — Plugin API
   v1, capability/manifest model, and event pipeline for OQ-011/OQ-012/OQ-013;
   UI/scene primitives and hot-reload mechanics remain follow-up work.)
+- Plugin API v1 Lua surface: module root, function spellings, payloads, entry
+  point, and the L1/L2 split. (Accepted:
+  [Plugin API v1 Lua Surface RFC](../specifications/plugin-api-v1-lua-surface-rfc.md)
+  and [ADR 0009](adrs/ADR-0009-plugin-api-v1-lua-surface.md) — resolves
+  LUA-OQ-1 through LUA-OQ-12; contract authority in `bitty-docs`,
+  implementation and parity in `bitty`, SDK generated; frontmatter `accepted`
+  on 2026-09-11.)
 - Rich blocks, semantic zones, structured transports, and TUI transformation. (Accepted: [Rich presentation RFC](../specifications/rich-presentation-rfc.md) — image/rich-block/scene/zone and structured transport for [OQ-008](open-questions.md)/[OQ-015](open-questions.md)/[OQ-016](open-questions.md); frontmatter `accepted` on 2026-08-28.)
 - Unified action registry, CLI grammar, IPC contract, and MCP/DevTools protocol. (Accepted: [CLI Contract RFC](../specifications/cli-contract-rfc.md) — top-level commands, dynamic `bitty x` namespace, action and output schemas, aliases, and exit codes 0 through 8 for [OQ-017](open-questions.md); frontmatter `accepted` on 2026-08-28.)
 - Package manifest/lock formats, resolver, registry, and update UX.
@@ -124,7 +135,7 @@ the historical conversation:
   directory (OQ-029), pending category-owner, docs-curator, and security
   review.)
 - Headless daemon, detach/reattach, and remote UI architecture. (Accepted: [ADR 0008](adrs/ADR-0008-headless.md) — deferred to post-v1.0, headless-runtime/daemon/remote taxonomy, session-grained detach/reattach, bounded persistence, contained failure, and trust-boundary analysis gate for [OQ-020](open-questions.md); frontmatter `accepted` on 2026-08-28.)
-- Isolation resource ceilings and failure semantics. (Accepted: [Isolation Resource RFC](../specifications/isolation-resource-rfc.md) — accepted 2026-08-28 for OQ-014, `Accepted` with frontmatter `accepted`; isolation domains IR-D1..D3, resource ceilings RC-1..RC-10 (three-level queue PerSub 64 / PerPlugin 1024 events/256 KiB / Global 8192 events/2 MiB hard-gated, RC-1 10^7/50 ms/8 ms, RC-2 32 MiB), failure semantics FS-1..FS-9, and adversarial AT-IR-001..015; measurement evidence 2026-08-27 via bitty CTX-0037 PR #68 (17/21 headless `measurement.rs`, 15 headless `measurement_lua.rs` @ `d67a65b`, worktree `ctx-0040/feat-lua-vm-budgets`, gates `just check` + `cargo check --target x86_64-pc-windows-gnu` pass) as reviewed evidence; lifecycle `Draft -> experimental review evidence -> Accepted (2026-08-28) -> normative`.)
+- Isolation resource ceilings and failure semantics. (Accepted: [Isolation Resource RFC](../specifications/isolation-resource-rfc.md) — accepted 2026-08-28 for OQ-014, `Accepted` with frontmatter `accepted`; isolation domains IR-D1..D3, resource ceilings RC-1..RC-11 (three-level queue PerSub 64 / PerPlugin 1024 events/256 KiB / Global 8192 events/2 MiB hard-gated, RC-1 10^7/50 ms/8 ms, RC-2 32 MiB, RC-11 256 KiB plugin store / 8 KiB value added 2026-09-11 per ADR 0009), failure semantics FS-1..FS-9, and adversarial AT-IR-001..015; measurement evidence 2026-08-27 via bitty CTX-0037 PR #68 (17/21 headless `measurement.rs`, 15 headless `measurement_lua.rs` @ `d67a65b`, worktree `ctx-0040/feat-lua-vm-budgets`, gates `just check` + `cargo check --target x86_64-pc-windows-gnu` pass) as reviewed evidence; lifecycle `Draft -> experimental review evidence -> Accepted (2026-08-28) -> normative`.)
 - Local instance selection, IPC/MCP transport, framing, scopes, and Agent bounded messages. (Accepted: [IPC and Agent RFC](../specifications/ipc-agent-rfc.md) — bounded 256 KiB framing, versioned wire, peer-credential auth, scope families, rate limits RC-9/RC-10, Agent bounded messages, consent and streaming for [OQ-018](open-questions.md); frontmatter `accepted` on 2026-08-29.)
 - Lua pins, upgrade cadence, stdlib allowlist and unsafe-surface audit. (Accepted: [ADR 0005](adrs/ADR-0005-lua-pins-and-stdlib.md) — exact Lua 5.4.x, mlua, piccolo 0.3.3 pins, vendored verification, allowlist, and unsafe-surface audit gates for [OQ-030](open-questions.md); frontmatter `accepted` on 2026-08-29.)
 - os.getenv exposure, desensitization, and bitty module policy. (Accepted: [ADR 0006](adrs/ADR-0006-os-env-policy.md) — os.getenv denial, desensitized bitty.env.get with capability-gated allowlist, audit logging, and migration for [OQ-031](open-questions.md); frontmatter `accepted` on 2026-08-29.)
@@ -140,6 +151,7 @@ the historical conversation:
   risk-to-P0-AC traceability, evidence taxonomy, artifact storage, and
   review gates for closing risks without weakening controls for
   [OQ-025](open-questions.md); frontmatter `accepted` on 2026-08-29.)
+- Input and pointer contract. (Draft: [Input and Pointer Contract](../specifications/input-pointer-rfc.md) — candidate keyboard, mouse, wheel, gesture, IME, selection, and PTY encoding contract with Shift override, pixel-scroll accumulation, platform adapter ownership, and hot-path exclusion; reconciles with Terminal State, Platform, Plugin Platform, Clipboard R-004 at 7a4ee41, and Performance; frontmatter `draft` on 2026-08-31.)
 
 Each candidate is represented by an item in the
 [open-question register](open-questions.md). Acceptance requires an ADR, RFC,

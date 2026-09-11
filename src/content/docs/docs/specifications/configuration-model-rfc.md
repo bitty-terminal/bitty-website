@@ -172,6 +172,124 @@ document and this RFC binds its semantics:
 5. Profile composition (`extends`) resolves single-parent chains with cycle
    detection; multiple inheritance remains an open item.
 
+## Shipped defaults snapshot
+
+Status: **shipped defaults** (read-only from `bitty` `origin/main`,
+`crates/bitty-config/src/types.rs`, `merge.rs`, `keymap.rs`, `theme.rs`,
+CTX-0153/CTX-0169/CTX-0177/CTX-0180/CTX-0185/CTX-0191/CTX-0236/CTX-0237/CTX-0240/CTX-0241/CTX-0257/CTX-0258/CTX-0259/CTX-0262/CTX-0263/CTX-0264/CTX-0265/CTX-0290/CTX-0292). This section records
+shipped values as status; it instantiates the merge-class contract above
+without changing it. Normative precedence stays `CLI > file > profile >
+defaults` per [Lua and XDG configuration](../configuration/lua-and-xdg.md).
+
+| Field                                                   | Shipped default                                                                                                               | Merge class (settled) |
+| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `font.family` / `size`                                  | `"JetBrainsMono Nerd Font"` / `12.0`                                                                                          | scalar replace        |
+| `font.line_height` / `letter_spacing`                   | `1.375` / `2.0` (effective cell `10x22` from the legacy `8x16` base; measured raster truth at `12`pt, CTX-0237)               | scalar replace        |
+| `window.opacity` / `padding`                            | `1.0` / `8`; `opacity < 1.0` scales pixel alpha through premultiplied renderer alpha (`0.0..=1.0`, CTX-0290)                  | scalar replace        |
+| `window.radius_px`                                      | `0` physical px (`0..=24`); S0 parsed no-op with zero render effect (CTX-0241)                                                | scalar replace        |
+| `mod_key`                                               | `"alt"` (`"super"` allowed; `ctrl`/`shift` rejected fail-closed, CTX-0236)                                                    | scalar replace        |
+| `terminal.scrollback`                                   | `10000`                                                                                                                       | scalar replace        |
+| `terminal.scroll_lines_per_notch`                       | `3` (`1..=32`)                                                                                                                | scalar replace        |
+| `terminal.scroll_pixels_per_notch`                      | `16` (`1..=256`)                                                                                                              | scalar replace        |
+| `selection.auto_copy`                                   | `true` (copy-on-select; `false` keeps the highlight, copies only on chord)                                                    | scalar replace        |
+| `layout.gaps_in` / `gaps_out`                           | `0` / `0` cells (`0..=16`); edge-to-edge tiling; stack leaves take the `gaps_out` inset only (CTX-0240)                       | scalar replace        |
+| `decoration.gaps_in` / `gaps_out` / `border` / `radius` | `4` / `6` / `2` / `6` logical px (`0..=32` / `0..=32` / `0..=8` / `0..=16`); Core-owned; live px painting deferred (CTX-0292) | scalar replace        |
+| `appearance.theme`                                      | unset means the `bitty-dark` preset (alias `dark`); unknown names fall back to it with a stderr warning                       | scalar replace        |
+| `keymaps`                                               | shipped Alt-as-Mod set (79 entries, context `global`); user entries replace by `context + chord`, else append                 | set-by-identifier     |
+| `plugins`                                               | empty by default                                                                                                              | set-by-identifier     |
+
+Absent `selection`/`layout`/`decoration` tables (or absent keys within them)
+mean "this layer says nothing" and inherit silently; present-but-partial
+`font`, `window`, and `terminal` tables fail closed rather than filling
+defaults, preserving attribution. Scalar-replace above matches the shipped
+`bitty-config` merge implementation exactly.
+
+The shipped keymap set is the canonical Alt spelling rendered through the
+`mod_key` setting above (`alt` default, `super` opt-in rebinding): `alt+h/j/k/l`
+and `ctrl+alt+arrows` move focus, with CTX-0262 `alt+arrows` aliases;
+`alt+1..9` focuses workspace `1..=9`, and `shift+alt+1..9` moves the focused
+window to workspace N (CTX-0259, `bitty` #457); `alt+n` / `alt+w` / `alt+-` /
+`alt+=` / `alt+tab` drive new, kill-confirmed close, previous, next, and
+last-used workspace (CTX-0257, `bitty` #433, DEC-0034); `alt+u`/`alt+i` page
+up/down; `shift+alt+h/j/k/l` plus CTX-0262 `shift+alt+arrows` split;
+`shift+ctrl+h/j/k/l`, `shift+ctrl+arrows`, the CTX-0258 Mod-aware
+`ctrl+shift+alt+h/j/k/l` variant, and CTX-0262 `ctrl+shift+alt+arrows` aliases
+resize; `alt+z`/`alt+m`/`alt+f` toggles zoom; `ctrl+tab`/`ctrl+shift+tab`
+cycles focus; `ctrl+shift+c` copies (`copy_to_clipboard`, best-effort primary
+sync on Linux) and `ctrl+shift+v` pastes through the suspicious-paste
+inspection gate; `ctrl+=`/`ctrl+plus` (plus shifted spellings), `ctrl+-`, and
+`ctrl+0` grow, shrink, and reset the per-window font size (CTX-0263); the help
+popup toggles on the backtick chord (canonical `alt+backtick`) plus the
+`alt+?` shifted-symbol spellings (CTX-0265). Plain `Tab`, arrows, letters, and
+digits are deliberately unbound so they reach the shell; a bound chord is
+consumed by its action and never reaches the PTY. The only supported context
+is `global`; single-character keys require a modifier; every named key from
+`tab` through `f1..f35`, including the CTX-0264 short aliases
+`ins`/`del`/`hm`/`end`/`pu`/`pd`, is bindable. The full vocabulary adds
+`workspace_new`, `workspace_close`, `workspace_prev`, `workspace_next`,
+`workspace_last`, `workspace_focus:<1..=16>`, `workspace_move:<1..=16>`,
+`toggle_help`, `increase_font_size`, `decrease_font_size`, and
+`reset_font_size` to `goto_split`, `new_split`, `resize_split` (each
+`<left|right|up|down>`), `close_view`, `toggle_zoom`, `focus_next`,
+`focus_prev`, `focus:<1..=256>`, `copy_to_clipboard`, `paste_from_clipboard`,
+`scroll_page_up`, and `scroll_page_down`. `alt+w` and `alt+1..9` previously
+drove pane `close_view` / `focus:<n>`; those actions stay parseable and
+user-bindable but are no longer bound by default (workspace numbers won the
+Alt slot per the owner spec, panes navigate spatially).
+
+The shipped `window.opacity` now has a render effect (CTX-0290, `bitty`
+issues #494/#499, merge commit `9ac34b9`, DEC-0042): single-pass premultiplied renderer
+alpha scales fill and glyph output by the sanitized opacity when the surface
+advertises premultiplied compositing (`CompositeAlphaMode::PreMultiplied`
+selected from the surface capabilities), and the headless compositor scales its
+finished buffer so CI proves the effect without an adapter. `opacity == 1.0`
+stays byte-identical to the previous output. When the platform lacks
+premultiplied support the window stays opaque with a loud warning (fail-closed)
+instead of silently pretending the setting applied. Live evidence on
+Hyprland/eDP-1 is retained in `bitty`
+`recording/live-visual-matrix/ctx-0290-opacity/`.
+
+The shipped leader/mod setting is the top-level `mod_key` scalar (CTX-0236,
+`bitty` #411, commit `2a5e451`): `"alt"` by default (aliases `opt` /
+`option`) keeps the Alt-as-Mod map byte-identical, while `"super"`
+(aliases `meta` / `cmd` / `command` / `win` / `windows`) rebinds every
+`alt`-bearing default to Super. Parsing is trimmed and case-insensitive;
+anything else — including `ctrl` / `shift`, which would silently steal
+shell typing and shadow the mod-independent fixed chords (`ctrl+tab`
+cycles, `shift+ctrl` resizes, `ctrl+shift` copy/paste) — fails closed.
+`mod_key` is scalar-replace with per-layer source attribution, and an
+absent key means "this layer says nothing" so existing configs keep
+working. Explicit `keymaps` entries keep their exact spelling and overlay
+by `context + chord` identity, so a mod flip never rewrites user intent.
+
+The shipped window corner radius is `window.radius_px` (CTX-0241, bitty
+issue 417, commit `84aa580`): physical px `0..=24`, default `0` (square
+corners). Stage 0 is a parsed no-op — accepted, stored, and reported
+through the Lua, types, plan, merge, file, validation, reload, trust, and
+runtime path plus the `config check` row, with zero render effect (no
+`DrawList` / present consumer; unset, explicit `0`, and positive values
+present byte-identical frames). The default `0` keeps every path on the
+zero-cost fast path. Staged rollout: pane-level rounding is a later stage;
+window-level rounding stays with the compositor and is not a `bitty`
+rendering stage.
+
+The shipped Core-owned decoration is the `decoration.gaps_in` / `gaps_out` /
+`border` / `radius` table (CTX-0292, `bitty` #487, merge commit `485fbfd`,
+closes `bitty` #486; accepted spec CTX-0118): logical pixels `4` / `6` / `2` /
+`6` within `0..=32` / `0..=32` / `0..=8` / `0..=16`, fail-closed validation
+with source-attributed diagnostics, scalar-replace with per-field attribution,
+`Live` reload, and `bitty --safe` forcing `0/0/1/0` regardless of user
+configuration. It is distinct from the cell-unit `layout.gaps_in` /
+`gaps_out` panel gaps above. The px surface is validated, stored, and carried
+(`layout_with_decoration`, `decorated_allocations`, `set_decoration`), but the
+present path does not paint it yet (fractional-cell View frames plus a renderer
+radius primitive), so no visual effect is claimed; live painting is deferred
+to `bitty` CTX-0294 on the CTX-0238g stage-2 renderer radius lane.
+
+Open: per-field reload classification (still deferred to the follow-up
+inventory); whether the CLI appearance flag set or the shipped keymap set
+grows; and middle-click paste acceptance, deferred under CTX-0158.
+
 ## Reload classification
 
 Status: **accepted framework**, with the per-field table deferred until an

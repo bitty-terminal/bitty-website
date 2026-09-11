@@ -1,0 +1,174 @@
+# docs/architecture/d2/00-overview.d2 — L0 system overview
+# Source of truth: ../glossary.yaml
+# Visual rules: rect=module/crate, rounded=panel/capability, dashed=boundary/sandbox, solid=call/depends, dashed=event/async
+# Levels: L0 overview — render with: d2 --layout dagre 00-overview.d2 00-overview.svg
+# To regenerate SVG: d2 00-overview.d2 ../final/00-overview.svg  (or see ../final/README.md)
+
+direction: down
+
+# --- Trust boundaries (dashed sandbox) ---
+pty_boundary: {
+  label: "PT Child Process — Untrusted (IR-D1)"
+  style.stroke-dash: 4
+  style.fill: "#fefce8"
+  near: pty-master
+}
+plugin_boundary: {
+  label: "Per-Plugin VM — Untrusted (IR-D2)"
+  style.stroke-dash: 4
+  style.fill: "#eff6ff"
+}
+ipc_boundary: {
+  label: "IPC / MCP — Untrusted (IR-D3)"
+  style.stroke-dash: 4
+  style.fill: "#fdf2f8"
+}
+
+# --- Core crates and domains (rect = module/crate) ---
+bitty_app: {
+  label: "bitty-app\nCLI / startup / safe-mode"
+  shape: rectangle
+  style.fill: "#ffffff"
+}
+bitty_runtime: {
+  label: "bitty-runtime\nCommand / Event / Service"
+  shape: rectangle
+  style.fill: "#ffffff"
+}
+bitty_config: {
+  label: "bitty-config\nConfigPlan / validation"
+  shape: rectangle
+}
+bitty_platform: {
+  label: "bitty-platform\nWindow / input / DPI"
+  shape: rectangle
+}
+bitty_pty: {
+  label: "bitty-pty\nUnix PTY / ConPTY"
+  shape: rectangle
+}
+bitty_vt: {
+  label: "bitty-vt\nParser -> TerminalAction"
+  shape: rectangle
+}
+bitty_term_state: {
+  label: "bitty-term-state\nGrid / damage / ImageStore"
+  shape: rectangle
+}
+bitty_render: {
+  label: "bitty-render\nSnapshot / GPU / glyph cache"
+  shape: rectangle
+}
+bitty_ui: {
+  label: "bitty-ui\nView / LayoutNode / Focus"
+  shape: rectangle
+}
+bitty_plugin_host: {
+  label: "bitty-plugin-host\nRegistry / lifecycle"
+  shape: rectangle
+}
+bitty_lua: {
+  label: "bitty-lua\npiccolo 0.3.3 Fuel"
+  shape: rectangle
+}
+bitty_ipc: {
+  label: "bitty-ipc\nFraming / channels"
+  shape: rectangle
+}
+bitty_agent: {
+  label: "bitty-agent\nBounded messages"
+  shape: rectangle
+}
+
+# --- Flows and presentation ---
+shell: {
+  label: "Shell child"
+  shape: rectangle
+  style.fill: "#fef9c3"
+}
+damage: {
+  label: "Damage"
+  shape: rectangle
+  style.border-radius: 8
+}
+snapshot: {
+  label: "Render Snapshot"
+  shape: rectangle
+  style.border-radius: 8
+}
+plugin: {
+  label: "Plugin (Lua)"
+  shape: rectangle
+  style.border-radius: 8
+  style.fill: "#eff6ff"
+}
+debug_protocol: {
+  label: "Debug Protocol\nversioned, inside Core"
+  shape: rectangle
+}
+mcp: {
+  label: "MCP Adapter"
+  shape: rectangle
+  style.border-radius: 8
+}
+
+# --- L0 edges (solid = call/depends, dashed = event/async) ---
+shell -> bitty_pty: "bytes" {
+  style.stroke: "#000000"
+}
+bitty_pty -> bitty_vt: "byte batch" {
+  style.stroke: "#000000"
+}
+bitty_vt -> bitty_term_state: "TerminalAction" {
+  style.stroke: "#000000"
+}
+bitty_term_state -> damage: "damage" {
+  style.stroke: "#000000"
+}
+damage -> snapshot: ""
+bitty_term_state -> snapshot: "damage"
+snapshot -> bitty_render: ""
+bitty_render -> bitty_platform: "SurfaceTarget"
+bitty_platform -> bitty_app: "owns Window" {
+  style.stroke-dash: 3
+}
+
+# Cold-path event side queue (dashed = event/async)
+bitty_term_state -> bitty_plugin_host: "cold-path event\nbounded queue" {
+  style.stroke-dash: 3
+}
+bitty_plugin_host -> plugin: "publish" {
+  style.stroke-dash: 3
+}
+plugin -> bitty_plugin_host: "command" {
+  style.stroke-dash: 3
+}
+bitty_plugin_host -> bitty_runtime: "command queue"
+bitty_runtime -> bitty_term_state: "orchestration"
+bitty_runtime -> bitty_ui: ""
+bitty_runtime -> bitty_render: ""
+bitty_runtime -> bitty_platform: ""
+bitty_runtime -> bitty_pty: ""
+
+# Configuration path (solid)
+bitty_config -> bitty_runtime: "RuntimeConfig\nvalidated ConfigPlan"
+bitty_app -> bitty_config: "startup: init.lua"
+
+# IPC and debug (dashed)
+debug_protocol -> mcp: "observation only" {
+  style.stroke-dash: 3
+}
+debug_protocol -> bitty_ipc: "" {
+  style.stroke-dash: 3
+}
+bitty_ipc -> bitty_runtime: "scope-checked request"
+bitty_agent -> bitty_ipc: "read-only default"
+
+# Annotation
+note: {
+  label: "Invariants: Parser never mutates renderer. Lua never on hot path.\nBoundaries: PTY, plugin VM, IPC/MCP are untrusted until policy grant.\nSee glossary.yaml for node/edge source and architecture/overview.md for full model."
+  shape: rectangle
+  style.fill: "#f8fafc"
+  style.stroke-dash: 2
+}
+note -> bitty_runtime: ""

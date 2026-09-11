@@ -1,0 +1,2041 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bitty Architecture Diagrams — Interactive Explorer Hub</title>
+    <link rel="icon" type="image/png" href="assets/bitty-icon.png" />
+    <link rel="stylesheet" href="css/diagram-engine.css" />
+    <style>
+      body {
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="diagram-app" style="height: auto; min-height: 100vh">
+      <!-- Top Header -->
+      <header class="diagram-header">
+        <div class="header-left">
+          <a href="index.html" class="brand-badge">
+            <img
+              class="logo-icon-img"
+              src="assets/bitty-icon.png"
+              alt="Bitty Icon"
+            />
+            <span>Bitty Architecture</span>
+          </a>
+          <div class="diagram-title-wrap">
+            <span class="diagram-level-tag">Interactive Hub</span>
+            <span class="diagram-title"
+              >System Models & Visual Specifications</span
+            >
+          </div>
+        </div>
+
+        <div class="header-center">
+          <div class="search-box" style="width: 320px">
+            <span class="search-icon">🔍</span>
+            <input
+              type="text"
+              id="gallery-search"
+              placeholder="Search across 13 interactive diagrams..."
+              oninput="filterGallery(this.value)"
+            />
+          </div>
+        </div>
+
+        <div class="header-right">
+          <a href="../README.md" class="btn-text">
+            <span>📖 Documentation Map</span>
+          </a>
+          <a href="../overview.md" class="btn-text">
+            <span>🏛 System Overview</span>
+          </a>
+          <button
+            class="btn-icon"
+            onclick="toggleHubTheme()"
+            title="Toggle Dark/Light Mode"
+          >
+            🌓
+          </button>
+        </div>
+      </header>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <span
+          style="
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+          "
+          >Categories:</span
+        >
+        <button
+          class="filter-chip active"
+          data-cat="all"
+          onclick="filterCategory('all')"
+        >
+          All Diagrams (13)
+        </button>
+        <button
+          class="filter-chip"
+          data-cat="System Overview"
+          onclick="filterCategory('System Overview')"
+        >
+          System Overview (L0)
+        </button>
+        <button
+          class="filter-chip"
+          data-cat="Core Subsystems"
+          onclick="filterCategory('Core Subsystems')"
+        >
+          Core Subsystems (L1)
+        </button>
+        <button
+          class="filter-chip"
+          data-cat="Extensibility & Packages"
+          onclick="filterCategory('Extensibility & Packages')"
+        >
+          Extensibility & Packages (L1-L2)
+        </button>
+        <button
+          class="filter-chip"
+          data-cat="Lifecycle Flows"
+          onclick="filterCategory('Lifecycle Flows')"
+        >
+          Lifecycle Flows (L2)
+        </button>
+        <button
+          class="filter-chip"
+          data-cat="Security & Protocols"
+          onclick="filterCategory('Security & Protocols')"
+        >
+          Security & Ceilings (L1-L3)
+        </button>
+      </div>
+
+      <!-- Gallery Container -->
+      <main class="gallery-container">
+        <div class="gallery-hero">
+          <div class="gallery-hero-text">
+            <h1>Interactive Architecture Visualizations</h1>
+            <p>
+              Replaces legacy static diagram expressions with responsive,
+              draggable, and inspectable HTML5 canvas visual models. Each model
+              provides direct pan & zoom, component inspection drawers, live
+              layer filtering, step-by-step lifecycle flow simulation, and
+              vector SVG/PNG export.
+            </p>
+            <div class="hero-stats-row">
+              <span class="hero-stat-badge">⚡ 13 Interactive Models</span>
+              <span class="hero-stat-badge">🛡 L0–L3 Architecture Specs</span>
+              <span class="hero-stat-badge">📦 100% Offline / Zero CDN</span>
+              <span class="hero-stat-badge">🔄 4 Flow Simulators</span>
+            </div>
+          </div>
+          <div
+            class="gallery-hero-banner"
+            onclick="
+              openModal('00-overview.html', '00. System Overview & Boundaries')
+            "
+          >
+            <img
+              src="assets/hero.png"
+              alt="Bitty Terminal Architecture Blueprint"
+            />
+            <div class="hero-banner-overlay">
+              <span>Explore System Overview ↗</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: System & Core -->
+        <div class="gallery-section-title">
+          <span>🏛 System Overview & Workspace Topology</span>
+        </div>
+        <div class="gallery-grid" id="grid-system">
+          <!-- 00-overview -->
+          <div
+            class="diagram-card"
+            data-category="System Overview"
+            data-keywords="system overview trust boundaries pty vt term-state render l0"
+          >
+            <div class="card-preview">
+              <svg viewBox="0 0 400 160" width="100%" height="100%">
+                <rect
+                  x="20"
+                  y="20"
+                  width="100"
+                  height="120"
+                  rx="8"
+                  fill="#fefce8"
+                  stroke="#ca8a04"
+                  stroke-dasharray="4,4"
+                />
+                <text
+                  x="70"
+                  y="75"
+                  font-family="monospace"
+                  font-size="11"
+                  fill="#ca8a04"
+                  text-anchor="middle"
+                >
+                  PTY Child
+                </text>
+                <rect
+                  x="150"
+                  y="20"
+                  width="100"
+                  height="120"
+                  rx="8"
+                  fill="#ecfdf5"
+                  stroke="#059669"
+                />
+                <text
+                  x="200"
+                  y="75"
+                  font-family="monospace"
+                  font-size="11"
+                  fill="#059669"
+                  text-anchor="middle"
+                >
+                  Core Truth
+                </text>
+                <rect
+                  x="280"
+                  y="20"
+                  width="100"
+                  height="120"
+                  rx="8"
+                  fill="#eff6ff"
+                  stroke="#2563eb"
+                  stroke-dasharray="4,4"
+                />
+                <text
+                  x="330"
+                  y="75"
+                  font-family="monospace"
+                  font-size="11"
+                  fill="#2563eb"
+                  text-anchor="middle"
+                >
+                  Plugin VM
+                </text>
+                <line
+                  x1="120"
+                  y1="80"
+                  x2="150"
+                  y2="80"
+                  stroke="#64748b"
+                  stroke-width="2"
+                  marker-end="url(#arr)"
+                />
+                <line
+                  x1="250"
+                  y1="80"
+                  x2="280"
+                  y2="80"
+                  stroke="#64748b"
+                  stroke-width="2"
+                  stroke-dasharray="3,3"
+                />
+              </svg>
+            </div>
+            <div class="card-body">
+              <div class="card-header-row">
+                <span class="card-title">00. System Overview & Boundaries</span>
+                <span class="diagram-level-tag">L0</span>
+              </div>
+              <p class="card-desc">
+                System context, terminal pipeline from byte streams to GPU quad
+                renderer, and three primary untrusted isolation domains
+                (IR-D1..D3).
+              </p>
+              <div class="card-footer">
+                <a
+                  href="00-overview.html"
+                  class="btn-text"
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                  >Open Diagram ↗</a
+                >
+                <button
+                  class="btn-text"
+                  onclick="openModal('00-overview.html', '00. System Overview')"
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                >
+                  Quick View 👁
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 01-core -->
+          <div
+            class="diagram-card"
+            data-category="Core Subsystems"
+            data-keywords="core dag workspace crates topology layers foundation state presentation host orchestration l1"
+          >
+            <div class="card-preview">
+              <svg viewBox="0 0 400 160" width="100%" height="100%">
+                <rect
+                  x="30"
+                  y="15"
+                  width="340"
+                  height="25"
+                  rx="4"
+                  fill="#fefce8"
+                  stroke="#ca8a04"
+                />
+                <text
+                  x="200"
+                  y="32"
+                  font-family="monospace"
+                  font-size="10"
+                  fill="#ca8a04"
+                  text-anchor="middle"
+                >
+                  Layer 0: Foundation (vt, pty, platform, config...)
+                </text>
+                <rect
+                  x="30"
+                  y="50"
+                  width="340"
+                  height="25"
+                  rx="4"
+                  fill="#ecfdf5"
+                  stroke="#059669"
+                />
+                <text
+                  x="200"
+                  y="67"
+                  font-family="monospace"
+                  font-size="10"
+                  fill="#059669"
+                  text-anchor="middle"
+                >
+                  Layer 1: State (bitty-term-state / Terminal Truth)
+                </text>
+                <rect
+                  x="30"
+                  y="85"
+                  width="340"
+                  height="25"
+                  rx="4"
+                  fill="#eff6ff"
+                  stroke="#2563eb"
+                />
+                <text
+                  x="200"
+                  y="102"
+                  font-family="monospace"
+                  font-size="10"
+                  fill="#2563eb"
+                  text-anchor="middle"
+                >
+                  Layer 2: Presentation (render, ui, rich)
+                </text>
+                <rect
+                  x="30"
+                  y="120"
+                  width="340"
+                  height="25"
+                  rx="4"
+                  fill="#fdf2f8"
+                  stroke="#7c3aed"
+                />
+                <text
+                  x="200"
+                  y="137"
+                  font-family="monospace"
+                  font-size="10"
+                  fill="#7c3aed"
+                  text-anchor="middle"
+                >
+                  Layer 3 & 4: Host & Orchestration (runtime, app)
+                </text>
+              </svg>
+            </div>
+            <div class="card-body">
+              <div class="card-header-row">
+                <span class="card-title">01. Core 16-Crate Workspace DAG</span>
+                <span class="diagram-level-tag">L1</span>
+              </div>
+              <p class="card-desc">
+                Strict DAG across 16 core crates organized into 5 layers per ADR
+                0003. Enforces that lower layers never depend on higher layers.
+              </p>
+              <div class="card-footer">
+                <a
+                  href="01-core.html"
+                  class="btn-text"
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                  >Open Diagram ↗</a
+                >
+                <button
+                  class="btn-text"
+                  onclick="openModal('01-core.html', '01. Core DAG')"
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                >
+                  Quick View 👁
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 03-panel-system -->
+          <div
+            class="diagram-card"
+            data-category="Core Subsystems"
+            data-keywords="panel system workspace compositor layout tree view instance window l1"
+          >
+            <div class="card-preview">
+              <svg viewBox="0 0 400 160" width="100%" height="100%">
+                <rect
+                  x="30"
+                  y="25"
+                  width="100"
+                  height="110"
+                  rx="6"
+                  fill="#f8fafc"
+                  stroke="#64748b"
+                />
+                <text
+                  x="80"
+                  y="50"
+                  font-family="monospace"
+                  font-size="10"
+                  fill="#0f172a"
+                  text-anchor="middle"
+                >
+                  Window
+                </text>
+                <rect
+                  x="45"
+                  y="65"
+                  width="70"
+                  height="55"
+                  rx="4"
+                  fill="#ecfdf5"
+                  stroke="#059669"
+                />
+                <text
+                  x="80"
+                  y="95"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#059669"
+                  text-anchor="middle"
+                >
+                  Workspace
+                </text>
+                <rect
+                  x="160"
+                  y="25"
+                  width="100"
+                  height="110"
+                  rx="6"
+                  fill="#eff6ff"
+                  stroke="#2563eb"
+                />
+                <text
+                  x="210"
+                  y="70"
+                  font-family="monospace"
+                  font-size="11"
+                  fill="#2563eb"
+                  text-anchor="middle"
+                >
+                  LayoutTree
+                </text>
+                <text
+                  x="210"
+                  y="90"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#64748b"
+                  text-anchor="middle"
+                >
+                  H | V Split
+                </text>
+                <rect
+                  x="290"
+                  y="25"
+                  width="80"
+                  height="48"
+                  rx="6"
+                  fill="#fefce8"
+                  stroke="#ca8a04"
+                />
+                <text
+                  x="330"
+                  y="52"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#ca8a04"
+                  text-anchor="middle"
+                >
+                  Terminal
+                </text>
+                <rect
+                  x="290"
+                  y="87"
+                  width="80"
+                  height="48"
+                  rx="6"
+                  fill="#eff6ff"
+                  stroke="#2563eb"
+                />
+                <text
+                  x="330"
+                  y="114"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#2563eb"
+                  text-anchor="middle"
+                >
+                  Rich/Web
+                </text>
+              </svg>
+            </div>
+            <div class="card-body">
+              <div class="card-header-row">
+                <span class="card-title">03. Workspace & Panel Compositor</span>
+                <span class="diagram-level-tag">L1</span>
+              </div>
+              <p class="card-desc">
+                Instance to Window to Workspace to LayoutTree hierarchy.
+                Separates terminal state from view presentation and layout
+                plugins.
+              </p>
+              <div class="card-footer">
+                <a
+                  href="03-panel-system.html"
+                  class="btn-text"
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                  >Open Diagram ↗</a
+                >
+                <button
+                  class="btn-text"
+                  onclick="
+                    openModal('03-panel-system.html', '03. Panel System')
+                  "
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                >
+                  Quick View 👁
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 04-config-model -->
+          <div
+            class="diagram-card"
+            data-category="Core Subsystems"
+            data-keywords="config model xdg layers lua init configplan diff reconcile l2"
+          >
+            <div class="card-preview">
+              <svg viewBox="0 0 400 160" width="100%" height="100%">
+                <rect
+                  x="20"
+                  y="20"
+                  width="90"
+                  height="120"
+                  rx="6"
+                  fill="#fef9c3"
+                  stroke="#ca8a04"
+                  stroke-dasharray="3,3"
+                />
+                <text
+                  x="65"
+                  y="45"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#ca8a04"
+                  text-anchor="middle"
+                >
+                  XDG Layers
+                </text>
+                <text
+                  x="65"
+                  y="70"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#64748b"
+                  text-anchor="middle"
+                >
+                  defaults
+                </text>
+                <text
+                  x="65"
+                  y="90"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#64748b"
+                  text-anchor="middle"
+                >
+                  system/dist
+                </text>
+                <text
+                  x="65"
+                  y="110"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#64748b"
+                  text-anchor="middle"
+                >
+                  user/cli
+                </text>
+                <rect
+                  x="140"
+                  y="40"
+                  width="110"
+                  height="80"
+                  rx="6"
+                  fill="#eff6ff"
+                  stroke="#2563eb"
+                />
+                <text
+                  x="195"
+                  y="75"
+                  font-family="monospace"
+                  font-size="10"
+                  fill="#2563eb"
+                  text-anchor="middle"
+                >
+                  ConfigPlan
+                </text>
+                <text
+                  x="195"
+                  y="95"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#64748b"
+                  text-anchor="middle"
+                >
+                  Typed Schema
+                </text>
+                <rect
+                  x="280"
+                  y="40"
+                  width="100"
+                  height="80"
+                  rx="6"
+                  fill="#ecfdf5"
+                  stroke="#059669"
+                />
+                <text
+                  x="330"
+                  y="75"
+                  font-family="monospace"
+                  font-size="10"
+                  fill="#059669"
+                  text-anchor="middle"
+                >
+                  Reconcile
+                </text>
+                <text
+                  x="330"
+                  y="95"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#059669"
+                  text-anchor="middle"
+                >
+                  Live / Restart
+                </text>
+              </svg>
+            </div>
+            <div class="card-body">
+              <div class="card-header-row">
+                <span class="card-title">04. Config Pipeline & XDG Stack</span>
+                <span class="diagram-level-tag">L2</span>
+              </div>
+              <p class="card-desc">
+                Evaluates init.lua inside an ephemeral sandbox, enforces XDG
+                precedence, validates schemas, and classifies hot-reloads.
+              </p>
+              <div class="card-footer">
+                <a
+                  href="04-config-model.html"
+                  class="btn-text"
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                  >Open Diagram ↗</a
+                >
+                <button
+                  class="btn-text"
+                  onclick="
+                    openModal('04-config-model.html', '04. Config Model')
+                  "
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                >
+                  Quick View 👁
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 08-rich-presentation -->
+          <div
+            class="diagram-card"
+            data-category="Core Subsystems"
+            data-keywords="rich presentation terminal truth overlays markdown images textures l1"
+          >
+            <div class="card-preview">
+              <svg viewBox="0 0 400 160" width="100%" height="100%">
+                <rect
+                  x="30"
+                  y="30"
+                  width="100"
+                  height="100"
+                  rx="6"
+                  fill="#ecfdf5"
+                  stroke="#059669"
+                />
+                <text
+                  x="80"
+                  y="75"
+                  font-family="monospace"
+                  font-size="10"
+                  fill="#059669"
+                  text-anchor="middle"
+                >
+                  Terminal Truth
+                </text>
+                <text
+                  x="80"
+                  y="95"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#64748b"
+                  text-anchor="middle"
+                >
+                  Cell Grid
+                </text>
+                <rect
+                  x="150"
+                  y="30"
+                  width="100"
+                  height="100"
+                  rx="6"
+                  fill="#eff6ff"
+                  stroke="#2563eb"
+                  stroke-dasharray="3,3"
+                />
+                <text
+                  x="200"
+                  y="75"
+                  font-family="monospace"
+                  font-size="10"
+                  fill="#2563eb"
+                  text-anchor="middle"
+                >
+                  Rich Layer
+                </text>
+                <text
+                  x="200"
+                  y="95"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#64748b"
+                  text-anchor="middle"
+                >
+                  Image / Media
+                </text>
+                <rect
+                  x="270"
+                  y="30"
+                  width="100"
+                  height="100"
+                  rx="6"
+                  fill="#f5f3ff"
+                  stroke="#7c3aed"
+                />
+                <text
+                  x="320"
+                  y="75"
+                  font-family="monospace"
+                  font-size="10"
+                  fill="#7c3aed"
+                  text-anchor="middle"
+                >
+                  Compositor
+                </text>
+                <text
+                  x="320"
+                  y="95"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#64748b"
+                  text-anchor="middle"
+                >
+                  Quad Pass
+                </text>
+              </svg>
+            </div>
+            <div class="card-body">
+              <div class="card-header-row">
+                <span class="card-title"
+                  >08. Rich Presentation & Terminal Truth</span
+                >
+                <span class="diagram-level-tag">L1</span>
+              </div>
+              <p class="card-desc">
+                Supplemental architecture separating canonical terminal grid
+                state from rich media overlays without VT parser pollution.
+              </p>
+              <div class="card-footer">
+                <a
+                  href="08-rich-presentation.html"
+                  class="btn-text"
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                  >Open Diagram ↗</a
+                >
+                <button
+                  class="btn-text"
+                  onclick="
+                    openModal(
+                      '08-rich-presentation.html',
+                      '08. Rich Presentation',
+                    )
+                  "
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                >
+                  Quick View 👁
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Extensibility & Security -->
+        <div class="gallery-section-title">
+          <span>🛡 Extensibility, Security & Isolation</span>
+        </div>
+        <div class="gallery-grid" id="grid-security">
+          <!-- 02-plugin-platform -->
+          <div
+            class="diagram-card"
+            data-category="Extensibility & Packages"
+            data-keywords="plugin platform piccolo lua vm capability grant event queues l1"
+          >
+            <div class="card-preview">
+              <svg viewBox="0 0 400 160" width="100%" height="100%">
+                <rect
+                  x="20"
+                  y="20"
+                  width="90"
+                  height="120"
+                  rx="6"
+                  fill="#f8fafc"
+                  stroke="#64748b"
+                />
+                <text
+                  x="65"
+                  y="75"
+                  font-family="monospace"
+                  font-size="10"
+                  fill="#0f172a"
+                  text-anchor="middle"
+                >
+                  Manifest
+                </text>
+                <rect
+                  x="130"
+                  y="20"
+                  width="110"
+                  height="120"
+                  rx="6"
+                  fill="#eff6ff"
+                  stroke="#2563eb"
+                  stroke-dasharray="4,4"
+                />
+                <text
+                  x="185"
+                  y="65"
+                  font-family="monospace"
+                  font-size="10"
+                  fill="#2563eb"
+                  text-anchor="middle"
+                >
+                  Piccolo VM
+                </text>
+                <text
+                  x="185"
+                  y="85"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#64748b"
+                  text-anchor="middle"
+                >
+                  Fuel 10^7
+                </text>
+                <text
+                  x="185"
+                  y="105"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#64748b"
+                  text-anchor="middle"
+                >
+                  32MB RAM
+                </text>
+                <rect
+                  x="260"
+                  y="20"
+                  width="110"
+                  height="120"
+                  rx="6"
+                  fill="#fffbeb"
+                  stroke="#b45309"
+                />
+                <text
+                  x="315"
+                  y="65"
+                  font-family="monospace"
+                  font-size="10"
+                  fill="#b45309"
+                  text-anchor="middle"
+                >
+                  Event Queue
+                </text>
+                <text
+                  x="315"
+                  y="85"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#64748b"
+                  text-anchor="middle"
+                >
+                  PerSub 64
+                </text>
+                <text
+                  x="315"
+                  y="105"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#64748b"
+                  text-anchor="middle"
+                >
+                  DropOldest
+                </text>
+              </svg>
+            </div>
+            <div class="card-body">
+              <div class="card-header-row">
+                <span class="card-title">02. Plugin Platform & VM Sandbox</span>
+                <span class="diagram-level-tag">L1</span>
+              </div>
+              <p class="card-desc">
+                Manifest validation, capability grants, per-plugin Lua VM
+                execution (Piccolo), and bounded cold-path event delivery.
+              </p>
+              <div class="card-footer">
+                <a
+                  href="02-plugin-platform.html"
+                  class="btn-text"
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                  >Open Diagram ↗</a
+                >
+                <button
+                  class="btn-text"
+                  onclick="
+                    openModal('02-plugin-platform.html', '02. Plugin Platform')
+                  "
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                >
+                  Quick View 👁
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 05-package-lifecycle -->
+          <div
+            class="diagram-card"
+            data-category="Extensibility & Packages"
+            data-keywords="package lifecycle integrity chain sha256 lockfile sources l2"
+          >
+            <div class="card-preview">
+              <svg viewBox="0 0 400 160" width="100%" height="100%">
+                <circle
+                  cx="50"
+                  cy="80"
+                  r="22"
+                  fill="#eff6ff"
+                  stroke="#2563eb"
+                />
+                <text
+                  x="50"
+                  y="84"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#2563eb"
+                  text-anchor="middle"
+                >
+                  discover
+                </text>
+                <circle
+                  cx="110"
+                  cy="80"
+                  r="22"
+                  fill="#eff6ff"
+                  stroke="#2563eb"
+                />
+                <text
+                  x="110"
+                  y="84"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#2563eb"
+                  text-anchor="middle"
+                >
+                  fetch
+                </text>
+                <circle
+                  cx="170"
+                  cy="80"
+                  r="22"
+                  fill="#ecfdf5"
+                  stroke="#059669"
+                />
+                <text
+                  x="170"
+                  y="84"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#059669"
+                  text-anchor="middle"
+                >
+                  verify
+                </text>
+                <circle
+                  cx="230"
+                  cy="80"
+                  r="22"
+                  fill="#eff6ff"
+                  stroke="#2563eb"
+                />
+                <text
+                  x="230"
+                  y="84"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#2563eb"
+                  text-anchor="middle"
+                >
+                  stage
+                </text>
+                <circle
+                  cx="290"
+                  cy="80"
+                  r="24"
+                  fill="#ecfdf5"
+                  stroke="#059669"
+                  stroke-width="2"
+                />
+                <text
+                  x="290"
+                  y="84"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#059669"
+                  text-anchor="middle"
+                >
+                  activate
+                </text>
+                <circle
+                  cx="350"
+                  cy="80"
+                  r="20"
+                  fill="#f8fafc"
+                  stroke="#64748b"
+                />
+                <text
+                  x="350"
+                  y="84"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#64748b"
+                  text-anchor="middle"
+                >
+                  retain
+                </text>
+              </svg>
+            </div>
+            <div class="card-body">
+              <div class="card-header-row">
+                <span class="card-title"
+                  >05. Package Lifecycle & Integrity</span
+                >
+                <span class="diagram-level-tag">L2</span>
+              </div>
+              <p class="card-desc">
+                Provenance classes (bundled, registry, git, local), 6 atomic
+                lifecycle states, and 7-step cryptographic verification chain.
+              </p>
+              <div class="card-footer">
+                <a
+                  href="05-package-lifecycle.html"
+                  class="btn-text"
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                  >Open Diagram ↗</a
+                >
+                <button
+                  class="btn-text"
+                  onclick="
+                    openModal(
+                      '05-package-lifecycle.html',
+                      '05. Package Lifecycle',
+                    )
+                  "
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                >
+                  Quick View 👁
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 06-isolation-resource -->
+          <div
+            class="diagram-card"
+            data-category="Security & Protocols"
+            data-keywords="isolation domains resource ceilings rc1 rc10 failure semantics fs1 fs4 l1 l3"
+          >
+            <div class="card-preview">
+              <svg viewBox="0 0 400 160" width="100%" height="100%">
+                <rect
+                  x="25"
+                  y="25"
+                  width="105"
+                  height="110"
+                  rx="8"
+                  fill="#fefce8"
+                  stroke="#ca8a04"
+                  stroke-dasharray="4,4"
+                />
+                <text
+                  x="77"
+                  y="55"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#ca8a04"
+                  text-anchor="middle"
+                >
+                  IR-D1 PTY
+                </text>
+                <text
+                  x="77"
+                  y="85"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#b45309"
+                  text-anchor="middle"
+                >
+                  RC-7 8MiB
+                </text>
+                <text
+                  x="77"
+                  y="105"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#b45309"
+                  text-anchor="middle"
+                >
+                  RC-8 10/s
+                </text>
+                <rect
+                  x="145"
+                  y="25"
+                  width="110"
+                  height="110"
+                  rx="8"
+                  fill="#eff6ff"
+                  stroke="#2563eb"
+                  stroke-dasharray="4,4"
+                />
+                <text
+                  x="200"
+                  y="55"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#2563eb"
+                  text-anchor="middle"
+                >
+                  IR-D2 VM
+                </text>
+                <text
+                  x="200"
+                  y="80"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#dc2626"
+                  text-anchor="middle"
+                >
+                  RC-1 Fuel 10^7
+                </text>
+                <text
+                  x="200"
+                  y="98"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#dc2626"
+                  text-anchor="middle"
+                >
+                  RC-2 32MiB
+                </text>
+                <text
+                  x="200"
+                  y="116"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#dc2626"
+                  text-anchor="middle"
+                >
+                  RC-5 Queues
+                </text>
+                <rect
+                  x="270"
+                  y="25"
+                  width="105"
+                  height="110"
+                  rx="8"
+                  fill="#fdf2f8"
+                  stroke="#db2777"
+                  stroke-dasharray="4,4"
+                />
+                <text
+                  x="322"
+                  y="55"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#db2777"
+                  text-anchor="middle"
+                >
+                  IR-D3 IPC
+                </text>
+                <text
+                  x="322"
+                  y="85"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#db2777"
+                  text-anchor="middle"
+                >
+                  RC-9 100r/s
+                </text>
+                <text
+                  x="322"
+                  y="105"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#db2777"
+                  text-anchor="middle"
+                >
+                  RC-10 256KiB
+                </text>
+              </svg>
+            </div>
+            <div class="card-body">
+              <div class="card-header-row">
+                <span class="card-title">06. Isolation Domains & Ceilings</span>
+                <span class="diagram-level-tag">L1+L3</span>
+              </div>
+              <p class="card-desc">
+                Three isolated security domains (IR-D1..D3), 10 quantitative
+                resource ceilings (RC-1..10), and FS-1..FS-4 failure semantics.
+              </p>
+              <div class="card-footer">
+                <a
+                  href="06-isolation-resource.html"
+                  class="btn-text"
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                  >Open Diagram ↗</a
+                >
+                <button
+                  class="btn-text"
+                  onclick="
+                    openModal(
+                      '06-isolation-resource.html',
+                      '06. Isolation & Ceilings',
+                    )
+                  "
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                >
+                  Quick View 👁
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 07-ipc-agent -->
+          <div
+            class="diagram-card"
+            data-category="Security & Protocols"
+            data-keywords="ipc agent mcp devtools debug protocol sockets l1"
+          >
+            <div class="card-preview">
+              <svg viewBox="0 0 400 160" width="100%" height="100%">
+                <rect
+                  x="30"
+                  y="30"
+                  width="100"
+                  height="100"
+                  rx="6"
+                  fill="#f5f3ff"
+                  stroke="#7c3aed"
+                />
+                <text
+                  x="80"
+                  y="70"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#7c3aed"
+                  text-anchor="middle"
+                >
+                  DevTools / AI
+                </text>
+                <text
+                  x="80"
+                  y="90"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#64748b"
+                  text-anchor="middle"
+                >
+                  MCP Client
+                </text>
+                <rect
+                  x="150"
+                  y="30"
+                  width="100"
+                  height="100"
+                  rx="6"
+                  fill="#eff6ff"
+                  stroke="#2563eb"
+                />
+                <text
+                  x="200"
+                  y="70"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#2563eb"
+                  text-anchor="middle"
+                >
+                  IPC Socket
+                </text>
+                <text
+                  x="200"
+                  y="90"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#64748b"
+                  text-anchor="middle"
+                >
+                  Scope Gate
+                </text>
+                <rect
+                  x="270"
+                  y="30"
+                  width="100"
+                  height="100"
+                  rx="6"
+                  fill="#ecfdf5"
+                  stroke="#059669"
+                />
+                <text
+                  x="320"
+                  y="70"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#059669"
+                  text-anchor="middle"
+                >
+                  Core Services
+                </text>
+                <text
+                  x="320"
+                  y="90"
+                  font-family="monospace"
+                  font-size="8"
+                  fill="#64748b"
+                  text-anchor="middle"
+                >
+                  Capture/Synth
+                </text>
+              </svg>
+            </div>
+            <div class="card-body">
+              <div class="card-header-row">
+                <span class="card-title"
+                  >07. IPC, Debug & MCP Architecture</span
+                >
+                <span class="diagram-level-tag">L1</span>
+              </div>
+              <p class="card-desc">
+                Supplemental specification for Unix domain sockets, scope-based
+                authentication, devtools input synthesis, and MCP tools.
+              </p>
+              <div class="card-footer">
+                <a
+                  href="07-ipc-agent.html"
+                  class="btn-text"
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                  >Open Diagram ↗</a
+                >
+                <button
+                  class="btn-text"
+                  onclick="
+                    openModal('07-ipc-agent.html', '07. IPC & MCP Agent')
+                  "
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                >
+                  Quick View 👁
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section: Lifecycle Flows -->
+        <div class="gallery-section-title">
+          <span>🔄 Interactive Lifecycle & Sequence Flows</span>
+        </div>
+        <div class="gallery-grid" id="grid-flows">
+          <!-- startup-flow -->
+          <div
+            class="diagram-card"
+            data-category="Lifecycle Flows"
+            data-keywords="startup flow cli platform runtime pty shell window l2 sequence"
+          >
+            <div class="card-preview">
+              <svg viewBox="0 0 400 160" width="100%" height="100%">
+                <rect
+                  x="30"
+                  y="60"
+                  width="60"
+                  height="40"
+                  rx="4"
+                  fill="#fef9c3"
+                  stroke="#ca8a04"
+                />
+                <text
+                  x="60"
+                  y="84"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#ca8a04"
+                  text-anchor="middle"
+                >
+                  CLI
+                </text>
+                <line
+                  x1="90"
+                  y1="80"
+                  x2="130"
+                  y2="80"
+                  stroke="#38bdf8"
+                  stroke-width="2"
+                />
+                <rect
+                  x="130"
+                  y="60"
+                  width="70"
+                  height="40"
+                  rx="4"
+                  fill="#eff6ff"
+                  stroke="#2563eb"
+                />
+                <text
+                  x="165"
+                  y="84"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#2563eb"
+                  text-anchor="middle"
+                >
+                  Config
+                </text>
+                <line
+                  x1="200"
+                  y1="80"
+                  x2="240"
+                  y2="80"
+                  stroke="#38bdf8"
+                  stroke-width="2"
+                />
+                <rect
+                  x="240"
+                  y="60"
+                  width="70"
+                  height="40"
+                  rx="4"
+                  fill="#ecfdf5"
+                  stroke="#059669"
+                />
+                <text
+                  x="275"
+                  y="84"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#059669"
+                  text-anchor="middle"
+                >
+                  Window
+                </text>
+                <line
+                  x1="310"
+                  y1="80"
+                  x2="330"
+                  y2="80"
+                  stroke="#38bdf8"
+                  stroke-width="2"
+                />
+                <rect
+                  x="330"
+                  y="60"
+                  width="50"
+                  height="40"
+                  rx="4"
+                  fill="#ecfdf5"
+                  stroke="#10b981"
+                />
+                <text
+                  x="355"
+                  y="84"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#10b981"
+                  text-anchor="middle"
+                >
+                  Loop
+                </text>
+              </svg>
+            </div>
+            <div class="card-body">
+              <div class="card-header-row">
+                <span class="card-title">Startup Sequence & Flow Stepper</span>
+                <span class="diagram-level-tag">L2 Flow</span>
+              </div>
+              <p class="card-desc">
+                10-step interactive stepper tracing CLI argv, safe mode
+                branching, config merge, window init, and PTY shell launch.
+              </p>
+              <div class="card-footer">
+                <a
+                  href="startup-flow.html"
+                  class="btn-text"
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                  >Open Stepper ↗</a
+                >
+                <button
+                  class="btn-text"
+                  onclick="openModal('startup-flow.html', 'Startup Flow')"
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                >
+                  Quick View 👁
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- plugin-load-flow -->
+          <div
+            class="diagram-card"
+            data-category="Lifecycle Flows"
+            data-keywords="plugin load flow discovery manifest consent vm budget l2 sequence"
+          >
+            <div class="card-preview">
+              <svg viewBox="0 0 400 160" width="100%" height="100%">
+                <rect
+                  x="30"
+                  y="60"
+                  width="70"
+                  height="40"
+                  rx="4"
+                  fill="#f8fafc"
+                  stroke="#64748b"
+                />
+                <text
+                  x="65"
+                  y="84"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#0f172a"
+                  text-anchor="middle"
+                >
+                  Discovery
+                </text>
+                <line
+                  x1="100"
+                  y1="80"
+                  x2="140"
+                  y2="80"
+                  stroke="#38bdf8"
+                  stroke-width="2"
+                />
+                <rect
+                  x="140"
+                  y="60"
+                  width="70"
+                  height="40"
+                  rx="4"
+                  fill="#fee2e2"
+                  stroke="#dc2626"
+                />
+                <text
+                  x="175"
+                  y="84"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#dc2626"
+                  text-anchor="middle"
+                >
+                  Consent
+                </text>
+                <line
+                  x1="210"
+                  y1="80"
+                  x2="250"
+                  y2="80"
+                  stroke="#38bdf8"
+                  stroke-width="2"
+                />
+                <rect
+                  x="250"
+                  y="60"
+                  width="60"
+                  height="40"
+                  rx="4"
+                  fill="#eff6ff"
+                  stroke="#2563eb"
+                />
+                <text
+                  x="280"
+                  y="84"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#2563eb"
+                  text-anchor="middle"
+                >
+                  VM
+                </text>
+                <line
+                  x1="310"
+                  y1="80"
+                  x2="330"
+                  y2="80"
+                  stroke="#38bdf8"
+                  stroke-width="2"
+                />
+                <rect
+                  x="330"
+                  y="60"
+                  width="50"
+                  height="40"
+                  rx="4"
+                  fill="#ecfdf5"
+                  stroke="#059669"
+                />
+                <text
+                  x="355"
+                  y="84"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#059669"
+                  text-anchor="middle"
+                >
+                  Run
+                </text>
+              </svg>
+            </div>
+            <div class="card-body">
+              <div class="card-header-row">
+                <span class="card-title">Plugin Load Flow & Stepper</span>
+                <span class="diagram-level-tag">L2 Flow</span>
+              </div>
+              <p class="card-desc">
+                9-step interactive stepper tracing manifest discovery,
+                capability diff calculation, user consent, and Piccolo VM spawn.
+              </p>
+              <div class="card-footer">
+                <a
+                  href="plugin-load-flow.html"
+                  class="btn-text"
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                  >Open Stepper ↗</a
+                >
+                <button
+                  class="btn-text"
+                  onclick="
+                    openModal('plugin-load-flow.html', 'Plugin Load Flow')
+                  "
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                >
+                  Quick View 👁
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- config-resolution-flow -->
+          <div
+            class="diagram-card"
+            data-category="Lifecycle Flows"
+            data-keywords="config resolution flow lua diff reconcile hot reload l2 sequence"
+          >
+            <div class="card-preview">
+              <svg viewBox="0 0 400 160" width="100%" height="100%">
+                <rect
+                  x="30"
+                  y="60"
+                  width="70"
+                  height="40"
+                  rx="4"
+                  fill="#fef9c3"
+                  stroke="#ca8a04"
+                />
+                <text
+                  x="65"
+                  y="84"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#ca8a04"
+                  text-anchor="middle"
+                >
+                  init.lua
+                </text>
+                <line
+                  x1="100"
+                  y1="80"
+                  x2="140"
+                  y2="80"
+                  stroke="#38bdf8"
+                  stroke-width="2"
+                />
+                <rect
+                  x="140"
+                  y="60"
+                  width="70"
+                  height="40"
+                  rx="4"
+                  fill="#eff6ff"
+                  stroke="#2563eb"
+                />
+                <text
+                  x="175"
+                  y="84"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#2563eb"
+                  text-anchor="middle"
+                >
+                  Plan
+                </text>
+                <line
+                  x1="210"
+                  y1="80"
+                  x2="250"
+                  y2="80"
+                  stroke="#38bdf8"
+                  stroke-width="2"
+                />
+                <rect
+                  x="250"
+                  y="60"
+                  width="60"
+                  height="40"
+                  rx="4"
+                  fill="#fef3c7"
+                  stroke="#d97706"
+                />
+                <text
+                  x="280"
+                  y="84"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#d97706"
+                  text-anchor="middle"
+                >
+                  Diff
+                </text>
+                <line
+                  x1="310"
+                  y1="80"
+                  x2="330"
+                  y2="80"
+                  stroke="#38bdf8"
+                  stroke-width="2"
+                />
+                <rect
+                  x="330"
+                  y="60"
+                  width="50"
+                  height="40"
+                  rx="4"
+                  fill="#ecfdf5"
+                  stroke="#059669"
+                />
+                <text
+                  x="355"
+                  y="84"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#059669"
+                  text-anchor="middle"
+                >
+                  Hot
+                </text>
+              </svg>
+            </div>
+            <div class="card-body">
+              <div class="card-header-row">
+                <span class="card-title">Config Resolution & Reconcile</span>
+                <span class="diagram-level-tag">L2 Flow</span>
+              </div>
+              <p class="card-desc">
+                8-step stepper demonstrating Lua sandbox execution, layer
+                precedence merge, security policies, and live atomic swap.
+              </p>
+              <div class="card-footer">
+                <a
+                  href="config-resolution-flow.html"
+                  class="btn-text"
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                  >Open Stepper ↗</a
+                >
+                <button
+                  class="btn-text"
+                  onclick="
+                    openModal(
+                      'config-resolution-flow.html',
+                      'Config Resolution Flow',
+                    )
+                  "
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                >
+                  Quick View 👁
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- panel-create-flow -->
+          <div
+            class="diagram-card"
+            data-category="Lifecycle Flows"
+            data-keywords="panel create flow viewId layout tree provider split commit l2 sequence"
+          >
+            <div class="card-preview">
+              <svg viewBox="0 0 400 160" width="100%" height="100%">
+                <rect
+                  x="30"
+                  y="60"
+                  width="60"
+                  height="40"
+                  rx="4"
+                  fill="#fef9c3"
+                  stroke="#ca8a04"
+                />
+                <text
+                  x="60"
+                  y="84"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#ca8a04"
+                  text-anchor="middle"
+                >
+                  Split
+                </text>
+                <line
+                  x1="90"
+                  y1="80"
+                  x2="130"
+                  y2="80"
+                  stroke="#38bdf8"
+                  stroke-width="2"
+                />
+                <rect
+                  x="130"
+                  y="60"
+                  width="70"
+                  height="40"
+                  rx="4"
+                  fill="#eff6ff"
+                  stroke="#2563eb"
+                />
+                <text
+                  x="165"
+                  y="84"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#2563eb"
+                  text-anchor="middle"
+                >
+                  ViewId
+                </text>
+                <line
+                  x1="200"
+                  y1="80"
+                  x2="240"
+                  y2="80"
+                  stroke="#38bdf8"
+                  stroke-width="2"
+                />
+                <rect
+                  x="240"
+                  y="60"
+                  width="70"
+                  height="40"
+                  rx="4"
+                  fill="#eff6ff"
+                  stroke="#3b82f6"
+                />
+                <text
+                  x="275"
+                  y="84"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#3b82f6"
+                  text-anchor="middle"
+                >
+                  Provider
+                </text>
+                <line
+                  x1="310"
+                  y1="80"
+                  x2="330"
+                  y2="80"
+                  stroke="#38bdf8"
+                  stroke-width="2"
+                />
+                <rect
+                  x="330"
+                  y="60"
+                  width="50"
+                  height="40"
+                  rx="4"
+                  fill="#ecfdf5"
+                  stroke="#059669"
+                />
+                <text
+                  x="355"
+                  y="84"
+                  font-family="monospace"
+                  font-size="9"
+                  fill="#059669"
+                  text-anchor="middle"
+                >
+                  Commit
+                </text>
+              </svg>
+            </div>
+            <div class="card-body">
+              <div class="card-header-row">
+                <span class="card-title">Panel & View Creation Sequence</span>
+                <span class="diagram-level-tag">L2 Flow</span>
+              </div>
+              <p class="card-desc">
+                8-step stepper tracing command dispatch, ViewId allocation,
+                LayoutTree binary node insertion, and layout provider geometry
+                commit.
+              </p>
+              <div class="card-footer">
+                <a
+                  href="panel-create-flow.html"
+                  class="btn-text"
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                  >Open Stepper ↗</a
+                >
+                <button
+                  class="btn-text"
+                  onclick="
+                    openModal('panel-create-flow.html', 'Panel Creation Flow')
+                  "
+                  style="height: 28px; padding: 0 10px; font-size: 11px"
+                >
+                  Quick View 👁
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- Modal for Embedded Viewer -->
+      <div class="diagram-modal" id="diagram-modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <span style="font-weight: 700; font-size: 14px" id="modal-title"
+              >Interactive Diagram Viewer</span
+            >
+            <button class="btn-icon" onclick="closeModal()">✕</button>
+          </div>
+          <div class="modal-body">
+            <iframe id="modal-iframe" src="about:blank"></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      function filterCategory(cat) {
+        document.querySelectorAll(".filter-chip").forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.cat === cat);
+        });
+        document.querySelectorAll(".diagram-card").forEach((card) => {
+          if (cat === "all" || card.dataset.category === cat) {
+            card.style.display = "flex";
+          } else {
+            card.style.display = "none";
+          }
+        });
+      }
+
+      function filterGallery(query) {
+        const q = (query || "").trim().toLowerCase();
+        document.querySelectorAll(".diagram-card").forEach((card) => {
+          const text = card.textContent.toLowerCase();
+          const kw = (card.dataset.keywords || "").toLowerCase();
+          if (!q || text.includes(q) || kw.includes(q)) {
+            card.style.display = "flex";
+          } else {
+            card.style.display = "none";
+          }
+        });
+      }
+
+      function toggleHubTheme() {
+        const current =
+          document.documentElement.getAttribute("data-theme") || "dark";
+        const next = current === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", next);
+        localStorage.setItem("bitty-diagram-theme", next);
+      }
+
+      function openModal(url, title) {
+        document.getElementById("modal-title").textContent = title;
+        document.getElementById("modal-iframe").src = url;
+        document.getElementById("diagram-modal").classList.add("open");
+      }
+
+      function closeModal() {
+        document.getElementById("diagram-modal").classList.remove("open");
+        document.getElementById("modal-iframe").src = "about:blank";
+      }
+
+      document
+        .getElementById("diagram-modal")
+        .addEventListener("click", (e) => {
+          if (e.target.id === "diagram-modal") closeModal();
+        });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeModal();
+      });
+    </script>
+  </body>
+</html>

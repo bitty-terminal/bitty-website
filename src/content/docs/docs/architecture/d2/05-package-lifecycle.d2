@@ -1,0 +1,203 @@
+# docs/architecture/d2/05-package-lifecycle.d2 — L2 package lifecycle and integrity chain
+# Source of truth: ../glossary.yaml
+# Visual rules: rect=module/crate, rounded=panel/capability, dashed=boundary/sandbox, solid=call/depends, dashed=event/async
+# Levels: L1 store + L2 lifecycle flow
+# To regenerate SVG: d2 05-package-lifecycle.d2 ../final/05-package-lifecycle.svg
+
+direction: right
+
+# --- Sources ---
+sources: {
+  label: "Source classes — provenance separation"
+  style.stroke-dash: 3
+  style.fill: "#fefce8"
+  bundled: {
+    label: "bundled\n+ generation digest"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  registry: {
+    label: "registry\n+ origin / digest H-A"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  git: {
+    label: "git\nURL + revision + digest"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  local: {
+    label: "local-path\npath + digest\nnever registry provenance"
+    shape: rectangle
+    style.border-radius: 8
+    style.stroke-dash: 2
+  }
+}
+
+# --- Lifecycle states ---
+lifecycle: {
+  label: "Lifecycle — one atomic switch"
+  style.stroke-dash: 3
+  style.fill: "#eff6ff"
+  discovered: {
+    label: "discovered\nID/version declared"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  fetched: {
+    label: "fetched\nquarantine + framing budget"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  verified: {
+    label: "verified\nfull chain passed"
+    shape: rectangle
+    style.border-radius: 8
+    style.fill: "#ecfdf5"
+  }
+  staged: {
+    label: "staged\nin store, not active"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  activated: {
+    label: "activated\natomic switch"
+    shape: rectangle
+    style.border-radius: 8
+    style.fill: "#ecfdf5"
+    style.stroke-width: 2
+  }
+  retained: {
+    label: "retained\nbounded rollback N=2"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+discovered: lifecycle.discovered
+fetched: lifecycle.fetched
+verified: lifecycle.verified
+staged: lifecycle.staged
+activated: lifecycle.activated
+retained: lifecycle.retained
+
+# --- Integrity chain ---
+chain: {
+  label: "Integrity Chain — same for every source type"
+  style.stroke-dash: 3
+  style.fill: "#fefce8"
+  fetch_framing: {
+    label: "1 fetch framing\nsize/time budget"
+    shape: rectangle
+  }
+  checksum: {
+    label: "2 artifact checksum\nH-A vs lock"
+    shape: rectangle
+  }
+  manifest_val: {
+    label: "3 manifest validation\nbounded lists"
+    shape: rectangle
+  }
+  hash_binding: {
+    label: "4 hash binding\nH-B canonical form"
+    shape: rectangle
+  }
+  cap_diff: {
+    label: "5 capability diff\nblocks silent increase"
+    shape: rectangle
+    style.fill: "#fee2e2"
+  }
+  compat: {
+    label: "6 compat check\nplugin-api / bitty range"
+    shape: rectangle
+  }
+  store_commit: {
+    label: "7 store commit\ndigests + lock persist"
+    shape: rectangle
+  }
+}
+
+# --- Publisher trust ---
+trust: {
+  label: "Publisher Trust"
+  style.stroke-dash: 3
+  va: {
+    label: "V-A pinning + checksums\nP0 floor"
+    shape: rectangle
+    style.border-radius: 8
+    style.fill: "#ecfdf5"
+  }
+  vb: {
+    label: "V-B TOFU pin\nP1 candidate"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  vc: {
+    label: "V-C signed releases\nP2 alongside registry"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+# --- Store and activation ---
+store: {
+  label: "Package Store\ncontent-addressed"
+  shape: rectangle
+}
+lockfile: {
+  label: "Lockfile\nH-A / H-B / Merkle H-C"
+  shape: rectangle
+  style.border-radius: 8
+}
+resolver: {
+  label: "Resolver\npure (manifest,lock,index)\none version per ID"
+  shape: rectangle
+}
+activation_txn: {
+  label: "Activation TXN\npreflight → quiesce → commit → wake → confirm"
+  shape: rectangle
+  style.border-radius: 8
+  style.stroke-width: 2
+}
+
+# --- Edges: source to lifecycle ---
+sources.bundled -> discovered: ""
+sources.registry -> discovered: ""
+sources.git -> discovered: ""
+sources.local -> discovered: ""
+discovered -> fetched: ""
+fetched -> verified: "" {
+  style.stroke-dash: 2
+}
+verified -> staged: ""
+staged -> activated: "atomic pointer\nrename/symlink"
+activated -> retained: "history"
+retained -> staged: "rollback = select generation" {
+  style.stroke-dash: 3
+}
+
+# Chain order
+chain.fetch_framing -> chain.checksum -> chain.manifest_val -> chain.hash_binding -> chain.cap_diff -> chain.compat -> chain.store_commit
+chain.store_commit -> verified: ""
+chain.cap_diff -> trust.va: ""
+trust.va -> trust.vb: "staged"
+trust.vb -> trust.vc: ""
+fetched -> chain.fetch_framing: "enter chain"
+store -> chain.store_commit: "commit"
+lockfile -> chain.checksum: "H-A"
+lockfile -> chain.hash_binding: "H-B"
+resolver -> lockfile: "deterministic\nlexical + SemVer"
+resolver -> chain.compat: "constraint grammar\n^ ~ comparators"
+activation_txn -> staged: "preflight+quiesce"
+activation_txn -> activated: "commit"
+activation_txn -> retained: "confirm → record"
+store -> staged: "store links"
+lockfile -> retained: "generation entry\nimmutable"
+
+# Note
+note: {
+  label: "No install-time code execution. Updates never silently add capabilities. Bundled / local-path use degenerate records, not exemptions. Crash during commit leaves exactly one generation active. See package-lifecycle-rfc and glossary.yaml."
+  shape: rectangle
+  style.fill: "#f8fafc"
+  style.stroke-dash: 2
+}

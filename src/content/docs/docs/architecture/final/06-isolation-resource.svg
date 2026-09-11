@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-dashed" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#94a3b8" />
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <style>
+    .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+    .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; fill: #94a3b8; }
+    .badge { font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 600; fill: #38bdf8; }
+    .group-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+    .node-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #f8fafc; text-anchor: middle; }
+    .node-sub { font-family: "JetBrains Mono", monospace; font-size: 10px; fill: #94a3b8; text-anchor: middle; }
+    .node-title-dark { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #0f172a; text-anchor: middle; }
+    .node-sub-dark { font-family: "JetBrains Mono", monospace; font-size: 10px; fill: #334155; text-anchor: middle; }
+    .edge-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; fill: #94a3b8; text-anchor: middle; }
+    .btn-link { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 600; fill: #ffffff; }
+  </style>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#0f172a" />
+  
+  <!-- Header Bar -->
+  <rect x="0" y="0" width="1200" height="65" fill="#1e293b" />
+  <text x="30" y="32" class="title">L1 Isolation Domains &amp; L3 Resource Ceilings</text>
+  <text x="30" y="52" class="subtitle">Three isolated security domains (PTY child, Plugin runtime, IPC/MCP), 10 quantitative resource ceilings (RC-1 to RC-10), and 4 failure semantics (FS-1 to FS-4).</text>
+
+  <!-- Interactive Link Banner -->
+  <a href="../interactive/06-isolation-resource.html" target="_blank">
+    <rect x="910" y="16" width="260" height="34" rx="6" fill="#0284c7" />
+    <text x="1040" y="38" class="btn-link" text-anchor="middle">⚡ Open Interactive HTML Model ↗</text>
+  </a>
+  <g id="group-ir_d1_box">
+    <rect x="50" y="100" width="340" height="440" rx="10" fill="rgba(202, 138, 4, 0.05)" stroke="#ca8a04" stroke-width="1.5" stroke-dasharray="6,4" />
+    <text x="64" y="124" class="group-label">IR-D1: PTY Child Process Domain</text>
+  </g>
+  <g id="group-ir_d2_box">
+    <rect x="420" y="100" width="360" height="440" rx="10" fill="rgba(37, 99, 235, 0.05)" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="6,4" />
+    <text x="434" y="124" class="group-label">IR-D2: Plugin Runtime Sandbox</text>
+  </g>
+  <g id="group-ir_d3_box">
+    <rect x="810" y="100" width="340" height="440" rx="10" fill="rgba(219, 39, 119, 0.05)" stroke="#db2777" stroke-width="1.5" stroke-dasharray="6,4" />
+    <text x="824" y="124" class="group-label">IR-D3: IPC &amp; MCP Interface Domain</text>
+  </g>
+  <line x1="220" y1="165" x2="220" y2="201" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="175" y="169" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="220" y="179" class="edge-label">fork &amp; pty</text>
+  <line x1="220" y1="232.5" x2="220" y2="271" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="175" y="237.75" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="220" y="247.75" class="edge-label">stdout stream</text>
+  <line x1="220" y1="300" x2="220" y2="401" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="175" y="336.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="220" y="346.5" class="edge-label">on overflow</text>
+  <line x1="600" y1="165" x2="600" y2="441" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="555" y="289" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="600" y="299" class="edge-label">on timeout</text>
+  <line x1="600" y1="225" x2="600" y2="441" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="555" y="319" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="600" y="329" class="edge-label">on OOM</text>
+  <line x1="600" y1="345" x2="600" y2="441" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="555" y="379" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="600" y="389" class="edge-label">on queue full</text>
+  <line x1="980" y1="165" x2="980" y2="196" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="935" y="166.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="980" y="176.5" class="edge-label">authenticate</text>
+  <line x1="980" y1="225" x2="980" y2="256" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="935" y="226.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="980" y="236.5" class="edge-label">throttle</text>
+  <line x1="980" y1="285" x2="980" y2="316" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="935" y="286.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="980" y="296.5" class="edge-label">format</text>
+  <line x1="980" y1="285" x2="980" y2="376" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="935" y="316.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="980" y="326.5" class="edge-label">on error</text>
+  <g id="node-d1_master" filter="url(#shadow)">
+    <a href="../interactive/06-isolation-resource.html" target="_blank">
+      <rect x="70" y="140" width="300" height="50" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="220" y="162" class="node-title">PTY Master</text>
+    <text x="220" y="176" class="node-sub">Core-Owned File Descriptor</text>
+  </g>
+  <g id="node-d1_child" filter="url(#shadow)">
+    <a href="../interactive/06-isolation-resource.html" target="_blank">
+      <rect x="70" y="205" width="300" height="55" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5" />
+    </a>
+    <text x="220" y="229.5" class="node-title-dark">Child Shell Process</text>
+    <text x="220" y="243.5" class="node-sub-dark">Isolated pgid &amp; Session</text>
+  </g>
+  <g id="node-rc7" filter="url(#shadow)">
+    <a href="../interactive/06-isolation-resource.html" target="_blank">
+      <rect x="70" y="275" width="300" height="50" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.5" />
+    </a>
+    <text x="220" y="297" class="node-title-dark">RC-7: Burst Window Ceiling</text>
+    <text x="220" y="311" class="node-sub-dark">8 MiB Buffer Limit</text>
+  </g>
+  <g id="node-rc8" filter="url(#shadow)">
+    <a href="../interactive/06-isolation-resource.html" target="_blank">
+      <rect x="70" y="340" width="300" height="50" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="220" y="362" class="node-title">RC-8: Notification Coalescing</text>
+    <text x="220" y="376" class="node-sub">10 / sec Coalesced</text>
+  </g>
+  <g id="node-fs3_d1" filter="url(#shadow)">
+    <a href="../interactive/06-isolation-resource.html" target="_blank">
+      <rect x="70" y="405" width="300" height="50" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="220" y="427" class="node-title">FS-3 Containment</text>
+    <text x="220" y="441" class="node-sub">PTY failure terminates only child</text>
+  </g>
+  <g id="node-rc1" filter="url(#shadow)">
+    <a href="../interactive/06-isolation-resource.html" target="_blank">
+      <rect x="450" y="140" width="300" height="50" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5" />
+    </a>
+    <text x="600" y="162" class="node-title-dark">RC-1: CPU Instruction Budget</text>
+    <text x="600" y="176" class="node-sub-dark">10^7 Fuel (~50ms wall clock)</text>
+  </g>
+  <g id="node-rc2" filter="url(#shadow)">
+    <a href="../interactive/06-isolation-resource.html" target="_blank">
+      <rect x="450" y="200" width="300" height="50" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5" />
+    </a>
+    <text x="600" y="222" class="node-title-dark">RC-2: Memory Ceiling</text>
+    <text x="600" y="236" class="node-sub-dark">32 MiB per VM Instance</text>
+  </g>
+  <g id="node-rc4" filter="url(#shadow)">
+    <a href="../interactive/06-isolation-resource.html" target="_blank">
+      <rect x="450" y="260" width="300" height="50" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="600" y="282" class="node-title">RC-4: Concurrency Budget</text>
+    <text x="600" y="296" class="node-sub">64 Tasks / 32 Timers</text>
+  </g>
+  <g id="node-rc5" filter="url(#shadow)">
+    <a href="../interactive/06-isolation-resource.html" target="_blank">
+      <rect x="450" y="320" width="300" height="50" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="600" y="342" class="node-title">RC-5: Event Queue Ceiling</text>
+    <text x="600" y="356" class="node-sub">64 PerSub / 1024 PerPlugin</text>
+  </g>
+  <g id="node-rc6" filter="url(#shadow)">
+    <a href="../interactive/06-isolation-resource.html" target="_blank">
+      <rect x="450" y="380" width="300" height="50" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="600" y="402" class="node-title">RC-6: File Descriptor Limit</text>
+    <text x="600" y="416" class="node-sub">0 Direct, 16 Capability FDs</text>
+  </g>
+  <g id="node-fs2_ladder_node" filter="url(#shadow)">
+    <a href="../interactive/06-isolation-resource.html" target="_blank">
+      <rect x="450" y="445" width="300" height="50" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="600" y="467" class="node-title">FS-2 Fault Ladder</text>
+    <text x="600" y="481" class="node-sub">Refuse -> Terminate -> Suspend</text>
+  </g>
+  <g id="node-d3_sock" filter="url(#shadow)">
+    <a href="../interactive/06-isolation-resource.html" target="_blank">
+      <rect x="830" y="140" width="300" height="50" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="980" y="162" class="node-title">Unix Socket / Named Pipe</text>
+    <text x="980" y="176" class="node-sub">0600 File Permissions</text>
+  </g>
+  <g id="node-d3_scopes" filter="url(#shadow)">
+    <a href="../interactive/06-isolation-resource.html" target="_blank">
+      <rect x="830" y="200" width="300" height="50" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="980" y="222" class="node-title">Scope-Based Authorization</text>
+    <text x="980" y="236" class="node-sub">inspect / input / manage</text>
+  </g>
+  <g id="node-rc9" filter="url(#shadow)">
+    <a href="../interactive/06-isolation-resource.html" target="_blank">
+      <rect x="830" y="260" width="300" height="50" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="980" y="282" class="node-title">RC-9: IPC Request Ceiling</text>
+    <text x="980" y="296" class="node-sub">100 req/s, 1 MiB payload</text>
+  </g>
+  <g id="node-rc10" filter="url(#shadow)">
+    <a href="../interactive/06-isolation-resource.html" target="_blank">
+      <rect x="830" y="320" width="300" height="50" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="980" y="342" class="node-title">RC-10: MCP Response Bounding</text>
+    <text x="980" y="356" class="node-sub">256 KiB Streaming Chunks</text>
+  </g>
+  <g id="node-fs1_txn" filter="url(#shadow)">
+    <a href="../interactive/06-isolation-resource.html" target="_blank">
+      <rect x="830" y="380" width="300" height="50" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="980" y="402" class="node-title">FS-1 Transactional Denial</text>
+    <text x="980" y="416" class="node-sub">No partial mutation on error</text>
+  </g>
+</svg>

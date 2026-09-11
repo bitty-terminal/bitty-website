@@ -1,0 +1,24 @@
+%% docs/architecture/mermaid/plugin-load-flow.mmd — L2 plugin load flow
+%% Source of truth: ../glossary.yaml
+%% Levels: L1 plugin platform across L2 lifecycle
+flowchart TD
+  A[Discovery\nscan package store\nread bitty-plugin.toml] --> B[Parse + validate\n<=256 KiB, bounded lists\nunknown keys reject\nfz targets]
+  B --> C{Manifest valid?}
+  C -->|no| D[Reject before graph]
+  C -->|yes| E[Resolve dependency graph\ndeterministic, lexical + SemVer\none version per ID\ncycles fail]
+  E --> F{Compat?\nbitty + plugin-api range}
+  F -->|no| G[Resolver error\nreport conflict edges]
+  F -->|yes| H[Capability diff\nvs grant record per hash]
+  H --> I{New capabilities?}
+  I -->|yes| J[Block until explicit approval\nshow old vs new identity]
+  I -->|no| K[Reserve lazy resources\ncommands / events / claims / services\n worst-case budgets]
+  J --> K
+  K --> L[Host admission\nGlobal 8192 events/2MiB hard-gate\n DropOldest or DropNewest]
+  L --> M[Create VM per PluginId + Generation\npiccolo Fuel 10^7 / wall 50ms\n32 MiB, restricted stdlib]
+  M --> N[Register commands, events, services\nown timers/tasks/queues\nRC-4 64/32, RC-5 strict]
+  N --> O[Event delivery\nPerSub 64 strict\nPerPlugin 1024/256KiB evict or refuse\nbounded observation]
+  O --> P{Callback exceeds budget?}
+  P -->|yes| Q[FS-2 ladder\nrefuse → terminate → suspend → disable\nattributed record]
+  P -->|no| R[Host API call\ncapability-checked, async/deadlined]
+  R --> S[Result or denial\nFS-1 transactional]
+  Q --> T[bitty --safe still loads]

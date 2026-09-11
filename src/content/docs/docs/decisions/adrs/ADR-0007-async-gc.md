@@ -31,6 +31,13 @@ owned by the implementing task. Frontmatter `status` is `accepted` per the
 repository metadata schema; document status is Accepted. Lifecycle is
 `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`.
 
+- Reconciliation note (ADR 0009, 2026-09-11): the Lua-side spellings for the
+  host-owned task and timer registries are `bitty.tasks.spawn` /
+  `bitty.tasks.cancel` and `bitty.timers.create` / `bitty.timers.cancel`; the
+  bare `task.spawn` and `timer.create` spellings used in this ADR are internal
+  concept labels, not Lua identifiers. Caps, refusal codes, generation
+  ownership, and queue interactions are unchanged
+  ([LUA-OQ-9](ADR-0009-plugin-api-v1-lua-surface.md#lua-oq-9-tasks-and-timers)).
 - Deciders: project initiator (DEC-001), security-auditor persona (audit gate
   per Lua Runtime RFC security review and R-007 and R-018 and T-07 and T-14),
   `bitty-lua` and `bitty-plugin-host` maintainers (CTX-0054).
@@ -321,7 +328,7 @@ following evidence was recorded for acceptance on 2026-08-29.
 - [ ] **E1 — Send boundary proof:** compile-fail and test diffs proving VMs are `!Send`/`!Sync`, host handles are `Send`, and the async boundary matches the table above.
 - [ ] **E2 — Host-call proof:** Lua script matrix where a Config VM host call that exceeds RC-1 suspends and a plugin call that returns a handle completes without blocking the host tick, both with attribution.
 - [ ] **E3 — Task and timer cap proof:** `bitty-plugin-host` harness exercising 64 tasks/32 timers per plugin with refusal and reclaim after dispose (PB-3 shape).
-- [ ] **E4 — GC tuning proof:** matrix exercising `mlua` pause/stepmul and `piccolo` arena debt pacing with widened-tuning comparison and `VmBudgetSnapshot` counters stored under `tmp/evidence/`.
+- [ ] **E4 — GC tuning proof:** matrix exercising `mlua` pause/stepmul and `piccolo` arena debt pacing with widened-tuning comparison and `VmBudgetSnapshot` counters stored under `recordings/evidence/`.
 - [ ] **E5 — Config VM PB-1/PB-2 charging proof:** startup bench `hyperfine` plus RSS sample proving PB-1 p50/p99 and PB-2 80 MiB with Config VM accounted, and fail-closed path exercised.
 - [ ] **E6 — Reload and cache isolation proof:** ten-cycle reload test with per-generation `package.loaded` assertions and FS-6 disposal verification, plus cross-tree `require` denial still green.
 - [ ] **E7 — Supply-chain and unsafe proof:** `cargo vet`, `cargo audit`, `cargo geiger` clean or with recorded waivers for the pinned line from ADR 0005; no new dependency widening.

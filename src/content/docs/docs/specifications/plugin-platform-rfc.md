@@ -153,8 +153,10 @@ plugin-api = "^1.0"           # Plugin API range; v1 line is ^1.0
 [dependencies]                # optional; plugin dependencies by ID
 "xuepoo.gitcore" = ">=2.0"
 
-[services.provided]           # optional; interface name -> version
-"markdown.render" = "1.0"
+[services.provided]           # optional; interface name -> version or table
+"markdown.render" = "1.0"     # string form (version only)
+# Table form (ADR 0009); required for schema-validating consumers:
+# "markdown.render" = { version = "1.0", args_schema = {...}, result_schema = {...} }
 
 [capabilities]                # requested authorities; absent = none
 terminal.semantic-read = true
@@ -166,6 +168,8 @@ paths = ["~/Documents/**/*.md"]
 
 [lazy]                        # static trigger declaration; enables lazy load
 commands = ["xuepoo.markdown:toggle"]
+# Table form (ADR 0009); lazy help/completion without a VM:
+# commands = [{ id = "xuepoo.markdown:toggle", args_schema = {...}, result_schema = {...} }]
 events = ["terminal.cwd-changed"]
 claims = ["tabline"]
 ```
@@ -191,6 +195,12 @@ Accepted validation rules:
    package, or a compromised update can supply one). Schema parsers therefore
    get fuzz targets alongside VT/config parsers per the P0 testing row of the
    [security overview](../security/overview.md).
+6. The `[services.provided]` and `[lazy].commands` entries accept both the
+   accepted string form and the table form with bounded JSON Schema metadata
+   (`args_schema`/`result_schema`) recorded by
+   [ADR 0009](../decisions/adrs/ADR-0009-plugin-api-v1-lua-surface.md); schema
+   fragments are bounded per the
+   [Plugin API v1 Lua Surface RFC](plugin-api-v1-lua-surface-rfc.md).
 
 Dependency resolution evaluates the full graph before activation: cycles are
 rejected, incompatible constraints are resolver errors, and lazy plugins
@@ -209,9 +219,13 @@ event time. This adopts the determinism and ownership properties from the
   with every Plugin API of that build.
 - Plugin API v1 is identified as `1.x` with SemVer: minor versions are additive
   only; removing or narrowing an existing surface requires a major version.
-  The authoritative definition lives in the core repository and the SDK is
-  generated output, per
-  [core boundaries](../architecture/core-boundaries.md#extension-api-composition).
+  Authority is split three ways per
+  [ADR 0009](../decisions/adrs/ADR-0009-plugin-api-v1-lua-surface.md) and
+  [core boundaries](../architecture/core-boundaries.md#extension-api-composition):
+  the accepted contract text is the
+  [Plugin API v1 Lua Surface RFC](plugin-api-v1-lua-surface-rfc.md) in the
+  `bitty-docs` corpus, the `bitty` repository owns the implementation and parity
+  evidence, and the SDK is generated output.
 
 ## Capability model (OQ-012, part 2)
 
@@ -292,19 +306,25 @@ pattern the corpus already accepts for project configuration).
 
 ### Host namespaces
 
-Illustrative shapes only; final spelling belongs to the core repository and the
-generated SDK:
+The v1 spellings and signatures are accepted in the
+[Plugin API v1 Lua Surface RFC](plugin-api-v1-lua-surface-rfc.md), ratified
+through [ADR 0009](../decisions/adrs/ADR-0009-plugin-api-v1-lua-surface.md);
+nothing here is implemented yet:
 
 ```lua
--- Candidate API shape; nothing here is implemented.
-bitty.commands.register(def)          -- composable/unique command registration
-bitty.events.subscribe(name, handler) -- manifest-declared event types only
-bitty.ui.mount(slot, component)       -- declarative primitives, semantic slots
-bitty.services.get(iface, {version = ">=2"})
-bitty.terminal.snapshot({scope = "semantic"})  -- read-only, capability-checked
-bitty.settings.get/set(schema_path)   -- typed settings owned by plugins.<id>
-bitty.store.get/set(key, value)       -- small quota'd key-value state
-bitty.notify.show(payload)            -- via platform.notify
+bitty.commands.register(def)           -- composable/unique command registration
+bitty.events.subscribe(name, handler)  -- manifest-declared event types only
+bitty.keymaps.suggest(def)             -- suggestion only; configured precedence
+bitty.ui.mount(slot, component)        -- declarative primitives, semantic slots
+bitty.ui.update(handle, component)     -- same block_id, incremented version
+bitty.services.get(iface, opts)        -- version requirement, pre-activation check
+bitty.services.provide(iface, impl)    -- provider side, schema declared in manifest
+bitty.terminal.snapshot(opts)          -- read-only semantic, capability-checked
+bitty.settings.get/set(schema_path)    -- typed settings owned by plugins.<id>
+bitty.store.get/set(key, value)        -- quota'd key-value state, RC-11
+bitty.notify.show(payload)             -- via platform.notify
+bitty.tasks.spawn/cancel               -- RC-4 capped host tasks
+bitty.timers.create/cancel             -- RC-4 capped one-shot timers
 ```
 
 Accepted v1 rules per namespace:
@@ -338,7 +358,10 @@ Accepted v1 rules per namespace:
    through the typed configuration system (OQ-010 owns merge/reload semantics);
    there is no direct filesystem configuration access in v1.
 7. **Storage.** `bitty.store` is a quota-bounded key-value area scoped by
-   plugin ID and generation, persisted under the platform data directory.
+   plugin ID (not by generation) and persisted under the platform data
+   directory; values are JSON-compatible bounded data with quota `RC-11`, and
+   the store survives suspension, reload, and generation disposal
+   ([Plugin API v1 Lua Surface RFC](plugin-api-v1-lua-surface-rfc.md)).
    Filesystem access beyond this requires explicit `fs.*` grants.
 
 ### Terminal access in v1
@@ -379,11 +402,14 @@ Declared -> Resolved -> Registered -> Activated -> (Suspended) -> Disposed
                                      +------ reload: gen N+1 <--+
 ```
 
-- Every resource (command, handler, timer, task, UI node, store handle) is
-  owned by `(PluginId, generation)`.
+- Every resource (command, handler, timer, task, UI node) is owned by
+  `(PluginId, generation)`. Persisted `bitty.store` data is not generation
+  state: it is scoped to the plugin ID and survives generation disposal
+  ([ADR 0009](../decisions/adrs/ADR-0009-plugin-api-v1-lua-surface.md#lua-oq-6-storage-semantics)).
 - Reload disposes all generation N resources before activating N+1; the old
   generation cannot observe or cancel N+1 except through host-mediated
-  handoff of persisted state.
+  handoff of persisted state, and store writes from generation N are committed
+  synchronously before N is disposed.
 - Handler errors are attributed and isolated: first violations log, sustained
   violations (count/threshold mechanics belong to OQ-014) suspend the handler
   and surface in `bitty plugin doctor`; the host never crashes with the plugin.
@@ -391,7 +417,9 @@ Declared -> Resolved -> Registered -> Activated -> (Suspended) -> Disposed
   minimal built-in configuration (invariant 10, R-009). Plugin absence can
   never prevent boot.
 - Suspension (user- or policy-initiated) detaches handlers and releases CPU
-  tasks while retaining grants and stored state; disposal releases both.
+  tasks while retaining grants and stored state; disposal releases grants and
+  generation state, while persisted store data survives until uninstall or an
+  explicit user purge.
 
 ## Event pipeline (OQ-013)
 

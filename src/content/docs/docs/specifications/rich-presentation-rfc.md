@@ -223,6 +223,122 @@ Notes:
   window; it follows the isolation budget floor and maximum policy in the
   [Isolation Resource RFC](isolation-resource-rfc.md).
 
+### Kitty chunked-intake implementation evidence (bitty #376)
+
+Status: **experimental review evidence only.** The intake milestone merged in
+`bitty` `1fc6294` (CTX-0214, PR #376, `crates/bitty-rich/src/kitty.rs`).
+It records exactly what that change implements; it changes no accepted ceiling
+above, grants no new capability, and does not promote this RFC beyond
+`accepted`.
+
+What merged, exactly:
+
+1. Chunked exact-byte assembly. The `m=` chunk state machine maps the first
+   `m=1` chunk (which carries the `G` params) to `begin_chunk`, middle `m=1`
+   chunks to `append_chunk` with `more = true` (reporting `NeedMore` with the
+   buffered byte count), the final `m=0` chunk to `append_chunk` with
+   `more = false` (reporting `Completed` with the new placeholder id and total
+   length), and a lone `m=0` transmission to the single-shot `ingest` path.
+   Chunked transmissions assemble their exact bytes (`assembled == true`).
+2. FIFO evict-to-fit under a 320,000,000-byte ledger. The ledger cap
+   (`KITTY_LEDGER_MAX_BYTES = 320 * 1000 * 1000`, decimal, Ghostty
+   `total_limit` parity, configurable down via `with_ledger_cap`) covers
+   stored plus in-flight bytes. Admission evicts the oldest entries first
+   (Ghostty "prune prior to reserving" pattern); at most one transmission is
+   in flight per ledger, and at most 64 placeholders are retained (mirroring
+   `IMAGE_STORE_MAX_ENTRIES`). A single transmission larger than the cap is
+   rejected.
+3. Single-shot truncation unchanged. The `ingest` path keeps its historical
+   deterministic truncation at `KITTY_MAX_PAYLOAD_BYTES` (4096 bytes,
+   `assembled == false`) and is otherwise unchanged.
+4. Fail-closed outcomes. `append_chunk` with no open stream fails as `Orphan`
+   with state unchanged; `begin_chunk` while a stream is open fails as
+   `AlreadyInProgress` with the open stream kept; growth past the ledger cap
+   fails as `Oversize` with the in-flight stream dropped and nothing stored.
+   Length checks run before any buffer growth, so a hostile chunk cannot force
+   an over-cap allocation.
+5. Rendering still deferred. No base64 decode, no pixel allocation, no
+   placement calculation, no animation, and no renderer coupling occur in this
+   milestone; every placeholder is inert for rendering, and no `APC G`/`DCS`
+   parser integration is claimed.
+
+Explicit non-changes: IMG-1 through IMG-9 above are untouched. The
+320,000,000-byte intake ledger is a pre-decode intake bound on raw payload
+bytes; it is not the IMG-4 256 MiB aggregate decoded-store budget and does not
+redefine it. The decoding pipeline, animation lifecycle, and renderer contract
+sections of this RFC continue to describe the accepted target, not shipped
+behavior.
+
+### Kitty decode, placement, and present-path implementation evidence
+
+Status: **experimental review evidence only.** This subsection records the
+Kitty graphics pipeline merged in `bitty` `origin/main` (read-only at
+`1f31435`, verified via `merge-base --is-ancestor`). It changes no accepted
+ceiling above, grants no new capability, and does not promote this RFC beyond
+`accepted`. Sixel and iTerm2 inline images remain unimplemented.
+
+What merged, exactly:
+
+1. **Payload decode** (`bitty` #425 `0cc82de`, CTX-0247): assembled Kitty
+   payloads decode to RGBA8 for `f=100` PNG (every PNG color type normalized
+   through `normalize_to_color8 | ALPHA`), `f=24` raw RGB, and `f=32` raw
+   RGBA; every other `f=` value is rejected, never guessed. Bounds are checked
+   with checked arithmetic before allocation: `8192` px per side, `4096 x 4096`
+   px area, `64 MiB` RGBA. Fail-closed on every malformed or truncated input;
+   prefix-invalid inputs (including every prefix of a valid PNG) error
+   deterministically; deterministic pseudo-random fuzz-shape tests cover
+   garbage and truncated inputs. Animated PNG contributes only its first
+   frame (animation stays deferred).
+2. **APC `G` parser wiring and base64 unwrap** (`bitty` #431 `c1d8243`,
+   CTX-0255/CTX-0256, closes `bitty` #430): the VT parser routes Kitty `APC G`
+   transmissions into the intake ledger and unwraps base64, so real PTY output
+   (for example `chafa` kitty format) reaches decode instead of being parsed
+   and discarded.
+3. **Placement and CPU composite** (`bitty` #427 `bd15d94`, CTX-0248):
+   decoded bitmaps are stored in a bounded layer (`64` images, `256 MiB`
+   decoded bytes, oldest-first eviction), bound to cursor-anchored cell rects
+   (`c`/`r` spans or pixel-derived), clamped to the viewport, scroll-tied to
+   the grid, suppressed on the alternate screen, and composited topmost into
+   the present path (software CPU blend) without mutating grid truth. Actions
+   `absent`/`t`/`T` are mapped; delete/query/frame/put actions are stored but
+   never painted (fail closed).
+4. **Security-review hardening F1-F5** (CTX-0249 follow-ups): placement-cap
+   alignment plus per-frame blit budget (`<= 32` blits, `<= 64 MiB` padded
+   staging) and raster cache (`bitty` #465 `3d45924`, CTX-0252); real-GPU
+   fail-closed display gate plus saturating origin math (`bitty` #463
+   `6d4aa2f`, CTX-0253); per-pane origin binding so a background pane can
+   never paint over the focused pane's grid (`bitty` #467 `18c333a`,
+   CTX-0254, closes `bitty` #466).
+5. **Real-GPU texture upload and blit** (`bitty` #505 `fdd9e28`, CTX-0291,
+   closes `bitty` #504): the wgpu present path uploads admitted blits
+   (positional texture-slot reuse, padded staging rows, device texture-limit
+   check) and draws each one quad topmost, retiring the CTX-0253 skip gate;
+   malformed/oversized/over-budget blits stay fail-closed and counted in
+   `PresentStats`.
+6. **Live evidence:** `chafa` 1.18.2 kitty-format output decodes end-to-end
+   through the live PTY (runtime placement created). CTX-0250's original live
+   run found zero painted pixels only because the F3 gate skipped GPU blits;
+   the CTX-0291 live run on a wgpu window reports `images=1`,
+   `images_skipped=0` and red `0 -> 12710`, blue `0 -> 4148`, yellow
+   `0 -> 117` pixel counts (`recording/ctx-0291/`). The dedicated CTX-0250
+   live-verify task itself remains open; pixel painting is evidenced by
+   CTX-0291, not by closing CTX-0250.
+
+Recorded deviations and open items (not silently resolved):
+
+- The Kitty path admits `8192` px per side within the same `4096²`-pixel area
+  and `64 MiB` byte budget, while accepted IMG-2 states `4096 x 4096` px.
+  The memory ceiling is identical either way, but the side cap differs;
+  aligning the IMG-2 wording or tightening the Kitty path is a follow-up for
+  the owning RFC revision.
+- Images are topmost over same-origin cursor and selection fills
+  (cursor-on-top is follow-up), the decoded-image store is global FIFO (a
+  noisy origin can evict another origin's stored images; per-origin quotas are
+  follow-up), and scroll-region (`DECSTBM`) moves that do not grow scrollback
+  are not tracked (full-screen scroll is exact).
+- Animation, image delete/query actions, and the Sixel/iTerm2 adapters remain
+  unimplemented; no `Verified`/`Compatible` claim is made here.
+
 ### Animation lifecycle
 
 1. Animated images decode frames lazily and pace presentation at the render
@@ -407,6 +523,53 @@ Rules:
    plugin state. A stale plugin view never leaks into the indices.
 3. Exported content treats all terminal and rich text as untrusted display data;
    URIs and file paths inside export output are not auto-executed.
+
+### OTP-gated clipboard read implementation evidence (bitty #374)
+
+Status: **experimental review evidence only.** The read-grant milestone merged
+in `bitty` `63b01db` (CTX-0213, PR #374, closes `bitty` #373,
+`crates/bitty-rich/src/clipboard.rs`). It records exactly what that change
+implements; it changes no accepted ceiling above, grants no new capability, and
+does not promote this RFC beyond `accepted`. The accepted write-side `copy`
+contract in the table above is unchanged, and the alternate-screen policy below
+is unaffected.
+
+What merged, exactly:
+
+1. **Single-use read grants (Ghostty OTP pattern).** `ClipboardState::grant_read`
+   mints a `ClipboardReadToken` from 256 bits of OS entropy
+   (`CLIPBOARD_READ_TOKEN_LEN = 32`). `handle_action_with_token` redeems a
+   token atomically by removing the matching live grant before building the
+   outcome, so replaying it is denied. At most `16`
+   (`CLIPBOARD_MAX_OUTSTANDING_GRANTS`) grants are outstanding; minting beyond
+   that evicts the oldest grant, which becomes unredeemable. When OS entropy is
+   unavailable, minting returns no token instead of falling back to a
+   predictable value.
+2. **Scope-bound redemption.** A grant is minted for a `ClipboardGrantScope`
+   (a `u64` such as a pane or client id) and is redeemable only from the same
+   scope; a token presented from another scope is denied and left unconsumed.
+   Token comparison is constant-time, so it does not leak the stored grant
+   prefix through timing.
+3. **Default-deny preserved.** The token-less `handle_action` path never
+   consults or consumes grants: every read stays
+   `ClipboardOutcome::ReadDenied`. A read with no token, an unknown token, an
+   evicted token, or a scope mismatch is denied and leaves all grants
+   unconsumed; denied reads increment a counter.
+4. **Bounded captured-write history.** A granted read returns the most recently
+   captured OSC 52 write payload (bounded by
+   `CLIPBOARD_MAX_PAYLOAD_BYTES = 4096`, truncated at the cap), or empty data
+   when no write has been captured. History keeps at most `16` writes
+   (`CLIPBOARD_MAX_HISTORY`, oldest dropped), and grants never expose the
+   platform clipboard.
+5. **Debug redaction.** `ClipboardReadToken` and `OutstandingGrant` implement
+   `Debug` with token bytes replaced by `[redacted]`, and `ClipboardState`'s
+   `Debug` reports only the grant count, so formatting state cannot leak grant
+   entropy.
+
+Explicit non-changes: the UI that would ask the user for consent and the
+capability that would let an embedder mint grants remain outside this headless
+seam; OSC 52 read requests stay denied without a live, in-scope token; and no
+`Verified`/`Compatible` claim is made by this evidence.
 
 ## Structured transport and alternate-screen policy (OQ-016)
 

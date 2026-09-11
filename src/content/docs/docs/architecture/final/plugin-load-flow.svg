@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1130" height="470" viewBox="0 0 1130 470">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-dashed" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#94a3b8" />
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <style>
+    .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+    .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; fill: #94a3b8; }
+    .badge { font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 600; fill: #38bdf8; }
+    .group-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+    .node-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #f8fafc; text-anchor: middle; }
+    .node-sub { font-family: "JetBrains Mono", monospace; font-size: 10px; fill: #94a3b8; text-anchor: middle; }
+    .node-title-dark { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #0f172a; text-anchor: middle; }
+    .node-sub-dark { font-family: "JetBrains Mono", monospace; font-size: 10px; fill: #334155; text-anchor: middle; }
+    .edge-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; fill: #94a3b8; text-anchor: middle; }
+    .btn-link { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 600; fill: #ffffff; }
+  </style>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#0f172a" />
+  
+  <!-- Header Bar -->
+  <rect x="0" y="0" width="1130" height="65" fill="#1e293b" />
+  <text x="30" y="32" class="title">L2 Plugin Load Sequence &amp; Lifecycle Flow</text>
+  <text x="30" y="52" class="subtitle">Sequence from plugin discovery, manifest parsing, capability diff checking, user consent gate, Piccolo VM instantiation, to FS-2 budget monitoring.</text>
+
+  <!-- Interactive Link Banner -->
+  <a href="../interactive/plugin-load-flow.html" target="_blank">
+    <rect x="840" y="16" width="260" height="34" rx="6" fill="#0284c7" />
+    <text x="970" y="38" class="btn-link" text-anchor="middle">⚡ Open Interactive HTML Model ↗</text>
+  </a>
+  <line x1="160" y1="130" x2="316" y2="130" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="193" y="116" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="238" y="126" class="edge-label">read toml</text>
+  <line x1="430" y1="130" x2="586" y2="130" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="463" y="116" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="508" y="126" class="edge-label">validate</text>
+  <line x1="700" y1="130" x2="856" y2="130" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="733" y="116" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="778" y="126" class="edge-label">resolve</text>
+  <line x1="970" y1="130" x2="970" y2="226" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="925" y="164" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="970" y="174" class="edge-label">new perms</text>
+  <line x1="970" y1="130" x2="762.3076923076923" y2="226" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="821.1538461538462" y="164" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="866.1538461538462" y="174" class="edge-label">granted</text>
+  <line x1="970" y1="260" x2="814" y2="260" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="847" y="246" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="892" y="256" class="edge-label">user approved</text>
+  <line x1="700" y1="260" x2="544" y2="260" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="577" y="246" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="622" y="256" class="edge-label">trigger fired</text>
+  <line x1="430" y1="260" x2="274" y2="260" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="307" y="246" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="352" y="256" class="edge-label">init lua</text>
+  <line x1="160" y1="260" x2="160" y2="346" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="115" y="289" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="160" y="299" class="edge-label">event loop</text>
+  <g id="node-pl_disc" filter="url(#shadow)">
+    <a href="../interactive/plugin-load-flow.html" target="_blank">
+      <rect x="50" y="100" width="220" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="160" y="127" class="node-title">1. Discovery</text>
+    <text x="160" y="141" class="node-sub">Package Store Scan</text>
+  </g>
+  <g id="node-pl_parse" filter="url(#shadow)">
+    <a href="../interactive/plugin-load-flow.html" target="_blank">
+      <rect x="320" y="100" width="220" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="430" y="127" class="node-title">2. Parse Manifest</text>
+    <text x="430" y="141" class="node-sub">&lt;=256 KiB Schema Check</text>
+  </g>
+  <g id="node-pl_dep" filter="url(#shadow)">
+    <a href="../interactive/plugin-load-flow.html" target="_blank">
+      <rect x="590" y="100" width="220" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="700" y="127" class="node-title">3. Resolve Graph</text>
+    <text x="700" y="141" class="node-sub">Lexical + SemVer Sort</text>
+  </g>
+  <g id="node-pl_cap" filter="url(#shadow)">
+    <a href="../interactive/plugin-load-flow.html" target="_blank">
+      <rect x="860" y="100" width="220" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="970" y="127" class="node-title">4. Capability Diff</text>
+    <text x="970" y="141" class="node-sub">Manifest vs Grant Hash</text>
+  </g>
+  <g id="node-pl_consent" filter="url(#shadow)">
+    <a href="../interactive/plugin-load-flow.html" target="_blank">
+      <rect x="860" y="230" width="220" height="60" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5" />
+    </a>
+    <text x="970" y="257" class="node-title-dark">5. User Consent Gate</text>
+    <text x="970" y="271" class="node-sub-dark">Modal Approval</text>
+  </g>
+  <g id="node-pl_lazy" filter="url(#shadow)">
+    <a href="../interactive/plugin-load-flow.html" target="_blank">
+      <rect x="590" y="230" width="220" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="700" y="257" class="node-title">6. Lazy Reservations</text>
+    <text x="700" y="271" class="node-sub">Commands &amp; Triggers</text>
+  </g>
+  <g id="node-pl_vm" filter="url(#shadow)">
+    <a href="../interactive/plugin-load-flow.html" target="_blank">
+      <rect x="320" y="230" width="220" height="60" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5" />
+    </a>
+    <text x="430" y="257" class="node-title-dark">7. Instantiate VM</text>
+    <text x="430" y="271" class="node-sub-dark">Piccolo Generation N</text>
+  </g>
+  <g id="node-pl_sub" filter="url(#shadow)">
+    <a href="../interactive/plugin-load-flow.html" target="_blank">
+      <rect x="50" y="230" width="220" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="160" y="257" class="node-title">8. Register Subscriptions</text>
+    <text x="160" y="271" class="node-sub">Bounded Event Queues</text>
+  </g>
+  <g id="node-pl_monitor" filter="url(#shadow)">
+    <a href="../interactive/plugin-load-flow.html" target="_blank">
+      <rect x="50" y="350" width="220" height="60" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5" />
+    </a>
+    <text x="160" y="377" class="node-title-dark">9. Runtime Monitoring</text>
+    <text x="160" y="391" class="node-sub-dark">FS-2 Fault Ladder</text>
+  </g>
+</svg>

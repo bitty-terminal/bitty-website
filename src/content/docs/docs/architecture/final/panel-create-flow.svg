@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1130" height="430" viewBox="0 0 1130 430">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-dashed" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#94a3b8" />
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <style>
+    .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+    .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; fill: #94a3b8; }
+    .badge { font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 600; fill: #38bdf8; }
+    .group-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+    .node-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #f8fafc; text-anchor: middle; }
+    .node-sub { font-family: "JetBrains Mono", monospace; font-size: 10px; fill: #94a3b8; text-anchor: middle; }
+    .node-title-dark { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #0f172a; text-anchor: middle; }
+    .node-sub-dark { font-family: "JetBrains Mono", monospace; font-size: 10px; fill: #334155; text-anchor: middle; }
+    .edge-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; fill: #94a3b8; text-anchor: middle; }
+    .btn-link { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 600; fill: #ffffff; }
+  </style>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#0f172a" />
+  
+  <!-- Header Bar -->
+  <rect x="0" y="0" width="1130" height="65" fill="#1e293b" />
+  <text x="30" y="32" class="title">L2 Panel &amp; View Creation Sequence</text>
+  <text x="30" y="52" class="subtitle">Window allocation, Workspace compositor lookup, LayoutTree splitting, View allocation, and content binding (Terminal, Rich, Browser).</text>
+
+  <!-- Interactive Link Banner -->
+  <a href="../interactive/panel-create-flow.html" target="_blank">
+    <rect x="840" y="16" width="260" height="34" rx="6" fill="#0284c7" />
+    <text x="970" y="38" class="btn-link" text-anchor="middle">⚡ Open Interactive HTML Model ↗</text>
+  </a>
+  <line x1="160" y1="130" x2="316" y2="130" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="193" y="116" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="238" y="126" class="edge-label">dispatch</text>
+  <line x1="430" y1="130" x2="586" y2="130" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="463" y="116" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="508" y="126" class="edge-label">locate focused</text>
+  <line x1="700" y1="130" x2="856" y2="130" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="733" y="116" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="778" y="126" class="edge-label">content check</text>
+  <line x1="970" y1="130" x2="970" y2="226" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="925" y="164" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="970" y="174" class="edge-label">terminal</text>
+  <line x1="970" y1="130" x2="970" y2="306" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="925" y="204" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="970" y="214" class="edge-label">rich</text>
+  <line x1="970" y1="260" x2="814" y2="283.7037037037037" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="847" y="257.85185185185185" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="892" y="267.85185185185185" class="edge-label">bind TerminalId</text>
+  <line x1="970" y1="340" x2="814" y2="316.2962962962963" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="847" y="314.14814814814815" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="892" y="324.14814814814815" class="edge-label">bind RichBlock</text>
+  <line x1="700" y1="300" x2="544" y2="300" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="577" y="286" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="622" y="296" class="edge-label">recalculate</text>
+  <line x1="430" y1="300" x2="274" y2="300" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="307" y="286" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="352" y="296" class="edge-label">validate &amp; draw</text>
+  <g id="node-pc_req" filter="url(#shadow)">
+    <a href="../interactive/panel-create-flow.html" target="_blank">
+      <rect x="50" y="100" width="220" height="60" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5" />
+    </a>
+    <text x="160" y="127" class="node-title-dark">1. Command Request</text>
+    <text x="160" y="141" class="node-sub-dark">Split / New View</text>
+  </g>
+  <g id="node-pc_tree" filter="url(#shadow)">
+    <a href="../interactive/panel-create-flow.html" target="_blank">
+      <rect x="320" y="100" width="220" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="430" y="127" class="node-title">2. LayoutTree Lookup</text>
+    <text x="430" y="141" class="node-sub">Active Workspace</text>
+  </g>
+  <g id="node-pc_alloc_view" filter="url(#shadow)">
+    <a href="../interactive/panel-create-flow.html" target="_blank">
+      <rect x="590" y="100" width="220" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="700" y="127" class="node-title">3. Allocate ViewId</text>
+    <text x="700" y="141" class="node-sub">Fresh u64 Handle</text>
+  </g>
+  <g id="node-pc_branch" filter="url(#shadow)">
+    <a href="../interactive/panel-create-flow.html" target="_blank">
+      <rect x="860" y="100" width="220" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="970" y="127" class="node-title">4. Content Type Branch</text>
+    <text x="970" y="141" class="node-sub">Terminal vs Rich vs Web</text>
+  </g>
+  <g id="node-pc_term" filter="url(#shadow)">
+    <a href="../interactive/panel-create-flow.html" target="_blank">
+      <rect x="860" y="230" width="220" height="60" rx="8" fill="#fefce8" stroke="#ca8a04" stroke-width="1.5" />
+    </a>
+    <text x="970" y="257" class="node-title-dark">5a. Allocate Terminal</text>
+    <text x="970" y="271" class="node-sub-dark">PTY + State Buffer</text>
+  </g>
+  <g id="node-pc_rich" filter="url(#shadow)">
+    <a href="../interactive/panel-create-flow.html" target="_blank">
+      <rect x="860" y="310" width="220" height="60" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5" />
+    </a>
+    <text x="970" y="337" class="node-title-dark">5b. Allocate Rich</text>
+    <text x="970" y="351" class="node-sub-dark">bitty-rich Surface</text>
+  </g>
+  <g id="node-pc_insert" filter="url(#shadow)">
+    <a href="../interactive/panel-create-flow.html" target="_blank">
+      <rect x="590" y="270" width="220" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="700" y="297" class="node-title">6. Insert Tree Leaf</text>
+    <text x="700" y="311" class="node-sub">Binary Split Node</text>
+  </g>
+  <g id="node-pc_provider" filter="url(#shadow)">
+    <a href="../interactive/panel-create-flow.html" target="_blank">
+      <rect x="320" y="270" width="220" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="430" y="297" class="node-title">7. Layout Provider</text>
+    <text x="430" y="311" class="node-sub">Propose Geometry</text>
+  </g>
+  <g id="node-pc_commit" filter="url(#shadow)">
+    <a href="../interactive/panel-create-flow.html" target="_blank">
+      <rect x="50" y="270" width="220" height="60" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5" />
+    </a>
+    <text x="160" y="297" class="node-title-dark">8. Atomic Commit</text>
+    <text x="160" y="311" class="node-sub-dark">Apply Core Decoration</text>
+  </g>
+</svg>

@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      L1 Workspace Compositor & Panel Architecture — Bitty Architecture
+    </title>
+    <link rel="icon" type="image/png" href="assets/bitty-icon.png" />
+    <link rel="stylesheet" href="css/diagram-engine.css" />
+  </head>
+  <body>
+    <div class="diagram-app">
+      <header class="diagram-header">
+        <div class="header-left">
+          <a href="index.html" class="brand-badge">
+            <div class="logo-icon">B</div>
+            <span>Bitty Docs</span>
+          </a>
+          <div class="diagram-title-wrap">
+            <span class="diagram-level-tag">L1</span>
+            <h1 class="diagram-title">
+              Workspace Compositor & Panel Architecture
+            </h1>
+          </div>
+        </div>
+
+        <div class="header-center">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input
+              type="text"
+              id="node-search"
+              placeholder="Search containers, views..."
+              oninput="window.engine.setSearch(this.value)"
+            />
+          </div>
+        </div>
+
+        <div class="header-right">
+          <a
+            href="../README.md"
+            class="btn-text"
+            title="Back to Architecture Documentation"
+          >
+            <span>📖 Docs</span>
+          </a>
+          <a href="index.html" class="btn-text" title="Architecture Hub">
+            <span>📑 Gallery</span>
+          </a>
+          <button
+            class="btn-icon"
+            onclick="window.engine.exportPNG()"
+            title="Export PNG"
+          >
+            📷
+          </button>
+          <button
+            class="btn-icon"
+            onclick="window.engine.exportSVG()"
+            title="Export SVG"
+          >
+            📐
+          </button>
+          <button
+            class="btn-icon"
+            onclick="window.engine.toggleTheme()"
+            title="Toggle Dark/Light Mode"
+          >
+            🌓
+          </button>
+          <button
+            class="btn-icon"
+            onclick="window.engine.toggleFullscreen()"
+            title="Toggle Fullscreen"
+          >
+            ⛶
+          </button>
+        </div>
+      </header>
+
+      <div class="filter-bar">
+        <span
+          style="
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+          "
+          >Divisions:</span
+        >
+        <button
+          class="filter-chip active"
+          data-filter="all"
+          onclick="window.engine.setFilter('all')"
+        >
+          All Components
+        </button>
+        <button
+          class="filter-chip"
+          data-filter="containers"
+          onclick="window.engine.setFilter('containers')"
+        >
+          Window & Workspace
+        </button>
+        <button
+          class="filter-chip"
+          data-filter="compositor"
+          onclick="window.engine.setFilter('compositor')"
+        >
+          LayoutTree & Decor
+        </button>
+        <button
+          class="filter-chip"
+          data-filter="views"
+          onclick="window.engine.setFilter('views')"
+        >
+          View Leaves
+        </button>
+      </div>
+
+      <main class="diagram-workspace">
+        <div id="canvas-container"></div>
+
+        <div class="floating-controls">
+          <button
+            class="btn-icon"
+            onclick="
+              window.engine.scale = Math.min(
+                window.engine.scale * 1.15,
+                window.engine.maxScale,
+              );
+              window.engine.updateZoomDisplay();
+              window.engine.render();
+            "
+            title="Zoom In"
+          >
+            ➕
+          </button>
+          <span class="zoom-level-text" id="zoom-level">100%</span>
+          <button
+            class="btn-icon"
+            onclick="
+              window.engine.scale = Math.max(
+                window.engine.scale * 0.85,
+                window.engine.minScale,
+              );
+              window.engine.updateZoomDisplay();
+              window.engine.render();
+            "
+            title="Zoom Out"
+          >
+            ➖
+          </button>
+          <button
+            class="btn-icon"
+            onclick="
+              window.engine.fitToScreen();
+              window.engine.render();
+            "
+            title="Fit to Screen"
+          >
+            ⊡
+          </button>
+        </div>
+
+        <div class="legend-box">
+          <div class="legend-title">Compositor Structure</div>
+          <div class="legend-item">
+            <div
+              class="legend-indicator"
+              style="background: #ecfdf5; border: 1px solid #059669"
+            ></div>
+            Workspace (Tiling Plane)
+          </div>
+          <div class="legend-item">
+            <div
+              class="legend-indicator"
+              style="background: #eff6ff; border: 1px solid #3b82f6"
+            ></div>
+            LayoutProvider (Plugin)
+          </div>
+          <div class="legend-item">
+            <div
+              class="legend-indicator"
+              style="background: #fefce8; border: 1px solid #ca8a04"
+            ></div>
+            Terminal View (Host ID)
+          </div>
+          <div class="legend-item">
+            <div
+              class="legend-indicator"
+              style="background: #f8fafc; border: 1px dashed #64748b"
+            ></div>
+            Panel Candidate
+          </div>
+        </div>
+
+        <aside class="inspector-drawer" id="inspector-drawer">
+          <div class="inspector-header">
+            <div>
+              <h2 class="inspector-node-title" id="inspector-title">
+                Component Inspector
+              </h2>
+              <div class="inspector-node-type" id="inspector-type">
+                Select a container or view
+              </div>
+            </div>
+            <button
+              class="btn-icon"
+              onclick="window.engine.closeInspector()"
+              title="Close Inspector"
+            >
+              ✕
+            </button>
+          </div>
+          <div class="inspector-body" id="inspector-body"></div>
+        </aside>
+      </main>
+    </div>
+
+    <script src="js/diagrams-data.js"></script>
+    <script src="js/diagram-engine.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        window.engine = new DiagramEngine({
+          containerId: "canvas-container",
+          data: DIAGRAMS_DATA["03-panel-system"],
+          title: "L1 Workspace Compositor & Panel Architecture",
+          level: "L1",
+        });
+      });
+    </script>
+  </body>
+</html>

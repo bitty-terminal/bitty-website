@@ -248,6 +248,30 @@ A future rich-block inspector should expose, at minimum:
 This is an observability requirement for planning, not an implemented DevTools
 feature.
 
+## Implementation evidence (Kitty intake through present path)
+
+Status: **experimental review evidence.** `bitty` `1fc6294` (CTX-0214,
+PR #376, `crates/bitty-rich/src/kitty.rs`) merged an intake-only Kitty
+graphics milestone: chunked `m=` transmissions assemble their exact bytes,
+admission evicts the oldest entries first under a 320,000,000-byte
+(`320 * 1000 * 1000`, decimal) stored-plus-in-flight ledger with fail-closed
+rejections, the single-shot path keeps its historical truncation unchanged,
+and no decode, placement, animation, or renderer coupling is included. The
+full intake semantics, bounds, and deferred-rendering boundary are recorded in
+the [Rich Presentation RFC](../specifications/rich-presentation-rfc.md).
+
+Further merged milestones now extend that path beyond intake: bounded payload
+decode for PNG/RGB/RGBA with fail-closed limits (`CTX-0247`), `APC G` parser
+wiring and base64 unwrap (`CTX-0255`/`CTX-0256`), cursor-anchored placement
+with CPU composite and per-pane origin binding (`CTX-0248`/`CTX-0254`), and
+real-GPU texture upload and blit (`CTX-0291`), with live `chafa` kitty-format
+pixel evidence. The exact pipeline, bounds, deviations, and deferred pieces
+are recorded in the [Rich Presentation RFC](../specifications/rich-presentation-rfc.md)
+decode/placement evidence subsections. This document otherwise remains a
+pre-implementation contract: nothing here becomes an implemented API by virtue
+of those milestones, and Sixel, iTerm2 inline images, animation, and the
+structured transports below remain unimplemented.
+
 ## Open questions
 
 - What is the first stable `RichBlock` and `SceneNode` contract?

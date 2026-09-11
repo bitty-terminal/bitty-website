@@ -151,6 +151,30 @@ Evidence rules:
 - The evidence burden (differential corpus, fuzzing, cross-platform CI) becomes
   a standing cost owned by the parser/state tasks, not a one-time gate.
 
+## Implementation status (Implemented-only, CTX-0127)
+
+Compat-lab tooling for the acceptance evidence above is Implemented-only in
+`bitty`; the M1 protocol matrix and evidence requirements are unchanged and
+no milestone item moves toward complete without the linked evidence plus
+independent reviewer sign-off:
+
+- `bitty` CTX-0206 (commit `fd8a71a`, PR #354, `CR-COMPAT-01`): the
+  differential comparator prefers singular `recording/` candidates so baseline
+  discovery survives the `recordings/` to `recording/` rename.
+- `bitty` CTX-0211 (commit `0e65f85`, PR #366): compat-lab baselines
+  regenerated after the v2/v3 hash drift.
+- `bitty` CTX-0218 (commit `2f69725`, PR #372): test-heavy CI jobs raised
+  from 15m to 30m timeouts after measured 11m to 15m suites with timeout-only
+  failures; no test assertion, budget number, or cross-platform matrix entry
+  changes.
+- `bitty` CTX-0285 (commit `8e4dd3a`, PR #478): compat-lab dump discovery
+  derives the umbrella root from `$BITTY_WORKSPACE` instead of a hardcoded
+  absolute checkout path and drops the `tmp/` mirror, because `tmp/` is
+  process scratch rather than durable evidence.
+
+All four are `Implemented`, not `Verified`; they change no M1 requirement,
+no evidence threshold, and no normative control.
+
 ## Affected contracts
 
 Acceptance on 2026-08-26 applied these same-change updates:

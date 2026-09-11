@@ -95,6 +95,15 @@ consent under the normal policy. Paste inspection detects C0 controls, NUL,
 escape, carriage return, embedded newline, and suspicious Unicode controls.
 Bracketed paste is defense in depth, not a complete boundary.
 
+> Platform residual (CTX-0184, `bitty` #283, closed): while Bitty is alive
+> and focused on Hyprland 0.56.2, primary-selection reads fail — including
+> healthy pure-CLI `wl-copy --primary` staging that succeeds with Bitty
+> closed. Root cause is focus-gated primary delivery, compositor-side; no
+> Bitty mechanism was found (same-PID A/B reversal), so no Bitty fix is
+> indicated and the upstream report draft stays unfiled by owner decision.
+> This residual does not weaken T-04: consent, paste inspection, and the
+> restrictive remote/unknown policy are unchanged.
+
 OSC 8 links pass through URI parsing, scheme policy, and a user gesture. The
 platform opens an approved URI without shell construction or interpolation.
 Titles, notifications, cwd, hostnames, and command metadata are bounded,

@@ -1,0 +1,23 @@
+%% docs/architecture/mermaid/startup-flow.mmd — L2 startup flow
+%% Source of truth: ../glossary.yaml
+%% Levels: L0 overview realized as L2 flow
+%% Render: included in Markdown via ```mermaid or via mermaid CLI
+flowchart TD
+  A[CLI argv] --> B{bitty-app\nstartup}
+  B -->|--safe| S[Safe mode\nno third-party plugin\nminimal built-in config]
+  B -->|normal| C[Load Config\ninit.lua -> ConfigPlan]
+  C --> D[Validate & Merge\nXDG layers\nsource attribution]
+  D --> E{Validation?}
+  E -->|rejected| F[Keep last good plan\ndiagnostics]
+  E -->|live| G[Reconcile → RuntimeConfig]
+  E -->|restart-required| H[Persist, report restart]
+  G --> I[Init bitty-platform\nWindow + event loop\nwinit]
+  I --> J[Create Instance → Window]
+  J --> K[Workspace compositor\none LayoutTree]
+  K --> L[bitty-runtime\nwire vt, term-state, pty, render, ui, plugin-host]
+  L --> M[PTY master\nspawn shell child\nslave only]
+  M --> N[VT parser → TermState → Damage → Snapshot → Renderer]
+  N --> O[bitty-plugin-host\nlazy reservas\nper-plugin budgets]
+  S --> I
+  F --> G
+  H --> I

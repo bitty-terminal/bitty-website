@@ -212,6 +212,28 @@ become acceptance criteria.
 - Platform-specific relaxations (e.g., ConPTY startup overhead on Windows)
   belong to the platform policy ADR (OQ-003), not to ad-hoc exceptions here.
 
+## Live-profiling coordination (Implemented-only, CTX-0124 plus bitty CTX-0189)
+
+The [DevTools RFC](devtools-rfc.md) (Amendment A1, Implemented-only) exposes
+the budgets above as read-only live-profiling state for `bitty` CTX-0189
+(PR #334, commit `7dbe4e2`: `getProcessStats`/`getFrameStats` plus
+`streamProcessStats`/`streamFrameStats`). This section records the
+coordination contract; it is Implemented-only evidence, changes no budget
+number, and claims no Verified status:
+
+- The profiling surface reuses the metric definitions and measurement
+  conditions of PB-2 (idle memory), PB-3 (typical-session memory and
+  growth), PB-4 (input latency), and PB-7 (idle resource usage) verbatim.
+  The authoritative numbers live here; the DevTools RFC only observes them.
+- Sampling is the only implemented posture: cold-path counter snapshots at an
+  implemented floor of 100 ms per `bitty` CTX-0189, latest-wins coalescing.
+  Per-frame tracing is deferred to a future amendment with PB-4 and PB-7
+  neutrality proof.
+- Profiling load is itself bounded work: sustained sampling and automation
+  traffic must breach neither PB-4 tail latency nor PB-7 idle budgets.
+  Profiling records carry zero terminal bytes, so no redaction path beyond
+  bounded renderer labels applies.
+
 ## Open items
 
 - Define the exact benchmark harness, corpus, and reference hardware (follow-up
@@ -220,3 +242,6 @@ become acceptance criteria.
 - Revisit PB-5 after the first real `bitty-app` link produces actual sizes.
 - Coordinate with OQ-014 so plugin VM creation cost is charged against
   plugin budgets, not the core's PB-2/PB-3 numbers.
+- (CTX-0124/CTX-0127, Implemented-only, acceptance open) Confirm the
+  implemented 100 ms sampling floor and the PB-4/PB-7 neutrality proof shape
+  for the DevTools live-profiling scope before it is accepted.

@@ -216,6 +216,17 @@ and policy:
 Whether even these files are Lua, a restricted schema, or signed/trusted
 modules is an open security decision.
 
+Status: **shipped defaults** for the precedence order and the CLI/env
+override mechanics below (read-only from `bitty` `origin/main`,
+`crates/bitty-config/src/file.rs` and `crates/bitty-app/src/main.rs`,
+CTX-0169/CTX-0180). The settled order is `CLI > file > profile >
+defaults`: explicit CLI appearance flags win over the user file
+(`init.lua`), which wins over the named profile, which wins over core
+defaults. `BITTY_CONFIG` (explicit path) and `BITTY_PROFILE` (profile
+name) sit between CLI flags and probed files — CLI wins over env. A
+missing explicit `--config`/`BITTY_CONFIG` path, or a
+requested-but-missing profile, fails closed instead of falling back.
+
 ## Merge semantics
 
 Status: **candidate contract.**
@@ -237,7 +248,27 @@ developer tools can explain every effective value and conflict.
 
 ## Profiles
 
-Status: **candidate contract.**
+Status: **shipped defaults** for profile selection, naming, and layering
+(read-only from `bitty` `origin/main`,
+`crates/bitty-config/src/file.rs`, CTX-0169, issue #271);
+**candidate** for multi-parent `extends`.
+
+Shipped mechanics:
+
+- Named profiles live at `$XDG_CONFIG_HOME/bitty/profiles/<name>.lua`.
+- Selection is `--profile NAME`, else `BITTY_PROFILE`; a missing, empty, or
+  whitespace-only value means no profile.
+- Names allow `[A-Za-z0-9_-]` only (no paths, no extensions) and at most 64
+  bytes; anything else fails closed. System-wide `XDG_CONFIG_DIRS` is never
+  consulted for profiles.
+- The profile plan layers UNDER the user file (`init.lua` still wins) and
+  under CLI appearance flags (`CLI > file > profile > defaults`, settled in
+  [Layers and precedence](#layers-and-precedence)).
+- A requested-but-missing or invalid profile fails closed (exit 2); a bare
+  launch with no profile request keeps working.
+
+Candidate (unchanged): profile composition via single-parent `extends` chains
+with cycle detection; multiple inheritance remains open.
 
 Profiles compose focused changes rather than duplicate an entire config. A
 coding profile, for example, may extend a default profile, add development
@@ -260,6 +291,266 @@ return {
 A candidate launch form is `bitty --profile coding`; its placement in the CLI
 grammar remains open.
 
+The shipped launch form is `bitty --profile coding` (or `BITTY_PROFILE=coding`)
+as specified above; the grammar-ownership question is closed by that shipment
+and only multi-parent `extends` stays open.
+
+## Shipped CLI overrides, setup wizard, and logging defaults
+
+Status: **shipped defaults** (read-only from `bitty` `origin/main`,
+`crates/bitty-app/src/main.rs`, CTX-0149/CTX-0180/CTX-0190). These are
+reported here as shipped status; they change no normative contract above.
+
+- CLI appearance overrides (CTX-0180): `--theme NAME`, `--font-family NAME`,
+  `--font-size PTS`, and `--opacity FLOAT` apply to one launch. They form a
+  single `Cli` layer plan over the file and profile values; sibling fields
+  keep file values. `--font-size` and `--opacity` are parsed as raw text and
+  validated at merge time — invalid values fail closed (exit 2), never
+  warn-ignored. Since CTX-0290, `--opacity` below `1.0` scales pixel alpha
+  through the shipped premultiplied renderer path; when the surface cannot
+  composite premultiplied the window stays opaque (fail-closed).
+- Explicit config path: `--config PATH` wins verbatim; else `BITTY_CONFIG`;
+  else the XDG default is probed (`$XDG_CONFIG_HOME/bitty/init.lua`,
+  fallback `~/.config/bitty/init.lua`, then the `config.lua` alias).
+  `bitty config path|check|edit` locates, validates with per-key source
+  attribution (`cli/file/profile/default`), and opens the file in
+  `$VISUAL`/`$EDITOR` (`vi` fallback).
+- Setup wizard (CTX-0149, issue #243): `bitty init [--yes] [--force]` is the
+  opt-in first-run writer. `--yes` skips prompts and writes sane defaults
+  (a `theme = "dark"` starter with commented gaps, keymap, and selection
+  examples); `--force` overwrites an existing file after copying it to
+  `<file>.lua.bak` (overwriting any older backup). Without `--force`, an
+  existing file is an error, never a silent overwrite. A program literally
+  named `init` must be invoked as `bitty -- init ...`. `--yes`/`--force`
+  are init-only and ignored by normal startup.
+- Quiet logging (CTX-0190): the default stderr level is `Warn` — warnings,
+  errors, plus unconditional key user-facing lines (paste confirm/cancel,
+  startup summary); per-frame `bitty tick` stats sit at `Debug`/`Trace` and
+  stay silent by default. `-v`/`--verbose` (also `BITTY_VERBOSE=1`) selects
+  `Debug`; `--log-level error|warn|info|debug|trace|verbose` selects
+  directly (`verbose` maps to `Debug`). Precedence is `--log-level`, then
+  `--verbose`/`-v`/`BITTY_VERBOSE=1`, then `BITTY_LOG`, then `RUST_LOG`
+  (both accept bare levels and `RUST_LOG`-style filters, most verbose wins,
+  `BITTY_LOG` preferred), then the quiet default.
+
+Open: whether the CLI appearance flag set grows (for example spacing or
+padding flags); the wizard prompt UX and starter-content evolution; and the
+exact tick-line format, which remains a diagnostic, not a stable interface.
+
+## Scrollbar overlay (shipped defaults)
+
+Status: **shipped defaults** (read-only from `bitty` `origin/main`,
+commit `c49ead1`, CTX-0181, closes `bitty` #281; merged to `bitty`
+origin `main`, verified read-only via `merge-base --is-ancestor`).
+This section reports the shipped contract only. It changes no normative
+contract above and weakens no security control.
+
+Shipped modes (`scrollbar.mode`, default `"hidden"`):
+
+- `"hidden"` — never painted; zero pixels, zero geometry delta, so existing
+  layouts stay geometry-neutral.
+- `"always"` — overlay thumb painted whenever scrollback exists.
+- `"auto"` — thumb revealed on mouse proximity, hover, or drag only.
+
+Shipped geometry: the thumb is painted in the present layer, never into
+grid truth. Its geometry derives from scrollback length plus viewport
+offset; thumb width is logical pixels scaled by the live DPI factor (like
+`window.padding`), default `8`, range `1`–`32` (wider values fail closed).
+Engagement (proximity, hover, drag) reuses the existing mouse path, and
+drag scrolls through `View::scroll_by`. Hit-testing accounts for panel gaps
+(CTX-0177) and padding (CTX-0223); releases over the thumb skip hyperlink
+activation.
+
+Shipped config contract:
+
+```lua
+-- Shipped schema (CTX-0181, bitty #405).
+return {
+    scrollbar = { mode = "auto", width = 8 },
+}
+```
+
+The `scrollbar` table deep-merges while `scrollbar.mode` and
+`scrollbar.width` are scalar-replace with per-field source attribution
+(`cli`/`file`/`profile`/`default`); system policy may pin either field as
+non-overridable. Unknown modes and out-of-range widths fail closed (exit
+2), never warn-ignored. Open: exact proximity radius, hover timing, and
+whether a CLI flag set grows to cover `scrollbar.*`.
+
+## Shipped layout gaps (panel gaps reference)
+
+Status: **shipped defaults** (read-only from `bitty` `origin/main`,
+commit `abde197`, CTX-0240, `bitty` #415; merged to `bitty` origin
+`main`, verified read-only via `merge-base --is-ancestor`). This section
+is the reference for the shipped gap contract; the merge-class
+instantiation stays in the [Configuration Model RFC](../specifications/configuration-model-rfc.md).
+It changes no normative contract above and weakens no security control.
+
+Shipped contract (`layout.gaps_in` / `layout.gaps_out`, cells):
+
+- Both fields are `0..=16` cells, default `0` (edge-to-edge tiling).
+  Larger values fail closed like every other config bound (threat T-01);
+  one cell is about `10`px wide at the default `10x22` cell.
+- The solver is content-agnostic: panel leaves flow through the same
+  `layout_with_gaps` path as terminal leaves (CTX-0177 algebra reuse).
+- Split siblings exclude the `gaps_in` bands, which are painted with the
+  theme background every damaged frame; `Gaps::ZERO` is bit-identical to
+  legacy tiling.
+- Stack (workspace) leaves share the container bounds, so `gaps_in`
+  between them is meaningless: a stack gets the `gaps_out` inset only,
+  with zero inner gap.
+
+Shipped config contract:
+
+```lua
+-- Shipped schema (CTX-0240, bitty #415).
+return {
+    layout = { gaps_in = 2, gaps_out = 1 },
+}
+```
+
+Absent `layout` tables (or absent keys within them) mean "this layer says
+nothing" and inherit silently. There are no per-panel-type gap overrides.
+Open: whether a CLI flag set grows to cover `layout.*`.
+
+## Shipped workspace decoration (Core-owned px reference)
+
+Status: **shipped config surface, live painting deferred** (read-only from
+`bitty` `origin/main`, PR `bitty` #487 merge commit `485fbfd`, CTX-0292,
+closes `bitty` #486; merged to `bitty` origin `main`, verified read-only via
+`merge-base --is-ancestor`). This section is the reference for the shipped
+decoration surface; the accepted normative contract is the
+[Workspace Compositor Specification](../specifications/workspace-compositor.md)
+section "Core-owned gaps, border, and radius" (accepted CTX-0118), and the
+merge-class instantiation stays in the
+[Configuration Model RFC](../specifications/configuration-model-rfc.md). It
+changes no normative contract above and weakens no security control.
+
+Shipped contract (`decoration.*`, logical pixels):
+
+| Field                 | Default | Valid range | Owner |
+| --------------------- | ------- | ----------- | ----- |
+| `decoration.gaps_in`  | `4` px  | `0..=32` px | Core  |
+| `decoration.gaps_out` | `6` px  | `0..=32` px | Core  |
+| `decoration.border`   | `2` px  | `0..=8` px  | Core  |
+| `decoration.radius`   | `6` px  | `0..=16` px | Core  |
+
+- Core owns the surface: the four fields are validated through `ConfigPlan`,
+  never proposed by a `LayoutProvider`, and never carried by a `View`, so no
+  plugin mutation path exists (accepted contract rules 1-4).
+- Unknown keys and out-of-range values fail closed with a source-attributed
+  diagnostic; Core never falls back to a silent default when validation
+  fails.
+- `decoration` deep-merges as a table while each field is scalar-replace
+  with per-field source attribution; project layers may set the surface
+  because it is presentation-only chrome with no process authority (like the
+  scrollbar), and the fields reload `Live`.
+- The Core solver is total, deterministic, and saturating: `gaps_out`
+  insets the workspace area, `gaps_in` reserves the band between siblings,
+  `border` insets each View's content rect, and `radius` is carried as clip
+  metadata. Values are logical pixels scaled by the Window DPI factor only
+  at render time; an out-of-range live update is rejected fail-closed.
+- `bitty --safe` forces `gaps_in = 0`, `gaps_out = 0`, `border = 1`,
+  `radius = 0` (`0/0/1/0`) regardless of user configuration (accepted
+  contract rule 5).
+
+Shipped config contract:
+
+```lua
+-- Shipped schema (CTX-0292, bitty #487).
+return {
+    decoration = { gaps_in = 4, gaps_out = 6, border = 2, radius = 6 },
+}
+```
+
+Absent `decoration` tables (or absent keys within them) mean "this layer
+says nothing" and inherit silently.
+
+Status honesty: live present-path painting of px decoration is **deferred**.
+The shipped single-window present path still paints the cell-unit
+`layout.gaps_in` / `layout.gaps_out` gaps; px decoration needs fractional-cell
+View frames plus a renderer radius primitive, tracked as `bitty` CTX-0294 on
+the CTX-0238g stage-2 renderer radius lane. Until that lands, `decoration.*`
+values are validated, stored, attributed, and carried, but must not be
+described as a visible change.
+
+### Decoration px versus layout cells
+
+Two similarly named gap surfaces exist and must not be conflated:
+
+| Surface                           | Unit                 | Default   | Range    | Status                                                         |
+| --------------------------------- | -------------------- | --------- | -------- | -------------------------------------------------------------- |
+| `layout.gaps_in` / `gaps_out`     | cells (`10x22` each) | `0` / `0` | `0..=16` | shipped; painted by the single-window path (CTX-0177/CTX-0240) |
+| `decoration.gaps_in` / `gaps_out` | logical px           | `4` / `6` | `0..=32` | shipped config surface; live painting deferred (CTX-0292)      |
+
+Also distinct: `decoration.radius` (View frame corner radius, logical px)
+versus `window.radius_px` (window corner radius, physical px, S0 parsed no-op,
+CTX-0241).
+
+Open: whether a CLI flag set grows to cover `decoration.*`; the CTX-0294 /
+CTX-0238g stage-2 delivery owns the actual visual behavior.
+
+## Shipped keymaps and Mod key
+
+Status: **shipped defaults** (read-only from `bitty` `origin/main`, CTX-0236,
+CTX-0257, CTX-0258, CTX-0259, CTX-0262, CTX-0263, CTX-0264, CTX-0265; merged
+to `bitty` origin `main` at commits `2a5e451`, `227ca3a`, `6e662a2`,
+`1ea2f66`, `8b987a0`, `bc1fbba`, `11d9bec`, `c8faa52`, all verified read-only
+via `merge-base --is-ancestor`). This section is the shipped reference for the
+keybinding surface; the merge-class instantiation stays in the
+[Configuration Model RFC](../specifications/configuration-model-rfc.md), and
+the input-side dispatch evidence stays in the
+[Input and Pointer Contract](../specifications/input-pointer-rfc.md).
+
+Shipped schema:
+
+```lua
+-- Shipped schema (CTX-0236/CTX-0257).
+return {
+    mod_key = "alt", -- "alt" (default; opt/option) or "super" (meta/cmd/win)
+    keymaps = {
+        { chord = "alt+h", action = "goto_split:left", context = "global" },
+    },
+}
+```
+
+- `mod_key` is scalar-replace with per-field source attribution. `"alt"` keeps
+  the canonical map byte-identical; `"super"` rebinds every `alt`-bearing
+  default (including the `ctrl+shift+alt+h/j/k/l` resize variant) to Super.
+  `ctrl`/`shift` and unknown values fail closed; explicit `keymaps` entries
+  keep their exact spelling and overlay by `context + chord` identity.
+- `keymaps` is set-by-identifier: a user entry with the same `context + chord`
+  replaces the shipped entry, anything else appends. The shipped set is
+  79 entries, all context `global`; unknown chords, actions, or contexts
+  fail closed, and single-character keys require at least one modifier.
+- Shipped groups (canonical Alt spelling): workspace `alt+n` / `alt+1..9` /
+  `alt+-` / `alt+=` / `alt+tab` / `alt+w` (CTX-0257, DEC-0034) plus
+  `shift+alt+1..9` move-to-workspace (CTX-0259); spatial focus
+  `alt+h/j/k/l`, `alt+arrows`, `ctrl+alt+arrows`; split
+  `shift+alt+h/j/k/l`, `shift+alt+arrows`; resize `shift+ctrl+h/j/k/l`,
+  `shift+ctrl+arrows`, `ctrl+shift+alt+h/j/k/l`, `ctrl+shift+alt+arrows`
+  (CTX-0258/CTX-0262); page `alt+u`/`alt+i`; zoom
+  `alt+z`/`alt+m`/`alt+f`; focus cycle `ctrl+tab`/`ctrl+shift+tab`; clipboard
+  `ctrl+shift+c`/`ctrl+shift+v`; per-window font size
+  `ctrl+=`/`ctrl+plus`/`ctrl+-`/`ctrl+0` with shifted spellings (CTX-0263);
+  help popup backtick chord plus `alt+?` spellings (CTX-0265).
+- Named keys are bindable beyond letters and digits: `tab`, `enter`,
+  `escape`, `space`, `backspace`, `delete`/`del`, `insert`/`ins`, `home`/`hm`,
+  `end`, `pageup`/`pgup`/`pu`, `pagedown`/`pgdn`/`pd`, arrows, and `f1..f35`
+  (CTX-0264; short aliases canonicalize to the long names).
+- Single-owner consumption: a chord that matches a bound keymap is consumed by
+  its action and never reaches the PTY; unbound keys (plain `Tab`, arrows,
+  letters, digits) always reach the shell. Workspace close never kills
+  silently: a live workspace arms a pending confirm (repeat the chord to
+  confirm, `Esc` cancels) and idle workspaces close immediately. The help
+  popup (CTX-0265) is a presentation-only overlay generated from the live
+  registry on every show; it is informational, not modal, so unbound keys
+  still reach the shell while it is visible.
+
+Open: whether the shipped set grows CLI flags or a command-palette surface;
+the candidate Leader sequences and flash-style jump remain unimplemented
+candidates in the [Input and Pointer Contract](../specifications/input-pointer-rfc.md).
+
 ## Starters and distributions
 
 Status: **accepted direction.**
@@ -272,7 +563,7 @@ Candidate initial experiences are:
 
 - `minimal`: one small `init.lua`;
 - `starter`: a commented modular scaffold comparable to `kickstart.nvim`;
-- a later official distribution containing ordinary plugins for tabs,
+- a later official distribution containing ordinary plugins for workspace,
   statusline, search, sessions, command palette, and sensible key mappings.
 
 Distributions should layer under user overrides rather than require users to

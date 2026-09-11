@@ -229,7 +229,9 @@ Low-level GPU problems continue to use specialist tools such as RenderDoc, Xcode
 Metal tools, Chrome trace, and Tracy/Puffin. Bitty DevTools explains the
 Bitty-owned semantic model.
 
-`bitty-mcp` should be an adapter for the debug and command protocol. Core knows
+`bitty-mcp` (plugin repository checked out at `bitty-plugins/bitty-mcp`;
+MCP is a tool surface called by agents, not AI-core; repository and remote
+unchanged) should be an adapter for the debug and command protocol. Core knows
 only the structured protocol; it does not know MCP, model providers, prompts, or
 tokens.
 
@@ -244,8 +246,8 @@ Podman is an optional isolation tool for untrusted input, release builds,
 dependency and system-library matrices, or reproductions that need a clean
 environment. Ordinary editing and fast local tests do not require a container.
 
-Persistent temporary project material belongs in the workspace `tmp/`, and
-reference repositories belong in `tmp/references/`. See the
+Persistent temporary project material belongs in the workspace `recordings/`, and
+reference repositories belong in `recordings/references/`. See the
 [Reference Project Register](reference-projects.md) for the concrete research
 snapshots.
 

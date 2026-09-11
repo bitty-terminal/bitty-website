@@ -22,6 +22,36 @@ sidebar_order: 19
 > with P0 sign-off simulated 2026-08-28; see [P0 Review Sign-off](#p0-review-sign-off)
 > and the [P0 review checklist](../reviews/p0-review-checklist.md). The lifecycle is
 > `Draft -> experimental review evidence -> Accepted -> normative`.
+>
+> Amendment A1 (Implemented-only, CTX-0124 design plus `bitty` CTX-0183,
+> CTX-0188, CTX-0189): this RFC additionally documents a
+> versioned test-automation scope (`bitty.debug/synthesizeInput`,
+> `bitty.debug/captureFrame`) and a live-profiling scope (RSS, CPU,
+> frame-time, GPU stats), coordinated with the
+> [Performance Budget RFC](performance-budget-rfc.md) (OQ-001) and motivated by
+> finding `ECO-DEV-04` (automated GUI test driver and input synthesis).
+> Everything under [Test-automation scope](#test-automation-scope-implemented-only-amendment-a1)
+> and [Live-profiling scope](#live-profiling-scope-implemented-only-amendment-a1) is
+> Implemented-only evidence, not accepted contract: it authorizes no additional
+> implementation beyond the merged `bitty` commits cited below,
+> weakens no normative control, and records the implementation half of `bitty`
+> CTX-0183 (verify harness, PR #328), CTX-0188 (frame capture plus input
+> synthesis IPC, PR #332), and CTX-0189 (process memory, CPU, and frame
+> profiling over IPC, PR #334) without moving acceptance. Admission of the
+> keystroke-injection surface still requires category-owner plus
+> security-auditor review before acceptance; see the admission gate below.
+>
+> Amendment A2 (Implemented-only, `bitty` CTX-0244 plus CTX-0242): this RFC
+> additionally documents the `bitty.debug/frameHash` digest method (SHA-256
+> over canonical frame bytes, new `FrameDigest` automation family, 120 s
+> TTL cap, 2 digests/s, local-only, raw pixel channel deferred) and the
+> V1-V3 panel-live visual gates built on frame-digest equality. Everything
+> under [Frame digest method and panel-live gates](#frame-digest-method-and-panel-live-gates-implemented-only-amendment-a2)
+> is Implemented-only evidence, not accepted contract: it authorizes no
+> additional implementation beyond the merged `bitty` commits cited below,
+> weakens no normative control (P0-AC-026 unchanged), and records the
+> implementation half of `bitty` CTX-0244 (frameHash digest, PR #421) and
+> CTX-0242 (V1-V3 harness gates, PR #423) without moving acceptance.
 
 ## Purpose and scope
 
@@ -372,6 +402,298 @@ CLI consumers authenticate and authorize through the same per-session
 scopes as a graphical DevTools client; the command adapter never widens
 a scope.
 
+## Test-automation scope (Implemented-only, Amendment A1)
+
+> Status: Implemented-only. This section documents `bitty` CTX-0183 (PR #328,
+> commit `b795f90`, headless verify harness) and CTX-0188 (PR #332, commit
+> `144ee1c`, `synthesizeInput` plus `captureFrame`) as merged implementation
+> evidence and carries no acceptance, no compatibility promise, and no Verified
+> claim. It must not weaken any normative control listed under
+> [Normative sources this specification must not weaken](#normative-sources-this-specification-must-not-weaken);
+> where it conflicts with one, the normative text wins.
+
+GUI integration tests currently rely on manual execution or software-rendering
+dumps (finding `ECO-DEV-04`: automated GUI test driver and input synthesis).
+This scope lets an automated end-to-end harness drive one terminal and assert
+on its rendered frame without manual interaction, under explicit, revocable,
+per-session authority.
+
+The headless verify harness is implemented in `bitty` CTX-0183 (PR #328,
+commit `b795f90`, `crates/bitty-ipc/tests/devtools_verify.rs`): state asserts
+over the IPC socket as Implementation evidence only. It creates no new method,
+scope, transport, or budget and moves no acceptance; the bearer, redaction,
+and rate rules below still govern the two automation methods.
+
+### Versioning
+
+The two methods below are implemented in `bitty` CTX-0188 (PR #332) as
+protocol version `1.1` surface (Implemented-only, not Accepted or Verified):
+purely additive over the accepted v1.0 surface, with no change to any existing
+method, scope, bound, or error shape. Unknown-field fail-closed, payload
+limits (1 MiB inbound, 256 KiB outbound chunks), and the major-version rule
+for removals all continue to apply.
+
+### Methods
+
+| Method                        | Required scope and bearer                                           | Implemented params                                                                                     | Implemented result                                                                              |
+| ----------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| `bitty.debug/synthesizeInput` | `debug.control` plus per-session automation bearer for one terminal | `terminalId`, `events[]` (at most 64 entries: bounded key, mouse, or paste-text events), `originLabel` | Receipt `{ accepted, rejected, syntheticSeq }` with per-event attribution                       |
+| `bitty.debug/captureFrame`    | `debug.trace` plus per-session automation bearer for one terminal   | `terminalId`, `format: "semantic"` (default) or `"pixels"`, optional viewport cap                      | Bounded frame record (geometry, frame sequence, truncated redacted preview), chunked at 256 KiB |
+
+### Semantics
+
+1. `synthesizeInput` delivers events into the addressed terminal's input path
+   as synthetic-origin input. It executes no command directly, passes no PTY
+   file descriptor, and addresses exactly one `terminalId` per call; wildcard
+   or multi-terminal targeting fails closed with a typed `usage` error.
+2. Pasted text travels through the same paste inspection as local pastes
+   (T-04 parity): scheme execution, shell interpolation, and clipboard
+   exfiltration paths stay closed regardless of synthetic origin.
+3. Every accepted synthetic event carries an indelible synthetic-origin
+   marker visible to input-marker traces, so a recording can always
+   distinguish harness input from user input.
+4. `captureFrame` in `semantic` format returns the same bounded, redacted
+   content class as `getSnapshot` (geometry, mode flags, semantic-zone
+   metadata, truncated text previews at most 8 KiB per record). `pixels`
+   format additionally requires per-call explicit opt-in, is masked over
+   sensitive regions by default, is capped to the addressed viewport, and
+   each call is audited with caller identity.
+5. Both methods inherit the terminal capability checks of the addressed
+   terminal on top of the debug scope, exactly as `getSnapshot` does, so
+   automation cannot expand its authority through a debug method.
+
+### Automation bearer scoping
+
+The automation bearer is a server-side, per-session sub-grant bound to one
+triple of (debug session, `terminalId`, method family) with a short expiry
+(implemented default 10 minutes per `bitty` CTX-0188, never exceeding the
+owning session lifetime):
+
+1. Issuance requires explicit local-user consent on the owning authenticated
+   session (a DevTools UI gesture or a `bitty dev` confirmation prompt).
+   There is no issuance path from flags, environment variables, configuration
+   files, or child-process inheritance (P0-AC-023 parity).
+2. The bearer is never persisted to disk, never exported to another session,
+   and never widened: a `synthesizeInput` bearer cannot capture frames, a
+   bearer for one terminal cannot address another, and expiry or session end
+   revokes it immediately.
+3. The MCP adapter never holds an automation bearer under its read-only
+   default; agent-driven input or capture needs separate per-client elevation
+   and consent per the threat-model MCP lane (T-10 parity).
+4. Revocation reuses the accepted session-consent lifecycle: explicit revoke
+   calls, `bitty plugin revoke` parity, and host-side detachment with an
+   auditable receipt.
+
+### Redaction defaults
+
+Typed redaction (P0-AC-026 parity) applies before any frame or marker enters
+a queue: seeded secrets, clipboard bytes, and environment bytes never appear
+in default outputs; input markers stay opt-in; spool files keep mode `0600`;
+export preview equals actual export byte-for-byte. Every `captureFrame`
+response is labeled untrusted observation data, exactly like other
+terminal-content responses (T-10 parity).
+
+### Rate and budget bounds
+
+Transport bounds stay at RC-9 parity (100 req/s sustained, 2x burst for one
+second, 1 MiB inbound frames, 16 concurrent connections per endpoint with
+newest-first shedding). On top of them, each automation method carries its
+own implemented per-session ceiling per `bitty` CTX-0188 (`synthesizeInput`:
+at most 64 events per call and 10 calls per second sustained; `captureFrame`:
+at most 10 frames per second sustained). Both methods draw from the same per-consumer
+observability queues and batching (32 records or 8 KiB per wakeup), overruns
+shed with typed `budget` errors and counted drops, and automation load must
+not breach the PB-4 tail-latency or PB-7 idle-resource budgets defined in the
+[Performance Budget RFC](performance-budget-rfc.md).
+
+### Abuse-case coverage for keystroke injection
+
+| Abuse case                                               | Required defense in this scope                                                              | Source       |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------- | ------------ |
+| Pasted payload reaches a shell or dangerous scheme       | Paste inspector applies to synthetic pastes; text-only, no interpolation                    | T-04         |
+| Same-user or remote process takes over IPC               | Peer-credential checks, per-session bearer bound to one terminal, no ambient credential     | T-09         |
+| Agent drives the terminal through harness input          | MCP default holds no bearer; separate per-client elevation, consent, and audit              | T-10         |
+| Frame capture exfiltrates credentials                    | Redaction defaults, sensitive-region masking, opt-in pixels, user-only storage              | T-11         |
+| Runaway harness floods input or capture                  | Per-method rate ceilings, RC-9 shedding, counted drops, revocable bearer                    | R-007, R-011 |
+| Synthetic input widens a scope or bypasses a budget gate | Capability-plus-scope intersection on every call; no bypass flag, variable, or build switch | R-006, R-011 |
+
+### CLI and MCP staging (proposed; protocol methods Implemented-only)
+
+Candidate CLI mappings (no CLI implementation claimed; the two protocol
+methods above are Implemented-only in `bitty` CTX-0188 while CLI verbs stay
+out of scope per that commit):
+
+| CLI candidate (proposed)                               | Protocol method               |
+| ------------------------------------------------------ | ----------------------------- |
+| `bitty dev synthesize --terminal <id> --events <file>` | `bitty.debug/synthesizeInput` |
+| `bitty dev capture --terminal <id> --format semantic`  | `bitty.debug/captureFrame`    |
+
+The MCP adapter must not expose either method under its v1 read-only
+default; post-v1 exposure belongs to a separately reviewed elevation model
+and is an explicit non-goal of this amendment.
+
+### Admission gate
+
+Acceptance of this scope, and in particular of the keystroke-injection
+surface, requires all of the following before any `Accepted` marker moves:
+
+1. Category-owner (architecture/IPC) plus security-auditor review with a
+   recorded P0 delta for T-04, T-09, T-10, and T-11.
+2. Green verification items covering the bearer matrix (absent, expired,
+   wrong-session, wrong-terminal bearers all fail closed), rate-cap
+   shedding order, frame redaction with preview-equals-export, and the
+   no-bypass audit extended to bearer issuance.
+3. Proof that sustained automation load at the implemented ceilings breaches
+   neither PB-4 tail latency nor PB-7 idle budgets.
+
+## Live-profiling scope (Implemented-only, Amendment A1)
+
+> Status: Implemented-only. This section documents `bitty` CTX-0189 (PR #334,
+> commit `7dbe4e2`, `getProcessStats`/`getFrameStats` plus
+> `streamProcessStats`/`streamFrameStats`) as merged implementation evidence
+> and carries no acceptance, no compatibility promise, and no Verified claim.
+> Metric definitions and measurement conditions are reused verbatim
+> from the [Performance Budget RFC](performance-budget-rfc.md) (OQ-001);
+> this scope adds no new budget and changes no number.
+
+### Surface
+
+Live profiling is read-only observation of process and rendering health,
+exposed through the same versioned debug protocol and per-consumer
+observability queues; it creates no new queue family and no new transport:
+
+| Implemented method               | Required scope  | Implemented content (numeric aggregates only)                                                                    |
+| -------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `bitty.debug/getProcessStats`    | `debug.inspect` | RSS, average CPU over a bounded window, task and timer counts, using the PB-2, PB-3, and PB-7 conditions         |
+| `bitty.debug/getFrameStats`      | `debug.inspect` | Frame-time p50/p99, presented-fps, missed-present count, GPU memory where the renderer exposes it, backend label |
+| `bitty.debug/streamProcessStats` | `debug.trace`   | Sampled subscription (`process-stats`) over the accepted `streamEvents` batching and chunking                    |
+| `bitty.debug/streamFrameStats`   | `debug.trace`   | Sampled subscription (`frame-stats`) over the accepted `streamEvents` batching and chunking                      |
+
+Point-in-time getters serve DevTools inspection; the two streaming
+subscriptions serve live views. Both reuse the accepted batching (32 records
+or 8 KiB per wakeup), 256 KiB chunking, and counted-drop semantics.
+
+### Sampling-versus-tracing posture
+
+Sampling is the only profiling posture in this scope:
+
+1. The profiler reads pre-aggregated counters on the cold path at a sampled
+   cadence with an implemented interval floor of 100 ms per `bitty` CTX-0189;
+   successive samples from the same owner coalesce latest-wins, consistent with
+   the accepted coalescing rule.
+2. No profiler code runs synchronously on the parser, render, or input hot
+   paths, preserving the cold-path-only instrumentation principle and the
+   PB-4 tail-latency budget.
+3. Per-frame event tracing and any sub-100 ms cadence are explicitly
+   deferred: admission needs a future amendment with PB-4 and PB-7
+   neutrality proof under tracing load.
+
+### Privacy and redaction
+
+Profiling records carry zero terminal bytes: no PTY output, no clipboard
+content, no environment maps, no frame text. Renderer-supplied label strings
+are bounded (at most 256 characters per the RFC candidate bound enforced by
+the `bitty` CTX-0189 implementation), never echo terminal content,
+and are labeled untrusted observation data. Spooled exports, if any, follow
+the accepted trace-file rules (user-only storage, mode `0600`,
+preview-equals-export).
+
+### Explicit non-goals
+
+This scope is not a system-wide profiler, attributes no process outside
+Bitty, intercepts no GPU API, establishes no always-on telemetry, aggregates
+nothing across sessions, sets no battery metric, changes no Performance
+Budget number or release gate, streams no profiling state over the v1 MCP
+adapter, and admits no per-frame tracing posture. Battery metrics and
+platform-tier relaxations stay owned by OQ-001 open items and OQ-003.
+
+### Verification (open; acceptance still required)
+
+Beyond the accepted verification plan, acceptance of both Amendment A1 scopes
+still requires at minimum (implementation is merged; acceptance is open):
+
+1. Bearer matrix: absent, expired, wrong-session, and wrong-terminal bearers
+   fail closed with typed `scope` errors and zero partial state for both
+   automation methods.
+2. Rate-cap shedding: sustained load above each implemented per-method ceiling
+   sheds with typed `budget` errors, counted drops stay byte-accurate, and
+   benign concurrent sessions are unaffected.
+3. Frame redaction: seeded secrets, clipboard bytes, environment bytes, and
+   unopted input markers never appear in `captureFrame` output; `0600`
+   mode asserted on spool files; export preview equals actual export
+   byte-for-byte.
+4. Profiling neutrality: sampling at the interval floor breaches neither the
+   PB-4 tail-latency budget nor the PB-7 idle-resource budget; hot-path
+   latency probes show no profiler callback registration.
+5. No-bypass audit extended: no flag, variable, configuration key, or debug
+   build switch issues, persists, or widens an automation bearer.
+
+## Frame digest method and panel-live gates (Implemented-only, Amendment A2)
+
+> Status: Implemented-only. This section documents `bitty` CTX-0244 (PR
+> #421, commit `3f5ed24`, `bitty.debug/frameHash` digest method) and
+> CTX-0242 (PR #423, commit `29772a3`, V1-V3 panel-live visual gates) as
+> merged implementation evidence and carries no acceptance, no
+> compatibility promise, and no Verified claim. It must not weaken any
+> normative control listed under
+> [Normative sources this specification must not weaken](#normative-sources-this-specification-must-not-weaken);
+> where it conflicts with one, the normative text wins. P0-AC-026 is
+> unchanged: digests are uninvertible, carry no text, and cannot leak
+> clipboard or environment bytes, so the redaction boundary does not move.
+
+The V1-V3 gates ask an equality question — does the frame the IPC path
+observed equal the frame the present path produced — not a transport
+question. A collision-resistant digest over canonical frame bytes answers
+equality in 32 bytes with zero pixel bytes on the wire.
+
+### Digest method
+
+| Implemented method      | Required scope and bearer                                                       | Implemented content                                                                                             |
+| ----------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `bitty.debug/frameHash` | `debug.trace` plus per-session `FrameDigest` automation bearer for one terminal | Hex SHA-256 digest (`algo: "sha256-v1"`) over canonical `BFH1` header plus `headless_rgba`, with frame sequence |
+
+1. Canonical bytes are the `BFH1` magic plus big-endian width, height,
+   and frame sequence followed by the raw premultiplied RGBA bytes. The
+   hash is std-only SHA-256 (no new dependency), pinned against the NIST
+   `"abc"` vector plus fixed canonical-frame vectors so the algorithm can
+   never silently drift; any future layout change bumps `sha256-v1` with a
+   dual-verify migration.
+2. Issuance reuses the CTX-0188 consent minter with no new scope and no
+   widening: the new `AutomationFamily::FrameDigest` bearer can never
+   satisfy a `Capture` check. Its TTL cap is 120 s (2 minutes, strictly
+   below the 10-minute automation cap), and its rate ceiling is 2
+   digests/s per bearer (overruns shed with typed `budget` /
+   `RateLimited` errors).
+3. Transport stays local-attested only; unattributed or out-of-scope
+   calls fail closed with `ScopeDenied`. Every attributable call —
+   granted and denied — appends one `digest` audit entry (caller
+   identity, frame sequence, served digest) to the bounded log (64
+   entries, drop-oldest).
+4. No raw pixel channel exists: pixel bytes never cross IPC under any
+   grant. That option stays deferred; admitting it needs a separate
+   review, not an extension of this amendment.
+
+### V1-V3 panel-live gates
+
+Implemented in `bitty` CTX-0242 as headless digest-equality gates
+(`crates/bitty-runtime/tests/panel_live_framehash.rs`), all
+Implemented-only evidence, not Verified:
+
+- V1 gap-diff plus rerun: the gapped digest differs from the no-gap
+  baseline for the same frame, and a rerun digest matches.
+- V2 focus-change plus restore: moving focus changes the digest, and
+  switching back restores it.
+- V3 workspace-alias parity: the `workspace` canonical path and the
+  `tabs` shim produce equal digests.
+- A real-Unix-socket `frameHash` round-trip proves the served digest
+  equals the present-path digest with zero pixel bytes. The live-grant
+  ws4 ceremony stays local-manual (ignore-gated).
+
+Acceptance of this amendment needs the Amendment A1 admission gate plus
+frame-digest specifics: the 120 s TTL and 2/s ceiling stay adequate under
+harness load, the digest audit stays byte-accurate under contention, and
+no pixel channel ships without its own reviewed amendment.
+
 ## Transport, authentication, and session lifecycle (accepted)
 
 1. DevTools connections use the existing IPC transport: current-user
@@ -390,6 +712,12 @@ a scope.
    `bitty plugin revoke` and the plugin-manager action remove debug
    grants, and the host detaches affected handlers at the next dispatch
    boundary with an auditable receipt.
+
+> Implementation note (Implemented-only, CTX-0127): Windows instance
+> discovery over named pipes is implemented in `bitty` CTX-0196 (PR #330,
+> commit `8af138e`, registry-dir scan plus live pipe-namespace enumeration
+> with Unix exit-code parity). The accepted transport contract above is
+> unchanged; this note claims no Verified status.
 
 ## Record/replay and MCP adapter (accepted staging)
 
@@ -514,6 +842,23 @@ require a follow-up decision:
 8. Presentation for multi-session hosts: how `instance`, `window`, `view`,
    and `terminal` identifiers surface in the debug protocol when more
    than one graphical session exists.
+9. (Amendment A1, Implemented-only, acceptance open) Automation bearer
+   issuance UX and TTL default: how consent is presented and whether the
+   implemented 10 minutes remains the right expiry.
+10. (Amendment A1, Implemented-only, acceptance open) `pixels`-format
+    retention, rotation, and garbage collection alongside the accepted
+    trace-file policy in item 7.
+11. (Amendment A1, Implemented-only, acceptance open) Admission criteria for
+    a future per-frame tracing posture, including its PB-4 and PB-7 neutrality
+    proof.
+12. (Amendment A1, Implemented-only, acceptance open) Whether `captureFrame`
+    or profiling streams ever join a post-v1 MCP elevation model, and under
+    which consent shape.
+13. (Amendment A2, Implemented-only, acceptance open) Whether the
+    `FrameDigest` bearer TTL cap (120 s) and rate ceiling (2 digests/s)
+    stay adequate under harness load, and whether a raw pixel channel is
+    ever admitted (deferred; needs its own reviewed amendment, never an
+    extension of A2).
 
 ## Acceptance criteria
 

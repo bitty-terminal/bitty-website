@@ -27,6 +27,13 @@ question the Lua Runtime RFC explicitly deferred to OQ-031. Frontmatter `status`
 is `accepted` per the repository metadata schema; document status is Accepted.
 Lifecycle is `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`.
 
+- Reconciliation note (ADR 0009, 2026-09-11): the v1 Lua surface applies this
+  ADR's typed-denial rule uniformly to ungranted namespaces, with one
+  carve-out: `bitty.env` is absent from the VM unless the manifest declares an
+  `env:<KEY>` capability; when declared but not granted, its functions fail
+  closed with `E_CAPABILITY_DENIED` and never enumerate keys. Denial semantics,
+  key minimization, and audit behavior are unchanged
+  ([LUA-OQ-2](ADR-0009-plugin-api-v1-lua-surface.md#lua-oq-2-absent-versus-denied-namespaces)).
 - Deciders: project initiator (DEC-001), security-auditor persona (audit gate
   per Lua Runtime RFC security review and R-014 and T-11 and P0-AC-026),
   `bitty-lua` and `bitty-config` maintainers (CTX-0053).

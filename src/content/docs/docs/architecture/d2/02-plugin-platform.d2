@@ -1,0 +1,167 @@
+# docs/architecture/d2/02-plugin-platform.d2 — L1 plugin platform and lifecycle
+# Source of truth: ../glossary.yaml
+# Visual rules: rect=module/crate, rounded=panel/capability, dashed=boundary/sandbox, solid=call/depends, dashed=event/async
+# Levels: L1 subsystem, L2 generation inside
+# To regenerate SVG: d2 02-plugin-platform.d2 ../final/02-plugin-platform.svg
+
+direction: right
+
+# --- Manifest and identity ---
+manifest: {
+  label: "bitty-plugin.toml\nmanifest"
+  shape: rectangle
+  style.border-radius: 8
+}
+identity: {
+  label: "Plugin ID\nowner.name + semver"
+  shape: rectangle
+  style.border-radius: 8
+}
+compat: {
+  label: "Compat\nbitty >=0.8 / plugin-api ^1.0"
+  shape: rectangle
+  style.border-radius: 8
+}
+resolver: {
+  label: "Resolver\ndeterministic graph"
+  shape: rectangle
+}
+
+# --- Capability gate ---
+grant: {
+  label: "Capability Grant\nper-manifest-hash"
+  shape: rectangle
+  style.border-radius: 8
+  style.fill: "#fefce8"
+}
+capability_families: {
+  label: "Families\nterminal.read / ui.rich / clipboard / fs[paths] / network"
+  shape: rectangle
+  style.border-radius: 8
+}
+
+# --- Registries ---
+registries: {
+  label: "Registries"
+  style.stroke-dash: 3
+  command_reg: {
+    label: "Command\nowner:resource"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  event_reg: {
+    label: "Event\nobservation / interception"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  service_reg: {
+    label: "Service\nversioned interfaces"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  lazy: {
+    label: "Lazy triggers\ncommands / events / claims"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+# --- Host ---
+host: {
+  label: "bitty-plugin-host"
+  shape: rectangle
+  style.stroke-width: 2
+}
+host_api: {
+  label: "Host API\ncapability-checked, async/deadlined"
+  shape: rectangle
+  style.border-radius: 8
+}
+
+# --- Per-plugin sandbox (dashed boundary) ---
+plugin_sandbox: {
+  label: "Per-Plugin VM — sandbox"
+  style.stroke-dash: 4
+  style.fill: "#eff6ff"
+  vm: {
+    label: "Lua VM\npiccolo 0.3.3"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  generation: {
+    label: "Generation N\nowns timers/tasks/queues"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  stdlib: {
+    label: "Restricted stdlib\nno io/os/debug"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  budgets: {
+    label: "Budgets\nRC-1 10^7 / RC-2 32MiB / RC-5 queues"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+# --- Event pipeline (dashed = event/async) ---
+event_pipeline: {
+  label: "Event Pipeline\nPerSub 64 / PerPlugin 1024 / Global 8192"
+  shape: rectangle
+  style.border-radius: 8
+}
+drops: {
+  label: "Drop Policy\nDropOldest (v1) / DropNewest"
+  shape: rectangle
+  style.border-radius: 8
+}
+
+# --- External ---
+config_pkg: {
+  label: "bitty-config + bitty-package"
+  shape: rectangle
+}
+lua: {
+  label: "bitty-lua"
+  shape: rectangle
+}
+
+# --- Edges ---
+manifest -> resolver: "validate\n<=256 KiB, bounded lists"
+resolver -> grant: "grant check"
+grant -> host: "discover\nno execution at install"
+host -> host_api: "checks capability"
+manifest -> host: "pre-parsed before VM"
+host -> registries.command_reg: "reserve commands"
+host -> registries.event_reg: "subscribe"
+host -> registries.service_reg: "provide"
+host -> registries.lazy: "lazy map"
+host -> plugin_sandbox.vm: "create per ID+gen"
+plugin_sandbox.vm -> plugin_sandbox.stdlib: "deny ambient"
+plugin_sandbox.vm -> plugin_sandbox.generation: "owns"
+plugin_sandbox.vm -> plugin_sandbox.budgets: "enforced RC-1/2/5"
+lua -> plugin_sandbox.vm: "Fuel clock + mem"
+
+host -> event_pipeline: "publish" {
+  style.stroke-dash: 3
+}
+event_pipeline -> drops: ""
+event_pipeline -> plugin_sandbox.vm: "deliver observation" {
+  style.stroke-dash: 3
+}
+plugin_sandbox.vm -> host_api: "call"
+host_api -> registries.command_reg: "dispatch"
+host_api -> registries.service_reg: "get"
+
+config_pkg -> host: "depends"
+lua -> host: "depends (via creation)"
+capability_families -> grant: "identifiers\n deny-by-default"
+
+# Annotation
+note: {
+  label: "No private channel: first-party and community use same API. VM is namespace, not sandbox; WASM / helper deferred. Queues: PerSubscription strict, PerPlugin Drop, Global hard-gated. See plugin-platform-rfc and glossary.yaml."
+  shape: rectangle
+  style.fill: "#f8fafc"
+  style.stroke-dash: 2
+}

@@ -1,0 +1,191 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Soft shadow for app window -->
+    <filter id="window-shadow" x="-8%" y="-8%" width="116%" height="116%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#000" flood-opacity="0.28"/>
+    </filter>
+
+    <!-- Soft blush gradients -->
+    <radialGradient id="blush-grad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ff7e7e" stop-opacity="0.65"/>
+      <stop offset="100%" stop-color="#ff7e7e" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Inner ear pink gradient -->
+    <linearGradient id="ear-pink" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffa599"/>
+      <stop offset="100%" stop-color="#f87b72"/>
+    </linearGradient>
+
+    <!-- Clip path to keep mascot body inside terminal screen -->
+    <clipPath id="screen-clip">
+      <rect x="44" y="44" width="424" height="424" rx="54" ry="54"/>
+    </clipPath>
+  </defs>
+
+  <!-- 1. Window Bezel (Outer warm frame) -->
+  <rect x="24" y="24" width="464" height="464" rx="72" ry="72"
+        fill="#f4efe6" stroke="#dcd4c8" stroke-width="4" filter="url(#window-shadow)"/>
+
+  <!-- 2. Dark Terminal Screen -->
+  <rect x="44" y="44" width="424" height="424" rx="54" ry="54"
+        fill="#1a1b22"/>
+
+  <!-- 3. Terminal Window Header Controls (Traffic Lights) -->
+  <g id="traffic-lights">
+    <!-- Close (Red) -->
+    <circle cx="96" cy="84" r="13" fill="#ff5f56" stroke="#e0443e" stroke-width="1.5"/>
+    <!-- Minimize (Yellow) -->
+    <circle cx="138" cy="84" r="13" fill="#ffbd2e" stroke="#dea123" stroke-width="1.5"/>
+    <!-- Maximize (Green) -->
+    <circle cx="180" cy="84" r="13" fill="#27c93f" stroke="#1aab29" stroke-width="1.5"/>
+  </g>
+
+  <!-- 4. Mascot Peek-through -->
+  <g id="mascot-container" clip-path="url(#screen-clip)">
+
+    <!-- EARS (Behind head) -->
+    <!-- Left Ear -->
+    <g id="left-ear">
+      <!-- Outer ear lobe -->
+      <path d="M 180 220 
+               C 150 168 115 130 84 152 
+               C 54 174 62 236 100 270 
+               C 126 292 158 280 180 252 Z"
+            fill="#a69083" stroke="#2c1a14" stroke-width="5.5" stroke-linejoin="round"/>
+      <!-- Inner ear pink -->
+      <path d="M 166 222 
+               C 140 178 114 150 94 165 
+               C 74 180 80 226 110 254 
+               C 130 270 152 260 166 242 Z"
+            fill="url(#ear-pink)"/>
+      <!-- Inner ear white fur tuft -->
+      <path d="M 148 232 Q 158 222 166 236 Q 166 222 175 236"
+            fill="none" stroke="#faf5ee" stroke-width="4" stroke-linecap="round"/>
+    </g>
+
+    <!-- Right Ear -->
+    <g id="right-ear">
+      <!-- Outer ear lobe -->
+      <path d="M 332 220 
+               C 362 168 397 130 428 152 
+               C 458 174 450 236 412 270 
+               C 386 292 354 280 332 252 Z"
+            fill="#a69083" stroke="#2c1a14" stroke-width="5.5" stroke-linejoin="round"/>
+      <!-- Inner ear pink -->
+      <path d="M 346 222 
+               C 372 178 398 150 418 165 
+               C 438 180 432 226 402 254 
+               C 382 270 360 260 346 242 Z"
+            fill="url(#ear-pink)"/>
+      <!-- Inner ear white fur tuft -->
+      <path d="M 364 232 Q 354 222 346 236 Q 346 222 337 236"
+            fill="none" stroke="#faf5ee" stroke-width="4" stroke-linecap="round"/>
+    </g>
+
+    <!-- HEAD BASE & TEMPLE FUR (Darker coat underlay) -->
+    <path d="M 98 410 
+             C 80 350 86 275 132 205 
+             C 175 168 337 168 380 205 
+             C 426 275 432 350 414 410 Z"
+          fill="#a69083" stroke="#2c1a14" stroke-width="5.5" stroke-linejoin="round"/>
+
+    <!-- WHITE / CREAM FACE MASK -->
+    <path d="M 102 410 
+             C 92 368 102 342 116 328
+             L 104 322 C 92 310 98 288 116 280
+             L 108 272 C 100 256 112 238 134 232
+             C 156 226 178 206 208 212
+             C 228 216 244 245 256 276
+             C 268 245 284 216 304 212
+             C 334 206 356 226 378 232
+             C 400 238 412 256 404 272
+             L 396 280 C 414 288 420 310 408 322
+             L 396 328 C 410 342 420 368 410 410
+             Z"
+          fill="#faf5ee"/>
+
+    <!-- DORSAL FOREHEAD STRIPE (Smooth organic shield shape) -->
+    <path d="M 216 174 
+             C 228 202 236 242 256 302 
+             C 276 242 284 202 296 174 
+             C 270 166 242 166 216 174 Z"
+          fill="#6d584c"/>
+
+    <!-- CHEEK FLUFF ACCENT STROKES -->
+    <path d="M 108 272 C 100 256 112 238 134 232" fill="none" stroke="#2c1a14" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M 116 280 L 104 322" fill="none" stroke="#2c1a14" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M 116 328 C 102 342 92 368 102 410" fill="none" stroke="#2c1a14" stroke-width="4.5" stroke-linecap="round"/>
+
+    <path d="M 404 272 C 412 256 400 238 378 232" fill="none" stroke="#2c1a14" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M 396 280 L 408 322" fill="none" stroke="#2c1a14" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M 396 328 C 410 342 420 368 410 410" fill="none" stroke="#2c1a14" stroke-width="4.5" stroke-linecap="round"/>
+
+    <!-- CHEEK BLUSH -->
+    <ellipse cx="154" cy="342" rx="28" ry="16" fill="url(#blush-grad)"/>
+    <ellipse cx="358" cy="342" rx="28" ry="16" fill="url(#blush-grad)"/>
+
+    <!-- TERMINAL PROMPT EYES -->
+    <!-- Left Eye: Terminal Prompt (>) -->
+    <path d="M 172 284 L 214 306 L 172 328"
+          fill="none" stroke="#251610" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Right Eye: Terminal Cursor (_) -->
+    <line x1="298" y1="306" x2="340" y2="306"
+          stroke="#251610" stroke-width="14" stroke-linecap="round"/>
+
+    <!-- NOSE -->
+    <path d="M 248 316 C 248 310 264 310 264 316 C 264 324 256 328 256 328 C 256 328 248 324 248 316 Z"
+          fill="#ff7575"/>
+
+    <!-- MOUTH -->
+    <!-- Upper cat-smile lips -->
+    <path d="M 238 333 Q 248 341 256 336 Q 264 341 274 333"
+          fill="none" stroke="#251610" stroke-width="5" stroke-linecap="round"/>
+    <!-- Open cheerful mouth -->
+    <path d="M 241 336 Q 256 378 271 336 Z"
+          fill="#be123c" stroke="#251610" stroke-width="4" stroke-linejoin="round"/>
+    <!-- Pink tongue inside -->
+    <path d="M 245 348 Q 256 342 267 348 Q 256 374 245 348 Z"
+          fill="#fca5a5"/>
+
+    <!-- 5. WINDOW SILL (Bottom rail) -->
+    <!-- Dark recessed ledge -->
+    <rect x="44" y="394" width="424" height="42" rx="4"
+          fill="#131418" stroke="#25262e" stroke-width="2.5"/>
+
+    <!-- 6. PAWS DRAPED OVER SILL -->
+    <!-- Left Paw -->
+    <g id="left-paw">
+      <!-- Upper paw wrist/palm base behind fingers -->
+      <path d="M 106 388 C 104 366 126 358 144 358 C 166 358 182 368 182 388 Z"
+            fill="#ffd4ce" stroke="#2c1a14" stroke-width="4.5" stroke-linejoin="round"/>
+      <!-- 4 Plump Rounded Fingers grasping the sill -->
+      <path d="M 105 384 C 103 408 107 420 116 420 C 124 420 126 408 126 384 Z"
+            fill="#ffd4ce" stroke="#2c1a14" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M 124 384 C 122 412 127 426 136 426 C 145 426 146 412 146 384 Z"
+            fill="#ffd4ce" stroke="#2c1a14" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M 144 384 C 142 412 147 426 156 426 C 165 426 166 412 166 384 Z"
+            fill="#ffd4ce" stroke="#2c1a14" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M 164 384 C 163 408 167 420 176 420 C 184 420 186 408 185 384 Z"
+            fill="#ffd4ce" stroke="#2c1a14" stroke-width="4" stroke-linejoin="round"/>
+    </g>
+
+    <!-- Right Paw -->
+    <g id="right-paw">
+      <!-- Upper paw wrist/palm base behind fingers -->
+      <path d="M 330 388 C 330 368 346 358 368 358 C 386 358 408 366 406 388 Z"
+            fill="#ffd4ce" stroke="#2c1a14" stroke-width="4.5" stroke-linejoin="round"/>
+      <!-- 4 Plump Rounded Fingers grasping the sill -->
+      <path d="M 327 384 C 326 408 328 420 336 420 C 345 420 349 408 348 384 Z"
+            fill="#ffd4ce" stroke="#2c1a14" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M 346 384 C 346 412 347 426 356 426 C 365 426 370 412 368 384 Z"
+            fill="#ffd4ce" stroke="#2c1a14" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M 366 384 C 366 412 367 426 376 426 C 385 426 390 412 388 384 Z"
+            fill="#ffd4ce" stroke="#2c1a14" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M 386 384 C 386 408 388 420 396 420 C 405 420 409 408 407 384 Z"
+            fill="#ffd4ce" stroke="#2c1a14" stroke-width="4" stroke-linejoin="round"/>
+    </g>
+
+  </g>
+</svg>

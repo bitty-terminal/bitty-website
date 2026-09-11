@@ -1,0 +1,31 @@
+%% docs/architecture/mermaid/config-resolution-flow.mmd — L2 config resolution flow
+%% Source of truth: ../glossary.yaml
+%% Implements Configuration Model RFC Candidate A accepted v1
+flowchart TD
+  A[init.lua\n Lua primary config\n trusted user code] --> B[Ephemeral Config VM\nsandbox\nplain data only\nno side effects]
+  B --> C[ConfigPlan\ndeclarative data]
+  C --> D[Typed validation\nschema per field merge class\nunknown fields fail]
+  D --> E{Layers}
+  E --> F[Core defaults]
+  E --> G[system]
+  E --> H[distribution]
+  E --> I[profile extends chain\ncycle detection]
+  E --> J[user]
+  E --> K[trusted local override]
+  E --> L[CLI flags]
+  F & G & H & I & J & K & L --> M[Merge\ndeclared precedence\nnot load order\nsource attribution survives]
+  M --> N[Non-overridable policy?\n system non-overridable entries]
+  N -->|override attempt| O[Validation fail\ndedicated diagnostic]
+  N -->|ok| P[Diff\ncompute with file locations\nreport conflicts]
+  P --> Q[Classify per field\nlive-reconcilable / restart-required / rejected]
+  Q --> R{Any rejected?}
+  R -->|yes| S[Keep last good RuntimeConfig\nemit diagnostics]
+  R -->|no| T{Any restart-required?}
+  T -->|yes| U[Persist RuntimeConfig\nreport restart needed]
+  T -->|no| V[Reconcile → RuntimeConfig\napply without restart]
+  W[Project config\ndeclarative-data-only\nT-08] -.-> C
+  W -.-> D
+  S --> V
+  U --> V
+  V --> X[Runtime uses RuntimeConfig\nConfigPlan never touches\n terminal truth directly]
+  Y[config show --source\ntruthful attribution] --> M

@@ -1,0 +1,162 @@
+# docs/architecture/d2/03-panel-system.d2 — L1 panel and workspace compositor
+# Source of truth: ../glossary.yaml
+# Visual rules: rect=module/crate, rounded=panel/capability, dashed=boundary/sandbox, solid=call/depends, dashed=event/async
+# Levels: L1 subsystem — Instance/Window/Workspace/LayoutTree/View, L3 decoration relation
+# To regenerate SVG: d2 03-panel-system.d2 ../final/03-panel-system.svg
+
+direction: down
+
+# --- Identity hierarchy ---
+instance: {
+  label: "Instance (InstanceId)\nprocess"
+  shape: rectangle
+}
+window: {
+  label: "Window (WindowId)\nnative OS window — bitty-platform owns handle"
+  shape: rectangle
+}
+workspace: {
+  label: "Workspace (WorkspaceId)\ntiling compositor — mirrors Hyprland workspace"
+  shape: rectangle
+  style.stroke-width: 2
+}
+
+# Workspace internals
+workspace_inner: {
+  label: "Workspace internals"
+  style.stroke-dash: 3
+  style.fill: "#ecfdf5"
+  layout_tree: {
+    label: "LayoutTree\nH | V | View(ViewId)"
+    shape: rectangle
+  }
+  decoration: {
+    label: "Decoration\nCore-owned"
+    shape: rectangle
+    style.border-radius: 8
+    gaps_in: {
+      label: "gaps_in"
+      shape: rectangle
+      style.border-radius: 8
+    }
+    gaps_out: {
+      label: "gaps_out"
+      shape: rectangle
+      style.border-radius: 8
+    }
+    border: {
+      label: "border"
+      shape: rectangle
+      style.border-radius: 8
+    }
+    radius: {
+      label: "radius"
+      shape: rectangle
+      style.border-radius: 8
+    }
+  }
+  layout_provider: {
+    label: "LayoutProvider\nplugin — dwindle / master / grid"
+    shape: rectangle
+    style.border-radius: 8
+    style.fill: "#eff6ff"
+  }
+}
+
+# --- Views ---
+views: {
+  label: "LayoutTree leaves"
+  style.stroke-dash: 3
+  view_a: {
+    label: "View (ViewId)\n→ Terminal(TerminalId)"
+    shape: rectangle
+    style.border-radius: 8
+    style.fill: "#fefce8"
+  }
+  view_b: {
+    label: "View (ViewId)\n→ Rich(RichBlock)"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  view_c: {
+    label: "View (ViewId)\n→ Browser(surface)"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  view_empty: {
+    label: "View (ViewId)\nEmpty"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  panel_note: {
+    label: "Panel (candidate)\nworkspace-managed container\ngeneralizes View content"
+    shape: rectangle
+    style.border-radius: 8
+    style.stroke-dash: 2
+    style.fill: "#fdf2f8"
+  }
+}
+
+# --- Content owners ---
+terminal: {
+  label: "Terminal(TerminalId)\nPTY / grid / scrollback\nbitty-term-state + pty"
+  shape: rectangle
+}
+rich: {
+  label: "RichBlock\nbitty-rich"
+  shape: rectangle
+  style.border-radius: 8
+}
+browser: {
+  label: "Browser surface\ncapability browser.*"
+  shape: rectangle
+  style.border-radius: 8
+}
+panel_runtime: {
+  label: "Panel Runtime (candidate)\ninter-panel Event Bus deferred"
+  shape: rectangle
+  style.border-radius: 8
+  style.stroke-dash: 2
+  style.fill: "#f8fafc"
+}
+
+# --- Edges (solid = contains / hosts, dashed = proposes / event) ---
+instance -> window: "owns 1..N windows"
+window -> workspace: "owns 1..N\n1 active"
+workspace -> workspace_inner.layout_tree: "owns exactly 1"
+workspace_inner.layout_tree -> views.view_a: "leaf"
+workspace_inner.layout_tree -> views.view_b: "leaf"
+workspace_inner.layout_tree -> views.view_c: "leaf"
+workspace_inner.layout_tree -> views.view_empty: "leaf"
+views.view_a -> terminal: "hosts at most 1\nmove preserves TerminalId"
+views.view_b -> rich: "hosts"
+views.view_c -> browser: "hosts"
+views.panel_note -> views.view_a: "candidate binding"
+views.panel_note -> panel_runtime: "future lifecycle"
+
+workspace_inner.decoration -> workspace_inner.layout_tree: "configures"
+workspace_inner.decoration.gaps_in -> workspace_inner.decoration: ""
+workspace_inner.decoration.gaps_out -> workspace_inner.decoration: ""
+workspace_inner.decoration.border -> workspace_inner.decoration: ""
+workspace_inner.decoration.radius -> workspace_inner.decoration: ""
+workspace_inner.layout_provider -> workspace_inner.layout_tree: "proposes geometry" {
+  style.stroke-dash: 3
+}
+workspace_inner.layout_tree -> workspace: "Core commits" {
+  style.stroke: "#000000"
+}
+
+# Constraints
+constraints: {
+  label: "Invariants: ViewId ≠ TerminalId (distinct newtypes). At most 1 View per TerminalId. View never holds PTY fd / GPU handle / window handle. LayoutProvider never mutates decoration."
+  shape: rectangle
+  style.fill: "#fffbeb"
+  style.stroke-dash: 2
+}
+constraints -> workspace_inner.layout_tree: ""
+
+# Instance owns windows note
+instance -> workspace: "" {
+  style.stroke: "#000000"
+  style.opacity: 0
+}

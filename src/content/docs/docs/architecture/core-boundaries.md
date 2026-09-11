@@ -69,8 +69,11 @@ New requirements should pass through these two questions first.
   OQ-011/012/013).
 - First-party and community plugins use the same API, capabilities, and
   lifecycle, with no private channel (Governance RFC OQ-024).
-- The authoritative Plugin API definition lives in the core repository. The SDK
-  is generated output and development support (Plugin Platform RFC).
+- The authoritative Plugin API v1 contract text lives in the `bitty-docs`
+  corpus ([Plugin API v1 Lua Surface RFC](../specifications/plugin-api-v1-lua-surface-rfc.md),
+  [ADR 0009](../decisions/adrs/ADR-0009-plugin-api-v1-lua-surface.md)). The
+  `bitty` repository owns the implementation and parity evidence; the SDK is
+  generated output and development support (Plugin Platform RFC).
 - The debug protocol sits inside the core boundary. DevTools and MCP consume it
   from outside that boundary (DevTools RFC OQ-019; IPC/Agent RFC OQ-018).
 
@@ -282,6 +285,81 @@ above.
   bypass a capability (Governance RFC OQ-024).
 - Debug consumers read state only through a versioned protocol and do not link
   application-private types (`Accepted` DevTools RFC OQ-019; `Implemented` but not yet `Verified`).
+
+## Candidate 009 cross-cutting rules
+
+The following rules are candidates from the platform-architecture research
+direction. They refine the candidate decision rule above; they do not change
+any accepted ownership table and do not weaken any normative P0 gate.
+
+### Primitive-or-composable test
+
+For every new capability ask:
+
+> Is it a Platform Primitive, or is it composable from existing primitives?
+
+`Workspace`, `Panel`, `Focus`, `Event`, `Command`, `Service`, `Capability`,
+`IPC`, and `Terminal Session` are candidate Platform Primitives. `AI`,
+`Git`, file management, and similar experiences are candidate composables
+that belong in plugins. A capability that fails this test as a primitive
+but is proposed for Core anyway requires an explicit ADR justifying why
+composition is insufficient.
+
+### Semantic API stability rule
+
+The Lua API exposes system semantics, never Rust implementation structure,
+so that Rust may refactor freely while the Lua surface stays stable:
+
+```lua
+-- Accepted v1 semantic API spellings (ADR 0009; Plugin API v1 Lua Surface RFC).
+bitty.terminal.snapshot({ scope = "semantic" })
+bitty.ui.mount("statusline", component)
+bitty.services.get("ai.chat", { version = ">=2.0" })
+```
+
+```lua
+-- Deliberately unsupported direction: Rust internals must never be public.
+terminal.grid.rows[3].cells[5].glyph
+bitty.ipc.send_raw_frame(...)
+bitty.renderer.draw(...)
+```
+
+Concretely: Rust owns mechanism (PTY, VT, GPU, IPC framing, concurrency,
+streaming, HTTP/SSE, resource bounds, capability enforcement, terminal
+state, provider protocols, lifecycle) while Lua owns policy (keymaps,
+workflows, commands, panel composition, automation, plugin behavior,
+prompt logic, provider preference, UX). In short: Rust makes things
+possible and safe; Lua decides how they are used.
+
+### Health signals beyond lines of code
+
+Total lines of code must never be compared directly against minimal
+terminals: Bitty carries a config runtime, Lua VM, plugin host, package
+manager, workspace model, UI extension, rich content, IPC, agent
+infrastructure, and security model that a bare emulator omits. Healthier
+candidate signals:
+
+- **Dependency direction**: the crate graph stays close to a DAG with no
+  reverse edges from lower layers to higher ones.
+- **Stable API surface growth**: the public Rust API, Lua API, IPC
+  protocol, plugin manifest, and service API grow slowly; surface growth
+  is more dangerous than line growth.
+- **Core hot path isolation**: nothing from Lua, plugins, IPC, or AI
+  enters the PTY read, VT, state, snapshot, and render path.
+- **Failure containment**: each subsystem failure degrades only its owner
+  (AI crash removes AI, plugin crash disables that plugin, IPC crash
+  removes control) while the terminal keeps working.
+- **Core-to-total ratio**: core complexity grows slowly while ecosystem
+  lines grow through composition; irreducible complexity and its placement
+  matter more than totals.
+
+Related extensibility challenges that remain open as follow-up work:
+dependency-conflict resolution, service disappearance semantics, and UI
+composition conflicts (multiple plugins claiming panels, status areas, or
+input). Dependency cycles are already rejected and lifecycle, capability,
+and event-storm controls are already accepted in the
+[Plugin Platform RFC](../specifications/plugin-platform-rfc.md); the three
+open items above still require their own RFCs.
 
 ## Pending decisions
 

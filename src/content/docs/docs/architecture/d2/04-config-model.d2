@@ -1,0 +1,159 @@
+# docs/architecture/d2/04-config-model.d2 — L2 config pipeline and XDG layers
+# Source of truth: ../glossary.yaml
+# Visual rules: rect=module/crate, rounded=panel/capability, dashed=boundary/sandbox, solid=call/depends
+# Levels: L1 crate + L2 flow
+# To regenerate SVG: d2 04-config-model.d2 ../final/04-config-model.svg
+
+direction: down
+
+# --- XDG layers ---
+layers: {
+  label: "XDG Layer Stack — declared precedence only"
+  style.stroke-dash: 3
+  style.fill: "#fefce8"
+  core_defaults: {
+    label: "Core defaults"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  system: {
+    label: "system"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  distribution: {
+    label: "distribution"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  profile: {
+    label: "profile (extends chain)"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  user: {
+    label: "user — init.lua"
+    shape: rectangle
+    style.border-radius: 8
+    style.fill: "#fef9c3"
+  }
+  trusted_override: {
+    label: "trusted local override"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  cli: {
+    label: "CLI flags"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  precedence: {
+    label: "Non-overridable system policy\nrejects override at validation"
+    shape: rectangle
+    style.border-radius: 8
+    style.fill: "#fee2e2"
+    style.stroke-dash: 2
+  }
+}
+
+# --- Pipeline: Candidate A accepted v1 ---
+pipeline: {
+  label: "Pipeline — Candidate A accepted v1 (Candidate C deferred, B rejected)"
+  lua_file: {
+    label: "init.lua\nLua primary config"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  config_vm: {
+    label: "Ephemeral Config Lua VM\nsandbox"
+    shape: rectangle
+    style.stroke-dash: 3
+    style.fill: "#eff6ff"
+  }
+  plan: {
+    label: "ConfigPlan\nplain data"
+    shape: rectangle
+    style.border-radius: 8
+    style.stroke-width: 2
+  }
+  validation: {
+    label: "Typed validation\nschema per field merge class"
+    shape: rectangle
+  }
+  merge: {
+    label: "Merge\nsource attribution survives"
+    shape: rectangle
+  }
+  diff: {
+    label: "Diff\nreport with file locations"
+    shape: rectangle
+  }
+  reconcile: {
+    label: "Reconcile\n→ RuntimeConfig"
+    shape: rectangle
+  }
+  runtime_config: {
+    label: "RuntimeConfig\nlive"
+    shape: rectangle
+    style.border-radius: 8
+    style.fill: "#ecfdf5"
+  }
+}
+
+# --- Reload classes ---
+reload: {
+  label: "Reload classification"
+  style.stroke-dash: 3
+  live: {
+    label: "Live-reconcilable"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  restart: {
+    label: "Restart-required"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  rejected: {
+    label: "Rejected — keep last good plan"
+    shape: rectangle
+    style.border-radius: 8
+    style.fill: "#fee2e2"
+  }
+}
+
+# --- Project trust ---
+project_trust: {
+  label: "Project Trust (T-08)\nproject config declarative-data-only\nno Lua exec without consent"
+  shape: rectangle
+  style.border-radius: 8
+  style.fill: "#fdf2f8"
+  style.stroke-dash: 3
+}
+
+# --- Edges ---
+pipeline.lua_file -> pipeline.config_vm: "evaluate"
+pipeline.config_vm -> pipeline.plan: "plain data only"
+pipeline.plan -> pipeline.validation: "schema"
+pipeline.validation -> pipeline.merge: "merge classes\ndeep / set-by-id / replace"
+layers -> pipeline.merge: "layer inputs"
+pipeline.merge -> pipeline.diff: "conflict = precedence"
+pipeline.diff -> pipeline.reconcile: "attribution lives\nconfig show --source"
+pipeline.reconcile -> pipeline.runtime_config: "diff/reconcile"
+pipeline.runtime_config -> reload.live: "classify"
+pipeline.runtime_config -> reload.restart: ""
+pipeline.runtime_config -> reload.rejected: "validation fail"
+
+pipeline.plan -> project_trust: "if project scope\n→ declarative only" {
+  style.stroke-dash: 3
+}
+layers.system -> layers.precedence: ""
+layers.precedence -> pipeline.validation: "hard fail if overridden"
+
+# --- Constraints note ---
+note: {
+  label: "Candidate B rejected: no half-mutation. No second parser: reload reuses same validation/merge path. Overlay API deferred to future RFC. See configuration-model-rfc and lua-and-xdg."
+  shape: rectangle
+  style.fill: "#f8fafc"
+  style.stroke-dash: 2
+}

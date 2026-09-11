@@ -1,13 +1,15 @@
 # Bitty Website
 
-This repository contains the minimal static website foundation for the Bitty
-project. It is a pre-implementation shell: it does not publish canonical
-documentation, product features, search, analytics, localized content, or a
-public routing contract.
+This repository contains the static website for the Bitty project. It renders
+the marketing shell plus the canonical `bitty-docs` documents whose frontmatter
+sets `website_publish: true`, consumed from one pinned revision. It does not
+publish product features, search, analytics, localized content, or an
+unversioned routing contract.
 
-Canonical technical documentation remains owned by `bitty-docs`. A future,
-separately reviewed task must define how a pinned documentation revision is
-validated and presented here.
+Canonical technical documentation remains owned by `bitty-docs`; this
+repository only mirrors and presents it. The authoritative mechanism,
+route mapping, and operator contract live in the canonical `bitty-docs`
+guide `docs/development/website-sync.md` (Website Delivery RFC, OQ-023).
 
 ## Requirements
 
@@ -29,10 +31,30 @@ Run the same logical quality gates used by CI:
 just check
 ```
 
-The aggregate check verifies formatting, Markdown linting, TypeScript 7.0.2
-with its native compiler, the Astro static build, the expected `dist/index.html`
-output, Wrangler's deployment configuration in dry-run mode, and both GitHub
-Actions workflows.
+The aggregate check verifies formatting, Markdown linting, the docs mirror
+staleness gate, TypeScript 7.0.2 with its native compiler, the Astro static
+build, the expected `dist/index.html` output, Wrangler's deployment
+configuration in dry-run mode, and both GitHub Actions workflows.
+
+## Documentation sync
+
+Never edit `src/content/docs/` by hand: it is a generated, read-only mirror of
+the pinned `bitty-docs` revision. The single pin lives in
+`src/content/docs-revision.json`; `src/content/docs-manifest.json` records the
+per-file provenance (source path, SHA-256, revision).
+
+Advance the mirror to a merged, reviewed `bitty-docs` commit:
+
+```sh
+just docs-sync PIN=<merged-docs-sha>   # or: bun run sync:docs --pin <sha>
+just docs-check                        # fail-closed staleness gate
+```
+
+`just check` runs `docs:check`, so CI fails when the mirror or manifest drifts
+from the pinned revision or was hand-edited. Canonical documentation is the
+source and must be recorded continuously: a docs change is not complete until
+the website pin advances in the same delivery window. See the canonical
+operator note for the full procedure.
 
 Git hooks managed by lefthook enforce Conventional Commits messages and
 pre-commit formatting plus Markdown linting on staged files. Install them once

@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="640" viewBox="0 0 1140 640">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-dashed" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#94a3b8" />
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <style>
+    .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+    .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; fill: #94a3b8; }
+    .badge { font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 600; fill: #38bdf8; }
+    .group-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+    .node-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #f8fafc; text-anchor: middle; }
+    .node-sub { font-family: "JetBrains Mono", monospace; font-size: 10px; fill: #94a3b8; text-anchor: middle; }
+    .node-title-dark { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #0f172a; text-anchor: middle; }
+    .node-sub-dark { font-family: "JetBrains Mono", monospace; font-size: 10px; fill: #334155; text-anchor: middle; }
+    .edge-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; fill: #94a3b8; text-anchor: middle; }
+    .btn-link { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 600; fill: #ffffff; }
+  </style>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#0f172a" />
+  
+  <!-- Header Bar -->
+  <rect x="0" y="0" width="1140" height="65" fill="#1e293b" />
+  <text x="30" y="32" class="title">L1 Core Workspace Topology &amp; 16-Crate DAG</text>
+  <text x="30" y="52" class="subtitle">Strict directed acyclic graph (DAG) of the 16 core workspace crates organized into 5 dependency layers, enforcing strict non-inversion rules.</text>
+
+  <!-- Interactive Link Banner -->
+  <a href="../interactive/01-core.html" target="_blank">
+    <rect x="850" y="16" width="260" height="34" rx="6" fill="#0284c7" />
+    <text x="980" y="38" class="btn-link" text-anchor="middle">⚡ Open Interactive HTML Model ↗</text>
+  </a>
+  <g id="group-foundation">
+    <rect x="50" y="100" width="1040" height="160" rx="10" fill="rgba(254, 252, 232, 0.08)" stroke="#ca8a04" stroke-width="1.5" stroke-dasharray="6,4" />
+    <text x="64" y="124" class="group-label">Layer 0: Foundation (Zero Workspace Dependencies)</text>
+  </g>
+  <g id="group-state">
+    <rect x="50" y="290" width="340" height="130" rx="10" fill="rgba(236, 253, 245, 0.08)" stroke="#059669" stroke-width="1.5" stroke-dasharray="6,4" />
+    <text x="64" y="314" class="group-label">Layer 1: State (Terminal Truth)</text>
+  </g>
+  <g id="group-presentation">
+    <rect x="420" y="290" width="670" height="130" rx="10" fill="rgba(239, 246, 255, 0.08)" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="6,4" />
+    <text x="434" y="314" class="group-label">Layer 2: Presentation &amp; Layout</text>
+  </g>
+  <g id="group-host">
+    <rect x="50" y="450" width="340" height="130" rx="10" fill="rgba(253, 242, 248, 0.08)" stroke="#db2777" stroke-width="1.5" stroke-dasharray="6,4" />
+    <text x="64" y="474" class="group-label">Layer 3: Extension Host</text>
+  </g>
+  <g id="group-orchestration">
+    <rect x="420" y="450" width="670" height="130" rx="10" fill="rgba(245, 243, 255, 0.08)" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="none" />
+    <text x="434" y="474" class="group-label">Layer 4: Orchestration &amp; Application Root</text>
+  </g>
+  <line x1="220" y1="362.5" x2="153.15068493150685" y2="214" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="141.5753424657534" y="274.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="186.5753424657534" y="284.25" class="edge-label">applies action</text>
+  <line x1="540" y1="362.5" x2="334" y2="362.5" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="392" y="348.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="437" y="358.5" class="edge-label">reads snapshot</text>
+  <line x1="540" y1="362.5" x2="473.1506849315069" y2="214" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="461.57534246575347" y="274.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="506.57534246575347" y="284.25" class="edge-label">surface target</text>
+  <line x1="750" y1="362.5" x2="334" y2="362.5" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="497" y="348.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="542" y="358.5" class="edge-label">views</text>
+  <line x1="960" y1="362.5" x2="334" y2="362.5" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="602" y="348.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="647" y="358.5" class="edge-label">overlays</text>
+  <line x1="960" y1="362.5" x2="214" y2="195.57926829268294" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="542" y="265.0396341463415" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="587" y="275.0396341463415" class="edge-label">escapes</text>
+  <line x1="220" y1="522.5" x2="220" y2="399" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="175" y="446.75" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="220" y="456.75" class="edge-label">cold events</text>
+  <line x1="220" y1="522.5" x2="584.9635036496351" y2="214" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="357.48175182481754" y="354.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="402.48175182481754" y="364.25" class="edge-label">plugin config</text>
+  <line x1="220" y1="522.5" x2="730.948905109489" y2="214" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="430.4744525547445" y="354.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="475.4744525547445" y="364.25" class="edge-label">package store</text>
+  <line x1="220" y1="522.5" x2="872.3722627737226" y2="214" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="501.18613138686123" y="354.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="546.1861313868612" y="364.25" class="edge-label">VM host</text>
+  <line x1="590" y1="522.5" x2="325.4014598540146" y2="214" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="412.7007299270073" y="354.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="457.7007299270073" y="364.25" class="edge-label">spawn child</text>
+  <line x1="590" y1="522.5" x2="179.4160583941606" y2="214" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="339.7080291970803" y="354.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="384.7080291970803" y="364.25" class="edge-label">feed parser</text>
+  <line x1="590" y1="522.5" x2="295.15625" y2="399" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="397.578125" y="446.75" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="442.578125" y="456.75" class="edge-label">coordinate</text>
+  <line x1="590" y1="522.5" x2="550.15625" y2="399" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="525.078125" y="446.75" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="570.078125" y="456.75" class="edge-label">trigger redraw</text>
+  <line x1="590" y1="522.5" x2="717.5" y2="399" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="608.75" y="446.75" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="653.75" y="456.75" class="edge-label">update layout</text>
+  <line x1="590" y1="522.5" x2="334" y2="522.5" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="417" y="508.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="462" y="518.5" class="edge-label">dispatch cmds</text>
+  <line x1="910" y1="522.5" x2="724" y2="522.5" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="772" y="508.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="817" y="518.5" class="edge-label">executes</text>
+  <line x1="910" y1="522.5" x2="499.4160583941606" y2="214" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="659.7080291970804" y="354.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="704.7080291970804" y="364.25" class="edge-label">creates window</text>
+  <line x1="910" y1="522.5" x2="645.4014598540145" y2="214" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="732.7007299270073" y="354.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="777.7007299270073" y="364.25" class="edge-label">loads config</text>
+  <g id="node-vt" filter="url(#shadow)">
+    <a href="../interactive/01-core.html" target="_blank">
+      <rect x="70" y="150" width="140" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="140" y="177" class="node-title">bitty-vt</text>
+    <text x="140" y="191" class="node-sub">vte 0.15 parser</text>
+  </g>
+  <g id="node-pty" filter="url(#shadow)">
+    <a href="../interactive/01-core.html" target="_blank">
+      <rect x="230" y="150" width="140" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="300" y="177" class="node-title">bitty-pty</text>
+    <text x="300" y="191" class="node-sub">portable-pty</text>
+  </g>
+  <g id="node-platform" filter="url(#shadow)">
+    <a href="../interactive/01-core.html" target="_blank">
+      <rect x="390" y="150" width="140" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="460" y="177" class="node-title">bitty-platform</text>
+    <text x="460" y="191" class="node-sub">winit 0.30</text>
+  </g>
+  <g id="node-config" filter="url(#shadow)">
+    <a href="../interactive/01-core.html" target="_blank">
+      <rect x="550" y="150" width="140" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="620" y="177" class="node-title">bitty-config</text>
+    <text x="620" y="191" class="node-sub">ConfigPlan</text>
+  </g>
+  <g id="node-package" filter="url(#shadow)">
+    <a href="../interactive/01-core.html" target="_blank">
+      <rect x="710" y="150" width="140" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="780" y="177" class="node-title">bitty-package</text>
+    <text x="780" y="191" class="node-sub">Tar/Gzip/Digest</text>
+  </g>
+  <g id="node-lua" filter="url(#shadow)">
+    <a href="../interactive/01-core.html" target="_blank">
+      <rect x="870" y="150" width="130" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="935" y="177" class="node-title">bitty-lua</text>
+    <text x="935" y="191" class="node-sub">piccolo 0.3.3</text>
+  </g>
+  <g id="node-term_state" filter="url(#shadow)">
+    <a href="../interactive/01-core.html" target="_blank">
+      <rect x="110" y="330" width="220" height="65" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="220" y="359.5" class="node-title">bitty-term-state</text>
+    <text x="220" y="373.5" class="node-sub">Grid &amp; History</text>
+  </g>
+  <g id="node-render" filter="url(#shadow)">
+    <a href="../interactive/01-core.html" target="_blank">
+      <rect x="450" y="330" width="180" height="65" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="540" y="359.5" class="node-title">bitty-render</text>
+    <text x="540" y="373.5" class="node-sub">wgpu 26.0</text>
+  </g>
+  <g id="node-ui" filter="url(#shadow)">
+    <a href="../interactive/01-core.html" target="_blank">
+      <rect x="660" y="330" width="180" height="65" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="750" y="359.5" class="node-title">bitty-ui</text>
+    <text x="750" y="373.5" class="node-sub">Compositor Layout</text>
+  </g>
+  <g id="node-rich" filter="url(#shadow)">
+    <a href="../interactive/01-core.html" target="_blank">
+      <rect x="870" y="330" width="180" height="65" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="960" y="359.5" class="node-title">bitty-rich</text>
+    <text x="960" y="373.5" class="node-sub">Media / Markdown</text>
+  </g>
+  <g id="node-plugin_host" filter="url(#shadow)">
+    <a href="../interactive/01-core.html" target="_blank">
+      <rect x="110" y="490" width="220" height="65" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="220" y="519.5" class="node-title">bitty-plugin-host</text>
+    <text x="220" y="533.5" class="node-sub">Capability &amp; VM</text>
+  </g>
+  <g id="node-runtime" filter="url(#shadow)">
+    <a href="../interactive/01-core.html" target="_blank">
+      <rect x="460" y="490" width="260" height="65" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="590" y="519.5" class="node-title">bitty-runtime</text>
+    <text x="590" y="533.5" class="node-sub">Central Wiring Loop</text>
+  </g>
+  <g id="node-app" filter="url(#shadow)">
+    <a href="../interactive/01-core.html" target="_blank">
+      <rect x="780" y="490" width="260" height="65" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="910" y="519.5" class="node-title">bitty-app</text>
+    <text x="910" y="533.5" class="node-sub">Binary Entrypoint</text>
+  </g>
+</svg>

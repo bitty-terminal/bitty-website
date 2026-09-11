@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1140" height="660" viewBox="0 0 1140 660">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-dashed" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#94a3b8" />
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <style>
+    .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+    .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; fill: #94a3b8; }
+    .badge { font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 600; fill: #38bdf8; }
+    .group-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+    .node-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #f8fafc; text-anchor: middle; }
+    .node-sub { font-family: "JetBrains Mono", monospace; font-size: 10px; fill: #94a3b8; text-anchor: middle; }
+    .node-title-dark { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #0f172a; text-anchor: middle; }
+    .node-sub-dark { font-family: "JetBrains Mono", monospace; font-size: 10px; fill: #334155; text-anchor: middle; }
+    .edge-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; fill: #94a3b8; text-anchor: middle; }
+    .btn-link { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 600; fill: #ffffff; }
+  </style>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#0f172a" />
+  
+  <!-- Header Bar -->
+  <rect x="0" y="0" width="1140" height="65" fill="#1e293b" />
+  <text x="30" y="32" class="title">L1 Plugin Platform, VM &amp; Event Pipeline</text>
+  <text x="30" y="52" class="subtitle">Plugin discovery, manifest validation, capability gating, per-plugin Lua VM execution, and bounded cold-path event queues.</text>
+
+  <!-- Interactive Link Banner -->
+  <a href="../interactive/02-plugin-platform.html" target="_blank">
+    <rect x="850" y="16" width="260" height="34" rx="6" fill="#0284c7" />
+    <text x="980" y="38" class="btn-link" text-anchor="middle">⚡ Open Interactive HTML Model ↗</text>
+  </a>
+  <g id="group-manifest_group">
+    <rect x="50" y="100" width="320" height="260" rx="10" fill="rgba(2, 132, 199, 0.05)" stroke="#0284c7" stroke-width="1.5" stroke-dasharray="6,4" />
+    <text x="64" y="124" class="group-label">Manifest &amp; Identity Stage</text>
+  </g>
+  <g id="group-security_gate">
+    <rect x="410" y="100" width="280" height="260" rx="10" fill="rgba(217, 119, 6, 0.05)" stroke="#d97706" stroke-width="1.5" stroke-dasharray="6,4" />
+    <text x="424" y="124" class="group-label">Capability Gating</text>
+  </g>
+  <g id="group-vm_sandbox">
+    <rect x="730" y="100" width="360" height="500" rx="10" fill="rgba(59, 130, 246, 0.08)" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="6,4" />
+    <text x="744" y="124" class="group-label">Per-Plugin Lua VM Sandbox (piccolo)</text>
+  </g>
+  <g id="group-event_pipeline_grp">
+    <rect x="50" y="390" width="640" height="210" rx="10" fill="rgba(124, 58, 237, 0.05)" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="6,4" />
+    <text x="64" y="414" class="group-label">Bounded Event Delivery Pipeline</text>
+  </g>
+  <line x1="210" y1="167.5" x2="210" y2="216" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="165" y="177.75" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="210" y="187.75" class="edge-label">parse AST</text>
+  <line x1="210" y1="247.5" x2="210" y2="286" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="165" y="252.75" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="210" y="262.75" class="edge-label">verify semver</text>
+  <line x1="210" y1="315" x2="472.4561403508772" y2="209" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="296.2280701754386" y="248" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="341.2280701754386" y="258" class="edge-label">hash check</text>
+  <line x1="550" y1="260" x2="550" y2="209" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="505" y="220.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="550" y="230.5" class="edge-label">scopes</text>
+  <line x1="550" y1="172.5" x2="756" y2="172.5" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="608" y="158.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="653" y="168.5" class="edge-label">instantiate</text>
+  <line x1="910" y1="172.5" x2="910" y2="226" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="865" y="185.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="910" y="195.25" class="edge-label">binds</text>
+  <line x1="910" y1="172.5" x2="910" y2="306" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="865" y="225.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="910" y="235.25" class="edge-label">restrict</text>
+  <line x1="910" y1="172.5" x2="910" y2="386" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="865" y="265.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="910" y="275.25" class="edge-label">meters</text>
+  <line x1="910" y1="172.5" x2="910" y2="476" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="865" y="310.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="910" y="320.25" class="edge-label">syscalls</text>
+  <line x1="210" y1="470" x2="386" y2="470" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="253" y="456" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="298" y="466" class="edge-label">backpressure</text>
+  <line x1="530" y1="470" x2="868.4873949579832" y2="209" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrow-dashed)" />
+  <rect x="654.2436974789916" y="325.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="699.2436974789916" y="335.5" class="edge-label">dispatch</text>
+  <line x1="910" y1="172.5" x2="418.35526315789474" y2="521" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrow-dashed)" />
+  <rect x="619.1776315789474" y="332.75" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="664.1776315789474" y="342.75" class="edge-label">on error</text>
+  <g id="node-manifest" filter="url(#shadow)">
+    <a href="../interactive/02-plugin-platform.html" target="_blank">
+      <rect x="70" y="140" width="280" height="55" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="210" y="164.5" class="node-title">bitty-plugin.toml</text>
+    <text x="210" y="178.5" class="node-sub">Manifest</text>
+  </g>
+  <g id="node-id_resolver" filter="url(#shadow)">
+    <a href="../interactive/02-plugin-platform.html" target="_blank">
+      <rect x="70" y="220" width="280" height="55" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="210" y="244.5" class="node-title">ID &amp; SemVer Resolver</text>
+    <text x="210" y="258.5" class="node-sub">Lexical + Version Graph</text>
+  </g>
+  <g id="node-compat_gate" filter="url(#shadow)">
+    <a href="../interactive/02-plugin-platform.html" target="_blank">
+      <rect x="70" y="290" width="280" height="50" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="210" y="312" class="node-title">Compatibility Check</text>
+    <text x="210" y="326" class="node-sub">bitty >=0.8, api ^1.0</text>
+  </g>
+  <g id="node-cap_grant" filter="url(#shadow)">
+    <a href="../interactive/02-plugin-platform.html" target="_blank">
+      <rect x="430" y="140" width="240" height="65" rx="8" fill="#fefce8" stroke="#ca8a04" stroke-width="1.5" />
+    </a>
+    <text x="550" y="169.5" class="node-title-dark">Capability Grant</text>
+    <text x="550" y="183.5" class="node-sub-dark">Per-Manifest Hash Binding</text>
+  </g>
+  <g id="node-cap_families" filter="url(#shadow)">
+    <a href="../interactive/02-plugin-platform.html" target="_blank">
+      <rect x="430" y="230" width="240" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="550" y="257" class="node-title">Capability Families</text>
+    <text x="550" y="271" class="node-sub">terminal.read, fs, net</text>
+  </g>
+  <g id="node-vm_core" filter="url(#shadow)">
+    <a href="../interactive/02-plugin-platform.html" target="_blank">
+      <rect x="760" y="140" width="300" height="65" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5" />
+    </a>
+    <text x="910" y="169.5" class="node-title-dark">Piccolo Lua VM</text>
+    <text x="910" y="183.5" class="node-sub-dark">Isolated State</text>
+  </g>
+  <g id="node-vm_gen" filter="url(#shadow)">
+    <a href="../interactive/02-plugin-platform.html" target="_blank">
+      <rect x="760" y="230" width="300" height="55" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="910" y="254.5" class="node-title">Generation N</text>
+    <text x="910" y="268.5" class="node-sub">Lifecycle Generation</text>
+  </g>
+  <g id="node-vm_stdlib" filter="url(#shadow)">
+    <a href="../interactive/02-plugin-platform.html" target="_blank">
+      <rect x="760" y="310" width="300" height="55" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5" />
+    </a>
+    <text x="910" y="334.5" class="node-title-dark">Restricted Stdlib</text>
+    <text x="910" y="348.5" class="node-sub-dark">Denied: io, os, debug</text>
+  </g>
+  <g id="node-vm_budgets" filter="url(#shadow)">
+    <a href="../interactive/02-plugin-platform.html" target="_blank">
+      <rect x="760" y="390" width="300" height="60" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5" />
+    </a>
+    <text x="910" y="417" class="node-title-dark">Resource Ceilings</text>
+    <text x="910" y="431" class="node-sub-dark">RC-1 Fuel 10^7, RC-2 32MB</text>
+  </g>
+  <g id="node-host_api" filter="url(#shadow)">
+    <a href="../interactive/02-plugin-platform.html" target="_blank">
+      <rect x="760" y="480" width="300" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="910" y="507" class="node-title">Host API Bridge</text>
+    <text x="910" y="521" class="node-sub">Async &amp; Deadlined</text>
+  </g>
+  <g id="node-event_filter" filter="url(#shadow)">
+    <a href="../interactive/02-plugin-platform.html" target="_blank">
+      <rect x="70" y="440" width="280" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="210" y="467" class="node-title">Event Pipeline</text>
+    <text x="210" y="481" class="node-sub">Topic Subscription Filtering</text>
+  </g>
+  <g id="node-drop_policy" filter="url(#shadow)">
+    <a href="../interactive/02-plugin-platform.html" target="_blank">
+      <rect x="390" y="440" width="280" height="60" rx="8" fill="#fffbeb" stroke="#b45309" stroke-width="1.5" />
+    </a>
+    <text x="530" y="467" class="node-title-dark">Drop Policy</text>
+    <text x="530" y="481" class="node-sub-dark">DropOldest (v1)</text>
+  </g>
+  <g id="node-fs2_ladder" filter="url(#shadow)">
+    <a href="../interactive/02-plugin-platform.html" target="_blank">
+      <rect x="230" y="525" width="300" height="55" rx="8" fill="#fee2e2" stroke="#e11d48" stroke-width="1.5" />
+    </a>
+    <text x="380" y="549.5" class="node-title-dark">FS-2 Fault Ladder</text>
+    <text x="380" y="563.5" class="node-sub-dark">Refuse -> Terminate -> Suspend</text>
+  </g>
+</svg>

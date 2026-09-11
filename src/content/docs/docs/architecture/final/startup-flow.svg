@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="550" viewBox="0 0 1160 550">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-dashed" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#94a3b8" />
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <style>
+    .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+    .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; fill: #94a3b8; }
+    .badge { font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 600; fill: #38bdf8; }
+    .group-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+    .node-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #f8fafc; text-anchor: middle; }
+    .node-sub { font-family: "JetBrains Mono", monospace; font-size: 10px; fill: #94a3b8; text-anchor: middle; }
+    .node-title-dark { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #0f172a; text-anchor: middle; }
+    .node-sub-dark { font-family: "JetBrains Mono", monospace; font-size: 10px; fill: #334155; text-anchor: middle; }
+    .edge-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; fill: #94a3b8; text-anchor: middle; }
+    .btn-link { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 600; fill: #ffffff; }
+  </style>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#0f172a" />
+  
+  <!-- Header Bar -->
+  <rect x="0" y="0" width="1160" height="65" fill="#1e293b" />
+  <text x="30" y="32" class="title">L2 Startup Sequence &amp; Flow Simulation</text>
+  <text x="30" y="52" class="subtitle">End-to-end initialization sequence from CLI invocation, config loading, window creation, PTY child launch, to event loop start.</text>
+
+  <!-- Interactive Link Banner -->
+  <a href="../interactive/startup-flow.html" target="_blank">
+    <rect x="870" y="16" width="260" height="34" rx="6" fill="#0284c7" />
+    <text x="1000" y="38" class="btn-link" text-anchor="middle">⚡ Open Interactive HTML Model ↗</text>
+  </a>
+  <line x1="160" y1="170" x2="326" y2="170" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="198" y="156" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="243" y="166" class="edge-label">exec</text>
+  <line x1="440" y1="170" x2="606" y2="142.67857142857142" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="478" y="142.33928571428572" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="523" y="152.33928571428572" class="edge-label">--safe</text>
+  <line x1="440" y1="170" x2="606" y2="194.28571428571428" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="478" y="168.14285714285714" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="523" y="178.14285714285714" class="edge-label">normal mode</text>
+  <line x1="720" y1="210" x2="886" y2="210" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="758" y="196" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="803" y="206" class="edge-label">validate</text>
+  <line x1="1000" y1="210" x2="1000" y2="296" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="955" y="239" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="1000" y="249" class="edge-label">init window</text>
+  <line x1="720" y1="125" x2="959.0243902439024" y2="296" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="794.5121951219512" y="196.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="839.5121951219512" y="206.5" class="edge-label">skip plugins</text>
+  <line x1="1000" y1="330" x2="834" y2="330" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="872" y="316" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="917" y="326" class="edge-label">create tree</text>
+  <line x1="720" y1="330" x2="554" y2="330" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="592" y="316" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="637" y="326" class="edge-label">bind view</text>
+  <line x1="440" y1="330" x2="274" y2="330" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="312" y="316" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="357" y="326" class="edge-label">launch shell</text>
+  <line x1="160" y1="330" x2="160" y2="426" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="115" y="364" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="160" y="374" class="edge-label">bytes flow</text>
+  <line x1="440" y1="330" x2="440" y2="426" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="395" y="364" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="440" y="374" class="edge-label">activate host</text>
+  <g id="node-f_cli" filter="url(#shadow)">
+    <a href="../interactive/startup-flow.html" target="_blank">
+      <rect x="50" y="140" width="220" height="60" rx="8" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5" />
+    </a>
+    <text x="160" y="167" class="node-title-dark">1. CLI Argv</text>
+    <text x="160" y="181" class="node-sub-dark">Command line entry</text>
+  </g>
+  <g id="node-f_app" filter="url(#shadow)">
+    <a href="../interactive/startup-flow.html" target="_blank">
+      <rect x="330" y="140" width="220" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="440" y="167" class="node-title">2. bitty-app Startup</text>
+    <text x="440" y="181" class="node-sub">Mode Decision</text>
+  </g>
+  <g id="node-f_safe" filter="url(#shadow)">
+    <a href="../interactive/startup-flow.html" target="_blank">
+      <rect x="610" y="100" width="220" height="50" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5" />
+    </a>
+    <text x="720" y="122" class="node-title-dark">Safe Mode</text>
+    <text x="720" y="136" class="node-sub-dark">No 3rd-party plugins</text>
+  </g>
+  <g id="node-f_config" filter="url(#shadow)">
+    <a href="../interactive/startup-flow.html" target="_blank">
+      <rect x="610" y="180" width="220" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="720" y="207" class="node-title">3. Config Pipeline</text>
+    <text x="720" y="221" class="node-sub">init.lua -> ConfigPlan</text>
+  </g>
+  <g id="node-f_val" filter="url(#shadow)">
+    <a href="../interactive/startup-flow.html" target="_blank">
+      <rect x="890" y="180" width="220" height="60" rx="4" fill="#ecfdf5" stroke="#059669" stroke-width="1.5" />
+    </a>
+    <text x="1000" y="207" class="node-title-dark">4. Validate &amp; Reconcile</text>
+    <text x="1000" y="221" class="node-sub-dark">RuntimeConfig</text>
+  </g>
+  <g id="node-f_platform" filter="url(#shadow)">
+    <a href="../interactive/startup-flow.html" target="_blank">
+      <rect x="890" y="300" width="220" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="1000" y="327" class="node-title">5. bitty-platform</text>
+    <text x="1000" y="341" class="node-sub">winit Window + Event Loop</text>
+  </g>
+  <g id="node-f_workspace" filter="url(#shadow)">
+    <a href="../interactive/startup-flow.html" target="_blank">
+      <rect x="610" y="300" width="220" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="720" y="327" class="node-title">6. Workspace Compositor</text>
+    <text x="720" y="341" class="node-sub">LayoutTree Setup</text>
+  </g>
+  <g id="node-f_runtime" filter="url(#shadow)">
+    <a href="../interactive/startup-flow.html" target="_blank">
+      <rect x="330" y="300" width="220" height="60" rx="4" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5" />
+    </a>
+    <text x="440" y="327" class="node-title-dark">7. bitty-runtime</text>
+    <text x="440" y="341" class="node-sub-dark">Central Wiring</text>
+  </g>
+  <g id="node-f_pty" filter="url(#shadow)">
+    <a href="../interactive/startup-flow.html" target="_blank">
+      <rect x="50" y="300" width="220" height="60" rx="4" fill="#fefce8" stroke="#eab308" stroke-width="1.5" />
+    </a>
+    <text x="160" y="327" class="node-title-dark">8. PTY Master Spawn</text>
+    <text x="160" y="341" class="node-sub-dark">Shell Child Exec</text>
+  </g>
+  <g id="node-f_loop" filter="url(#shadow)">
+    <a href="../interactive/startup-flow.html" target="_blank">
+      <rect x="50" y="430" width="220" height="60" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="1.5" />
+    </a>
+    <text x="160" y="457" class="node-title-dark">9. Main Terminal Loop</text>
+    <text x="160" y="471" class="node-sub-dark">VT -> State -> Render</text>
+  </g>
+  <g id="node-f_plugin_host" filter="url(#shadow)">
+    <a href="../interactive/startup-flow.html" target="_blank">
+      <rect x="330" y="430" width="220" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="440" y="457" class="node-title">10. Extension Host</text>
+    <text x="440" y="471" class="node-sub">Lazy Reservations</text>
+  </g>
+</svg>

@@ -1,0 +1,184 @@
+# docs/architecture/d2/06-isolation-resource.d2 — L1 isolation domains and L3 resource ceilings
+# Source of truth: ../glossary.yaml
+# Visual rules: rect=module/crate, rounded=panel/capability, dashed=boundary/sandbox, solid=call/depends, dashed=event/async
+# Levels: L1 domains, L3 ceilings
+# To regenerate SVG: d2 06-isolation-resource.d2 ../final/06-isolation-resource.svg
+
+direction: down
+
+# --- IR-D1 PTY child ---
+ir_d1: {
+  label: "IR-D1 PTY Child — Untrusted Input"
+  style.stroke-dash: 4
+  style.fill: "#fefce8"
+  pty_master: {
+    label: "PTY Master — Core owns fd"
+    shape: rectangle
+  }
+  child: {
+    label: "Child process\nsession + pgid, close-on-exec"
+    shape: rectangle
+  }
+  parser: {
+    label: "Bounded parser\nno direct Terminal injection"
+    shape: rectangle
+  }
+  rc7: {
+    label: "RC-7 Burst 8 MiB\nbackpressure"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  rc8: {
+    label: "RC-8 Notification 10/s coalesced"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+# --- IR-D2 Plugin runtime ---
+ir_d2: {
+  label: "IR-D2 Plugin Runtime — Per-Plugin VM, Restricted stdlib"
+  style.stroke-dash: 4
+  style.fill: "#eff6ff"
+  vm: {
+    label: "Lua VM per (PluginId, generation)\nno shared globals"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  stdlib: {
+    label: "Denied: io / os / debug / ambient load"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  host_api: {
+    label: "Host API only\nasync / deadlined"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  rc1: {
+    label: "RC-1 CPU\n10^7 instr / 50 ms / 8 ms warn"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  rc2: {
+    label: "RC-2 Mem\n32 MiB per VM"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  rc4: {
+    label: "RC-4 Tasks 64 / Timers 32"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  rc5: {
+    label: "RC-5 Queues\nPerSub 64 / PerPlugin 1024+256KiB / Global 8192+2MiB"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  rc6: {
+    label: "RC-6 FDs\n0 direct, 16 capability files\n20% reserve"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+# --- IR-D3 IPC/MCP ---
+ir_d3: {
+  label: "IR-D3 IPC and MCP — Authenticated Scopes"
+  style.stroke-dash: 4
+  style.fill: "#fdf2f8"
+  transport: {
+    label: "Unix socket XDG_RUNTIME_DIR/bitty 0600\nor named pipe ACL — no TCP by default"
+    shape: rectangle
+  }
+  scopes: {
+    label: "Scopes: inspect / input / manage / configure / plugin-manage / process-spawn / debug"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  rc9: {
+    label: "RC-9 IPC\n100 req/s, 1 MiB, 16 conn"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  rc10: {
+    label: "RC-10 MCP response\n256 KiB chunks, bounded"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  readonly: {
+    label: "Read-only by default\nterminal = observation data"
+    shape: rectangle
+    style.border-radius: 8
+    style.fill: "#fee2e2"
+  }
+}
+
+# --- Failure semantics ---
+failure: {
+  label: "Failure Semantics — Accepted contract"
+  style.stroke-dash: 3
+  style.fill: "#f8fafc"
+  fs1: {
+    label: "FS-1 Transactional denial\nno partial state"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  fs2: {
+    label: "FS-2 Ladder\nrefuse → terminate → suspend → disable\n3/60s → suspend"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  fs3: {
+    label: "FS-3 Containment\nonly owning VM/terminal/conn"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  fs4: {
+    label: "FS-4 Attribution\nowner, gen, budget, observed/limit"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  safe: {
+    label: "bitty --safe\nno third-party plugin\nindependent of package state"
+    shape: rectangle
+    style.border-radius: 8
+    style.fill: "#ecfdf5"
+  }
+}
+
+# --- Edges within domains ---
+ir_d1.child -> ir_d1.pty_master: "holds slave only"
+ir_d1.pty_master -> ir_d1.parser: "bounded incremental parser"
+ir_d1.parser -> ir_d1.rc7: "enforces"
+ir_d1.child -> ir_d1.rc8: "rate"
+
+ir_d2.vm -> ir_d2.stdlib: "denies"
+ir_d2.vm -> ir_d2.host_api: "privileged via"
+ir_d2.vm -> ir_d2.rc1: "Fuel + wall deadline"
+ir_d2.vm -> ir_d2.rc2: "allocator-accounted"
+ir_d2.vm -> ir_d2.rc4: "registry caps"
+ir_d2.vm -> ir_d2.rc5: "DropOldest / DropNewest"
+ir_d2.vm -> ir_d2.rc6: "fd reserve"
+
+ir_d3.transport -> ir_d3.scopes: "peer creds per request"
+ir_d3.scopes -> ir_d3.readonly: "MCP default"
+ir_d3.transport -> ir_d3.rc9: "payload/rate"
+ir_d3.scopes -> ir_d3.rc10: "snapshot size"
+
+failure.fs1 -> failure.fs2 -> failure.fs3 -> failure.fs4
+failure.fs4 -> failure.safe: "recovery"
+ir_d2.vm -> failure.fs1: "on refuse" {
+  style.stroke-dash: 3
+}
+ir_d3.transport -> failure.fs1: "" {
+  style.stroke-dash: 3
+}
+
+# Note
+note: {
+  label: "Resource ceilings are target contracts — tests parameterize on declared values. Global 8192 hard-gated at Host admission. Native in-process plugins rejected through P1. See isolation-resource-rfc and glossary.yaml."
+  shape: rectangle
+  style.fill: "#fffbeb"
+  style.stroke-dash: 2
+}

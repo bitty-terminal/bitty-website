@@ -61,13 +61,24 @@ compatibility-guaranteed behavior.
                            v
                      bitty runtime
 
-              debug instrumentation
+               debug instrumentation
                            |
                            v
                   debug protocol / IPC
                      /       |       \
                DevTools     CLI      MCP adapter
 ```
+
+> [!TIP]
+> **Interactive Architecture Visualizations**:
+>
+> - **[Interactive Architecture Explorer Hub](interactive/index.html)** — full suite of 13 interactive HTML models with layer filters and inspection drawers.
+> - **[L0 System Overview & Trust Boundaries (Interactive)](interactive/00-overview.html)**
+> - **[L1 Core 16-Crate Workspace DAG (Interactive)](interactive/01-core.html)**
+> - **[L1 Plugin Platform & VM Sandbox (Interactive)](interactive/02-plugin-platform.html)**
+> - **[L1 Workspace Compositor & Panel Architecture (Interactive)](interactive/03-panel-system.html)**
+>
+> [![L0 System Overview](final/00-overview.svg)](interactive/00-overview.html)
 
 ## Candidate architecture invariants
 

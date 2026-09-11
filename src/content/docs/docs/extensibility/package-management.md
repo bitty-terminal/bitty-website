@@ -90,6 +90,17 @@ with dotfiles. Installed plugin code belongs under the platform data directory,
 not the configuration directory. See
 [Lua and XDG configuration](../configuration/lua-and-xdg.md).
 
+Shipped slice (`bitty` #483 `95c2b23`, CTX-0150, closes `bitty` #244):
+`bitty plugin` manages exactly one `bitty-plugins.toml` beside `init.lua` as a
+strict bounded TOML subset (per-record plugin id, manifest hash pin, enabled
+flag, and granted capabilities; version `1`). Unknown sections or keys,
+duplicate keys, malformed values, over-limit files, and unknown versions fail
+closed before any mutation, and the Lua `init.lua` is never rewritten. The
+lockfile, the package store, and non-bundled (registry/Git/local-path) sources
+are not implemented; the candidate state model above remains the target. See
+the [CLI reference](../interfaces/cli.md) for the shipped verbs and consent
+behavior.
+
 ## Source model
 
 Status: **accepted direction.**

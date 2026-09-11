@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="580" viewBox="0 0 1200 580">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#38bdf8" />
+    </marker>
+    <marker id="arrow-dashed" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#94a3b8" />
+    </marker>
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <style>
+    .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
+    .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; fill: #94a3b8; }
+    .badge { font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 600; fill: #38bdf8; }
+    .group-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
+    .node-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #f8fafc; text-anchor: middle; }
+    .node-sub { font-family: "JetBrains Mono", monospace; font-size: 10px; fill: #94a3b8; text-anchor: middle; }
+    .node-title-dark { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #0f172a; text-anchor: middle; }
+    .node-sub-dark { font-family: "JetBrains Mono", monospace; font-size: 10px; fill: #334155; text-anchor: middle; }
+    .edge-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 10px; fill: #94a3b8; text-anchor: middle; }
+    .btn-link { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 600; fill: #ffffff; }
+  </style>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="#0f172a" />
+  
+  <!-- Header Bar -->
+  <rect x="0" y="0" width="1200" height="65" fill="#1e293b" />
+  <text x="30" y="32" class="title">L1 Rich Presentation Protocol &amp; Terminal Truth</text>
+  <text x="30" y="52" class="subtitle">Preserves canonical terminal grid state while layering rich presentation blocks (Markdown, images, inline widgets) without parser pollution.</text>
+
+  <!-- Interactive Link Banner -->
+  <a href="../interactive/08-rich-presentation.html" target="_blank">
+    <rect x="910" y="16" width="260" height="34" rx="6" fill="#0284c7" />
+    <text x="1040" y="38" class="btn-link" text-anchor="middle">⚡ Open Interactive HTML Model ↗</text>
+  </a>
+  <g id="group-truth_domain">
+    <rect x="50" y="100" width="340" height="420" rx="10" fill="rgba(5, 150, 105, 0.05)" stroke="#059669" stroke-width="1.5" stroke-dasharray="none" />
+    <text x="64" y="124" class="group-label">Terminal Truth (Canonical State)</text>
+  </g>
+  <g id="group-rich_domain">
+    <rect x="430" y="100" width="360" height="420" rx="10" fill="rgba(37, 99, 235, 0.05)" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="6,4" />
+    <text x="444" y="124" class="group-label">Rich Presentation Layer (bitty-rich)</text>
+  </g>
+  <g id="group-renderer_domain">
+    <rect x="830" y="100" width="320" height="420" rx="10" fill="rgba(124, 58, 237, 0.05)" stroke="#7c3aed" stroke-width="1.5" stroke-dasharray="6,4" />
+    <text x="844" y="124" class="group-label">GPU Compositor Pass</text>
+  </g>
+  <line x1="220" y1="170" x2="220" y2="236" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="175" y="189" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="220" y="199" class="edge-label">character action</text>
+  <line x1="220" y1="270" x2="220" y2="336" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="175" y="289" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="220" y="299" class="edge-label">scroll eviction</text>
+  <line x1="220" y1="170" x2="456" y2="170" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrow-dashed)" />
+  <rect x="293" y="156" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="338" y="166" class="edge-label">OSC 133 / Kitty image</text>
+  <line x1="610" y1="170" x2="610" y2="236" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="565" y="189" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="610" y="199" class="edge-label">allocate texture</text>
+  <line x1="220" y1="270" x2="846" y2="229.0909090909091" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="488" y="235.54545454545456" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="533" y="245.54545454545456" class="edge-label">render text</text>
+  <line x1="610" y1="270" x2="846" y2="307.89473684210526" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="683" y="274.9473684210526" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="728" y="284.9473684210526" class="edge-label">bind texture</text>
+  <line x1="610" y1="370" x2="846" y2="344.7368421052632" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
+  <rect x="683" y="343.36842105263156" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="728" y="353.36842105263156" class="edge-label">draw overlays</text>
+  <g id="node-vt_parser" filter="url(#shadow)">
+    <a href="../interactive/08-rich-presentation.html" target="_blank">
+      <rect x="70" y="140" width="300" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="220" y="167" class="node-title">bitty-vt Parser</text>
+    <text x="220" y="181" class="node-sub">Detects Escapes</text>
+  </g>
+  <g id="node-cell_grid" filter="url(#shadow)">
+    <a href="../interactive/08-rich-presentation.html" target="_blank">
+      <rect x="70" y="240" width="300" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="220" y="267" class="node-title">Terminal Grid</text>
+    <text x="220" y="281" class="node-sub">Cells + Attributes</text>
+  </g>
+  <g id="node-scrollback" filter="url(#shadow)">
+    <a href="../interactive/08-rich-presentation.html" target="_blank">
+      <rect x="70" y="340" width="300" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="220" y="367" class="node-title">Scrollback Ring Buffer</text>
+    <text x="220" y="381" class="node-sub">Bounded Capacity</text>
+  </g>
+  <g id="node-rich_registry" filter="url(#shadow)">
+    <a href="../interactive/08-rich-presentation.html" target="_blank">
+      <rect x="460" y="140" width="300" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="610" y="167" class="node-title">RichBlock Registry</text>
+    <text x="610" y="181" class="node-sub">BlockId to Geometry Map</text>
+  </g>
+  <g id="node-image_store" filter="url(#shadow)">
+    <a href="../interactive/08-rich-presentation.html" target="_blank">
+      <rect x="460" y="240" width="300" height="60" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5" />
+    </a>
+    <text x="610" y="267" class="node-title-dark">Image Store</text>
+    <text x="610" y="281" class="node-sub-dark">Shared GPU Textures</text>
+  </g>
+  <g id="node-inline_widgets" filter="url(#shadow)">
+    <a href="../interactive/08-rich-presentation.html" target="_blank">
+      <rect x="460" y="340" width="300" height="60" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="610" y="367" class="node-title">Inline Widgets</text>
+    <text x="610" y="381" class="node-sub">Progress / Tables / Trees</text>
+  </g>
+  <g id="node-text_quads" filter="url(#shadow)">
+    <a href="../interactive/08-rich-presentation.html" target="_blank">
+      <rect x="850" y="190" width="280" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="990" y="217" class="node-title">Text Glyph Pass</text>
+    <text x="990" y="231" class="node-sub">GPU Glyph Atlas</text>
+  </g>
+  <g id="node-rich_quads" filter="url(#shadow)">
+    <a href="../interactive/08-rich-presentation.html" target="_blank">
+      <rect x="850" y="300" width="280" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+    </a>
+    <text x="990" y="327" class="node-title">Overlay Quad Pass</text>
+    <text x="990" y="341" class="node-sub">Textures &amp; Meshes</text>
+  </g>
+</svg>

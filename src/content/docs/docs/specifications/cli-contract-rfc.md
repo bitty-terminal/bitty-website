@@ -802,6 +802,14 @@ This RFC is accepted on 2026-08-28 and closes [OQ-017](../decisions/open-questio
 
 As of 2026-08-28, the CLI contract remains a design contract per [ADR 0003](../decisions/adrs/ADR-0003-core-workspace-topology.md) and the [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md); crate presence does not imply shipped behavior.
 
+As of 2026-09-10, the `bitty plugin` subtree has an implemented local-class
+slice (`list|install|remove|enable|disable|info` over a hash-pinned managed
+manifest with capability consent; `bitty` #483 `95c2b23`, CTX-0150, closes
+`bitty` #244), recorded in the [CLI](../interfaces/cli.md) reference. That
+slice is `Implemented` (experimental), not `Verified`/`Compatible`; every
+other subtree and every runtime/extension-class operation in this RFC remains
+a design contract until separately implemented and evidenced.
+
 ## References
 
 - [Command-line interface](../interfaces/cli.md) — candidate gateway and per-subtree context this RFC concretizes.

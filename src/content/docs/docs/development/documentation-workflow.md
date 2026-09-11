@@ -157,3 +157,34 @@ supported product version. Any future website build that publishes canonical
 documentation must consume an immutable pinned `bitty-docs` revision so the
 published build can be reproduced. The strategy for simultaneously hosted
 historical versions remains an open cross-repository decision.
+
+## Project state snapshot
+
+`docs/project/project-state.json` is the canonical machine-readable project
+state snapshot that prevents fact drift between `bitty` and `bitty-docs`.
+
+It defines exactly one synchronized implementation revision (`bitty`
+`7a4ee41` at `2026-08-31`, baseline `de134ec`, previous `be3bdb4`),
+maturity and release status (`Pre-alpha / M1 Hardening` at `2026-08-29`, 32
+OQs Accepted, 16 crates), per-risk state and evidence revision and audit
+references (all `Open` at M1 Hardening; `R-004` remains `Open` at `7a4ee41`
+with residual platform, UX, and `8192`-byte bound-scope limits per `bitty`
+`docs/security/audits/clipboard-2026-09.md` CTX-0097), and explicit sync
+provenance (`CTX-0113` / Issue 120, previous `CTX-0112` / Issue 122).
+
+Ownership is `docs-curator` plus `security-auditor`. Updates require a
+CarryCtx task with independent review, CI green (`just check` includes
+`just state` plus `actionlint -color` and `act -n`), and an explicit
+provenance record. The snapshot records state; it must not auto-accept risks
+or replace CarryCtx and security-auditor review. Risk state transitions still
+require the per-risk RS-1..RS-7 checklist and auditor sign-off per the
+[risk evidence RFC](../specifications/risk-evidence-rfc.md).
+
+Canonical human-readable summaries in `README.md`, `TODO.md`,
+`docs/README.md`, `docs/security/risk-register.md`,
+`docs/security/evidence-matrix.md`, and `docs/product/release-ladder.md` are
+derived from the snapshot and validated deterministically by
+`bun .github/scripts/check-state.mjs` (also `just state` and CI). Divergence
+is a defect. Test counts remain in audit and implementation evidence and are
+not duplicated in the snapshot unless generated via an authoritative command
+such as `cargo test`.

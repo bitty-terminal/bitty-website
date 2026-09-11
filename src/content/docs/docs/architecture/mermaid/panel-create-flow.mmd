@@ -1,0 +1,30 @@
+%% docs/architecture/mermaid/panel-create-flow.mmd — L2 panel and view creation flow
+%% Source of truth: ../glossary.yaml
+%% Implements Workspace Compositor — Panel candidate
+flowchart TD
+  A[bitty-platform\nWindowId from winit\nnative handle never exposed] --> B[Workspace\ntiling compositor\none LayoutTree]
+  B --> C[LayoutTree\nbinary H | V | View(ViewId)]
+  C --> D{Command create View / Panel}
+  D --> E[Allocate ViewId\nfresh u64, distinct type from TerminalId]
+  E --> F{Content type?}
+  F -->|terminal| G[Allocate TerminalId\nbitty-term-state + pty\nPTY master, grid, scrollback]
+  F -->|rich| H[RichBlockId\nbitty-rich placeholder]
+  F -->|browser| I[BrowserSurfaceId\nbrowser.* capability required]
+  F -->|empty| J[Empty View\nplaceholder]
+  F -->|panel candidate| K[Panel\nworkspace-managed container\ngeneralizes View content]
+  G --> L[Bind TerminalId to ViewId\nat most one View per TerminalId\nmove preserves id]
+  H --> M[Bind Rich to View]
+  I --> N[Bind Browser to View\nif capability granted]
+  J --> O[Insert leaf into LayoutTree]
+  K --> O
+  L --> O
+  M --> O
+  N --> O
+  O --> P[LayoutProvider plugin\n dwindle / master / grid\nproposes geometry]
+  P --> Q[Core validates\nDecoration Core-owned\ngaps_in gaps_out border radius\nnever from provider]
+  Q --> R[Core commits geometry\natomic LayoutTree update]
+  R --> S[Focus routing\nView focused flag\ninput via platform keyboard router]
+  S --> T[Render Snapshot\nView + decoration → scene → renderer]
+  U[Invariant\nViewId != TerminalId\nno PTY fd / GPU handle in View] -.-> E
+  V[Constraint\nPanel lifecycle and Event Bus deferred\nfuture RFC] -.-> K
+  W[Invariant\nLayoutProvider never sets decoration] -.-> Q

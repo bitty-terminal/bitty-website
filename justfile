@@ -18,6 +18,14 @@ fmt-check-files *FILES:
 markdownlint:
     bun run lint:md
 
+# Advance the pinned bitty-docs mirror and regenerate the provenance manifest (SY-2).
+docs-sync PIN:
+    bun run sync:docs --pin {{PIN}}
+
+# Fail closed when the committed mirror is stale vs the pinned revision (SY-4).
+docs-check:
+    bun run docs:check
+
 commit-lint FILE:
     test -x node_modules/.bin/commitlint || { echo "dependencies missing; run 'just install' first" >&2; exit 1; }
     bunx --bun commitlint < "{{FILE}}"

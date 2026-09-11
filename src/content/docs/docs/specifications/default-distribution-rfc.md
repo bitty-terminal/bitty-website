@@ -237,6 +237,18 @@ command after first boot, and it does not prevent a future RFC from
 moving a plugin into an enabled-by-default set once the criteria below
 are met.
 
+### Shipped starter template (wizard output, still zero enabled)
+
+Status: **shipped defaults** (read-only from `bitty` `origin/main`,
+`crates/bitty-app/src/main.rs`, CTX-0149). The opt-in `bitty init`
+wizard writes a starter `init.lua` containing `theme = "dark"` plus
+commented `layout` (gaps), `keymaps`, and `selection` examples. The
+template enables **zero** plugins: the empty enabled-by-default set above
+is unchanged by running the wizard, and no wizard path widens authority
+without the explicit enable plus grant path this RFC requires. The full
+wizard mechanics (`--yes`/`--force`/`.bak` backup) are recorded in
+[Lua and XDG configuration](../configuration/lua-and-xdg.md).
+
 ### Criteria for any future enabled-by-default addition
 
 A plugin may become enabled by default only after **all** of the

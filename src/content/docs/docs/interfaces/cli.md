@@ -140,6 +140,15 @@ bitty ctl view focus v:3
 bitty ctl config reload
 ```
 
+Shipped slice: the workspace verbs `bitty ctl workspace list|new|close|focus|move`
+are implemented (`bitty` #433/#457, CTX-0257/CTX-0259) with scope gates
+`view.inspect` (`list`) and `view.manage` (`new|focus|move`), while
+`workspace close ws:N` requires the elevated `terminal.manage` scope because
+it kills live sessions. The rest of the runtime-control surface above remains
+candidate; see the
+[Workspace Compositor Specification](../specifications/workspace-compositor.md)
+evidence section.
+
 Runtime control should travel over a versioned IPC protocol and share the
 capability model used by agents and plugins. Reading terminal text, sending
 input, closing a terminal, modifying configuration, and managing views are not
@@ -224,6 +233,39 @@ loading the plugin VM. `bitty --help` should place optional aliases under an
 
 Package lifecycle and external executable extensions are covered in
 [Package management](../extensibility/package-management.md).
+
+## Shipped slice: `bitty plugin` management
+
+Status: **implemented local-class slice** (read-only from `bitty` `origin/main`,
+CTX-0150, `bitty` #483 commit `95c2b23`, closes `bitty` #244; merged to `bitty`
+origin `main`, verified read-only via `merge-base --is-ancestor`). This section
+records the first implemented subtree of the candidate contract above; it does
+not accept the rest of the tree or its other subtrees.
+
+- Verbs: `bitty plugin list|install|remove|enable|disable|info`. `list` and
+  `info` accept `--format table|json|jsonl` (default `table`) and `--no-color`.
+- Class: local only — no instance, no IPC, no plugin VM, and no plugin code
+  is loaded or executed (safe-mode clean). v1 `install` resolves the bundled
+  catalog; registry, Git, and local-path sources fail closed until the package
+  manager lands.
+- Durable state: exactly one managed manifest at
+  `$XDG_CONFIG_HOME/bitty/bitty-plugins.toml` (or beside an explicit
+  `--config`), a strict bounded TOML subset; unknown keys, duplicates,
+  malformed values, over-limit files, and unknown versions fail closed before
+  any mutation. The Lua `init.lua` is never rewritten.
+- Capability consent: `install` pins `PluginManifest::manifest_hash()` and
+  grants the requested capability set only after explicit consent (`--yes` or
+  an interactive `[y/N]` that fails closed on EOF); a capability increase on
+  an existing record blocks until re-approved while narrowed sets carry
+  forward. `enable` re-checks the pin and grant coverage; `remove` requires
+  `--force` and keeps a `.bak`.
+- Exit codes: `0` success (including idempotent no-op toggles), `1` declined
+  consent or post-approval filesystem failure, `2` usage error, `4` plugin
+  error (unknown/non-bundled id, invalid or corrupt manifest, pin mismatch,
+  uncovered grant, blocked capability increase).
+- Deliberate non-goals in this slice: no `bitty x` execution, no top-level
+  aliases, no dynamic plugin namespace, and no plugin completion integration —
+  those stay candidate contract above.
 
 ## Introspection
 

@@ -1,0 +1,171 @@
+# docs/architecture/d2/01-core.d2 — L1 subsystem: core crate DAG
+# Source of truth: ../glossary.yaml
+# Visual rules: rect=module/crate, rounded=panel/capability, dashed=boundary/sandbox, solid=call/depends
+# Levels: L1 subsystem — strict DAG per ADR 0003
+# To regenerate SVG: d2 01-core.d2 ../final/01-core.svg
+
+direction: down
+
+title: {
+  label: "Core Workspace Topology — 16 crates (be3bdb4), 18 members with harness (7a4ee41)"
+  shape: rectangle
+  style.fill: "#f1f5f9"
+  style.stroke: "#64748b"
+}
+
+# --- Layer: foundation (no workspace deps) ---
+foundation: {
+  label: "Foundation — no workspace deps"
+  style.stroke-dash: 3
+  style.fill: "#fefce8"
+  vt: {
+    label: "bitty-vt\nparser -> TerminalAction"
+    shape: rectangle
+  }
+  pty: {
+    label: "bitty-pty\nportable-pty wrapper"
+    shape: rectangle
+  }
+  platform: {
+    label: "bitty-platform\nwinit 0.30"
+    shape: rectangle
+  }
+  config: {
+    label: "bitty-config\nConfigPlan"
+    shape: rectangle
+  }
+  package: {
+    label: "bitty-package\nlifecycle / integrity"
+    shape: rectangle
+  }
+  ipc: {
+    label: "bitty-ipc\nframing"
+    shape: rectangle
+  }
+  agent: {
+    label: "bitty-agent\nmessages"
+    shape: rectangle
+  }
+  lua: {
+    label: "bitty-lua\npiccolo 0.3.3"
+    shape: rectangle
+  }
+  core: {
+    label: "bitty-core\nseed (to retire)"
+    shape: rectangle
+    style.fill: "#e5e7eb"
+    style.stroke-dash: 2
+  }
+}
+
+# --- Layer: state ---
+state: {
+  label: "Terminal Truth"
+  style.stroke-dash: 3
+  style.fill: "#ecfdf5"
+  term_state: {
+    label: "bitty-term-state\ngrid / damage / ImageStore"
+    shape: rectangle
+  }
+}
+
+# --- Layer: presentation ---
+presentation: {
+  label: "Presentation"
+  style.stroke-dash: 3
+  style.fill: "#eff6ff"
+  render: {
+    label: "bitty-render\nwgpu 26 / crossfont 0.9"
+    shape: rectangle
+  }
+  ui: {
+    label: "bitty-ui\nView / LayoutNode"
+    shape: rectangle
+  }
+  rich: {
+    label: "bitty-rich\nplaceholders"
+    shape: rectangle
+  }
+}
+
+# --- Layer: host ---
+host: {
+  label: "Extension Host"
+  style.stroke-dash: 3
+  style.fill: "#fdf2f8"
+  plugin_host: {
+    label: "bitty-plugin-host\ncommand / event / capability"
+    shape: rectangle
+  }
+}
+
+# --- Layer: orchestration ---
+runtime: {
+  label: "bitty-runtime\norchestration"
+  shape: rectangle
+  style.fill: "#ffffff"
+  style.stroke-width: 2
+}
+app: {
+  label: "bitty-app\nbinary composition root"
+  shape: rectangle
+  style.fill: "#ffffff"
+  style.stroke-width: 2
+}
+
+# --- Harness (lab) ---
+harness: {
+  label: "Harness — not product topology"
+  style.stroke-dash: 4
+  style.fill: "#f8fafc"
+  compat_lab: {
+    label: "bitty-compat-lab\nvttest harness"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  perf: {
+    label: "bitty-perf\nbenches"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+# --- Edges (solid = depends) ---
+state.term_state -> foundation.vt: "depends"
+presentation.render -> state.term_state: "snapshot only"
+presentation.render -> foundation.platform: "SurfaceTarget"
+presentation.ui -> state.term_state
+presentation.rich -> state.term_state
+presentation.rich -> foundation.vt
+host.plugin_host -> state.term_state
+host.plugin_host -> foundation.config
+host.plugin_host -> foundation.package
+runtime -> foundation.vt
+runtime -> state.term_state
+runtime -> foundation.pty
+runtime -> presentation.render
+runtime -> foundation.platform
+runtime -> presentation.ui
+runtime -> host.plugin_host
+app -> runtime
+app -> foundation.platform
+harness.compat_lab -> foundation.vt {
+  style.stroke-dash: 3
+}
+harness.compat_lab -> state.term_state {
+  style.stroke-dash: 3
+}
+harness.perf -> foundation.vt {
+  style.stroke-dash: 3
+}
+harness.perf -> state.term_state {
+  style.stroke-dash: 3
+}
+
+# Annotation
+rules: {
+  label: "Rules: Strict DAG, no cycles. Lower layers never depend on higher. Renderer reads snapshot only. Plugin-host never holds GPU/PTY fd. See ADR 0003 and glossary.yaml."
+  shape: rectangle
+  style.fill: "#fffbeb"
+  style.stroke-dash: 2
+}

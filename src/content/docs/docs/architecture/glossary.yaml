@@ -1,0 +1,950 @@
+# Architecture glossary — single source for nodes and edges
+# Source of truth for docs/architecture/d2/*.d2 and mermaid/*.mmd
+# Visual rules: rect=module/crate, rounded=panel/capability, dashed=boundary/sandbox, solid=call/depends, dashed=event/async
+# Levels: L0 overview, L1 subsystem, L2 flow, L3 relation
+schema_version: 1
+updated: "2026-08-31"
+synchronized_revision: "7a4ee41"
+synchronized_short: "7a4ee41"
+baseline_revision: "de134ec"
+maturity: "Pre-alpha / M1 Hardening (2026-08-29, 16 crates, 32 OQs Accepted)"
+description: Canonical node and edge inventory for Bitty architecture diagrams
+provenance: CTX-0115
+
+visual_rules:
+  rect: "module / crate — D2 rectangle"
+  rounded: "panel / capability — D2 rectangle with border-radius"
+  boundary: "trust boundary / sandbox — D2 container with stroke-dash"
+  solid_edge: "call / depends — D2 solid arrow"
+  dashed_edge: "event / async — D2 dashed arrow"
+
+levels:
+  L0: overview — system context and trust boundaries
+  L1: subsystem — crate and service breakdown
+  L2: flow — sequence and lifecycle transitions
+  L3: relation — dependency and compatibility matrix
+
+nodes:
+  # --- L0 overview (system context) ---
+  - id: bitty-app
+    label: bitty-app
+    kind: crate
+    shape: rect
+    level: L0
+    description: Thin composition root — CLI, startup, safe-mode selection
+    crate_path: crates/bitty-app
+  - id: bitty-runtime
+    label: bitty-runtime
+    kind: crate
+    shape: rect
+    level: L0
+    description: Runtime orchestration — command, event, service, lifecycle wiring
+    crate_path: crates/bitty-runtime
+  - id: bitty-vt
+    label: bitty-vt
+    kind: crate
+    shape: rect
+    level: L1
+    description: VT parser producing TerminalAction from byte stream (vte 0.15)
+    crate_path: crates/bitty-vt
+  - id: bitty-term-state
+    label: bitty-term-state
+    kind: crate
+    shape: rect
+    level: L1
+    description: Terminal Truth — grid, cursor, modes, scrollback, damage, replies, ImageStore
+    crate_path: crates/bitty-term-state
+  - id: bitty-pty
+    label: bitty-pty
+    kind: crate
+    shape: rect
+    level: L1
+    description: PTY wrapper — Unix PTY and ConPTY abstraction, backpressure, resize
+    crate_path: crates/bitty-pty
+  - id: bitty-platform
+    label: bitty-platform
+    kind: crate
+    shape: rect
+    level: L1
+    description: Window and event-loop adapter — winit 0.30, clipboard, DPI, monitors
+    crate_path: crates/bitty-platform
+  - id: bitty-config
+    label: bitty-config
+    kind: crate
+    shape: rect
+    level: L1
+    description: Typed configuration pipeline — ConfigPlan, validation, merge, reconcile
+    crate_path: crates/bitty-config
+  - id: bitty-render
+    label: bitty-render
+    kind: crate
+    shape: rect
+    level: L1
+    description: GPU pipeline — snapshot from damage, glyph cache, wgpu 26, crossfont 0.9
+    crate_path: crates/bitty-render
+  - id: bitty-ui
+    label: bitty-ui
+    kind: crate
+    shape: rect
+    level: L1
+    description: View, LayoutNode, split, stack, overlay, focus, selection primitives
+    crate_path: crates/bitty-ui
+  - id: bitty-plugin-host
+    label: bitty-plugin-host
+    kind: crate
+    shape: rect
+    level: L1
+    description: Extension host — command, event, capability registries, per-plugin VM hosting
+    crate_path: crates/bitty-plugin-host
+  - id: bitty-package
+    label: bitty-package
+    kind: crate
+    shape: rect
+    level: L1
+    description: Package lifecycle — manifest, lockfile, resolver, integrity, activation
+    crate_path: crates/bitty-package
+  - id: bitty-lua
+    label: bitty-lua
+    kind: crate
+    shape: rect
+    level: L1
+    description: Deterministic Lua VM — piccolo 0.3.3, Fuel budgets, per-plugin VMs
+    crate_path: crates/bitty-lua
+  - id: bitty-rich
+    label: bitty-rich
+    kind: crate
+    shape: rect
+    level: L1
+    description: Rich presentation helpers — placeholders, hyperlink, shell integration model
+    crate_path: crates/bitty-rich
+  - id: bitty-ipc
+    label: bitty-ipc
+    kind: crate
+    shape: rect
+    level: L1
+    description: IPC and MCP boundary — framing, channels, stdio stub, Unix socket / named pipe
+    crate_path: crates/bitty-ipc
+  - id: bitty-agent
+    label: bitty-agent
+    kind: crate
+    shape: rect
+    level: L1
+    description: Agent core — bounded messages, tool vocabulary, observation side queue
+    crate_path: crates/bitty-agent
+  - id: bitty-core-seed
+    label: bitty-core
+    kind: crate
+    shape: rect
+    level: L1
+    description: Bootstrap seed to be retired — migration target bitty-vt, term-state, pty
+    crate_path: crates/bitty-core
+
+  # --- Logical components (overview) ---
+  - id: terminal-truth
+    label: Terminal Truth
+    kind: domain
+    shape: rect
+    level: L0
+    description: Canonical grid, cursor, modes, scrollback inside bitty-term-state
+  - id: vt-parser
+    label: VT Parser
+    kind: module
+    shape: rect
+    level: L0
+    description: Byte state machine CSI/OSC/DCS/APC to TerminalAction
+  - id: pty-master
+    label: PTY Master
+    kind: resource
+    shape: rect
+    level: L0
+    description: Owned PTY master fd — child holds slave only
+  - id: renderer
+    label: Renderer
+    kind: module
+    shape: rect
+    level: L0
+    description: Consumes Render Snapshot and damage, emits GPU work
+  - id: ui-model
+    label: UI Model
+    kind: domain
+    shape: rect
+    level: L0
+    description: View, LayoutNode, focus, overlay primitives
+  - id: render-snapshot
+    label: Render Snapshot
+    kind: data
+    shape: rounded
+    level: L1
+    description: Damage-derived scene supplied to renderer, never Terminal private structs
+  - id: image-store
+    label: ImageStore
+    kind: data
+    shape: rounded
+    level: L1
+    description: Normalized image placements from Kitty, Sixel, iTerm2 adapters
+  - id: damage
+    label: Damage
+    kind: data
+    shape: rounded
+    level: L1
+    description: Terminal damage set produced by TermState application
+
+  # --- Plugin platform ---
+  - id: plugin
+    label: Plugin
+    kind: capability
+    shape: rounded
+    level: L1
+    description: Third-party or first-party plugin instance, one VM per identity and generation
+  - id: manifest
+    label: bitty-plugin.toml
+    kind: capability
+    shape: rounded
+    level: L1
+    description: Validated manifest with id, version, compat, capabilities, lazy triggers
+  - id: capability-grant
+    label: Capability Grant
+    kind: capability
+    shape: rounded
+    level: L1
+    description: Per manifest-hash grant record binding plugin ID to authorized capabilities
+  - id: command-registry
+    label: Command Registry
+    kind: capability
+    shape: rounded
+    level: L1
+    description: Qualified commands plugin-id:resource, lazy mapping before VM creation
+  - id: event-pipeline
+    label: Event Pipeline
+    kind: capability
+    shape: rounded
+    level: L1
+    description: Observation, interception, lifecycle classes with DropOldest default
+  - id: service-registry
+    label: Service Registry
+    kind: capability
+    shape: rounded
+    level: L1
+    description: Versioned host-mediated inter-plugin services
+  - id: plugin-generation
+    label: Generation
+    kind: capability
+    shape: rounded
+    level: L2
+    description: Monotonic instance counter per plugin ID owning tasks, timers, queues
+  - id: plugin-vm
+    label: Lua VM
+    kind: sandbox
+    shape: boundary
+    level: L1
+    description: Per-plugin isolated Lua VM with restricted stdlib and Fuel budgets
+  - id: host-api
+    label: Host API
+    kind: capability
+    shape: rounded
+    level: L1
+    description: Capability-checked host calls, async or deadline-bounded, never hot path
+
+  # --- Panel and workspace ---
+  - id: instance
+    label: Instance
+    kind: domain
+    shape: rect
+    level: L1
+    description: Top-level process owning one or more native OS windows
+  - id: window
+    label: Window
+    kind: domain
+    shape: rect
+    level: L1
+    description: Native OS window owned by bitty-platform (winit), owns Workspaces
+  - id: workspace
+    label: Workspace
+    kind: domain
+    shape: rect
+    level: L1
+    description: Tiling compositor inside Window owning one LayoutTree, mirrors Hyprland workspace
+  - id: layout-tree
+    label: LayoutTree
+    kind: domain
+    shape: rect
+    level: L1
+    description: Binary tiling tree with H and V interior nodes and View leaves
+  - id: view
+    label: View
+    kind: domain
+    shape: rect
+    level: L1
+    description: Layout leaf hosting at most one content type with stable ViewId
+  - id: view-type-terminal
+    label: Terminal View
+    kind: capability
+    shape: rounded
+    level: L1
+    description: View content hosting TerminalId with PTY, grid, scrollback
+  - id: view-type-rich
+    label: Rich View
+    kind: capability
+    shape: rounded
+    level: L1
+    description: View content hosting RichBlock via bitty-rich
+  - id: view-type-browser
+    label: Browser View
+    kind: capability
+    shape: rounded
+    level: L1
+    description: View content hosting browser surface under dedicated capability
+  - id: panel
+    label: Panel
+    kind: capability
+    shape: rounded
+    level: L1
+    description: Candidate workspace-managed application container generalizing View content
+  - id: layout-provider
+    label: LayoutProvider
+    kind: capability
+    shape: rounded
+    level: L1
+    description: Plugin-supplied layout algorithm — dwindle, master, grid — proposing geometry
+  - id: decoration
+    label: Decoration
+    kind: capability
+    shape: rounded
+    level: L1
+    description: Core-owned gaps_in, gaps_out, border, radius validated via ConfigPlan
+  - id: gaps-in
+    label: gaps_in
+    kind: capability
+    shape: rounded
+    level: L3
+    description: Inner gaps between Views
+  - id: gaps-out
+    label: gaps_out
+    kind: capability
+    shape: rounded
+    level: L3
+    description: Outer gaps around Workspace
+  - id: border
+    label: border
+    kind: capability
+    shape: rounded
+    level: L3
+    description: Border thickness owned by Core
+  - id: radius
+    label: radius
+    kind: capability
+    shape: rounded
+    level: L3
+    description: Corner radius owned by Core
+
+  # --- Configuration model ---
+  - id: init-lua
+    label: init.lua
+    kind: data
+    shape: rounded
+    level: L2
+    description: User primary configuration evaluated toward ConfigPlan
+  - id: config-vm
+    label: Config VM
+    kind: sandbox
+    shape: boundary
+    level: L1
+    description: Ephemeral Lua VM evaluating configuration toward declarative data only
+  - id: config-plan
+    label: ConfigPlan
+    kind: data
+    shape: rounded
+    level: L1
+    description: Declarative data produced by Lua, input to Rust validation
+  - id: config-validation
+    label: Config Validation
+    kind: module
+    shape: rect
+    level: L2
+    description: Typed Rust validation of ConfigPlan with schema merge classes
+  - id: config-merge
+    label: Config Merge
+    kind: module
+    shape: rect
+    level: L2
+    description: Layer merge with source attribution and declared precedence
+  - id: config-diff
+    label: Config Diff
+    kind: module
+    shape: rect
+    level: L2
+    description: Diff computed before any effect, reportable with file locations
+  - id: config-reconcile
+    label: Config Reconcile
+    kind: module
+    shape: rect
+    level: L2
+    description: Live-reconcilable application to RuntimeConfig without restart
+  - id: runtime-config
+    label: RuntimeConfig
+    kind: data
+    shape: rounded
+    level: L1
+    description: Typed live configuration held by runtime
+  - id: xdg-layers
+    label: XDG Layers
+    kind: domain
+    shape: rect
+    level: L1
+    description: Core defaults, system, distribution, profile, user, trusted local override, CLI
+  - id: config-reload-classes
+    label: Reload Classes
+    kind: capability
+    shape: rounded
+    level: L2
+    description: Live-reconcilable, restart-required, rejected
+  - id: project-trust
+    label: Project Trust
+    kind: capability
+    shape: rounded
+    level: L2
+    description: Project configuration declarative-data-only T-08 defense
+
+  # --- Package lifecycle ---
+  - id: discovered
+    label: Discovered
+    kind: data
+    shape: rounded
+    level: L2
+    description: Source declares ID and version, nothing trusted
+  - id: fetched
+    label: Fetched
+    kind: data
+    shape: rounded
+    level: L2
+    description: Bytes in quarantine, framing and budget enforced
+  - id: verified
+    label: Verified
+    kind: data
+    shape: rounded
+    level: L2
+    description: Full integrity chain H-A plus H-B plus capability diff passed
+  - id: staged
+    label: Staged
+    kind: data
+    shape: rounded
+    level: L2
+    description: Verified generation in store, not yet active
+  - id: activated
+    label: Activated
+    kind: data
+    shape: rounded
+    level: L2
+    description: Atomic switch makes staged generation active
+  - id: retained
+    label: Retained
+    kind: data
+    shape: rounded
+    level: L2
+    description: Superseded generations bounded for rollback
+  - id: lockfile
+    label: Lockfile
+    kind: data
+    shape: rounded
+    level: L1
+    description: Resolution with digests H-A, H-B, Merkle H-C bound to sources
+  - id: package-store
+    label: Package Store
+    kind: domain
+    shape: rect
+    level: L1
+    description: Content-addressed store for verified generations
+  - id: integrity-chain
+    label: Integrity Chain
+    kind: capability
+    shape: rounded
+    level: L2
+    description: Fetch framing, artifact checksum, manifest validation, hash binding, capability diff
+  - id: publisher-trust
+    label: Publisher Trust
+    kind: capability
+    shape: rounded
+    level: L2
+    description: V-A lock pinning, V-B TOFU, V-C signed releases
+  - id: resolver
+    label: Resolver
+    kind: module
+    shape: rect
+    level: L1
+    description: Pure function (manifest, lock, index) to resolution with semver grammar
+  - id: activation-txn
+    label: Activation TXN
+    kind: capability
+    shape: rounded
+    level: L2
+    description: Preflight, quiesce, commit, wake, confirm phases with all-or-nothing switch
+
+  # --- Isolation and resources ---
+  - id: ir-d1-pty
+    label: IR-D1 PTY Child
+    kind: sandbox
+    shape: boundary
+    level: L1
+    description: Untrusted child owning slave side only, bounded parser input
+  - id: ir-d2-plugin
+    label: IR-D2 Plugin Runtime
+    kind: sandbox
+    shape: boundary
+    level: L1
+    description: One VM per plugin and generation, restricted stdlib, budget-enforced
+  - id: ir-d3-ipc
+    label: IR-D3 IPC and MCP
+    kind: sandbox
+    shape: boundary
+    level: L1
+    description: Unix socket or named pipe with peer credential and scope evaluation
+  - id: rc-1-cpu
+    label: RC-1 CPU
+    kind: capability
+    shape: rounded
+    level: L3
+    description: 10^7 instructions or 50 ms wall per callback, 8 ms warning
+  - id: rc-2-mem
+    label: RC-2 Memory
+    kind: capability
+    shape: rounded
+    level: L3
+    description: 32 MiB per plugin VM
+  - id: rc-5-queue
+    label: RC-5 Queue
+    kind: capability
+    shape: rounded
+    level: L3
+    description: PerSubscription 64, PerPlugin 1024 events or 256 KiB, Global 8192 events or 2 MiB
+  - id: fs-1-deny
+    label: FS-1 Deny
+    kind: capability
+    shape: rounded
+    level: L2
+    description: Transactional denial with no partial state
+  - id: fs-2-ladder
+    label: FS-2 Ladder
+    kind: capability
+    shape: rounded
+    level: L2
+    description: Refuse, terminate callback, suspend generation, disable plugin
+  - id: safe-mode
+    label: bitty --safe
+    kind: capability
+    shape: rounded
+    level: L1
+    description: Loads no third-party plugin, independent of package state
+
+  # --- External boundaries ---
+  - id: ipc-channel
+    label: IPC Channel
+    kind: domain
+    shape: rect
+    level: L1
+    description: Local IPC transport with scopes inspect, input, manage, configure
+  - id: mcp-adapter
+    label: MCP Adapter
+    kind: domain
+    shape: rect
+    level: L1
+    description: Agent and MCP adapter consuming debug protocol as untrusted observation
+  - id: debug-protocol
+    label: Debug Protocol
+    kind: domain
+    shape: rect
+    level: L1
+    description: Versioned inspection interface inside Core boundary
+  - id: shell-child
+    label: Shell Child
+    kind: resource
+    shape: rect
+    level: L0
+    description: Host shell process attached to PTY slave
+
+edges:
+  # --- Core crate DAG (ADR 0003) solid depends ---
+  - from: bitty-term-state
+    to: bitty-vt
+    kind: depends
+    style: solid
+    level: L3
+    description: State consumes TerminalAction from parser
+  - from: bitty-render
+    to: bitty-term-state
+    kind: depends
+    style: solid
+    level: L3
+    description: Render reads public snapshot, never grid internals
+  - from: bitty-render
+    to: bitty-platform
+    kind: depends
+    style: solid
+    level: L3
+    description: GpuContext consumes SurfaceTarget from platform
+  - from: bitty-ui
+    to: bitty-term-state
+    kind: depends
+    style: solid
+    level: L3
+    description: View and LayoutNode reference TerminalId and damage
+  - from: bitty-plugin-host
+    to: bitty-term-state
+    kind: depends
+    style: solid
+    level: L3
+  - from: bitty-plugin-host
+    to: bitty-config
+    kind: depends
+    style: solid
+    level: L3
+  - from: bitty-plugin-host
+    to: bitty-package
+    kind: depends
+    style: solid
+    level: L3
+  - from: bitty-runtime
+    to: bitty-vt
+    kind: depends
+    style: solid
+    level: L3
+  - from: bitty-runtime
+    to: bitty-term-state
+    kind: depends
+    style: solid
+    level: L3
+  - from: bitty-runtime
+    to: bitty-pty
+    kind: depends
+    style: solid
+    level: L3
+  - from: bitty-runtime
+    to: bitty-render
+    kind: depends
+    style: solid
+    level: L3
+  - from: bitty-runtime
+    to: bitty-platform
+    kind: depends
+    style: solid
+    level: L3
+  - from: bitty-runtime
+    to: bitty-ui
+    kind: depends
+    style: solid
+    level: L3
+  - from: bitty-runtime
+    to: bitty-plugin-host
+    kind: depends
+    style: solid
+    level: L3
+  - from: bitty-rich
+    to: bitty-term-state
+    kind: depends
+    style: solid
+    level: L3
+  - from: bitty-rich
+    to: bitty-vt
+    kind: depends
+    style: solid
+    level: L3
+  - from: bitty-app
+    to: bitty-runtime
+    kind: depends
+    style: solid
+    level: L3
+  - from: bitty-app
+    to: bitty-platform
+    kind: depends
+    style: solid
+    level: L3
+
+  # --- L0 overview data flows ---
+  - from: shell-child
+    to: pty-master
+    kind: byte-stream
+    style: solid
+    level: L0
+    description: Shell bytes via PTY master
+  - from: pty-master
+    to: vt-parser
+    kind: byte-batch
+    style: solid
+    level: L0
+  - from: vt-parser
+    to: terminal-truth
+    kind: call
+    style: solid
+    level: L0
+    description: TerminalAction to state machine
+  - from: terminal-truth
+    to: damage
+    kind: call
+    style: solid
+    level: L0
+  - from: damage
+    to: render-snapshot
+    kind: call
+    style: solid
+    level: L0
+  - from: render-snapshot
+    to: renderer
+    kind: call
+    style: solid
+    level: L0
+  - from: renderer
+    to: window
+    kind: call
+    style: solid
+    level: L0
+  - from: terminal-truth
+    to: event-pipeline
+    kind: event
+    style: dashed
+    level: L0
+    description: Cold-path observation via bounded side queue
+  - from: event-pipeline
+    to: plugin-vm
+    kind: event
+    style: dashed
+    level: L1
+  - from: plugin-vm
+    to: command-registry
+    kind: call
+    style: solid
+    level: L1
+  - from: command-registry
+    to: bitty-runtime
+    kind: call
+    style: solid
+    level: L0
+  - from: debug-protocol
+    to: mcp-adapter
+    kind: event
+    style: dashed
+    level: L1
+  - from: debug-protocol
+    to: ipc-channel
+    kind: event
+    style: dashed
+    level: L1
+
+  # --- Plugin platform flow ---
+  - from: manifest
+    to: capability-grant
+    kind: call
+    style: solid
+    level: L1
+  - from: capability-grant
+    to: plugin-vm
+    kind: call
+    style: solid
+    level: L1
+  - from: plugin-vm
+    to: host-api
+    kind: call
+    style: solid
+    level: L1
+  - from: plugin-vm
+    to: bitty-lua
+    kind: depends
+    style: solid
+    level: L3
+  - from: event-pipeline
+    to: plugin-generation
+    kind: event
+    style: dashed
+    level: L2
+
+  # --- Panel system ---
+  - from: instance
+    to: window
+    kind: contains
+    style: solid
+    level: L1
+  - from: window
+    to: workspace
+    kind: contains
+    style: solid
+    level: L1
+  - from: workspace
+    to: layout-tree
+    kind: contains
+    style: solid
+    level: L1
+  - from: layout-tree
+    to: view
+    kind: contains
+    style: solid
+    level: L1
+  - from: view
+    to: view-type-terminal
+    kind: hosts
+    style: solid
+    level: L1
+  - from: view
+    to: view-type-rich
+    kind: hosts
+    style: solid
+    level: L1
+  - from: view
+    to: view-type-browser
+    kind: hosts
+    style: solid
+    level: L1
+  - from: layout-provider
+    to: layout-tree
+    kind: proposes
+    style: dashed
+    level: L1
+    description: Geometry proposal, Core commits
+  - from: decoration
+    to: workspace
+    kind: configures
+    style: solid
+    level: L1
+
+  # --- Config pipeline ---
+  - from: init-lua
+    to: config-vm
+    kind: call
+    style: solid
+    level: L2
+  - from: config-vm
+    to: config-plan
+    kind: call
+    style: solid
+    level: L2
+  - from: config-plan
+    to: config-validation
+    kind: call
+    style: solid
+    level: L2
+  - from: config-validation
+    to: config-merge
+    kind: call
+    style: solid
+    level: L2
+  - from: config-merge
+    to: config-diff
+    kind: call
+    style: solid
+    level: L2
+  - from: config-diff
+    to: config-reconcile
+    kind: call
+    style: solid
+    level: L2
+  - from: config-reconcile
+    to: runtime-config
+    kind: call
+    style: solid
+    level: L2
+  - from: xdg-layers
+    to: config-merge
+    kind: depends
+    style: solid
+    level: L1
+  - from: config-plan
+    to: project-trust
+    kind: depends
+    style: solid
+    level: L2
+
+  # --- Package lifecycle ---
+  - from: discovered
+    to: fetched
+    kind: lifecycle
+    style: solid
+    level: L2
+  - from: fetched
+    to: verified
+    kind: lifecycle
+    style: solid
+    level: L2
+  - from: verified
+    to: staged
+    kind: lifecycle
+    style: solid
+    level: L2
+  - from: staged
+    to: activated
+    kind: lifecycle
+    style: solid
+    level: L2
+  - from: activated
+    to: retained
+    kind: lifecycle
+    style: solid
+    level: L2
+  - from: lockfile
+    to: integrity-chain
+    kind: depends
+    style: solid
+    level: L2
+  - from: integrity-chain
+    to: verified
+    kind: call
+    style: solid
+    level: L2
+  - from: resolver
+    to: lockfile
+    kind: call
+    style: solid
+    level: L1
+  - from: publisher-trust
+    to: verified
+    kind: call
+    style: solid
+    level: L2
+  - from: activation-txn
+    to: staged
+    kind: call
+    style: solid
+    level: L2
+  - from: activation-txn
+    to: activated
+    kind: call
+    style: solid
+    level: L2
+
+  # --- Isolation ---
+  - from: ir-d1-pty
+    to: pty-master
+    kind: contains
+    style: solid
+    level: L1
+  - from: ir-d2-plugin
+    to: plugin-vm
+    kind: contains
+    style: solid
+    level: L1
+  - from: ir-d2-plugin
+    to: rc-1-cpu
+    kind: enforces
+    style: solid
+    level: L3
+  - from: ir-d2-plugin
+    to: rc-2-mem
+    kind: enforces
+    style: solid
+    level: L3
+  - from: ir-d2-plugin
+    to: rc-5-queue
+    kind: enforces
+    style: solid
+    level: L3
+  - from: ir-d3-ipc
+    to: ipc-channel
+    kind: contains
+    style: solid
+    level: L1
+  - from: fs-1-deny
+    to: ir-d2-plugin
+    kind: event
+    style: dashed
+    level: L2
+  - from: fs-2-ladder
+    to: ir-d2-plugin
+    kind: event
+    style: dashed
+    level: L2

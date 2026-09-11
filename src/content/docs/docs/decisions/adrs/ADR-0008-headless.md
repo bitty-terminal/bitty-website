@@ -39,7 +39,7 @@ status is Accepted.
 
 ## Context
 
-### Why headless is still open
+### Why headless was previously open
 
 - **Product vision leaves it uncommitted.** The vision explicitly lists as
   non-goal "Do not commit at the current documentation phase to `bittyd`, remote
@@ -59,7 +59,8 @@ Agent` and a version ladder v0.0.x through v1.0 with **no `bittyd` before
   remote frontend, multiplexer-style ownership of multiple terminals, and
   rationale lifecycle complexity versus single-process. This corpus records that
   prose as a candidate in [Proposed Delivery Sequence](../../product/proposed-delivery-sequence.md)
-  without adopting it; OQ-020 stays open including its trust-boundary half.
+  without adopting it; before this ADR, OQ-020 remained open, including its
+  trust-boundary half.
 - **Architecture overview accommodates without committing.** The overview's
   data-flow and invariants (separate Terminal, View, Layout; Terminal owns PTY
   and grid; View references Terminal) create space for future detach/attach and
@@ -67,8 +68,8 @@ Agent` and a version ladder v0.0.x through v1.0 with **no `bittyd` before
   runtime in which Terminal, PTY, and the plugin host do not depend on a GUI"
   and "`bittyd` owning multiple Terminals and allowing GUI, CLI, or remote
   clients to attach. Whether such a daemon is in scope, and how it would be
-  staged, remains open in OQ-020." That is the boundary-level description; this
-  ADR is its OQ-020 answer.
+  staged, remained open in OQ-020." That was the boundary-level description;
+  this ADR is its accepted OQ-020 answer.
 - **IPC RFC explicitly excludes it.** The [IPC and Agent RFC](../../specifications/ipc-agent-rfc.md)
   scopes itself to the local-user surface (Unix `$XDG_RUNTIME_DIR/bitty` socket
   `0700`/`0600` with `SO_PEERCRED` or macOS `LOCAL_PEERCRED`, Windows named pipe
@@ -309,10 +310,11 @@ AgentId)`, and a network-exposed fuzz and property corpus for the framing wire
   state to reason about) and a well-scoped daemon that, when it arrives, has a
   typed attach/detach contract and measured caps rather than an ad-hoc "keep
   everything" daemon.
-- **Documentation.** OQ-020 moves from Open to Accepted ADR 0008 in the same PR
-  per the register close rule, leaving no dangling "candidate staging without
-  choosing an answer" prose. Future proposals must cite this ADR as the daemon
-  gate instead of re-stating the second historical conversation.
+- **Documentation.** OQ-020 was moved from Open to Accepted and Closed by ADR
+  0008 in the same PR per the register close rule, leaving no dangling
+  "candidate staging without choosing an answer" prose. Future proposals must
+  cite this ADR as the daemon gate instead of re-stating the second historical
+  conversation.
 
 ## Alternatives Considered
 
@@ -334,7 +336,7 @@ AgentId)`, and a network-exposed fuzz and property corpus for the framing wire
 - [Product Vision](../../product/vision.md) — non-goals refuse `bittyd` and remote multi-client commitment at documentation phase
 - [Proposed Delivery Sequence](../../product/proposed-delivery-sequence.md) — candidate daemon staging (deferred after v1.0, candidate scope detach/attach/persistent/remote/multiplexer, complexity rationale) and v1.0 staircase; OQ-020 candidate staging paragraph
 - [Architecture Overview](../../architecture/overview.md) — candidate long-term evolution bullets (headless runtime, `bittyd` owning multiple Terminals), Terminal/View/Layout separation, snapshot-only renderer coupling
-- [Shared-Conversation Coverage](../../sources/chatgpt-share-coverage.md) — Phase 10 `bittyd` after v1.0 mapping, open provenance that OQ-020 stays open before this ADR
+- [Shared-Conversation Coverage](../../sources/chatgpt-share-coverage.md) — Phase 10 `bittyd` after v1.0 mapping, historical provenance for OQ-020 before this ADR
 - [Security Overview](../../security/overview.md) — invariants 5 and 6, trust-boundary table, capability families, deferral-must-not-create-bypass rule
 - [Threat Model](../../security/threat-model.md) — future-daemon scope line, boundary map, T-09 and R-011 and R-012 and R-013 and R-014
 - [Risk Register](../../security/risk-register.md) — R-011, R-012, R-013 link to consent and credential handling
@@ -349,7 +351,9 @@ AgentId)`, and a network-exposed fuzz and property corpus for the framing wire
 
 ### Verification gates
 
-Must pass before OQ-020 moves from Open to Accepted.
+These gates document the accepted closure of OQ-020 and remain mandatory before
+any future daemon or remote design or implementation is authorized. They are
+not prerequisites for the already Accepted and Closed OQ-020 decision.
 
 1. **Staging gate:** this ADR's "defer to post-v1.0, accommodate early" position
    is the accepted direction; no `docs/**/*.md` claims a daemon binary, service
@@ -383,15 +387,16 @@ Must pass before OQ-020 moves from Open to Accepted.
    inbound link that previously framed staging as undecided now frames it as
    deferred with trust-boundary gate per this ADR.
 
-### Evidence needed to move OQ-020 from Open to Accepted
+### Evidence required for future daemon or remote design
 
-Checklist the commander can gate future daemon design on. Each maps to a gate
-above.
+This is the evidence checklist for the mandatory future trust-boundary gate.
+It does not reopen OQ-020 or represent pending acceptance evidence. Each item
+maps to a gate above and must be satisfied before future daemon or remote work
+is authorized.
 
-- [ ] **E1 — Staging evidence:** diff that updates every inbound OQ-020 link
-      (vision non-goal, architecture evolution, proposed delivery sequence,
-      shared-conversation coverage if needed) to cite this ADR's deferral position,
-      verified by `just links`.
+- [ ] **E1 — Staging evidence:** future design documentation cites this ADR's
+      accepted deferral position and does not present daemon or remote UI work
+      as a v1.0 deliverable, verified by `just links`.
 - [ ] **E2 — Taxonomy consistency evidence:** `rg` report showing the single
       headless/daemon/remote taxonomy and no divergent redefinition across
       `docs/**/*.md`.
@@ -415,11 +420,10 @@ above.
 - [ ] **E7 — Just-check green:** `just check` green with fmt-check, markdownlint
       0 issues, links, metadata, language, agents, hygiene, actionlint green, matching
       the 80-file baseline of CTX-0051 and 81-file baseline of CTX-0053 and CTX-0054.
-- [ ] **E8 — Cross-doc closure:** `open-questions.md` OQ-020 to Accepted ADR
-      0008, `proposed-delivery-sequence.md` staging paragraph to cite this ADR's
-      deferral, `architecture/overview.md` evolution bullets to cite this ADR,
-      `decisions/index.md` candidate queue headless line to Proposed ADR 0008, and
-      `adrs/README.md` table row added — all in one PR per register close rule.
+- [ ] **E8 — Future documentation sync:** any future daemon or remote design
+      updates its affected architecture, security, specification, and risk
+      documents to cite this ADR and preserve the accepted deferral and gate;
+      OQ-020 remains Closed.
 
 ## Appendix: Candidate daemon staging quick reference
 

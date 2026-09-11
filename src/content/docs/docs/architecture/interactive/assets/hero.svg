@@ -1,0 +1,241 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675">
+  <defs>
+    <!-- Background Grid Pattern -->
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#182030" stroke-width="0.8"/>
+      <circle cx="0" cy="0" r="1.2" fill="#223048"/>
+    </pattern>
+
+    <!-- Drop Shadows -->
+    <filter id="node-shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+
+    <!-- Glow Filter -->
+    <filter id="cyan-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Markers -->
+    <marker id="arrow-cyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#38bdf8"/>
+    </marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#4ade80"/>
+    </marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#c084fc"/>
+    </marker>
+    <marker id="arrow-amber" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#fbbf24"/>
+    </marker>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="1200" height="675" fill="#0c1017"/>
+  <rect width="1200" height="675" fill="url(#grid)"/>
+
+  <!-- Outer Window Frame -->
+  <rect x="16" y="16" width="1168" height="643" rx="16" fill="none" stroke="#252f44" stroke-width="2"/>
+
+  <!-- Top Title Bar -->
+  <rect x="18" y="18" width="1164" height="42" rx="14" fill="#131926"/>
+  <line x1="18" y1="60" x2="1182" y2="60" stroke="#222c3f" stroke-width="1.5"/>
+
+  <!-- Traffic Lights -->
+  <circle cx="42" cy="39" r="6" fill="#ff5f56"/>
+  <circle cx="62" cy="39" r="6" fill="#ffbd2e"/>
+  <circle cx="82" cy="39" r="6" fill="#27c93f"/>
+
+  <!-- Blueprint Title -->
+  <text x="110" y="44" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, monospace" font-size="13" font-weight="600" letter-spacing="1">
+    BITTY TERMINAL ARCHITECTURE BLUEPRINT <tspan fill="#38bdf8">— L0 SYSTEM &amp; TRUST BOUNDARIES</tspan>
+  </text>
+  <text x="1160" y="44" text-anchor="end" fill="#475569" font-family="monospace" font-size="11">RUST 2024 • WGPU 26.0 • PICCOLO</text>
+
+  <!-- ==================== BOUNDARY 1: PTY CHILD (IR-D1) ==================== -->
+  <rect x="40" y="80" width="220" height="230" rx="12" fill="#181712" stroke="#eab308" stroke-width="2" stroke-dasharray="6,4"/>
+  <rect x="52" y="70" width="196" height="20" rx="4" fill="#242114"/>
+  <text x="150" y="84" text-anchor="middle" fill="#eab308" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10.5" font-weight="700" letter-spacing="0.5">
+    PTY CHILD PROCESS (IR-D1)
+  </text>
+
+  <g transform="translate(60, 110)" filter="url(#node-shadow)">
+    <rect width="180" height="74" rx="8" fill="#221e14" stroke="#facc15" stroke-width="1.5"/>
+    <text x="90" y="32" text-anchor="middle" fill="#fef08a" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="13" font-weight="700">Shell Child</text>
+    <text x="90" y="52" text-anchor="middle" fill="#ca8a04" font-family="monospace" font-size="10.5">Bash / Zsh / Fish</text>
+  </g>
+  <text x="150" y="240" text-anchor="middle" fill="#a1a1aa" font-family="monospace" font-size="10">Unix PTY / ConPTY</text>
+  <text x="150" y="260" text-anchor="middle" fill="#71717a" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9.5">Strict Process Boundary</text>
+
+  <!-- ==================== BOUNDARY 2: TRUSTED CORE ==================== -->
+  <rect x="290" y="80" width="580" height="530" rx="14" fill="#0d151c" stroke="#10b981" stroke-width="2"/>
+  <rect x="306" y="70" width="230" height="20" rx="4" fill="#0f291e"/>
+  <text x="421" y="84" text-anchor="middle" fill="#34d399" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700" letter-spacing="0.5">
+    BITTY TRUSTED CORE RUNTIME
+  </text>
+
+  <!-- Core Component: bitty-pty -->
+  <g transform="translate(320, 110)" filter="url(#node-shadow)">
+    <rect width="140" height="64" rx="8" fill="#152433" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="70" y="28" text-anchor="middle" fill="#f0f9ff" font-family="monospace" font-size="12" font-weight="700">bitty-pty</text>
+    <text x="70" y="48" text-anchor="middle" fill="#7dd3fc" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">Reader / Writer Task</text>
+  </g>
+
+  <!-- Core Component: bitty-vt -->
+  <g transform="translate(500, 110)" filter="url(#node-shadow)">
+    <rect width="140" height="64" rx="8" fill="#152433" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="70" y="28" text-anchor="middle" fill="#f0f9ff" font-family="monospace" font-size="12" font-weight="700">bitty-vt</text>
+    <text x="70" y="48" text-anchor="middle" fill="#7dd3fc" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">vte 0.15 State Parser</text>
+  </g>
+
+  <!-- Core Component: bitty-term-state -->
+  <g transform="translate(400, 220)" filter="url(#node-shadow)">
+    <rect width="180" height="74" rx="8" fill="#0f2e27" stroke="#34d399" stroke-width="2"/>
+    <text x="90" y="30" text-anchor="middle" fill="#ecfdf5" font-family="monospace" font-size="13" font-weight="700">bitty-term-state</text>
+    <text x="90" y="50" text-anchor="middle" fill="#6ee7b7" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10.5">Terminal Truth &amp; Grid</text>
+    <text x="90" y="66" text-anchor="middle" fill="#34d399" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9">Damage Tracking / History</text>
+  </g>
+
+  <!-- Core Component: bitty-render -->
+  <g transform="translate(320, 340)" filter="url(#node-shadow)">
+    <rect width="160" height="70" rx="8" fill="#152433" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="80" y="28" text-anchor="middle" fill="#f0f9ff" font-family="monospace" font-size="12" font-weight="700">bitty-render</text>
+    <text x="80" y="46" text-anchor="middle" fill="#7dd3fc" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">wgpu 26.0 Compositor</text>
+    <text x="80" y="60" text-anchor="middle" fill="#38bdf8" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9">Zero-copy Glyphs / Quads</text>
+  </g>
+
+  <!-- Core Component: bitty-ui -->
+  <g transform="translate(520, 340)" filter="url(#node-shadow)">
+    <rect width="160" height="70" rx="8" fill="#152433" stroke="#38bdf8" stroke-width="1.5"/>
+    <text x="80" y="28" text-anchor="middle" fill="#f0f9ff" font-family="monospace" font-size="12" font-weight="700">bitty-ui</text>
+    <text x="80" y="46" text-anchor="middle" fill="#7dd3fc" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">LayoutTree &amp; Panes</text>
+    <text x="80" y="60" text-anchor="middle" fill="#38bdf8" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9">Input Routing &amp; Focus</text>
+  </g>
+
+  <!-- Core Component: bitty-runtime & app -->
+  <g transform="translate(320, 460)" filter="url(#node-shadow)">
+    <rect width="250" height="66" rx="8" fill="#1b2030" stroke="#818cf8" stroke-width="1.5"/>
+    <text x="125" y="26" text-anchor="middle" fill="#e0e7ff" font-family="monospace" font-size="12" font-weight="700">bitty-runtime / bitty-app</text>
+    <text x="125" y="44" text-anchor="middle" fill="#a5b4fc" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">App Orchestration &amp; Event Loop</text>
+    <text x="125" y="58" text-anchor="middle" fill="#6366f1" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9">CLI Bootstrap &amp; Signal Handling</text>
+  </g>
+
+  <!-- Core Component: bitty-config -->
+  <g transform="translate(600, 460)" filter="url(#node-shadow)">
+    <rect width="160" height="66" rx="8" fill="#1b2030" stroke="#818cf8" stroke-width="1.5"/>
+    <text x="80" y="26" text-anchor="middle" fill="#e0e7ff" font-family="monospace" font-size="12" font-weight="700">bitty-config</text>
+    <text x="80" y="44" text-anchor="middle" fill="#a5b4fc" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">ConfigPlan Schema</text>
+    <text x="80" y="58" text-anchor="middle" fill="#6366f1" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9">XDG Layers &amp; Reconcile</text>
+  </g>
+
+  <!-- ==================== BOUNDARY 3: LUA EXTENSION (IR-D2) ==================== -->
+  <rect x="900" y="80" width="260" height="250" rx="12" fill="#15121c" stroke="#a855f7" stroke-width="2" stroke-dasharray="6,4"/>
+  <rect x="914" y="70" width="232" height="20" rx="4" fill="#241433"/>
+  <text x="1030" y="84" text-anchor="middle" fill="#c084fc" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10.5" font-weight="700" letter-spacing="0.5">
+    LUA PLUGIN SANDBOX (IR-D2)
+  </text>
+
+  <g transform="translate(920, 110)" filter="url(#node-shadow)">
+    <rect width="220" height="60" rx="8" fill="#201830" stroke="#c084fc" stroke-width="1.5"/>
+    <text x="110" y="26" text-anchor="middle" fill="#f5f3ff" font-family="monospace" font-size="12" font-weight="700">bitty-plugin-host</text>
+    <text x="110" y="46" text-anchor="middle" fill="#d8b4fe" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">Capability Gate &amp; Queues</text>
+  </g>
+
+  <g transform="translate(920, 195)" filter="url(#node-shadow)">
+    <rect width="220" height="64" rx="8" fill="#201830" stroke="#c084fc" stroke-width="1.5"/>
+    <text x="110" y="26" text-anchor="middle" fill="#f5f3ff" font-family="monospace" font-size="12" font-weight="700">piccolo Lua 5.4 VM</text>
+    <text x="110" y="44" text-anchor="middle" fill="#d8b4fe" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">Sandboxed User Scripts</text>
+    <text x="110" y="58" text-anchor="middle" fill="#a855f7" font-family="monospace" font-size="8.5">Mem Ceiling: 32MB • Step Budget</text>
+  </g>
+  <text x="1030" y="295" text-anchor="middle" fill="#a1a1aa" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">Cold Path Only (Async)</text>
+  <text x="1030" y="312" text-anchor="middle" fill="#71717a" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9.5">Never blocks render loop</text>
+
+  <!-- ==================== BOUNDARY 4: IPC / AGENT (IR-D3) ==================== -->
+  <rect x="40" y="350" width="220" height="260" rx="12" fill="#1c1219" stroke="#f43f5e" stroke-width="2" stroke-dasharray="6,4"/>
+  <rect x="52" y="340" width="196" height="20" rx="4" fill="#301520"/>
+  <text x="150" y="354" text-anchor="middle" fill="#fb7185" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10.5" font-weight="700" letter-spacing="0.5">
+    IPC &amp; AGENT PROTOCOL (IR-D3)
+  </text>
+
+  <g transform="translate(60, 380)" filter="url(#node-shadow)">
+    <rect width="180" height="54" rx="8" fill="#281622" stroke="#f43f5e" stroke-width="1.5"/>
+    <text x="90" y="24" text-anchor="middle" fill="#fff1f2" font-family="monospace" font-size="11.5" font-weight="700">bitty-ipc</text>
+    <text x="90" y="42" text-anchor="middle" fill="#fda4af" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9.5">Framed Unix Domain Socket</text>
+  </g>
+
+  <g transform="translate(60, 450)" filter="url(#node-shadow)">
+    <rect width="180" height="54" rx="8" fill="#281622" stroke="#f43f5e" stroke-width="1.5"/>
+    <text x="90" y="24" text-anchor="middle" fill="#fff1f2" font-family="monospace" font-size="11.5" font-weight="700">bitty-agent</text>
+    <text x="90" y="42" text-anchor="middle" fill="#fda4af" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9.5">Bounded Tool &amp; Context Protocol</text>
+  </g>
+
+  <g transform="translate(60, 520)" filter="url(#node-shadow)">
+    <rect width="180" height="54" rx="8" fill="#281622" stroke="#f43f5e" stroke-width="1.5"/>
+    <text x="90" y="24" text-anchor="middle" fill="#fff1f2" font-family="monospace" font-size="11.5" font-weight="700">MCP Gateway</text>
+    <text x="90" y="42" text-anchor="middle" fill="#fda4af" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="9.5">Model Context Protocol Server</text>
+  </g>
+
+  <!-- ==================== FLOW CONNECTORS ==================== -->
+  <!-- PTY -> bitty-pty -->
+  <path d="M 240 145 L 320 145" fill="none" stroke="#fbbf24" stroke-width="2" marker-end="url(#arrow-amber)"/>
+  <text x="280" y="138" text-anchor="middle" fill="#fbbf24" font-family="monospace" font-size="9">byte stream</text>
+
+  <!-- bitty-pty -> bitty-vt -->
+  <path d="M 460 142 L 500 142" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow-cyan)"/>
+  <text x="480" y="134" text-anchor="middle" fill="#7dd3fc" font-family="monospace" font-size="8.5">batch</text>
+
+  <!-- bitty-vt -> bitty-term-state -->
+  <path d="M 570 174 L 520 220" fill="none" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow-cyan)"/>
+  <text x="560" y="202" fill="#7dd3fc" font-family="monospace" font-size="8.5">action</text>
+
+  <!-- bitty-term-state -> bitty-render -->
+  <path d="M 440 294 L 380 340" fill="none" stroke="#34d399" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <text x="390" y="312" fill="#6ee7b7" font-family="monospace" font-size="8.5">damage rects</text>
+
+  <!-- bitty-term-state -> bitty-ui -->
+  <path d="M 530 294 L 580 340" fill="none" stroke="#34d399" stroke-width="2" marker-end="url(#arrow-green)"/>
+  <text x="575" y="312" fill="#6ee7b7" font-family="monospace" font-size="8.5">grid slice</text>
+
+  <!-- Plugin -> bitty-term-state (Cold path) -->
+  <path d="M 920 140 C 780 140, 720 230, 580 245" fill="none" stroke="#c084fc" stroke-width="1.8" stroke-dasharray="4,3" marker-end="url(#arrow-purple)"/>
+  <text x="740" y="185" text-anchor="middle" fill="#d8b4fe" font-family="monospace" font-size="8.5">cold events (async)</text>
+
+  <!-- IPC -> bitty-runtime -->
+  <path d="M 240 480 L 320 480" fill="none" stroke="#f43f5e" stroke-width="2" marker-end="url(#arrow-cyan)"/>
+  <text x="280" y="472" text-anchor="middle" fill="#fda4af" font-family="monospace" font-size="8.5">JSON-RPC</text>
+
+  <!-- ==================== LEGEND BADGES (BOTTOM) ==================== -->
+  <g transform="translate(900, 360)">
+    <rect width="260" height="250" rx="10" fill="#10141d" stroke="#252f44" stroke-width="1"/>
+    <text x="130" y="24" text-anchor="middle" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="11" font-weight="700">
+      ARCHITECTURAL GUARANTEES
+    </text>
+    <line x1="16" y1="36" x2="244" y2="36" stroke="#1e2638" stroke-width="1"/>
+
+    <circle cx="28" cy="56" r="4" fill="#34d399"/>
+    <text x="40" y="60" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">Zero-alloc Hot Path (Grid/Render)</text>
+
+    <circle cx="28" cy="86" r="4" fill="#38bdf8"/>
+    <text x="40" y="90" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">16-Crate Layered Strict DAG</text>
+
+    <circle cx="28" cy="116" r="4" fill="#facc15"/>
+    <text x="40" y="120" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">Hardware-Isolated PTY Child</text>
+
+    <circle cx="28" cy="146" r="4" fill="#c084fc"/>
+    <text x="40" y="150" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">Non-blocking Lua Sandbox</text>
+
+    <circle cx="28" cy="176" r="4" fill="#f43f5e"/>
+    <text x="40" y="180" fill="#cbd5e1" font-family="-apple-system, BlinkMacSystemFont, sans-serif" font-size="10">Framed IPC &amp; MCP Tool Protocol</text>
+
+    <!-- Mini Mascot Stamp -->
+    <rect x="24" y="200" width="212" height="36" rx="6" fill="#181f2c" stroke="#2b374e" stroke-width="1"/>
+    <text x="130" y="222" text-anchor="middle" fill="#38bdf8" font-family="monospace" font-size="10" font-weight="700">
+      bitty-terminal.org
+    </text>
+  </g>
+</svg>

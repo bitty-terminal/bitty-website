@@ -1,0 +1,385 @@
+{
+  "schema_version": 1,
+  "snapshot_date": "2026-09-08",
+  "implementation": {
+    "repository": "https://github.com/bitty-terminal/bitty",
+    "revision": "29772a35d4297e6fe403d362fb9bada55a4465b0",
+    "short": "29772a3",
+    "baseline_revision": "de134ec3a09b96ce58ef2cece20d15b0c041879a",
+    "baseline_short": "de134ec",
+    "previous_revision": "c49ead135494b796a38c91158e535d06a308c62a",
+    "previous_short": "c49ead1",
+    "crates": 18
+  },
+  "latest_release": {
+    "tag": "v0.0.19",
+    "commit": "c2aabeececaff8128671ee7a322aac116e8ed321",
+    "short": "c2aabee",
+    "date": "2026-09-03",
+    "summary": "AUR checkout root-owned (bitty CTX-0135 PR #224); binary artifact renamed bitty-app -> bitty; cross-platform dist assets bitty-<target> plus deb/rpm/apk/pkg.tar.zst, Homebrew/Scoop, AUR bitty/bitty-bin, SHA256SUMS and provenance per CHANGELOG"
+  },
+  "maturity": {
+    "label": "Pre-alpha / Engineering Milestones M1-M8",
+    "date": "2026-09-08",
+    "oqs_accepted": 32,
+    "lifecycle": "Draft -> Experimental Implementation -> Accepted -> Verified -> Compatible -> Release-ready",
+    "milestone_frame": "M1 Terminal Truth; M2 Correct Terminal; M3 Usable Terminal; M4 Workspace / Panel; M5 Plugin Ecosystem; M6 Rich / IPC / Agent; M7 Stable Compatibility; M8 Public Beta"
+  },
+  "engineering_milestones": [
+    {
+      "id": "M1",
+      "name": "Terminal Truth",
+      "status": "implemented-hardening",
+      "evidence": "PTY/VT/state/render/window path exists via headless soak plus experimental slice c0aadd2/7e3104d/a8735d0; window.padding/opacity wired config to winit at 1835175; not Verified"
+    },
+    {
+      "id": "M2",
+      "name": "Correct Terminal",
+      "status": "hardening",
+      "evidence": "VT correctness fixes landing (combining marks 2d36084, cursor/tab margin bounds 38973a0, OSC52 base64 0cb244d/f725664); sRGB-decode upload colors for linear swapchain present b4b4e30; DA replies pumped per pane 7048139; compat-lab forming with regenerated baselines 0e65f85; not Verified"
+    },
+    {
+      "id": "M3",
+      "name": "Usable Terminal",
+      "status": "in-progress",
+      "evidence": "config productizing (user config-file loading 9a392ed, appearance overrides bc21631, Alt-as-Mod cc40ffc, init wizard 95ed41f, leader/mod_key 2a5e451, radius_px S0 parsed no-op 84aa580); UX wave (cursor hue e8a7b76, smart_split 75f8637, z-index tiers 42d244e, split/zoom full present 5a535ee, chrome-held key-repeat swallow 88c0ead, runtime module split 61b655f, chrome-key cluster extract 3384903, scrollbar overlay c49ead1, scrolled-viewport snap on input 884fd30)"
+    },
+    {
+      "id": "M4",
+      "name": "Workspace / Panel",
+      "status": "early-implementation",
+      "evidence": "PanelId/ViewId/TerminalId separation with PanelRuntime::mount and MAX_OVERLAYS_PER_WINDOW 4 in bitty-ui panel.rs; bounded async panel workers off tick path d04886a; canonical bitty-terminal.workspace with deprecated tabs shim (removal >= v0.2.0) plus panel gaps regression abde197; V1-V3 panel-live digest gates 29772a3 Implemented-only, not Verified; Panel Runtime spec remains Draft pre-study CTX-0119"
+    },
+    {
+      "id": "M5",
+      "name": "Plugin Ecosystem",
+      "status": "infrastructure-only",
+      "evidence": "plugin-host dogfood of five bundled-disabled first-party plugins 7e3104d retained plus fuel cap 58e488a and TOFU fail-closed ec95c5c; plugin SDK lives in a separate repository and is not verified here"
+    },
+    {
+      "id": "M6",
+      "name": "Rich / IPC / Agent",
+      "status": "hardening-infrastructure",
+      "evidence": "Kitty chunked intake with 320MB ledger 1fc6294; semantic-terminal P1-P5 Implemented-only (CommandBlock anchoring + fold MVP 4ccb771, Hint Mode 064486b, Command Composer + external editor ab1f7ab); IPC profiling/frame-capture/ctl surface 7dbe4e2/144ee1c/04b4973 plus attestation fix c5ec211, splitView axis fix 77bd6c5, ctl denial surfacing 99f5b1d, frameHash digest method 3f5ed24 Implemented-only (pixel channel deferred, P0-AC-026 unchanged); agent credential scrubbing a2d127b; linked risks unchanged"
+    },
+    {
+      "id": "M7",
+      "name": "Stable Compatibility",
+      "status": "not-started",
+      "evidence": "compat-lab forming toward it; no compatibility claim made"
+    },
+    {
+      "id": "M8",
+      "name": "Public Beta",
+      "status": "not-started",
+      "evidence": "no release-readiness claim; overall product not Verified/Compatible/Release-ready"
+    }
+  ],
+  "risks": [
+    {
+      "id": "R-001",
+      "state": "Open",
+      "stage": "P0"
+    },
+    {
+      "id": "R-002",
+      "state": "Open",
+      "stage": "P0"
+    },
+    {
+      "id": "R-003",
+      "state": "Open",
+      "stage": "P0"
+    },
+    {
+      "id": "R-004",
+      "state": "Open",
+      "stage": "P0",
+      "evidence": {
+        "revision": "7a4ee41",
+        "baseline": "de134ec",
+        "audit": "https://github.com/bitty-terminal/bitty/blob/7a4ee41/docs/security/audits/clipboard-2026-09.md",
+        "audit_task": "CTX-0097",
+        "audit_date": "2026-08-31",
+        "residual": [
+          "platform clipboard backends (arboard X11/Wayland/macOS/Windows)",
+          "real-window UX",
+          "8192-byte bound scope (post-acquisition, not strict peak)"
+        ]
+      }
+    },
+    {
+      "id": "R-005",
+      "state": "Mitigated",
+      "stage": "P0",
+      "evidence": {
+        "revision": "5bdcdbd",
+        "baseline": "de134ec",
+        "audit": "https://github.com/bitty-terminal/bitty/pull/144",
+        "audit_task": "CTX-0092",
+        "audit_date": "2026-08-31",
+        "issue": "137",
+        "pr": "144",
+        "commit": "5bdcdbd98e9910d36e5790ddf68041950bdcc06b",
+        "residual": [
+          "real-window UX activation-gesture pending full integration",
+          "file URL requires distinct FileUrlActivation capability gate"
+        ],
+        "rs_checklist": "RS-1..RS-7 evidenced per PR independent review"
+      }
+    },
+    {
+      "id": "R-006",
+      "state": "Mitigated",
+      "stage": "P0",
+      "evidence": {
+        "revision": "0afc94d",
+        "baseline": "de134ec",
+        "audit": "https://github.com/bitty-terminal/bitty/pull/145",
+        "audit_task": "CTX-0092",
+        "audit_date": "2026-08-31",
+        "issue": "138",
+        "pr": "145",
+        "commit": "0afc94dd49a0b9df2d4cf8a0249153b468cd81b5",
+        "residual": [
+          "capability grant UX and revocation flow hardening pending",
+          "official-plugin parity suite to be extended under CTX follow-up"
+        ],
+        "rs_checklist": "RS-1..RS-7 evidenced per PR independent review"
+      }
+    },
+    {
+      "id": "R-007",
+      "state": "Mitigated",
+      "stage": "P0",
+      "evidence": {
+        "revision": "d4d75e9",
+        "baseline": "de134ec",
+        "audit": "https://github.com/bitty-terminal/bitty/pull/146",
+        "audit_task": "CTX-0092",
+        "audit_date": "2026-08-31",
+        "issue": "139",
+        "pr": "146",
+        "commit": "d4d75e92f3ba38f5e984aff017f57388e6adb63b",
+        "residual": [
+          "reclaim invariant PB-3 15% after GC ten-cycle observably fires, long-horizon soak pending",
+          "queue-budget DropOldest attribution verified, headless measurement only"
+        ],
+        "rs_checklist": "RS-1..RS-7 evidenced per PR independent review"
+      }
+    },
+    {
+      "id": "R-008",
+      "state": "Open",
+      "stage": "P0"
+    },
+    {
+      "id": "R-009",
+      "state": "Open",
+      "stage": "P0"
+    },
+    {
+      "id": "R-010",
+      "state": "Open",
+      "stage": "P1"
+    },
+    {
+      "id": "R-011",
+      "state": "Open",
+      "stage": "P0"
+    },
+    {
+      "id": "R-012",
+      "state": "Open",
+      "stage": "P0"
+    },
+    {
+      "id": "R-013",
+      "state": "Open",
+      "stage": "P0"
+    },
+    {
+      "id": "R-014",
+      "state": "Open",
+      "stage": "P1"
+    },
+    {
+      "id": "R-015",
+      "state": "Open",
+      "stage": "P0"
+    },
+    {
+      "id": "R-016",
+      "state": "Open",
+      "stage": "P1"
+    },
+    {
+      "id": "R-017",
+      "state": "Open",
+      "stage": "P0"
+    },
+    {
+      "id": "R-018",
+      "state": "Open",
+      "stage": "P0"
+    },
+    {
+      "id": "R-019",
+      "state": "Open",
+      "stage": "P0"
+    },
+    {
+      "id": "R-020",
+      "state": "Open",
+      "stage": "P0"
+    },
+    {
+      "id": "R-021",
+      "state": "Open",
+      "stage": "P0"
+    },
+    {
+      "id": "R-022",
+      "state": "Open",
+      "stage": "P0"
+    }
+  ],
+  "audits": [
+    {
+      "risk": "R-004",
+      "path": "docs/security/audits/clipboard-2026-09.md",
+      "revision": "7a4ee41",
+      "date": "2026-08-31",
+      "verdict": "Open",
+      "task": "CTX-0097"
+    },
+    {
+      "risk": "R-005",
+      "path": "pull/144",
+      "revision": "5bdcdbd",
+      "date": "2026-08-31",
+      "verdict": "Mitigated",
+      "task": "CTX-0092",
+      "issue": "137"
+    },
+    {
+      "risk": "R-006",
+      "path": "pull/145",
+      "revision": "0afc94d",
+      "date": "2026-08-31",
+      "verdict": "Mitigated",
+      "task": "CTX-0092",
+      "issue": "138"
+    },
+    {
+      "risk": "R-007",
+      "path": "pull/146",
+      "revision": "d4d75e9",
+      "date": "2026-08-31",
+      "verdict": "Mitigated",
+      "task": "CTX-0092",
+      "issue": "139"
+    }
+  ],
+  "experimental_implementations": [
+    {
+      "id": "vertical-slice",
+      "revision": "c0aadd2",
+      "full": "c0aadd275f284fd0b9535a3e138bd5dd09a28ffb",
+      "task": "CTX-0095",
+      "pr": "148",
+      "description": "Real single-window vertical slice: one process/window/PTY/parser/state/view, winit 0.30 + wgpu 25.0, bounded PTY reply buffer, Kitty 7727, mouse SGR, focus, bracketed paste, IME overlay",
+      "lifecycle": "Experimental Implementation",
+      "verified": false
+    },
+    {
+      "id": "plugin-dogfood",
+      "revision": "7e3104d",
+      "full": "7e3104dfffc728e7e99f9aa8bfd3a2f56ee30ef9",
+      "task": "CTX-0096",
+      "pr": "149",
+      "description": "Dogfood public Plugin API with five bundled-disabled first-party plugins (shell-integration, workspace [tabs shim since abde197], statusline, palette, project) via bundled.rs, bounded DropOldest queues",
+      "lifecycle": "Experimental Implementation",
+      "verified": false
+    },
+    {
+      "id": "pty-reply-fix",
+      "revision": "a8735d0",
+      "full": "a8735d0aafb91351aa8e215cdab191dbd3742458",
+      "task": "CTX-0098",
+      "pr": "151",
+      "description": "Close PTY reply loop (Runtime::write_replies bounded 4 KiB PtyWriter) and Kitty progressive params colon-subparam collapse",
+      "lifecycle": "Experimental Implementation",
+      "verified": false
+    }
+  ],
+  "subsystems": {
+    "terminal_truth": {
+      "assessment": "hardening",
+      "evidence": "vt/pty/term-state crates at c49ead1; OSC 133 CommandRegion ordinal grouping in crates/bitty-rich/src/shell.rs plus CommandBlock anchoring in crates/bitty-rich/src/blocks.rs 4ccb771 (Implemented-only); combining-marks fix 2d36084; cursor/tab margin bounds 38973a0; OSC52 base64 read reply f725664 and write decode 0cb244d; DA replies pumped per pane 7048139"
+    },
+    "render_ux": {
+      "assessment": "hardening",
+      "evidence": "render crate present; window.padding/opacity wired config to runtime to render to winit at 1835175; cursor hue at existing alpha e8a7b76; overlay z-index tiers 42d244e; smart_split orientation 75f8637; braille/block font fallback 6b5bbe6; headless surface allocation bound 4af50e7; sRGB-decode upload colors b4b4e30; split/zoom full present 5a535ee; chrome-held key-repeat swallow 88c0ead; scrollbar overlay shipped c49ead1 (Implemented-only, hidden default); measured font defaults line_height 1.375 / letter_spacing 2.0 with live cell 10x22 and metric-resolved baseline 308687d; window.radius_px S0 stored with zero render effect 84aa580; scrolled-viewport snap on input 884fd30"
+    },
+    "compat_lab": {
+      "assessment": "forming",
+      "evidence": "bitty-compat-lab crate re-exporting tests/compat/harness.rs (bounded corpus, deterministic snapshots); baselines regenerated post v2/v3 hash drift 0e65f85; singular-candidate comparator fix fd8a71a"
+    },
+    "perf": {
+      "assessment": "forming",
+      "evidence": "bitty-perf crate owning benches vt_throughput/terminal_state/reflow/search/render_prepare plus startup_real/latency_real/idle_real; process memory/CPU/frame profiling over IPC 7dbe4e2"
+    },
+    "panel_runtime": {
+      "assessment": "early-implementation",
+      "evidence": "PanelId/ViewId/TerminalId separation with PanelRuntime::mount and MAX_OVERLAYS_PER_WINDOW 4 in crates/bitty-ui/src/panel.rs; bounded async panel workers off tick path d04886a; canonical bitty-terminal.workspace with deprecated tabs shim abde197; panel gaps gaps_in/gaps_out 0..=16 with stack inset-only abde197; V1-V3 panel-live digest gates 29772a3 Implemented-only, not Verified; Panel Runtime spec remains Draft pre-study CTX-0119"
+    },
+    "plugin_host": {
+      "assessment": "implemented-unverified",
+      "evidence": "dogfood of five bundled-disabled first-party plugins 7e3104d retained; fuel cap per Executor step slice 58e488a; Signed TOFU fail-closed ec95c5c; experimental only, not Verified"
+    },
+    "rich": {
+      "assessment": "hardening",
+      "evidence": "streaming Kitty chunked intake with 320MB ledger 1fc6294; Scene admission SCN-1..3 7e85887; empty-roots fix fade082; OTP-gated clipboard reads 63b01db; semantic-terminal P1-P5 Implemented-only (CommandBlock + fold MVP 4ccb771, Hint Mode 064486b, Composer + external editor ab1f7ab); experimental only, not Verified"
+    },
+    "scrollbar": {
+      "assessment": "implemented-unverified",
+      "evidence": "configurable overlay scrollbar (hidden/always/auto, width 1-32 default 8) merged to bitty origin/main at c49ead1 (CTX-0181, closes #281, bitty PR #405) read-only; documented as shipped defaults in docs/configuration/lua-and-xdg.md; Implemented-only, not Verified"
+    },
+    "ipc": {
+      "assessment": "hardening",
+      "evidence": "read-only introspection queries b716665; profiling/frame-capture/input-synthesis over IPC 7dbe4e2/144ee1c; symlink-traversal rejection c5ec211; splitView axis fix 77bd6c5; ctl denials surfaced as permission errors with pinned elevation verbs 99f5b1d; frameHash digest method 3f5ed24 Implemented-only (FrameDigest family, 120s TTL, 2/s, local-only, pixel channel deferred); bitty ctl/dev/inspect/list/doctor/run CLI surface 04b4973/e31ecc4/5fed101/b620597/9c1abee; linked risks R-011..R-014 remain Open"
+    },
+    "agent": {
+      "assessment": "infrastructure",
+      "evidence": "credential scrubbing for tool args/results a2d127b; bounded agent messages; MCP adapter lives in a separate repository and is not verified here"
+    },
+    "config": {
+      "assessment": "productizing",
+      "evidence": "user config-file loading 9a392ed; CLI appearance overrides for font family/size/opacity bc21631; Alt-as-Mod defaults cc40ffc; init wizard 95ed41f; scrollbar overlay config (mode/width, hidden default, fail-closed) shipped c49ead1; leader/mod_key top-level scalar (alt default, super allowed, ctrl/shift rejected) 2a5e451; measured font defaults 1.375/2.0 with live cell 10x22 308687d; layout gaps_in/gaps_out 0..=16 cells abde197; window.radius_px S0 parsed no-op 0..=24 default 0 84aa580"
+    },
+    "release_packaging": {
+      "assessment": "operating",
+      "evidence": "tag v0.0.19 at c2aabee (2026-09-03); binary artifact bitty-app -> bitty a724771; AUR bitty-bin prebuilt package 559ccff; closed capability set enforced at manifest time 33a6731; cross-platform dist assets plus deb/rpm/apk/pkg.tar.zst, Homebrew/Scoop, SHA256SUMS and provenance per CHANGELOG"
+    }
+  },
+  "sync_provenance": {
+    "carryctx_task": "CTX-0133",
+    "github_issue": "https://github.com/bitty-terminal/bitty-docs/issues/163",
+    "previous_task": "CTX-0132",
+    "previous_issue": "https://github.com/bitty-terminal/bitty-docs/issues/161",
+    "audit_task": "CTX-0092",
+    "synchronized_at": "2026-09-08",
+    "synchronized_by": "docs-impl-0133",
+    "synchronized_revision": "29772a3",
+    "previous_revision": "c49ead1",
+    "baseline_revision": "de134ec",
+    "experimental_chain": "d4d75e9 -> c0aadd2 -> 7e3104d -> a8735d0 retained as evidence; main has advanced to 29772a3 (previous c49ead1: scrollbar overlay c49ead1 merged via bitty #405 plus wave: control-enqueue wake 8c6747b, session-less split present 81f1209, leader/mod_key 2a5e451, measured font defaults 308687d, workspace rename alias plus panel gaps abde197, scrolled-viewport snap on input 884fd30, radius_px S0 84aa580, frameHash digest 3f5ed24, V1-V3 panel-live gates 29772a3; all Implemented-only, none Verified)"
+  },
+  "ownership": {
+    "owner": "docs-curator + security-auditor",
+    "update_protocol": "Update only via CarryCtx task with independent docs-curator and security-auditor review, CI green, and explicit provenance record. Risk state changes require per-risk RS-1..RS-7 checklist and auditor sign-off; this file records state, it does not authorize mitigation. Experimental Implementation does not imply Verified or Accepted.",
+    "source_of_truth": "This file is the canonical machine-readable source for synchronized revision, snapshot date, maturity, per-risk state, evidence revision/audit references, latest release, subsystem assessments, and sync provenance. Human-readable summaries in README, risk-register, evidence-matrix, TODO, docs/README, release-ladder are derived and validated against it."
+  },
+  "notes": "Must not auto-accept risks or replace CarryCtx/security review. At Engineering Milestones M1-M8 per CTX-0133, R-005/R-006/R-007 stay Mitigated at d4d75e9 (5bdcdbd/0afc94d/d4d75e9, Issues #137/#138/#139) per RS-1..RS-7 and independent review; R-004 remains Open at 7a4ee41 with residual platform, UX, and 8192-byte bound-scope limits per audit; all other risks remain Open. Experimental Implementations c0aadd2 (vertical slice), 7e3104d (plugin dogfood), a8735d0 (PTY reply + Kitty) stay Implemented (experimental) not Verified/Compatible/Release-ready per Draft -> Experimental Implementation -> Accepted -> Verified -> Compatible ladder; semantic-terminal P1-P5 (4ccb771/064486b/ab1f7ab) are Implemented-only evidence, not Accepted/Verified, closing no open question; scrollbar overlay c49ead1 (CTX-0181, bitty #405, closes #281) is merged to origin/main and Implemented-only, not Accepted/Verified; the CTX-0133 wave (leader/mod_key 2a5e451, measured font defaults 308687d, workspace rename alias plus panel gaps abde197, radius_px S0 84aa580, frameHash digest 3f5ed24, V1-V3 panel-live gates 29772a3) is Implemented-only evidence at 29772a3, not Accepted/Verified, closing no open question, with P0-AC-026 unchanged. Subsystem rows cover only bitty origin/main evidence verified read-only for this snapshot; plugin SDK, MCP adapter, DevTools client, and website rows are omitted because they live in separate repositories and were not verified here. Overall product remains Pre-alpha, not Verified/Compatible/Release-ready. Test counts are per audit/implementation evidence, not duplicated here unless generated via cargo test."
+}

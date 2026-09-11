@@ -14,8 +14,9 @@ sidebar_order: 10
 ## Document status
 
 - Phase: directional baseline before product development begins
-- Implementation status: product implementation has not started; this document
-  does not claim that any capability is available
+- Implementation status: no released or user-ready product is claimed; foundation
+  and headless implementation evidence exists, but this document does not claim
+  that any capability is released or independently verified
 - Source: the [first eight rounds of discussion between the project initiator and
   the architecture advisor](https://chatgpt.com/share/6a8d7652-9de0-83e9-9a6b-bdc54ff2f7d6),
   reorganized into a maintainable form
@@ -45,6 +46,36 @@ Four statements summarize this design direction:
 This is a project goal. It does not imply that a working terminal, stable API,
 or plugin ecosystem exists today.
 
+## Strategic shape and priority
+
+Bitty's intended distinction is the combination of a small Rust terminal core
+with strict separation between **Terminal**, **View**, and **Layout**. Terminal
+owns canonical PTY, VT, grid, scrollback, and mode state; Views present that
+state; Layout arranges Views and other UI surfaces. The core supplies mechanisms
+and invariants, while plugins supply policy and applications. This preserves
+**Terminal Truth**: extensions may change presentation, but may not mutate the
+canonical terminal state or enter parser, render, or input hot paths.
+
+The longer-term application primitive is a generic **Panel**, not a synonym for
+Terminal or PTY. A Panel may host a terminal view or a future rich, file, agent,
+or browser view. A structured control plane (commands, events, services, debug,
+and IPC) should connect these surfaces without exposing renderer, window, PTY,
+or other implementation objects. Headless readiness, observability, replay, and
+explicit performance budgets are architectural constraints so optional
+capabilities can remain absent, rather than imposing workstation costs on an
+unused terminal. Platform interfaces should remain capability-specific instead
+of becoming a single God abstraction.
+
+The project is currently **Pre-alpha / M1 Hardening**. Existing architecture
+and headless test evidence records design or implementation progress; it is not
+proof of a released, independently verified terminal product. After the design
+gates, priority should transition from architecture-first toward
+dogfooding-first. The working sequence is: Terminal Truth (PTY, VT, and state);
+real renderer, fonts, input, and IME; a usable shell/nvim/tmux terminal;
+View/Layout/Panel; Plugin API dogfood; then Rich, IPC, Agent, browser, and the
+wider ecosystem. This is sequencing guidance, not an implementation claim or
+date promise.
+
 ## Accepted directions
 
 ### Small core, plugin extensions
@@ -53,8 +84,10 @@ The accepted product direction is a lightweight foundation extended by plugins.
 Starting a shell, displaying the terminal, scrolling, selection, copy and paste,
 fonts, colors, and basic input are the candidate minimum set discussed so far.
 Tabs, workspaces, status lines, project management, SSH management, and AI
-assistants are candidate plugin experiences. The final default set still
-requires requirements validation.
+assistants are candidate plugin experiences. The accepted Default Distribution
+RFC staged set is `shell-integration`, `tabs`, `statusline`, `palette`, and
+`project`; all five are bundled but disabled, while `splits` and `search` remain
+future dogfooding candidates rather than bundled plugins.
 
 A small core does not mean that everything is a plugin. The discussion
 recommends keeping correctness-critical capabilities such as VT parsing,
@@ -107,6 +140,10 @@ priority is documentation and engineering foundations; product code comes
 later.
 
 ## Candidate product layers
+
+The candidate layers and principles below are noncanonical assessment topics:
+they are unaccepted, are not product commitments, are not implementation claims,
+and are not entries in the OQ register.
 
 | Layer               | Product role              | Responsibility                                                                         |
 | ------------------- | ------------------------- | -------------------------------------------------------------------------------------- |
@@ -199,9 +236,15 @@ Disabling a plugin should also remove its capability and resident resource cost.
 Lazy loading, reclaimable lifecycles, and diagnosability are important parts of
 this vision, but their exact designs still require RFCs.
 
+## Accepted distribution decision
+
+The [Default Distribution RFC](../specifications/default-distribution-rfc.md)
+accepts `shell-integration`, `tabs`, `statusline`, `palette`, and `project` as
+the bundled-disabled first-party set; the enabled-by-default set remains
+empty.
+
 ## Open questions
 
-- Which first-party plugins should the minimal distribution bundle by default?
 - What are the startup-time, idle-memory, input-latency, and package-size targets
   for lightweight operation? (Accepted: [Performance Budget RFC](../specifications/performance-budget-rfc.md).)
 - Should Bitty retain a static auxiliary entry point in addition to the primary

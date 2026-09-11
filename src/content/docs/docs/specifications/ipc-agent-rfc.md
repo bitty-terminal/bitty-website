@@ -558,6 +558,52 @@ audit — all of which belong to the runtime/IPC host under
 both Linux CI and the `windows-latest` job, and keeps the future migration path
 `AgentMessage -> bitty_ipc::Frame` a thin adapter without cap redefinition.
 
+### Credential scrubbing implementation evidence (bitty #370)
+
+Status: **experimental review evidence only.** The scrubbing milestone merged
+in `bitty` `a2d127b` (CTX-0216, PR #370, `crates/bitty-agent/src/tool.rs`). It
+records exactly what that change implements; it changes no accepted bound
+above, grants no new capability, and does not promote this RFC beyond
+`accepted`. Raw arguments and results are still stored for host dispatch;
+scrubbing is the required view for every log or IPC crossing, not a mutation of
+the stored value.
+
+What merged, exactly:
+
+1. **Sensitive-key redaction.** `is_sensitive_key` matches keys
+   case-insensitively, by exact name or explicit suffix (`_key`, `-token`,
+   `.secret`, `_pwd`, `_pass`, `_password`, ...), for `auth`, `pwd`, `pass`,
+   `pw`, `key`, `token`, `secret`, `password`, `credential`, `bearer`,
+   `cookie`, `authorization`, `passphrase`, and known markers (`api_key`,
+   `access_token`, `refresh_token`, `client_secret`, `private_key`,
+   `x-api-key`, `set-cookie`, ...). Short bare tokens are exact/suffix-only so
+   ordinary keys (`author`, `path`, `bypass`, `power`, `description`) are not
+   mangled; matching is intentionally fail-closed (over-redact rather than
+   leak).
+2. **Typed and unstructured values.** Any value under a sensitive key is
+   replaced with `REDACTED_MARKER` (`[redacted]`) regardless of JSON type
+   (string, number, object, array); a malformed or unbalanced shape under a
+   sensitive key redacts the whole payload rather than passing bytes through.
+   Unstructured text is additionally scanned for PEM blocks, known token
+   prefixes, JWTs (`eyJ`), and bearer values.
+3. **Boundary helpers.** `scrub_tool_args` / `scrub_tool_result` redact and
+   bound output to `MAX_TOOL_ARGS_BYTES` / `MAX_TOOL_RESULT_BYTES` (`16 KiB`
+   each, the accepted caps above). `ToolCall::scrubbed_arguments` /
+   `ToolCall::scrubbed` / `ToolCall::log_safe` and
+   `ToolResult::scrubbed_content` / `ToolResult::scrubbed` /
+   `ToolResult::log_safe` are the log/IPC views; `Debug` for both types is
+   redacting by design, so `format!("{:?}", call)` cannot emit a credential.
+4. **Adversarial coverage.** Negative tests assert JSON, bare-pair, header,
+   PEM, AWS, JWT, and `pass`/`pw` vectors are redacted; positive tests assert
+   legitimate values survive; cap tests assert scrubbed output stays within the
+   `16 KiB` bounds; debug/log-safe tests assert no seeded secret is emitted.
+
+Explicit non-changes: the scrubbing gate is key- and pattern-based, so a
+secret shape outside those patterns is not guaranteed to be redacted; the
+runtime Tool Bus, capability checks, per-tool consent, audit, and typed
+`SecretField` machinery are not implemented by this milestone; no
+`Verified`/`Compatible` claim is made by this evidence.
+
 ## Failure semantics
 
 Numbered for reference; none is implemented by this RFC alone:
@@ -587,6 +633,254 @@ Numbered for reference; none is implemented by this RFC alone:
 - **FS-IP7 Fail-closed framing.** If the framing or quota machinery cannot
   start or is detected disabled, the endpoint refuses to serve rather than
   serving unbounded.
+
+<!-- markdownlint-disable MD013 -->
+
+## Programmable workspace IPC advantages
+
+> Status: **addendum** to the accepted contract of 2026-08-29. This section is a surgical addendum that does not reopen [OQ-018](../decisions/open-questions.md), does not change `frontmatter.status: accepted`, and does not claim daemon, session-persistence, or remote-UI implementation. It re-expresses the advantages that the programmable workspace direction in the [Workspace Compositor](workspace-compositor.md) (Draft) and the [Product Vision](../product/vision.md) draw from the accepted IPC surface below. Future Panel ownership belongs in a dedicated Panel contract; future CLI ownership belongs in the [CLI](../interfaces/cli.md) contract. Where this addendum mentions a long-term daemon, multi-window server, session save/restore, or SSH-tunnel remote use, that use is deferred per [ADR 0008 - Headless Daemon](../decisions/adrs/ADR-0008-headless.md) (post-v1.0, trust-boundary gate) and is described here only as an IPC-shaped candidate.
+
+This section consolidates programmable-workspace advantages from the untracked temporary local research file `chatgpt-2026-08-30-2.md`, including candidate IPC, workspace, and prior-art rationale. That file is an untrusted local research input outside the canonical repository, is not a canonical or reproducible evidence source, and is not supported by any line-level verification claim. For durable evidence and stable provenance, consult the [Reference Project Register](../project/reference-projects.md). The accepted contract and the security corpus override this temporary research where they conflict. Every candidate below reuses — and does not relax — the guarantees the accepted contract requires and defines: IPC is local-user-local by default (no TCP listener), MCP and Agent access is read-only by default, every operation has an explicit server-evaluated scope, peer credentials are checked before privileged work, framing is bounded (`256 KiB` frame, `512 KiB` in-flight, depth 32), and rate limits RC-9/RC-10 with shed-newest and attribution are required by that contract.
+
+The same composition intuition appears in the vision documents:
+
+```text
+Bitty Core
+  +-- Panel Manager / Workspace / Command / Event Bus
+        |
+   IPC Protocol (versioned, scoped, bounded)
+        |
+  +-----+------+--------+----------+----------+
+  |     |      |        |          |          |
+ CLI  Plugins Agent  Shell    External   Background
+bittyctl  Lua    LLM   bash     programs   services
+```
+
+This diagram is a candidate composition, not an accepted ownership or API map. The accepted portion is the bounded, scoped, local-user IPC contract; Panel, workspace, command, event, plugin, and external-client ownership remains for future design work. Future Panel contract work and the [CLI](../interfaces/cli.md) contract must establish those owners before any method is accepted.
+
+### Why IPC is the workspace automation boundary
+
+A proposed future architecture would not treat IPC as merely optional around a single process. It could connect compositor and rendering, PTY child processes, plugin VMs, external CLI tools, background services, Agents, and potentially other Bitty instances. Each of those would be a distinct principal with a different trust posture. A dedicated IPC surface would therefore be a proposed way to mediate the transitions `PTY bytes | Lua plugin | IPC / MCP -> Bitty core` rather than an optional addition.
+
+### Candidate CLI dispatch and shell composability
+
+The `bitty ctl` surface (see [Instance selection](#instance-selection)) is a candidate CLI direction built on the accepted IPC relationship and could inform a future `bitty msg` or `bittyctl dispatch` shape. The CLI method surface remains candidate; these names, verbs, and ownership are not accepted by OQ-018. A future CLI contract and Panel/workspace owner must define them without copying the Hyprland wire format:
+
+```bash
+bitty msg panel open --type terminal
+bitty msg panel focus --id 3
+bitty msg workspace switch --name dev
+bitty msg notify --text "cargo test finished"
+```
+
+If a future CLI is a thin client over the accepted versioned envelope (`v`, `id`, `method`, `params`) and authenticated transport, shell composition could work without a privileged helper:
+
+```bash
+cargo test && bitty msg notify --text "Tests passed"
+git checkout feature-x
+bitty msg workspace create --name feature-x
+bitty msg panel open --type terminal
+bitty msg panel open --type git
+```
+
+Any future implementation would still need peer-credential authentication, per-request server-side scope evaluation, bounded framing, and RC-9/RC-10 enforcement. `BITTY_SOCKET` and `BITTY_INSTANCE_ID` remain advisory identifiers (see [Instance selection](#instance-selection)), never credentials.
+
+### Process and fault isolation over dlopen
+
+A candidate helper-process architecture could let a workspace host a faulty third-party panel without taking down the host:
+
+```text
+Bitty host
+  +-- helper process (IPC-routed)
+  +-- Terminal Panel   -- healthy
+  +-- Git Panel        -- healthy
+  +-- Telegram Panel   -- candidate helper crashes; a supervisor could restart it
+
+Bitty (in-process dlopen)
+  +-- dlopen(plugin.so) -- segfault brings down the host
+```
+
+IPC transport alone does not guarantee process crash isolation or restart. A future helper-process and supervisor design would need to establish those properties separately. The accepted contract contributes only the following bounded, scoped request properties:
+
+- **Fault boundary candidate:** a helper-process crash could be contained to that helper if a future supervisor and lifecycle contract implement it; FS-IP3 applies to the accepted client/session semantics, not automatically to arbitrary panels.
+- **Resource isolation:** accepted per-client quotas, bounded channels, and chunk ceilings prevent a peer from growing host memory (T-01 defense via [Transport and bounded framing](#transport-and-bounded-framing) and [Rate limits and budgets](#rate-limits-and-budgets)).
+- **Permission isolation:** a future plugin process holding a socket handle would gain no authority beyond what the host grants per request (see [Authorization and scopes](#authorization-and-scopes)).
+
+Native in-process plugins (`dlopen`) remain rejected through P0/P1 per the trust-boundary text in this RFC and [ADR 0008](../decisions/adrs/ADR-0008-headless.md). WASM or a helper process with scoped IPC are candidate higher-isolation directions, not an implementation or restart guarantee.
+
+### Candidate multi-language SDK and long-term compatibility rationale
+
+For future consideration, the IPC protocol could be an extension boundary rather than a Rust ABI. A Rust ABI is generally unsuitable as a cross-release plugin boundary; the following versioned envelope is a candidate illustration:
+
+```json
+{
+  "v": 1,
+  "id": "01H...ULID",
+  "method": "panel.open",
+  "params": { "type": "terminal" }
+}
+```
+
+The proposed layering for a future compatibility boundary is:
+
+```text
+Internal Rust API  (frequent refactors)
+       |
+IPC Protocol v:1  (candidate compatibility boundary)
+       |
+Plugins / Scripts / Agents / External programs
+```
+
+Consequences:
+
+- A future `Rust`, `Python`, `Go`, `Node`, or `Lua` client could use the same JSON-RPC-shaped, length-prefixed protocol without sharing a Rust toolchain. A multi-language SDK would be a candidate set of envelope-and-framing helpers, not a shared `cdylib`.
+- Candidate method names (`panel.open`, `workspace.list`, `command.execute`, `event.subscribe`) and scopes must not be treated as accepted compatibility promises. Future Panel and CLI ownership documents would need to define them.
+- A future wire version could follow the versioning rules in [Wire protocol](#wire-protocol), but backward compatibility beyond the accepted RFC disclaimer is not established by this addendum.
+
+### Candidate Agent workflow over IPC
+
+The same scopes and bounds that make the Agent crate headlessly testable could let a future Agent client use workspace operations without GUI automation. The following methods and workflow are candidates only; they are not accepted by OQ-018:
+
+```text
+Agent
+  +-- workspace.list
+  +-- panel.list
+  +-- terminal.spawn
+  +-- terminal.write
+  +-- view.inspect
+  +-- command.execute
+  +-- notification.send
+```
+
+Example workflow, each step a scoped `method` call returning bounded JSON or chunked output per RC-10:
+
+1. `workspace.create` with a feature name;
+2. `panel.open` for the repository;
+3. `terminal.spawn` and `terminal.write` of `cargo test`;
+4. `terminal.text` or streamed `chunk` frames for the failing log;
+5. `panel.open` of a diff or preview panel.
+
+Agent clients remain read-only by default ([Authorization and scopes](#authorization-and-scopes) and [Agent auth, consent, and streaming](#agent-auth-consent-and-streaming)): no `terminal.input`, `terminal.manage`, `config.modify`, `plugin.manage`, `process.spawn`, or `debug.*` authority without a separate per-client, per-scope consent grant and ledger entry. Terminal content is handled as `AgentObservation` with `is_untrusted_surface = true`, never as instruction.
+
+### BITTY_SOCKET env discovery
+
+Programs that run inside Bitty could discover the instance the same way they discover a display or bus address. The following inheritance shape is a candidate; the accepted contract only makes the identifiers advisory and non-credential-bearing:
+
+```bash
+BITTY_SOCKET=/run/user/1000/bitty/<instance-id>.sock
+BITTY_INSTANCE_ID=<instance-id>
+BITTY_SESSION=<session-id>   # candidate, only when session persistence is adopted
+```
+
+This parallels `$DISPLAY`, `$WAYLAND_DISPLAY`, `$DBUS_SESSION_BUS_ADDRESS`, and — directly — `$WEZTERM_UNIX_SOCKET` for [WezTerm CLI](https://wezterm.org/config/lua/wezterm/mux.html). A CLI tool can therefore promote itself from stdout to a workspace surface when it detects it is running inside Bitty:
+
+```bash
+if [ -n "${BITTY_SOCKET:-}" ]; then
+  bitty msg panel open --type diff -- path="$PWD"
+else
+  git diff
+fi
+```
+
+Discovery remains advisory-only (see [Instance selection](#instance-selection) and [Authentication](#authentication)); a forged `BITTY_SOCKET` without owning the socket gains no authority because every request still passes `SO_PEERCRED`/`LOCAL_PEERCRED`/Windows pipe-ACL checks and per-request scope evaluation.
+
+### Daemon multi-window server and session save/restore (deferred)
+
+The accepted contract defines transport and framing suitable for a future daemon to consider for a tmux-like server model, without claiming that model now:
+
+```text
+Bitty daemon (candidate, deferred per ADR-0008)
+  +-- Window A  { workspace dev { Terminal, Git, AI Chat } }
+  +-- Window B  { workspace server { SSH, Logs } }
+  +-- Window C  { workspace scratch { floating panels } }
+       |
+   shared state: workspaces, panels, layouts, commands, notifications
+```
+
+In that deferred shape, `bitty list` enumerates the daemon-owned hierarchy (`Window -> Workspace -> Panel`) rather than a single window, analogous to `tmux ls`. Session persistence would follow the same bounded-state principle:
+
+```text
+Bitty state { windows, workspaces, panels, layouts, processes }
+      |
+  serialize -> session.json / SQLite
+      |
+  restore  -> rehydrate bounded workspaces and panels
+```
+
+Every deferred claim in this subsection is gated by [ADR 0008](../decisions/adrs/ADR-0008-headless.md): v1.0 ships single-process only, there is no `bittyd` binary, service file, autostart, or TCP listener; staged scope is detach/attach and persistent sessions with explicit caps on terminals per daemon, scrollback cells, image bytes, and aggregate memory; and the acceptance gate for any future daemon includes local peer-credential and scope parity at least as tight as RC-9/RC-10, secret minimization, and `bitty --safe` with the daemon disabled. No implementation claim is made by this addendum.
+
+### SSH-tunnel remote (deferred)
+
+A remote UI is a strictly larger trust transition than a local daemon and requires its own ADR with `mTLS` or SSH-tunnel trust, not ambient bearer tokens in the environment (R-012):
+
+```text
+Local Bitty UI  --SSH tunnel / mTLS-->  Remote bitty-agent / daemon
+  File Panel                              File service
+  Git Panel                               Git service
+  Remote Terminal  <--------------------  Remote PTY host
+```
+
+The accepted baseline remains Unix socket `0700`/`0600` / Windows named pipe current-user ACL with no TCP listener by default ([Trust-boundary alignment](#trust-boundary-alignment) and [Authentication](#authentication)); remote `TCP` belongs to the explicit network-auth ADR described in [ADR 0008](../decisions/adrs/ADR-0008-headless.md) and is not a silent broadening of this transport. The remote rendering path, if ever accepted, would consume a bounded snapshot/damage stream per the [Rich Presentation RFC](rich-presentation-rfc.md) and [Workspace Compositor](workspace-compositor.md), not raw PTY bytes.
+
+### Candidate request plus event dual model (RPC plus Event Stream)
+
+The candidate shape for a future workspace is an `RPC + Event Stream` dual model, informed by prior art. It is an addendum only and does not reopen, amend, or expand the already-closed [OQ-018](../decisions/open-questions.md) contract, or accept these names:
+
+- **RPC (request/response):** `panel.create`, `panel.close`, `panel.focus`, `workspace.create`, `workspace.switch`, `command.execute`, `terminal.spawn`, `terminal.write`.
+- **Events (async subscription):** `panel.created`, `panel.closed`, `panel.focused`, `workspace.changed`, `terminal.cwd_changed`, `terminal.command_started`, `terminal.command_finished`, `git.branch_changed`.
+
+```text
+              Bitty IPC
+             /         \
+        Commands       Events
+            |             |
+            v             v
+        request()    subscribe()
+            |             |
+            v             v
+        Response      Event frames (chunked, bounded, attributed)
+```
+
+If adopted later, streaming could reuse the accepted `chunk` envelope, `seq`/`total`, deterministic timeouts, and side-queue `drop-oldest` semantics defined in [Agent auth, consent, and streaming](#agent-auth-consent-and-streaming) and bounded by [Transport and bounded framing](#transport-and-bounded-framing) (`256 KiB` frame, `512 KiB` in-flight, `SideQueue` capacity `64`). The event names and `bittyctl events` shape are candidate taxonomy only, not a second accepted wire and not closure of OQ-018.
+
+### Capability-gated IPC
+
+Candidate workspace verbs would need to be gated by the accepted scope families in [Authorization and scopes](#authorization-and-scopes); this table is a proposal for future Panel/CLI ownership, not an accepted method registry:
+
+| Workspace verb                  | Required scope (candidate mapping)  | Notes                                                               |
+| ------------------------------- | ----------------------------------- | ------------------------------------------------------------------- |
+| `workspace.list`, `panel.list`  | `view.inspect` / `terminal.inspect` | Read-only inspection; no elevation                                  |
+| `panel.open`, `panel.focus`     | `view.manage`                       | Creating or focusing a panel mutates workspace state                |
+| `terminal.spawn`, `panel.close` | `terminal.manage`                   | Lifecycle mutation; never implied by `terminal.inspect`             |
+| `terminal.write` (send input)   | `terminal.input`                    | Distinct from `terminal.inspect`; per-client consent for Agents     |
+| `command.execute`               | per-command scope                   | Dispatched via the command registry; scope follows the command      |
+| `event.subscribe`               | scope of the subscribed topic       | Subscribing to `terminal.*` events requires `terminal.inspect` etc. |
+
+The host policy enforces the separation, not string matching inside the Agent or plugin crate. Bundled `admin` scope is forbidden; elevation is per-client, per-scope, and ledgered, with no silent expansion on update (R-016 parity) and system-policy pins that cannot be weakened by user configuration ([Authorization and scopes](#authorization-and-scopes)).
+
+### Prior-art lineage: tmux control mode, kitty remote control, WezTerm CLI, Hyprland IPC to Bitty IPC
+
+Bitty IPC does not copy a wire format from prior art. Hyprland, Waybar, and analogous references are non-normative research leads: every Hyprland-inspired behavior would need to be re-expressed as a typed, validated contract, and no Hyprland or Waybar source, configuration syntax, or wire format is vendored (see [Workspace Compositor](workspace-compositor.md) Hyprland import rules). The lineage below is design intuition and provenance, not an accepted contract.
+
+```text
+tmux control mode  ─┐
+kitty remote control ─┼─>  Bitty IPC (RPC + Event Stream, scoped, bounded, local-user-local)
+WezTerm CLI / mux  ──┤      (versioned envelope, typed scopes, discovery via BITTY_SOCKET)
+Hyprland IPC      ─┘
+```
+
+| Prior art                                                                                                                                                                                                                      | What it proved viable for Bitty's workspace direction                                                                                                                                                       | How Bitty re-expresses it (without copying the wire)                                                                                                                                              |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **tmux** `server -> session -> window -> pane -> client` and `-C`/`-CC` control mode                                                                                                                                           | A long-lived per-user server owning multiple windows/panes with a `RPC + async Event Stream` text protocol; remote clients can map server windows/panes onto native UI (e.g. iTerm2 via tmux control mode). | Candidate input to future workspace and daemon design; multi-window daemon and session persistence remain deferred per [ADR 0008](../decisions/adrs/ADR-0008-headless.md).                        |
+| **kitty** remote control (`kitten @ launch`, `send-text`, `focus-window`, `ls` over a socket) and `panel` (Wayland layer-shell dock)                                                                                           | Lightweight `CLI -> IPC -> Panel Manager` path and terminal-powered desktop surfaces.                                                                                                                       | Candidate input to future CLI and Panel RFCs; `bitty msg`, `bittyctl`, and panel verbs are not accepted here.                                                                                     |
+| **WezTerm** `wezterm.mux` (`windows`, `tabs`, `panes`, `workspaces`, `domains`) and `wezterm cli` (`activate-pane`, `split-pane`, `spawn`, `get-text`, `send-text` via `$WEZTERM_UNIX_SOCKET`) with local/Unix/SSH/TLS domains | Programmable workspace, mux, and domain architecture with a discoverable Unix socket; strong precedent for environment-based discovery and multi-domain execution.                                          | Candidate input to future workspace, CLI, and remote-domain design; `BITTY_SOCKET` remains accepted only as the advisory identifier described earlier, not as acceptance of WezTerm-like methods. |
+| **Hyprland IPC** (`hyprctl dispatch`, `hyprctl clients`, `keyword`) and **Waybar** (`modules-left/center/right`)                                                                                                               | A compositor IPC for scripts, status bars, and plugins to observe and control tiling and workspaces.                                                                                                        | Candidate input to future Panel/CLI and Status System ownership; candidate `bittyctl` commands are not accepted here.                                                                             |
+
+The candidate thesis of the second research snapshot is preserved: the novelty, if any, is not a single row of that comparison but the composition of `Zellij`-style first-class non-PTY `Panel` and plugin UI, `kitty`-style remote control, `WezTerm`-style mux and workspace, `tmux`-style server and control mode, `Emacs`-style `Buffer + Window + Panel type` application model, and `Warp`-style integrated surface into the terminal emulator's own application model. The reference set for any future Panel RFC is therefore `Zellij Plugin API + tmux Control Mode + kitty Remote Control + Emacs Buffer/Window model` alongside the accepted IPC and plugin specs, studied without vendoring or wire-format copying. These are research leads, not accepted claims about Bitty's capabilities.
+
+The mapping clarifies the present versus deferred boundary: the local, scoped, bounded IPC and the candidate `Panel` and `PanelSurface` typing are being explored in the [Workspace Compositor](workspace-compositor.md) draft; future Panel and CLI ownership remains open. Daemon ownership, detach/reattach, persistent sessions, and network remote are not part of the accepted IPC contract and remain behind the [ADR 0008](../decisions/adrs/ADR-0008-headless.md) gate.
+
+<!-- markdownlint-enable MD013 -->
 
 ## Experimental implementation notes (accepted contract, draft evidence before acceptance)
 
@@ -846,3 +1140,14 @@ crate presence does not imply shipped behavior.
   contribution to that table).
 - P0 acceptance criteria source for the verification style:
   [P0 Security Acceptance Criteria](../security/p0-acceptance-criteria.md).
+- Official prior art used as non-normative research leads:
+  [Zellij plugins](https://zellij.dev/documentation/plugins.html),
+  [Zellij plugin and pipe](https://zellij.dev/documentation/zellij-plugin-and-pipe.html),
+  [kitty remote control](https://sw.kovidgoyal.net/kitty/remote-control/),
+  [kitty panel](https://sw.kovidgoyal.net/kitty/kittens/panel/),
+  [WezTerm mux](https://wezterm.org/config/lua/wezterm.mux/index.html),
+  [WezTerm CLI](https://wezterm.org/cli/cli/index.html),
+  [tmux control mode](https://github.com/tmux/tmux/wiki/Control-Mode),
+  [Hyprland IPC](https://wiki.hyprland.org/IPC/),
+  [GNU Emacs shell and terminal](https://www.gnu.org/software/emacs/manual/html_node/emacs/Shell.html),
+  and [Warp documentation](https://docs.warp.dev/).

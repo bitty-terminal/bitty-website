@@ -453,7 +453,9 @@ for _ in 0..effective_count(*n) {
 
 ```rust
 let ws_rec = workspace_root().join("recordings/references/bitty");
-let umbrella_rec = PathBuf::from("/mnt/data/Workspace/Projects/bitty-terminal/recordings/references/bitty");
+// Historical literal path replaced by its portable form; the defect was the
+// plural directory name, not the checkout location.
+let umbrella_rec = workspace_root().join("../recordings/references/bitty");
 ```
 
 Because the plural form `recordings` is hardcoded, the differential comparator fails to locate baseline dumps in `recording/references/`.

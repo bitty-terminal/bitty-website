@@ -31,6 +31,9 @@ or test workflow exists.
 
 - [Repository map](../project/repository-map.md) describes independent
   repository boundaries and current initialization state.
+- [Repository metadata and GitHub baseline](repository-metadata-baseline.md)
+  classifies which repository metadata and `.github/` files are shared
+  verbatim, parameterized, or per-repository.
 - [Technology strategy](../project/technology-strategy.md) separates accepted
   language/platform direction from candidate tools.
 - [Reference projects](../project/reference-projects.md) records untrusted,

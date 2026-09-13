@@ -26,6 +26,8 @@ working directions and the remaining ADR queue.
 | [ADR 0007 - Async/Send Boundary and GC Tuning for Lua VMs](ADR-0007-async-gc.md)                                   | Accepted | Async/Send boundary (mlua vs piccolo, Send/Sync, tasks 64/timers 32), GC tuning (incremental pause/step), Config VM budget charging (PB-1/PB-2), and reload/module-cache interaction |
 | [ADR 0008 - Headless Daemon, Detach/Reattach and Remote UI Trust Boundary](ADR-0008-headless.md)                   | Accepted | Headless daemon detach/reattach and remote UI deferred to post-v1.0 with trust-boundary analysis gate                                                                                |
 | [ADR 0009 - Plugin API v1 Lua Surface Acceptance Resolution](ADR-0009-plugin-api-v1-lua-surface.md)                | Accepted | Resolves LUA-OQ-1..12 and flips the Plugin API v1 Lua Surface RFC to accepted; contract authority in `bitty-docs`, implementation/parity in `bitty`, SDK generated                   |
+| [ADR 0010 - Plugin Host Runtime Acceptance Resolution](ADR-0010-plugin-host-runtime-acceptance.md)                 | Accepted | Ratifies OQ-033/OQ-034/OQ-035 and flips the Plugin Host Runtime RFC to accepted; host bridge, VM lifecycle, source staging, host-service wiring, and four numeric defaults           |
+| [ADR 0011 - Repository Metadata and GitHub Baseline](ADR-0011-repository-metadata-baseline.md)                     | Proposed | Byte-identical, parameterized, and per-repository metadata/.github tiers; required-check naming; action pinning and rust channel rules                                               |
 
 ## Admission criteria
 

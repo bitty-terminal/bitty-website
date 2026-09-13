@@ -286,14 +286,18 @@ present path does not paint it yet (fractional-cell View frames plus a renderer
 radius primitive), so no visual effect is claimed; live painting is deferred
 to `bitty` CTX-0294 on the CTX-0238g stage-2 renderer radius lane.
 
-Open: per-field reload classification (still deferred to the follow-up
-inventory); whether the CLI appearance flag set or the shipped keymap set
-grows; and middle-click paste acceptance, deferred under CTX-0158.
+Open: per-field reload classification moves into this RFC once the schema
+stabilizes; the shipped inventory is the implementation reference in
+[Lua and XDG](../configuration/lua-and-xdg.md#reload-classification-shipped-schema-inventory);
+whether the CLI appearance flag set or the shipped keymap set grows; and
+middle-click paste acceptance, deferred under CTX-0158.
 
 ## Reload classification
 
-Status: **accepted framework**, with the per-field table deferred until an
-implementation inventory exists.
+Status: **accepted framework**; an implementation inventory now exists in
+`bitty` `crates/bitty-config/src/reload.rs`, and the canonical per-field table
+moves into this RFC when the schema stabilizes (implementation reference:
+[Lua and XDG](../configuration/lua-and-xdg.md#reload-classification-shipped-schema-inventory)).
 
 Every schema change from a reloaded plan lands in exactly one class:
 

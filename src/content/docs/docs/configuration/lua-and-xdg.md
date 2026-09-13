@@ -227,6 +227,16 @@ name) sit between CLI flags and probed files — CLI wins over env. A
 missing explicit `--config`/`BITTY_CONFIG` path, or a
 requested-but-missing profile, fails closed instead of falling back.
 
+Status: **shipped safe-mode override** (`bitty` `20519bc`, CTX-0346).
+`bitty --safe` short-circuits the entire layer stack above: it selects the
+built-in safe effective configuration and reads no external layer, so
+`--config`/`BITTY_CONFIG`, profiles, system/distribution layers, and CLI
+appearance overrides are all ignored. Every field is attributed to Core
+defaults, decoration is forced to `0/0/1/0/0`, and the focused/idle outline
+pair to the opaque `#FFFFFF`/`#808080` built-ins. See the safe-mode precedence
+table in the [CLI reference](../interfaces/cli.md#safe-mode-configuration-precedence)
+and [RFC-0001](../decisions/rfcs/RFC-0001-appearance-configuration.md) (OQ-039).
+
 ## Merge semantics
 
 Status: **candidate contract.**
@@ -415,27 +425,73 @@ Open: whether a CLI flag set grows to cover `layout.*`.
 
 ## Shipped workspace decoration (Core-owned px reference)
 
-Status: **shipped config surface, live painting deferred** (read-only from
-`bitty` `origin/main`, PR `bitty` #487 merge commit `485fbfd`, CTX-0292,
-closes `bitty` #486; merged to `bitty` origin `main`, verified read-only via
-`merge-base --is-ancestor`). This section is the reference for the shipped
-decoration surface; the accepted normative contract is the
+Status: **shipped** — the `6/6/2/6/6` geometry plus `content_inset`, the live
+present-path px painting, and the focused/idle outline colors (read-only from
+`bitty` `origin/main`, verified read-only via `merge-base --is-ancestor`). This
+section is the reference for the shipped decoration surface; the accepted
+normative contract is the
 [Workspace Compositor Specification](../specifications/workspace-compositor.md)
-section "Core-owned gaps, border, and radius" (accepted CTX-0118), and the
-merge-class instantiation stays in the
+section "Core-owned gaps, border, radius, and content inset" (accepted
+CTX-0118; the CTX-0333 amendment unified the sibling gap to `6` and added
+`content_inset`), and the merge-class instantiation stays in the
 [Configuration Model RFC](../specifications/configuration-model-rfc.md). It
 changes no normative contract above and weakens no security control.
 
+Shipped revisions: `bitty` PR #487 (merge commit `485fbfd`, CTX-0292) shipped
+the first config surface; `bitty` PR #562 (merge commit `9031b3f`, CTX-0333)
+shipped the unified `6/6/2/6/6` set and `content_inset`; `bitty` PR #519 (merge
+commit `638ef81`, CTX-0294) shipped the live present-path px painting and
+`bitty` PR #533 (merge commit `3d08d8e`, CTX-0311) added the SDF rounded
+fills; `bitty` PR #572 (merge commit `f83b1e1`, CTX-0340) shipped the
+focused/idle outline colors.
+
 Shipped contract (`decoration.*`, logical pixels):
 
-| Field                 | Default | Valid range | Owner |
-| --------------------- | ------- | ----------- | ----- |
-| `decoration.gaps_in`  | `4` px  | `0..=32` px | Core  |
-| `decoration.gaps_out` | `6` px  | `0..=32` px | Core  |
-| `decoration.border`   | `2` px  | `0..=8` px  | Core  |
-| `decoration.radius`   | `6` px  | `0..=16` px | Core  |
+| Field                      | Default | Valid range | Owner |
+| -------------------------- | ------- | ----------- | ----- |
+| `decoration.gaps_in`       | `6` px  | `0..=32` px | Core  |
+| `decoration.gaps_out`      | `6` px  | `0..=32` px | Core  |
+| `decoration.border`        | `2` px  | `0..=8` px  | Core  |
+| `decoration.radius`        | `6` px  | `0..=16` px | Core  |
+| `decoration.content_inset` | `6` px  | `0..=32` px | Core  |
 
-- Core owns the surface: the four fields are validated through `ConfigPlan`,
+Shipped outline colors (CTX-0340, RFC-0001 OQ-039):
+
+| Field                             | Default     | Valid values            | Reload |
+| --------------------------------- | ----------- | ----------------------- | ------ |
+| `decoration.border_color`         | unset       | `#RRGGBB` / `#RRGGBBAA` | live   |
+| `decoration.border_color_focused` | `#33CCFF`   | `#RRGGBB` / `#RRGGBBAA` | live   |
+| `decoration.border_color_idle`    | `#595959AA` | `#RRGGBB` / `#RRGGBBAA` | live   |
+
+`decoration.border_color` is the base for both focus states; the two explicit
+members override it per state. Resolution order (later wins) is theme token
+(`border.focused` / `border.idle`, supplied by the selected preset) then
+`decoration.border_color` then the explicit `border_color_focused` /
+`border_color_idle` pair. Only an explicitly set pair member overrides the
+resolved base; an unset member inherits it and never silently shadows it. The
+canonical grammar is `#RRGGBB` or `#RRGGBBAA` (8-digit form is RGBA byte
+order); alpha defaults to `FF` when omitted, and `#RGB` shorthand, named
+colors, `rgb()`/`rgba()`, gradients, and images are rejected fail-closed with a
+diagnostic naming the offending key.
+
+Contrast is enforced on the resolved pair over the preset background
+(WCAG 2.1 relative luminance): **AC-1** focused outline >= 3:1 against the
+background and **AC-2** focused >= 3:1 against idle are fail-closed at
+`ConfigPlan` (AC-2 applies only when the two resolved colors differ, since a
+base-only config claims no color-only focus distinction); **AC-3** idle >= 1.5:1
+against the background is an advisory reported by `bitty config check` and never
+rejects a config. `bitty --safe` ignores user and preset color values and forces
+the opaque built-in pair `#FFFFFF` focused / `#808080` idle (alpha `FF`).
+
+The defaults above are the shipped `CTX-0333` set (`6/6/2/6/6` +
+`content_inset`), matching the accepted
+[Workspace Compositor Specification](../specifications/workspace-compositor.md)
+"Core-owned gaps, border, radius, and content inset" contract. The `CTX-0292`
+merge commit `485fbfd` shipped the pre-CTX-0333 `4/6/2/6` set without
+`content_inset`; the unified `6/6/2/6/6` set and `content_inset` shipped with
+`bitty` PR #562 (merge commit `9031b3f`) and are in `bitty` `origin/main`.
+
+- Core owns the surface: the five fields are validated through `ConfigPlan`,
   never proposed by a `LayoutProvider`, and never carried by a `View`, so no
   plugin mutation path exists (accepted contract rules 1-4).
 - Unknown keys and out-of-range values fail closed with a source-attributed
@@ -450,29 +506,35 @@ Shipped contract (`decoration.*`, logical pixels):
   `border` insets each View's content rect, and `radius` is carried as clip
   metadata. Values are logical pixels scaled by the Window DPI factor only
   at render time; an out-of-range live update is rejected fail-closed.
+- The shipped live present path paints the px decoration (fractional-cell View
+  frames plus the SDF rounded-fill/radius primitive, `bitty` PR #519 CTX-0294
+  and PR #533 CTX-0311), so the values are visible behavior, not only carried
+  intent.
 - `bitty --safe` forces `gaps_in = 0`, `gaps_out = 0`, `border = 1`,
-  `radius = 0` (`0/0/1/0`) regardless of user configuration (accepted
-  contract rule 5).
+  `radius = 0`, `content_inset = 0` (`0/0/1/0/0`) regardless of user
+  configuration (accepted contract rule 6).
 
-Shipped config contract:
+Canonical config contract (shipped `CTX-0333` set):
 
 ```lua
--- Shipped schema (CTX-0292, bitty #487).
+-- Canonical schema (shipped; CTX-0333, bitty PR #562, in bitty origin/main).
 return {
-    decoration = { gaps_in = 4, gaps_out = 6, border = 2, radius = 6 },
+    decoration = { gaps_in = 6, gaps_out = 6, border = 2, radius = 6, content_inset = 6 },
 }
 ```
+
+The `CTX-0292` merge commit `485fbfd` shipped `gaps_in = 4, gaps_out = 6,
+border = 2, radius = 6` without `content_inset`; the canonical `6/6/2/6/6` set
+and `content_inset` shipped with `bitty` PR #562.
 
 Absent `decoration` tables (or absent keys within them) mean "this layer
 says nothing" and inherit silently.
 
-Status honesty: live present-path painting of px decoration is **deferred**.
-The shipped single-window present path still paints the cell-unit
-`layout.gaps_in` / `layout.gaps_out` gaps; px decoration needs fractional-cell
-View frames plus a renderer radius primitive, tracked as `bitty` CTX-0294 on
-the CTX-0238g stage-2 renderer radius lane. Until that lands, `decoration.*`
-values are validated, stored, attributed, and carried, but must not be
-described as a visible change.
+The px decoration is painted on the live present path (`bitty` PR #519
+`638ef81`, CTX-0294, plus the CTX-0311 SDF rounded fills in PR #533
+`3d08d8e`): `gaps_out` insets the workspace area, `gaps_in` reserves the band
+between siblings, `border` insets each View's content rect, and `radius` clips
+the frame. The values are validated, stored, attributed, and rendered.
 
 ### Decoration px versus layout cells
 
@@ -481,14 +543,130 @@ Two similarly named gap surfaces exist and must not be conflated:
 | Surface                           | Unit                 | Default   | Range    | Status                                                         |
 | --------------------------------- | -------------------- | --------- | -------- | -------------------------------------------------------------- |
 | `layout.gaps_in` / `gaps_out`     | cells (`10x22` each) | `0` / `0` | `0..=16` | shipped; painted by the single-window path (CTX-0177/CTX-0240) |
-| `decoration.gaps_in` / `gaps_out` | logical px           | `4` / `6` | `0..=32` | shipped config surface; live painting deferred (CTX-0292)      |
+| `decoration.gaps_in` / `gaps_out` | logical px           | `6` / `6` | `0..=32` | shipped; painted by the live present path (bitty PR #562/#519) |
 
 Also distinct: `decoration.radius` (View frame corner radius, logical px)
 versus `window.radius_px` (window corner radius, physical px, S0 parsed no-op,
 CTX-0241).
 
-Open: whether a CLI flag set grows to cover `decoration.*`; the CTX-0294 /
-CTX-0238g stage-2 delivery owns the actual visual behavior.
+Open: whether a CLI flag set grows to cover `decoration.*`.
+
+## Appearance knobs (supported reference)
+
+Status: **implementation reference** read-only from `bitty` `origin/main`
+`3eb8e0e` (the outline and animation rows below were introduced by `f83b1e1`
+CTX-0340 and `3c5878e` CTX-0341; the decoration rows by `9031b3f` CTX-0333).
+This is the lookup table for the appearance knobs `init.lua` already accepts;
+the merge/reload mechanics stay in the
+[Configuration Model RFC](../specifications/configuration-model-rfc.md). The
+accepted focus/idle outline color contract is the
+[Appearance Configuration RFC](../decisions/rfcs/RFC-0001-appearance-configuration.md)
+(accepted; OQ-039 focused/idle outline colors closed 2026-09-12 and shipped in
+`f83b1e1`; OQ-036 label position, OQ-037 frame color, and OQ-038 opacity and
+blur remain `Open`). The accepted animation contract is the
+[Panel Animations and Effects RFC](../decisions/rfcs/RFC-0002-panel-animations.md)
+(accepted; OQ-040 closed 2026-09-12 and shipped in `3c5878e` CTX-0341).
+
+| Key                         | Default                        | Range or values                    |
+| --------------------------- | ------------------------------ | ---------------------------------- |
+| `appearance.theme`          | `bitty-dark` (alias `dark`)    | preset name; unknown falls back    |
+| `theme` (alias)             | unset                          | `appearance.theme` wins            |
+| `font.family`               | `JetBrainsMono Nerd Font`      | non-empty, `<= 128` bytes          |
+| `font.size`                 | `12.0`                         | `(0, 128]`                         |
+| `font.line_height`          | `1.375`                        | `[1.0, 2.0]`                       |
+| `font.letter_spacing`       | `2.0`                          | `[0.0, 8.0]`                       |
+| `window.opacity`            | `1.0`                          | `[0.0, 1.0]` whole window          |
+| `window.padding`            | `8`                            | `0..=64` logical px                |
+| `window.radius_px`          | `0`                            | `0..=24` physical px (no-op S0)    |
+| `layout.gaps_in`/`gaps_out` | `0`/`0`                        | `0..=16` cells                     |
+| `decoration.*`              | see decoration reference above | logical px                         |
+| `scrollbar.mode`/`width`    | `hidden`/`8`                   | `hidden`/`always`/`auto`, `1..=32` |
+
+The built-in preset names, aliases, and dark/light categories are listed in the
+[theme preset catalog](themes.md); the full 30-preset catalog resolves today.
+`appearance.theme` matches a name or alias case-insensitively with surrounding
+whitespace trimmed; an unknown name falls back to the default preset and logs a
+warning to stderr instead of failing the process.
+
+- The gap layers compose: effective gap =
+  `decoration.gap * DPI_scale + layout.gap_cells * cell_axis` (CTX-0333).
+- `window.opacity` is whole-window, not per-surface or background-only; a
+  per-surface or background-only knob and blur remain design-only (OQ-038).
+- Label position (OQ-036) and frame/margin-line color (OQ-037) have no config
+  key yet; do not document them as supported.
+- Focused/idle outline colors (OQ-039) shipped with `bitty` PR #572 (merge
+  commit `f83b1e1`, CTX-0340). Panel animations (OQ-040) shipped with `bitty`
+  PR #580 (merge commit `3c5878e`, CTX-0341). The shipped contract values are:
+
+  | Shipped key                            | Default     | Values / bound                                       | Reload |
+  | -------------------------------------- | ----------- | ---------------------------------------------------- | ------ |
+  | `decoration.border_color`              | unset       | `#RRGGBB` / `#RRGGBBAA`                              | live   |
+  | `decoration.border_color_focused`      | `#33CCFF`   | `#RRGGBB` / `#RRGGBBAA`                              | live   |
+  | `decoration.border_color_idle`         | `#595959AA` | `#RRGGBB` / `#RRGGBBAA`                              | live   |
+  | `appearance.animations.enabled`        | `true`      | boolean                                              | live   |
+  | `appearance.animations.reduced_motion` | `"auto"`    | `auto` / `always` / `never`                          | live   |
+  | `appearance.animations.duration_ms.*`  | see below   | per transition, integer `0..=500` ms                 | live   |
+  | `appearance.animations.easing.*`       | see below   | `linear`/`ease_in`/`ease_out`/`ease_in_out`/`spring` | live   |
+
+  `duration_ms` and `easing` are per-transition tables over the closed set
+  `open`, `close`, `focus`, `workspace`. Shipped defaults:
+
+  ```lua
+  duration_ms = { open = 150, close = 120, focus = 100, workspace = 200 }
+  easing = {
+      open = "ease_out",
+      close = "ease_in",
+      focus = "ease_in_out",
+      workspace = "ease_in_out",
+  }
+  ```
+
+  `spring` is accepted but reserved: its
+  parameters are deferred, so it resolves to `ease_in_out` until a follow-up
+  RFC defines them. Durations and easing spellings fail closed with a
+  source-attributed diagnostic; `enabled = false`, `reduced_motion = "always"`,
+  and `bitty --safe` all collapse every duration to `0` ms while committing the
+  final state instantly. Animations are renderer-side presentation chrome: they
+  never interpolate grid, cursor, scrollback, or Terminal Truth, and a
+  workspace transition fades Core-owned chrome only (no grid interpolation).
+  This slice performs no platform reduced-motion query, so `auto` treats an
+  absent signal as "animate".
+
+- Per-View/per-panel appearance overrides (`views.<selector>.*`) and the
+  focus/idle outline width (`decoration.border_width` / `_focused` / `_idle`)
+  are **accepted contracts** but **not supported yet** (OQ-041 and OQ-045
+  resolved 2026-09-12, docs CTX-0163;
+  [Appearance Configuration RFC](../decisions/rfcs/RFC-0001-appearance-configuration.md)).
+  The accepted selector grammar is `*` < content type
+  (`empty`/`terminal`/`rich`/`browser`) < `ws:<1..=16>` < `view:<ViewId>`,
+  resolved per field per `View`; the accepted `views.*` field set is
+  `border_color`/`_focused`/`_idle`, `border_width`/`_focused`/`_idle`, and
+  `background_image`/`background_fit`; `opacity`, `blur`, and `animations` are
+  reserved and rejected until OQ-038/OQ-043 accept them. A fatal
+  `views.<selector>` field or selector rejects the whole reload; `--safe`
+  ignores every `views.*` entry. No `views.*` key or `decoration.border_width*`
+  key is supported; do not document one as working. `background_image_roots`
+  remains global-only and cannot be widened per `View`.
+- Per-panel animation overrides are **candidate and narrowed** (OQ-043;
+  [UI Extensibility Architecture](../specifications/ui-extensibility-architecture.md)):
+  the accepted OQ-041 layer fixes the override mechanics, so only the animation
+  field set and its reduced-motion/budget interaction remain. The global
+  `appearance.animations.*` contract is unchanged.
+- Plugin-supplied appearance (OQ-044) and plugin-supplied images (OQ-049) remain
+  **open**; the override layer is Core-owned user configuration and grants no
+  plugin authority.
+- The per-panel background-image contract
+  (`decoration.background_image` / `decoration.background_fit` /
+  `decoration.background_image_roots`) is **accepted as a contract** but **not
+  supported yet** (OQ-042 resolved 2026-09-12;
+  [Appearance Configuration RFC](../decisions/rfcs/RFC-0001-appearance-configuration.md)).
+  The accepted formats are PNG/JPEG/static WebP with bounds BG-1..BG-5 reused from
+  the image-store corpus (IMG-1..IMG-5; BG-6 is a design bound, BG-7 a
+  present-path bound), deny-by-default approved roots, fit modes
+  `fill`/`fit`/`center`/`tile`/`stretch`, fail-closed whole-reload rejection,
+  and `--safe` ignoring image contributions. Do not document the keys as
+  working until `bitty` ships them; a `views.*` entry may not widen the
+  approved roots, and plugin-supplied images remain open (OQ-049).
 
 ## Shipped keymaps and Mod key
 
@@ -551,6 +729,68 @@ Open: whether the shipped set grows CLI flags or a command-palette surface;
 the candidate Leader sequences and flash-style jump remain unimplemented
 candidates in the [Input and Pointer Contract](../specifications/input-pointer-rfc.md).
 
+## Reload classification (shipped schema inventory)
+
+Status: **implementation reference** read-only from `bitty` `origin/main` at
+`828a787` (verified read-only via `merge-base --is-ancestor`). The accepted
+framework is the
+[Configuration Model RFC](../specifications/configuration-model-rfc.md)
+"Reload classification" section (OQ-010). Classification is declared by the
+schema in `bitty` `crates/bitty-config/src/reload.rs` (`classify_field`), never
+inferred at runtime, and reload reuses the startup validation and merge path.
+This section is the per-field inventory the RFC defers; it changes no normative
+contract and weakens no security control.
+
+| Class             | Meaning                                                                      |
+| ----------------- | ---------------------------------------------------------------------------- |
+| Live-reconcilable | Applied by diff-and-reconcile to running instances without restart           |
+| Restart-required  | Accepted and persisted, effective after the next process start               |
+| Rejected          | Validation failure; the previous good plan stays active, diagnostics emitted |
+
+Shipped leaf inventory:
+
+| Key                                                                                          | Class    | `bitty --safe`       |
+| -------------------------------------------------------------------------------------------- | -------- | -------------------- |
+| `font.family`, `font.size`, `font.line_height`, `font.letter_spacing`                        | live     | built-in default     |
+| `window.opacity`, `window.padding`, `window.radius_px`                                       | live     | built-in default     |
+| `decoration.gaps_in`, `decoration.gaps_out`                                                  | live     | `0`, `0`             |
+| `decoration.border`, `decoration.radius`, `decoration.content_inset`                         | live     | `1`, `0`, `0`        |
+| `decoration.border_color`                                                                    | live     | unset                |
+| `decoration.border_color_focused`, `decoration.border_color_idle`                            | live     | `#FFFFFF`, `#808080` |
+| `decoration.border_width`, `decoration.border_width_focused`, `decoration.border_width_idle` | live     | `1`, `1`, `1`        |
+| `appearance.theme`                                                                           | live     | built-in default     |
+| `appearance.animations.enabled`, `appearance.animations.reduced_motion`                      | live     | built-in default     |
+| `appearance.animations.duration_ms.*`                                                        | live     | `0` ms               |
+| `appearance.animations.easing.*`                                                             | live     | built-in default     |
+| `mod_key`, `keymaps`                                                                         | live     | built-in default     |
+| `terminal.scrollback`, `terminal.shell`                                                      | restart  | built-in default     |
+| `terminal.scroll_lines_per_notch`, `terminal.scroll_pixels_per_notch`                        | restart  | built-in default     |
+| `selection.auto_copy`                                                                        | restart  | built-in default     |
+| `layout.gaps_in`, `layout.gaps_out`                                                          | restart  | built-in default     |
+| `scrollbar.mode`, `scrollbar.width`                                                          | restart  | built-in default     |
+| `mouse.focus_follows_mouse`, `mouse.focus_follows_mouse_delay_ms`                            | restart  | built-in default     |
+| `plugins[].id`, `plugins[].enabled`                                                          | restart  | built-in default     |
+| unknown or undeclared key                                                                    | rejected | n/a                  |
+
+- `duration_ms` and `easing` are per-transition tables over the closed set
+  `open`, `close`, `focus`, `workspace`; `.*` abbreviates the four leaves.
+- The `bitty --safe` column records the pinned value where `--safe` forces one.
+  "built-in default" means the key is not force-pinned beyond normal core
+  defaults, but every external layer is skipped entirely (`fallback_builtin`,
+  R-009), so the built-in default is the value in effect.
+- Restart-required keys are accepted and persisted but need the next process
+  start: `terminal.shell` and `terminal.scrollback` are spawn-time state, and
+  `selection.auto_copy`, `layout.gaps_in`/`gaps_out`, `scrollbar.*`, and
+  `mouse.*` are adopted into the runtime configuration once at startup.
+- **Activation status.** "Live-reconcilable" is the declared class; the runtime
+  hot-swap activation path is not wired yet. `bitty ctl config reload` validates
+  the file and reports its path with `"hot_swap":"follow-up"`, and
+  `reconcile_live` has no production caller. The runtime live-adopt setters
+  (`set_decoration`, `set_outline`, `set_animations`) exist for the presentation
+  subset, but nothing drives them from the reload diff yet.
+- Unknown and undeclared keys are rejected by validation; the previous good
+  plan stays active (`should_retain_previous`).
+
 ## Starters and distributions
 
 Status: **accepted direction.**
@@ -600,6 +840,31 @@ Bitty asks the user to trust it once, trust it persistently, or reject it.
 Process execution and unrestricted host APIs remain unavailable to local
 configuration. This feature is deferred until the trust model is designed.
 
+Status: **candidate direction.**
+
+A project could also carry a declarative `.bitty/` project definition (for
+example `project.toml`, `agents/`, `workflows/`, `prompts/`, `policies/`,
+`tools/`, and `skills/`), portable and safe to commit to Git because it holds
+definitions only. Dynamic runtime state — current task, agent sessions,
+execution logs, token statistics, runtime locks, overlays, and any database —
+must never live in `.bitty/`; it belongs to repository-local or user runtime
+state so the project tree stays clean.
+
+`.agents/` is a compatibility adapter rather than a second source of truth,
+and candidate project discovery resolves in one order:
+
+```text
+.bitty/          native project definition (highest fidelity)
+.agents/         compatibility adapter for existing agent conventions
+AGENTS.md etc.   contextual conventions, never configuration authority
+```
+
+Candidate rules: `.bitty/` wins where both exist, a conflict is reported
+rather than merged silently, and the declarative-data-only rule for project
+content is unchanged. The directory name, schema, trust mechanics, and adapter
+scope are undecided; tracked as
+[OQ-068](../decisions/open-questions.md).
+
 ## Data, state, cache, and runtime layouts
 
 Status: **candidate layouts.**
@@ -631,8 +896,14 @@ $XDG_RUNTIME_DIR/bitty/
 ```
 
 Installed themes belong in data; a user's own theme source may live in config.
-Cache is rebuildable. Runtime sockets and locks belong to the login session,
-while sessions and layouts intended to survive restart belong in state.
+No theme-file loading path is implemented yet: the 30 built-in presets are
+compiled into the binary and selected through `appearance.theme`, while
+custom/user themes are unsupported. The reserved `themes/` directory above is
+inert, so treat it as a candidate layout only. See the
+[theme preset catalog](themes.md) for the shipped presets and the open
+questions on custom themes and category selection. Cache is rebuildable.
+Runtime sockets and locks belong to the login session, while sessions and
+layouts intended to survive restart belong in state.
 
 ## Cross-platform paths
 
@@ -678,10 +949,44 @@ These commands are further described in [CLI](../interfaces/cli.md).
 - Are system defaults and policy expressed in Lua or a restricted data format?
 - Which layer types may be non-overridable, and how are policy errors reported?
 - What are the final list, keymap, and plugin merge semantics?
-- How is reload classified into live-reconcilable versus restart-required
-  changes?
+- Reload classification is the accepted framework with a shipped per-field
+  inventory (see [Reload classification](#reload-classification-shipped-schema-inventory));
+  the canonical table still moves to the
+  [Configuration Model RFC](../specifications/configuration-model-rfc.md)
+  once the schema stabilizes.
 - What are the native macOS and Windows directory mappings?
 - What is the trust database location and invalidation rule for local project
   configuration?
+- What is the `.bitty/` project-definition directory contract (layout, schema,
+  Git-tracked versus runtime-state split, and trust), and how does `.agents/`
+  compatibility resolve against it without becoming a competing source of
+  truth? ([OQ-068](../decisions/open-questions.md))
+- Which remaining appearance knobs beyond the shipped set (workspace/tab label
+  position, frame and margin-line color, per-surface background opacity, blur)
+  are adopted, and under what render/compositor contract?
+  (OQ-036/OQ-037/OQ-038;
+  [Appearance Configuration RFC](../decisions/rfcs/RFC-0001-appearance-configuration.md);
+  OQ-039 focused/idle outline colors is accepted and shipped.)
+- Which panel transitions animate, with what bounded durations/easings and
+  reduced-motion behavior? ([OQ-040](../decisions/open-questions.md);
+  [Panel Animations and Effects RFC](../decisions/rfcs/RFC-0002-panel-animations.md);
+  accepted and shipped in `bitty` `3c5878e`; `appearance.animations.*` is a
+  supported `init.lua` key.)
+- The per-View/per-panel appearance override contract (selector grammar,
+  precedence, inheritance, reload, fail-closed validation, safe mode, and
+  per-View contrast) and the focus/idle outline-width contract are accepted
+  ([OQ-041/OQ-045](../decisions/open-questions.md), resolved 2026-09-12, docs
+  CTX-0163;
+  [Appearance Configuration RFC](../decisions/rfcs/RFC-0001-appearance-configuration.md)).
+  What remains open is the per-panel animation override field set
+  ([OQ-043](../decisions/open-questions.md), narrowed) and plugin-supplied
+  appearance ([OQ-044](../decisions/open-questions.md)), with plugin-supplied
+  images under [OQ-049](../decisions/open-questions.md);
+  [UI Extensibility Architecture](../specifications/ui-extensibility-architecture.md).
+  Accepted-but-unshipped, not a supported `init.lua` key yet.
+- The per-panel background-image contract is accepted
+  ([OQ-042](../decisions/open-questions.md), resolved 2026-09-12); the
+  plugin-supplied-image path remains open as
+  [OQ-049](../decisions/open-questions.md), and no image key is supported yet.
 - What are the final manifest/lock names, and how do they coexist with Lua
   plugin specifications or distribution imports?

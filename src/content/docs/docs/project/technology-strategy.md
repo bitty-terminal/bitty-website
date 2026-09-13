@@ -246,8 +246,8 @@ Podman is an optional isolation tool for untrusted input, release builds,
 dependency and system-library matrices, or reproductions that need a clean
 environment. Ordinary editing and fast local tests do not require a container.
 
-Persistent temporary project material belongs in the workspace `recordings/`, and
-reference repositories belong in `recordings/references/`. See the
+Persistent temporary project material belongs in the workspace `recording/`, and
+reference repositories belong in `recording/references/`. See the
 [Reference Project Register](reference-projects.md) for the concrete research
 snapshots.
 

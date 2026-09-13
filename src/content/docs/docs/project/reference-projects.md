@@ -13,7 +13,7 @@ sidebar_order: 90
 
 ## Purpose and boundaries
 
-Reference repositories live under `recordings/references/` in the local workspace.
+Reference repositories live under `recording/references/` in the local workspace.
 They support architecture research, protocol comparison, learning performance
 methods, and the design of future differential tests.
 
@@ -31,13 +31,13 @@ constraints and validation.
 
 ## Current snapshots
 
-| Project      | Local directory                      | Commit                                     | Registration date | Primary research topics                                                                                                                           |
-| ------------ | ------------------------------------ | ------------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ghostty      | `recordings/references/ghostty`      | `8867c37c55b578b9eb4cfaba41cb9023e557176d` | 2026-08-25        | Core/frontend boundaries, VT, fonts, rendering, protocols, security, and Agent documentation                                                      |
-| Neovim       | `recordings/references/neovim`       | `a1de07418b89f1b30f9ca088306b2c1615f928c3` | 2026-08-25        | Command/Event/API, Lua configuration and plugins, UI protocol, and ecosystem boundaries                                                           |
-| kitty        | `recordings/references/kitty`        | `087b8c35c455e1fa21a727916efdaf59ebdd0168` | 2026-08-25        | GPU performance, glyph cache, Kitty Graphics/keyboard, and protocol limits                                                                        |
-| WezTerm      | `recordings/references/wezterm`      | `f93d90350075d3e42566e0557ca36e82ffdcbec1` | 2026-08-25        | Rust/Lua, terminal/mux/GUI layers, cross-platform support, image protocols, and software rendering                                                |
-| Hermes Agent | `recordings/references/hermes-agent` | `dce2ecb8a9428aedf69e959bd15d7a9fa15eae01` | 2026-08-30        | Agent core, progressive skills, memory/context lifecycle, delegation, capability boundaries, execution environments, toolsets, approvals, and ACP |
+| Project      | Local directory                     | Commit                                     | Registration date | Primary research topics                                                                                                                           |
+| ------------ | ----------------------------------- | ------------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ghostty      | `recording/references/ghostty`      | `8867c37c55b578b9eb4cfaba41cb9023e557176d` | 2026-08-25        | Core/frontend boundaries, VT, fonts, rendering, protocols, security, and Agent documentation                                                      |
+| Neovim       | `recording/references/neovim`       | `a1de07418b89f1b30f9ca088306b2c1615f928c3` | 2026-08-25        | Command/Event/API, Lua configuration and plugins, UI protocol, and ecosystem boundaries                                                           |
+| kitty        | `recording/references/kitty`        | `087b8c35c455e1fa21a727916efdaf59ebdd0168` | 2026-08-25        | GPU performance, glyph cache, Kitty Graphics/keyboard, and protocol limits                                                                        |
+| WezTerm      | `recording/references/wezterm`      | `f93d90350075d3e42566e0557ca36e82ffdcbec1` | 2026-08-25        | Rust/Lua, terminal/mux/GUI layers, cross-platform support, image protocols, and software rendering                                                |
+| Hermes Agent | `recording/references/hermes-agent` | `dce2ecb8a9428aedf69e959bd15d7a9fa15eae01` | 2026-08-30        | Agent core, progressive skills, memory/context lifecycle, delegation, capability boundaries, execution environments, toolsets, approvals, and ACP |
 
 The `2026-08-25` registration date applies only to the original four snapshots;
 registration metadata is recorded per entry above. The clones have shallow
@@ -92,7 +92,7 @@ relevant research document.
 ## Panel and workspace prior-art leads
 
 This section records **non-normative research leads** from the second research
-snapshot, `recordings/research/chatgpt-2026-08-30-2.md`, and the not-yet-merged Panel
+snapshot, `recording/research/chatgpt-2026-08-30-2.md`, and the not-yet-merged Panel
 Extensibility Vision draft. An observation from a pinned local snapshot must
 name its project, commit, exact file or symbol, and observation. An unpinned
 entry is an external URL observation and research lead; it must name the
@@ -128,10 +128,10 @@ Research questions:
 ### kitty
 
 The existing snapshot is pinned at `087b8c35c455e1fa21a727916efdaf59ebdd0168`.
-Snapshot-backed observation: in `recordings/references/kitty/kitty/remote_control.py`,
+Snapshot-backed observation: in `recording/references/kitty/kitty/remote_control.py`,
 `remote_control_allowed`, `PasswordAuthorizer.is_cmd_allowed`, and `SocketIO`
 show password/pattern authorization and socket transport for remote commands;
-in `recordings/references/kitty/kittens/panel/main.py`, `actual_main` calls
+in `recording/references/kitty/kittens/panel/main.py`, `actual_main` calls
 `boss.add_os_panel` and creates a tab containing the requested command. These
 observations support research into CLI-to-instance control and a panel surface
 that hosts a terminal program. The official [remote control](https://sw.kovidgoyal.net/kitty/remote-control/),
@@ -153,11 +153,11 @@ Research questions:
 
 The existing snapshot is pinned at
 `f93d90350075d3e42566e0557ca36e82ffdcbec1`. Snapshot-backed observation: in
-`recordings/references/wezterm/mux/src/pane.rs`, the `Pane` trait represents a view on
-a terminal; in `recordings/references/wezterm/mux/src/domain.rs`, the `Domain` trait
-spawns panes and assigns them to tabs; and in `recordings/references/wezterm/mux/src/lib.rs`,
+`recording/references/wezterm/mux/src/pane.rs`, the `Pane` trait represents a view on
+a terminal; in `recording/references/wezterm/mux/src/domain.rs`, the `Domain` trait
+spawns panes and assigns them to tabs; and in `recording/references/wezterm/mux/src/lib.rs`,
 `Mux` owns multiplexer state. In
-`recordings/references/wezterm/lua-api-crates/plugin/src/lib.rs`, `RepoSpec::parse`,
+`recording/references/wezterm/lua-api-crates/plugin/src/lib.rs`, `RepoSpec::parse`,
 `RepoSpec::check_out`, and `RepoSpec::update` show plugins represented by
 repositories checked out under a plugin data directory. These observations are
 research leads for programmable workspace, IPC, remote-domain, and plugin
@@ -395,7 +395,7 @@ dependencies. Re-check each upstream project before relying on a behavior.
 | Cline        | <https://docs.cline.bot/features/checkpoints>     | Path-scoped rules, shadow Git checkpoints, and independent workspace/task rollback                                  |
 
 Warp is retained only as an external, unpinned research lead:
-<https://docs.warp.dev/>. There is no local `recordings/references/warp` directory in
+<https://docs.warp.dev/>. There is no local `recording/references/warp` directory in
 this workspace, so no Warp revision is recorded or inferred. Its observations
 must not be treated as reproducible local evidence until a separately scoped
 snapshot is reviewed and pinned.
@@ -416,7 +416,7 @@ snapshot is reviewed and pinned.
   and exit-condition evaluation defined in the
   [Technology and Dependency Strategy](technology-strategy.md).
 - Do not modify a reference clone. Put experimental patches in a separate
-  worktree or an explicit experiment directory under the project `recordings/`.
+  worktree or an explicit experiment directory under the project `recording/`.
 
 ## Future candidates
 
@@ -514,7 +514,7 @@ before they become technical conclusions.
 - [Warp](https://github.com/warpdotdev/warp) and [official documentation](https://docs.warp.dev/)
   are leads for an agentic development environment, agent sessions,
   terminal/editor workflows, and automation. No local Warp snapshot exists in
-  `recordings/references/`; these are external leads only, not pinned evidence.
+  `recording/references/`; these are external leads only, not pinned evidence.
 
 ### Bitty comparison boundary
 

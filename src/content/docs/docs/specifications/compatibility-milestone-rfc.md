@@ -21,6 +21,12 @@ It closes open question [OQ-004](../decisions/open-questions.md).
 It also feeds, but does not decide, OQ-007 (terminal state model),
 OQ-008 (image protocol), and OQ-016 (structured transports).
 
+Classification correction (2026-09-13, CTX-0175): mode 1007 is **Alternate
+Scroll**, not a focus-event mode; focus events are mode 1004 only. Verified
+against the read-only xterm reference snapshot (xterm-411, revision `9489b20`):
+`Ps = 1 0 0 4` sends FocusIn/FocusOut events, `Ps = 1 0 0 7` enables Alternate
+Scroll Mode. The M1 scope is unchanged; only the classification is corrected.
+
 ## Context
 
 The [product vision](../product/vision.md) requires a small core that is a
@@ -57,7 +63,8 @@ explicitly out of M1 scope even if trivially available from a dependency.
 | Screen modes         | Alternate screen, origin mode, margins, scroll regions         | Required           | vim/htop/tmux class apps                                     |
 | Bracketed paste      | Mode 2004                                                      | Required           | Safe paste is a correctness/security matter                  |
 | Mouse                | X10/SGR mouse tracking (1000, 1002, 1003, 1006)                | Required           | Common TUI expectation                                       |
-| Focus events         | Modes 1004, 1007                                               | Required           | Trivial cost, common expectation                             |
+| Focus events         | Mode 1004 (FocusIn/FocusOut)                                   | Required           | Trivial cost, common expectation                             |
+| Alternate scroll     | Mode 1007 (wheel to cursor keys in alternate screen)           | Required           | Expected by pagers and alternate-screen apps                 |
 | Synchronized updates | DECSET 2026                                                    | Required           | Flicker-free rendering contract                              |
 | Cursor shape/style   | DECSCUSR                                                       | Required           | Widely used by shells/prompts                                |
 | Window title         | OSC 0 and OSC 2 (set); OSC 10/11 query + set                   | Required           | Basic window metadata                                        |
@@ -106,7 +113,7 @@ compatibility register.
 | Commitment level       | Required acceptance evidence                                                                                                                                                                                                                                               |
 | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Required (core VT)     | Differential test corpus run against at least one reference oracle (vttest subset plus captured Ghostty/kitty/WezTerm sessions); all cases green; parser fuzzing (cargo-fuzz) over VT/OSC/DCS/APC with zero crashes, hangs, or unbounded allocations over an agreed budget |
-| Required (modes/input) | Automated integration tests driving a headless terminal state instance per mode (alternate screen, bracketed paste, mouse modes 1000/1002/1003/1006, focus, 2026, DECSCUSR); golden snapshots committed                                                                    |
+| Required (modes/input) | Automated integration tests driving a headless terminal state instance per mode (alternate screen, bracketed paste, mouse modes 1000/1002/1003/1006, focus 1004, alternate scroll 1007, 2026, DECSCUSR); golden snapshots committed                                        |
 | Required (color/title) | Snapshot tests for SGR 0–255 and truecolor cell attributes; automated test for OSC 10/11 query-response round trip                                                                                                                                                         |
 | Opt-in enhancement     | Feature works end-to-end when enabled AND default-off behavior is proven identical to the without-feature build via differential snapshot suite; enabling/disabling requires no restart unless documented                                                                  |
 | Gated (OSC 52 write)   | Permission prompt or pre-granted capability required before first write; denial path tested; clipboard content never logged; adversarial test showing untrusted output cannot trigger a silent write                                                                       |

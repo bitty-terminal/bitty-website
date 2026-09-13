@@ -317,6 +317,54 @@ provided each value.
 Path and configuration architecture are documented in
 [Lua and XDG configuration](../configuration/lua-and-xdg.md).
 
+## Safe mode configuration precedence
+
+Status: **implementation reference (experimental).** Documented from the merged
+`bitty` behavior at `20519bc` (CTX-0346); the flag is `Implemented`
+(experimental), not `Verified`.
+
+`bitty --safe` selects the built-in safe effective configuration and reads no
+external configuration layer at all. The flag is an unconditional override:
+it never consults user files, profiles, the environment, or CLI appearance
+overrides, so a hostile, invalid, or missing user configuration cannot abort
+or influence safe startup or validation.
+
+| Layer or input                                                                    | Normal startup                      | `bitty --safe`                  |
+| --------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------- |
+| Built-in Core defaults                                                            | Base layer                          | Wins for every attributed field |
+| System / distribution defaults                                                    | Applied under the user layers       | Ignored                         |
+| Profile (`--profile` / `BITTY_PROFILE`)                                           | Under the user file                 | Ignored                         |
+| User file (XDG probe, `--config`, `BITTY_CONFIG`)                                 | Overrides profile and Core defaults | Ignored                         |
+| CLI appearance overrides (`--theme`, `--font-family`, `--font-size`, `--opacity`) | Highest precedence                  | Ignored                         |
+
+Normal startup resolves by declared precedence, never load order:
+
+```text
+CLI appearance > user file > profile > Core defaults
+```
+
+Under `--safe` the effective configuration is fixed:
+
+- every schema field is attributed to Core defaults, with no conflicts and no
+  policy violations;
+- decoration geometry is forced to `gaps_in = 0`, `gaps_out = 0`, `border = 1`,
+  `radius = 0`, `content_inset = 0` (`0/0/1/0/0`);
+- the focused/idle outline pair is forced to the opaque built-ins `#FFFFFF`
+  (focused) and `#808080` (idle).
+
+Startup, `bitty config check`, and `bitty doctor` share this load path, so the
+same safe-mode precedence applies to all three. Non-safe behavior is unchanged.
+
+Implementation note: `bitty-app::config_cli::load_merged_config` returns
+`bitty_config::safe_merged()` when `--safe` is set. The contrast obligations for
+the safe outline pair are AC-1..AC-3 in
+[RFC-0001](../decisions/rfcs/RFC-0001-appearance-configuration.md); the safe
+decoration invariant is rule 5 of the
+[Workspace Compositor Specification](../specifications/workspace-compositor.md);
+the layer model is owned by the
+[Configuration Model RFC](../specifications/configuration-model-rfc.md) and the
+[Lua and XDG configuration](../configuration/lua-and-xdg.md) reference.
+
 ## Output contract
 
 Status: **candidate contract.**

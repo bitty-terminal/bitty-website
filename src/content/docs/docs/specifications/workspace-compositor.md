@@ -16,8 +16,9 @@ sidebar_order: 25
 > This document defines the accepted contract for the Instance, Window,
 > Workspace, View, Terminal identity hierarchy, the Workspace as tiling
 > compositor, the `LayoutTree` with H and V primitives, View types, Core-owned
-> `gaps_in`, `gaps_out`, `border`, `radius`, and the `LayoutProvider` plugin
-> surface for layout algorithms including dwindle, master, and grid, plus
+> `gaps_in`, `gaps_out`, `border`, `radius`, `content_inset`, and the
+> `LayoutProvider` plugin surface for layout algorithms including dwindle,
+> master, and grid, plus
 > drag, resize, move, and scratchpad interactions. It does not describe
 > implemented behavior, does not authorize shipped, stable, or
 > compatibility-guaranteed behavior beyond the accepted contract, and does not
@@ -47,8 +48,9 @@ and defines the accepted contracts for:
   compose the tiling;
 - **View types** — `Terminal`, `Rich`, and `Browser` as the closed v1 set
   hosted by a `View`;
-- **Core-owned decoration** — `gaps_in`, `gaps_out`, `border`, and `radius`
-  owned by Core with validated bounds, never by plugins or layout algorithms;
+- **Core-owned decoration** — `gaps_in`, `gaps_out`, `border`, `radius`, and
+  `content_inset` owned by Core with validated bounds, never by plugins or
+  layout algorithms;
 - **Layout algorithms as plugin** — `dwindle`, `master`, and `grid` supplied as
   `LayoutProvider` plugins, not as Core built-ins;
 - **Interactions** — drag, resize, move, and scratchpad semantics.
@@ -127,7 +129,8 @@ specification makes no lifecycle or runtime implementation claim.
 The native OS `Window` remains owned by `bitty-platform`; Panel must not expose
 its handle. PTY ownership remains with terminal runtime/state. Layout geometry,
 validation, and decoration remain Core-owned, and a Panel or provider must not
-set `gaps_in`, `gaps_out`, `border`, or `radius`. A Panel Runtime and an
+set `gaps_in`, `gaps_out`, `border`, `radius`, or `content_inset`. A Panel
+Runtime and an
 inter-Panel Event Bus are candidate future components, not contracts defined
 here. Their lifecycle, event taxonomy, bounds, and host/plugin boundary belong
 to that future RFC, informed by the future Panel Extensibility Vision document
@@ -146,13 +149,13 @@ to Bitty without copying Hyprland implementation details. Hyprland and Waybar
 are read-only references for philosophy and interaction vocabulary; Bitty does
 not embed Hyprland or Waybar code, configuration files, or configuration syntax.
 
-| Hyprland concept                         | Bitty import                                                 | Adaptation                                                                                                                                                        |
-| ---------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Hyprland workspace tiling windows        | `Workspace` tiling `View`s inside one `Window`               | A Hyprland workspace maps to a Bitty `Workspace`; a Hyprland window maps to a Bitty `View`, never to a Bitty `Window`. Window stays as the native OS window only. |
-| `dwindle` `master` `grid` layouts        | `LayoutProvider` plugin algorithms `dwindle` `master` `grid` | Algorithms are plugins behind a capability, not Core built-ins; Core supplies only H and V primitives and decoration.                                             |
-| `gaps_in` `gaps_out` `border` `rounding` | Core-owned `gaps_in` `gaps_out` `border` `radius`            | Owned by Core, validated via `ConfigPlan`; no plugin or `LayoutProvider` mutates these values at runtime.                                                         |
-| Drag, resize, move between workspaces    | `View` drag, resize, move, and scratchpad                    | Gestures route through the command registry; `LayoutProvider` proposes geometry, Core commits it.                                                                 |
-| Waybar `modules-left` `center` `right`   | Out of scope for this document                               | Waybar philosophy is owned by the Status System Specification; this document does not duplicate its registry.                                                     |
+| Hyprland concept                         | Bitty import                                                      | Adaptation                                                                                                                                                        |
+| ---------------------------------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Hyprland workspace tiling windows        | `Workspace` tiling `View`s inside one `Window`                    | A Hyprland workspace maps to a Bitty `Workspace`; a Hyprland window maps to a Bitty `View`, never to a Bitty `Window`. Window stays as the native OS window only. |
+| `dwindle` `master` `grid` layouts        | `LayoutProvider` plugin algorithms `dwindle` `master` `grid`      | Algorithms are plugins behind a capability, not Core built-ins; Core supplies only H and V primitives and decoration.                                             |
+| `gaps_in` `gaps_out` `border` `rounding` | Core-owned `gaps_in` `gaps_out` `border` `radius` `content_inset` | Owned by Core, validated via `ConfigPlan`; `content_inset` has no Hyprland counterpart; no plugin or `LayoutProvider` mutates these values at runtime.            |
+| Drag, resize, move between workspaces    | `View` drag, resize, move, and scratchpad                         | Gestures route through the command registry; `LayoutProvider` proposes geometry, Core commits it.                                                                 |
+| Waybar `modules-left` `center` `right`   | Out of scope for this document                                    | Waybar philosophy is owned by the Status System Specification; this document does not duplicate its registry.                                                     |
 
 Rules of the import:
 
@@ -293,8 +296,8 @@ Rules:
    it never reorders siblings or moves `View`s between branches except via
    explicit move operations.
 5. Rendering walks the tree once to produce `View` rectangles, then applies
-   Core decoration (`gaps_in`, `gaps_out`, `border`, `radius`) without mutating
-   the tree.
+   Core decoration (`gaps_in`, `gaps_out`, `border`, `radius`, `content_inset`)
+   without mutating the tree.
 6. `LayoutProvider` algorithms may propose a new `LayoutTree` shape, but Core
    validates that the result contains exactly the same `ViewId` set plus any
    explicitly created or removed `View`s authorized by the operation.
@@ -331,18 +334,19 @@ Rules:
 4. View type is explicit in `ConfigPlan` and in the command that creates the
    `View`; no implicit promotion from `Terminal` to `Rich` occurs.
 
-## Core-owned gaps, border, and radius
+## Core-owned gaps, border, radius, and content inset
 
-`gaps_in`, `gaps_out`, `border`, and `radius` are Core-owned decoration. They
-are validated in `ConfigPlan` and applied by `Workspace` composition, never by
-`LayoutProvider` plugins or `View` content.
+`gaps_in`, `gaps_out`, `border`, `radius`, and `content_inset` are Core-owned
+decoration. They are validated in `ConfigPlan` and applied by `Workspace`
+composition, never by `LayoutProvider` plugins or `View` content.
 
-| Property   | Meaning                                                   | Accepted default | Valid range | Owner |
-| ---------- | --------------------------------------------------------- | ---------------- | ----------- | ----- |
-| `gaps_in`  | Gap between adjacent `View`s inside one `Workspace`       | 4 px             | 0 to 32 px  | Core  |
-| `gaps_out` | Gap between the `Workspace` tiling area and `Window` edge | 6 px             | 0 to 32 px  | Core  |
-| `border`   | Border thickness drawn around each `View`                 | 2 px             | 0 to 8 px   | Core  |
-| `radius`   | Corner radius for `View` frames                           | 6 px             | 0 to 16 px  | Core  |
+| Property        | Meaning                                                        | Accepted default | Valid range | Safe mode | Owner |
+| --------------- | -------------------------------------------------------------- | ---------------- | ----------- | --------- | ----- |
+| `gaps_in`       | Gap between adjacent `View`s inside one `Workspace`            | 6 px             | 0 to 32 px  | 0         | Core  |
+| `gaps_out`      | Gap between the `Workspace` tiling area and `Window` edge      | 6 px             | 0 to 32 px  | 0         | Core  |
+| `border`        | Border thickness drawn around each `View`                      | 2 px             | 0 to 8 px   | 1         | Core  |
+| `radius`        | Corner radius for `View` frames                                | 6 px             | 0 to 16 px  | 0         | Core  |
+| `content_inset` | Padding between the `View` frame border and its hosted content | 6 px             | 0 to 32 px  | 0         | Core  |
 
 Rules:
 
@@ -352,13 +356,35 @@ Rules:
    with a source-attributed diagnostic; Core never falls back to a silent
    default when validation fails.
 3. `LayoutProvider` proposals must not include decoration values; any proposal
-   that carries `gaps_in`, `gaps_out`, `border`, or `radius` is rejected.
+   that carries `gaps_in`, `gaps_out`, `border`, `radius`, or `content_inset`
+   is rejected.
 4. Decoration is applied after `LayoutTree` rectangle computation: `gaps_out`
    insets the `Workspace` area, `gaps_in` splits the remainder between
    siblings, `border` is drawn inside the `View` rectangle, `radius` clips the
-   frame without affecting hit testing beyond the clipped bounds.
-5. `bitty --safe` starts with `gaps_in = 0`, `gaps_out = 0`, `border = 1`,
-   `radius = 0` regardless of user configuration.
+   frame without affecting hit testing beyond the clipped bounds, and
+   `content_inset` insets the leaf content rectangle inside the border. The
+   content rectangle is the frame inset by `border + content_inset`; a
+   `content_inset` of `0` reproduces the border-only geometry.
+5. Cell-unit `layout.gaps_in`/`layout.gaps_out` (CTX-0177, Hyprland-like panel
+   gaps) and pixel-unit `decoration.gaps_in`/`decoration.gaps_out` (this
+   contract) compose rather than replace each other. The effective gap is
+   `decoration.gap * DPI_scale + layout.gap_cells * cell_axis`; with the
+   default `layout` cell gaps of `0`, both effective sibling and container gaps
+   are `6` logical px.
+6. `bitty --safe` starts with `gaps_in = 0`, `gaps_out = 0`, `border = 1`,
+   `radius = 0`, `content_inset = 0` regardless of user configuration.
+
+Change provenance (CTX-0333, `bitty` PR #562): this amendment raises
+`decoration.gaps_in` from `4` to `6` so the default sibling
+(panel-to-panel / panel-to-terminal) and container gaps read as one spacing,
+and adds `decoration.content_inset` so text does not sit flush against the view
+margin line. It is the `init.lua` shape
+`decoration = { gaps_in = 6, gaps_out = 6, border = 2, radius = 6, content_inset = 6 }`.
+The merged single-window decoration surface ([`bitty` #487](https://github.com/bitty-terminal/bitty/pull/487),
+CTX-0292) predates this amendment and shipped the `4/6/2/6` defaults; the
+`6/6/2/6/6` set and `content_inset` shipped with `bitty` PR #562 (merge commit
+`9031b3f`), and the live present-path painting shipped with `bitty` PR #519
+(CTX-0294) and PR #533 (CTX-0311).
 
 ## Shipped slice (implementation evidence)
 
@@ -376,11 +402,13 @@ What merged, exactly:
 
 1. **Core-owned decoration config surface** (`bitty` #487 `485fbfd`,
    CTX-0292): `decoration.gaps_in`/`gaps_out`/`border`/`radius` in logical px
-   with the defaults and ranges in the table above, fail-closed `ConfigPlan`
-   validation, scalar-replace per-field attribution, `Live` reload, and
-   `bitty --safe` forcing `0/0/1/0`. The Core solver is carried
-   (`layout_with_decoration`, `decorated_allocations`, `set_decoration`).
-   Bounds and reload coverage: `bitty` #490 `5afb8a2` (CTX-0295).
+   with the pre-CTX-0333 defaults `4/6/2/6` and the ranges in the table above,
+   fail-closed `ConfigPlan` validation, scalar-replace per-field attribution,
+   `Live` reload, and `bitty --safe` forcing `0/0/1/0`. The Core solver is
+   carried (`layout_with_decoration`, `decorated_allocations`,
+   `set_decoration`). Bounds and reload coverage: `bitty` #490 `5afb8a2`
+   (CTX-0295). The unified `6/6/2/6/6` defaults and `content_inset` are the
+   CTX-0333 amendment (`bitty` PR #562); see the change provenance note above.
 2. **Workspace operations entry** (`bitty` #433 `227ca3a`, CTX-0257, DEC-0034):
    runtime-owned workspace slots with MRU order (capacity `16`), a pure
    workspaceline overlay string, and a presented overlay banner. Keys:
@@ -523,8 +551,10 @@ Hyprland and Waybar are read-only philosophy references in this specification.
 
 1. No Hyprland or Waybar source code, configuration snippet, or wire format is
    copied into Bitty, `bitty-config`, or any crate.
-2. `ConfigPlan` keys use Bitty naming (`workspace.layout`, `gaps_in`,
-   `gaps_out`, `border`, `radius`); Hyprland key spellings such as
+2. `ConfigPlan` keys use Bitty naming (`workspace.layout`,
+   `decoration.gaps_in`, `decoration.gaps_out`, `decoration.border`,
+   `decoration.radius`, `decoration.content_inset`); Hyprland key spellings
+   such as
    `general:gaps_in` are not accepted and fail validation with a diagnostic
    that points at the Bitty key.
 3. Documentation may cite Hyprland and Waybar by name as precedents, but must
@@ -539,7 +569,7 @@ Lua and no bypass of the existing P0 gates.
    `browser.embed`; `Rich` requires `ui.rich`. No provider widens its own
    capability without an explicit grant.
 2. Decoration values are validated before use; no provider or `View` content may
-   set `gaps_in`, `gaps_out`, `border`, or `radius` at runtime.
+   set `gaps_in`, `gaps_out`, `border`, `radius`, or `content_inset` at runtime.
 3. `ViewId` distinct from `TerminalId` prevents confused-deputy moves where a
    `Terminal` operation is misdirected at a `View` and vice versa.
 4. Presentation ownership remains isolated: `Workspace` and `LayoutTree` never
@@ -562,9 +592,12 @@ Lua and no bypass of the existing P0 gates.
    - `ratio` outside `[0.1, 0.9]` is rejected; resize that would violate the
      range is rejected without tree mutation.
 4. **Decoration tests**:
-   - `gaps_in`, `gaps_out`, `border`, `radius` out of range or unknown keys fail
-     `ConfigPlan` validation; `LayoutProvider` proposals that carry decoration
-     are rejected.
+   - `gaps_in`, `gaps_out`, `border`, `radius`, `content_inset` out of range or
+     unknown keys fail `ConfigPlan` validation; `LayoutProvider` proposals that
+     carry decoration are rejected.
+   - A `content_inset` of `0` reproduces the border-only content geometry; the
+     effective gap follows
+     `decoration.gap * DPI_scale + layout.gap_cells * cell_axis`.
    - `--safe` inverts to the safe decoration defaults regardless of user config.
 5. **Provider tests**:
    - `dwindle`, `master`, and `grid` providers each produce well-formed trees for
@@ -597,6 +630,46 @@ Lua and no bypass of the existing P0 gates.
   composition.
 - Whether `LayoutProvider` selection participates in `ConfigPlan` live reload
   or requires a `Workspace` recreation.
+- Whether terminal content should keep a smaller `content_inset` than panels
+  (per-surface inset design decision), raised as a follow-up by CTX-0333
+  (`bitty` PR #562).
+- The focused/idle outline color contract and the panel open/close, focus, and
+  workspace-switch animations are **accepted** in
+  [RFC-0001](../decisions/rfcs/RFC-0001-appearance-configuration.md) (OQ-039)
+  and
+  [RFC-0002](../decisions/rfcs/RFC-0002-panel-animations.md) (OQ-040),
+  closed 2026-09-12 in the
+  [open-question register](../decisions/open-questions.md) and shipped in
+  `bitty` PR #580 (CTX-0341). This accepted specification does not define their
+  values and owns no animation behavior; the shipped animation keys are
+  documented in [Lua and XDG](../configuration/lua-and-xdg.md) and this
+  specification's decoration contract is unchanged.
+- A focus/idle outline **width** contract is **accepted** in
+  [RFC-0001](../decisions/rfcs/RFC-0001-appearance-configuration.md) (OQ-045,
+  docs `CTX-0163`, 2026-09-12):
+  `decoration.border_width` / `_focused` / `_idle` in logical px, resolving
+  per `View` and supplying the AC-2 non-color cue. It is accepted as a contract
+  but not implemented and does not change this specification's accepted
+  `border` default or range; the focused width delta is drawn inside the `View`
+  rectangle and must not move the content grid.
+- The per-View/per-panel appearance override layer
+  (`views.<selector>.*`) is **accepted** in
+  [RFC-0001](../decisions/rfcs/RFC-0001-appearance-configuration.md) (OQ-041,
+  docs `CTX-0163`, 2026-09-12): per-field per-`View` resolution of border color,
+  outline width, and background image/fit over the Core-owned decoration
+  values. It adds a presentation-resolution pass and per-`View` presentation
+  state but no `LayoutTree`, `LayoutProvider`, or `PanelId` change, and it never
+  enters rectangle math.
+- Point-in-time decoration citations in the pre-studies still spell the
+  pre-CTX-0333 defaults: [Panel Runtime pre-study](panel-runtime-pre-study.md)
+  `gaps_in 4` and [Browser and Agent pre-study](browser-agent-pre-study.md)
+  `gaps_in 4` / `--safe 0/0/1/0`. They cite committed snapshots, so they are
+  recorded here as reference edges for a later reviewed sync rather than edited
+  in place.
+- The point-in-time [UI and Compositor Gap Analysis](ui-compositor-gap-analysis.md)
+  (docs `CTX-0167`, `bitty` `b761c03`) records shipped-versus-missing panel
+  chrome, semantic-block projection, hint/composer wiring, and rich panel
+  content. It cites this accepted contract and proposes no change to it.
 
 This specification is accepted as a standalone contract per CTX-0118; it
 does not close an open question on its own beyond its standalone acceptance and

@@ -17,6 +17,18 @@ sidebar_order: 20
 > compatibility-guaranteed behavior, and does not weaken any normative security control. Experimental implementation may exist as review evidence but carries no
 > compatibility promise beyond the accepted contract. Acceptance was per independent category-owner, docs-curator, and security-auditor review (CTX-0075) with P0 sign-off on 2026-08-29; see [P0 Review Sign-off](#p0-review-sign-off) and the
 > [P0 review checklist](../reviews/p0-review-checklist.md). The lifecycle is `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`.
+>
+> Bundled-set revision (2026-09-13, CTX-0170): the 2026-08-29 accepted
+> composition recorded five plugins including `bitty-terminal.tabs`. The
+> owning `bitty` catalog (`crates/bitty-plugin-host/src/bundled.rs`,
+> `all_bundled_manifests()`) now records **ten** bundled-disabled plugins,
+> and `bitty-terminal.tabs` is a **deprecated alias** of the canonical
+> `bitty-terminal.workspace` (removal >= v0.2.0). The composition list,
+> artifact layout, and examples below are revised to that catalog; the
+> earlier five-plugin set is retained in
+> [Superseded bundled set (2026-08-29)](#superseded-bundled-set-2026-08-29).
+> The empty enabled-by-default set, disable surfaces, precedence, budgets,
+> and security contracts are unchanged.
 
 ## Purpose and scope
 
@@ -131,9 +143,10 @@ normative text wins and this RFC must be corrected.
    activation and its capability grants are present.
 2. The v1 enabled-by-default set is **empty**: a fresh installation with
    no user configuration starts the core only. First-party plugins are
-   bundled as ready-to-enable artifacts (tabs, statusline, palette, shell
-   integration, project) but require an explicit enable that preserves the
-   capability-consent and lightweight-budget guarantees.
+   bundled as ready-to-enable artifacts (the ten-plugin catalog under
+   [Bundled set for v1](#bundled-set-for-v1-staged-not-enabled)) but require
+   an explicit enable that preserves the capability-consent and
+   lightweight-budget guarantees.
 3. Disabling is effective, attributable, and reversible through five
    coordinated surfaces: the typed configuration `plugins.<id>.enabled`
    setting, the managed manifest `enabled` flag, `bitty plugin disable`
@@ -154,14 +167,23 @@ distribution/
   assets/                              # fonts, themes, shell-integration scripts
   plugins/
     store/
-      bitty-terminal.tabs/1.0.0/
-      bitty-terminal.statusline/1.0.0/
-      bitty-terminal.palette/1.0.0/
-      bitty-terminal.shell-integration/1.0.0/
-      bitty-terminal.project/0.9.0/
+      bitty-terminal.shell-integration/0.1.0/
+      bitty-terminal.workspace/0.1.0/
+      bitty-terminal.statusline/0.1.0/
+      bitty-terminal.palette/0.1.0/
+      bitty-terminal.project/0.1.0/
+      bitty-terminal.file-manager/0.1.0/
+      bitty-terminal.git-panel/0.1.0/
+      bitty-terminal.browser-panel/0.1.0/
+      bitty-terminal.ai-panel/0.1.0/
+      bitty-terminal.mail-panel/0.1.0/
     distribution.toml                  # pinned set, not a runtime manifest
     checksums.sha256
 ```
+
+Versions follow the catalog's bundled `0.1.0`; the pinned set is data, not a
+commitment that every artifact is already staged. `bitty-terminal.tabs` is a
+deprecated alias resolved by the host and is not a separate staged artifact.
 
 Rules:
 
@@ -190,21 +212,47 @@ Rules:
 version, checksum, plugin-api = "^1.0", compat.bitty }` and is validated
    with the same bounded-parser discipline as `bitty-plugin.toml`.
 
-### Candidate bundled set for v1 (staged, not enabled)
+### Bundled set for v1 (staged, not enabled)
 
-| Plugin ID                          | Proposed stage purpose                                                | Default               | Capability sketch (illustrative)                           |
+| Plugin ID                          | Stage purpose                                                                         | Default                                                     | Capability sketch (illustrative)                                                                |
+| ---------------------------------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `bitty-terminal.shell-integration` | OSC 7/133 semantic zones, cwd/title, fail-closed fallback when absent                 | bundled, **disabled**                                       | `terminal.semantic-read` (read-only)                                                            |
+| `bitty-terminal.workspace`         | workspace commands, workspaceline presentation, ordering and closing policy           | bundled, disabled                                           | `ui.rich` or status-component slot, `workspaceline` claim                                       |
+| `bitty-terminal.statusline`        | cwd, mode, git/task presentation via declarative status components                    | bundled, disabled                                           | `terminal.semantic-read`, status-component composition                                          |
+| `bitty-terminal.palette`           | command palette and picker UI via overlay slot                                        | bundled, disabled                                           | `ui.overlay`                                                                                    |
+| `bitty-terminal.project`           | project discovery and session presentation                                            | bundled, disabled                                           | `fs.read:PROJECT_GLOB` constrained                                                              |
+| `bitty-terminal.file-manager`      | tiled Panel file manager with constrained `fs.read` and optional `fs.write`           | bundled, disabled                                           | `panel.provider`, `panel.create`, `terminal.semantic-read`, scoped `fs.read`/`fs.write`         |
+| `bitty-terminal.git-panel`         | tiled Panel git branch/status/diff/log presentation                                   | bundled, disabled                                           | `process.spawn:git` allowlisted, `panel.provider`, `panel.create`, `terminal.semantic-read`     |
+| `bitty-terminal.browser-panel`     | `View Browser` plus tiled Panel placement and navigation policy                       | bundled, disabled                                           | `browser.embed`, `browser.navigation`, `browser.file-url`, `browser.storage`, `network.connect` |
+| `bitty-terminal.ai-panel`          | agent panel surface: chat, tool invocation, memory and consent presentation           | bundled, disabled                                           | `ai.*`, `agent.*`, scoped `mcp.invoke`                                                          |
+| `bitty-terminal.mail-panel`        | mail triage panel: list, read, search, and send through MCP and explicit endpoints    | bundled, disabled                                           | `mcp.invoke:mail.*`, `network.connect`, scoped `fs.read`/`fs.write`                             |
+| `bitty-terminal.tabs`              | **deprecated alias** of `bitty-terminal.workspace`; legacy tabline claim and commands | deprecated alias, not separately staged (removal >= v0.2.0) | legacy `tabline` claim (deprecated)                                                             |
+
+Revision (2026-09-13, CTX-0170): the **accepted** staged set as of
+2026-08-29 recorded five plugins including `bitty-terminal.tabs`. The owning
+`bitty` catalog (`crates/bitty-plugin-host/src/bundled.rs`,
+`all_bundled_manifests()`) now records the ten canonical plugins above;
+`bitty-terminal.workspace` replaced `bitty-terminal.tabs`, which remains a
+deprecated alias during the compatibility window (removal >= v0.2.0). The
+[Plugin Roadmap](../product/plugin-roadmap.md) records the same catalog and
+rename. Catalog presence is implementation evidence, not shipped plugin
+behavior: every bundled plugin passes through the identical manifest and
+capability model from [Plugin Platform RFC](plugin-platform-rfc.md); there is
+no bundled bypass flag and CI may not add one.
+
+#### Superseded bundled set (2026-08-29)
+
+The five-plugin composition accepted on 2026-08-29, retained for history. It
+was replaced by the ten-plugin catalog above in the 2026-09-13 revision
+rather than silently rewritten.
+
+| Plugin ID                          | Stage purpose                                                         | Default               | Capability sketch (illustrative)                           |
 | ---------------------------------- | --------------------------------------------------------------------- | --------------------- | ---------------------------------------------------------- |
 | `bitty-terminal.shell-integration` | OSC 7/133 semantic zones, cwd/title, fail-closed fallback when absent | bundled, **disabled** | `terminal.semantic-read` (read-only)                       |
 | `bitty-terminal.tabs`              | tabline provider, tab commands, layout policy                         | bundled, disabled     | `ui.rich` or status-component slot, status `tabline` claim |
 | `bitty-terminal.statusline`        | cwd, mode, git/task presentation via declarative status components    | bundled, disabled     | `terminal.semantic-read`, status-component composition     |
 | `bitty-terminal.palette`           | command palette and picker UI via overlay slot                        | bundled, disabled     | `ui.overlay`                                               |
 | `bitty-terminal.project`           | project discovery and session presentation                            | bundled, disabled     | `fs.read:PROJECT_GLOB` constrained                         |
-
-This set was a **proposal** at draft time and is now the **accepted** staged set as of 2026-08-29. The owning `bitty`
-crate inventory records them as the accepted bundled set without claiming shipped behavior. Every
-bundled plugin passes through the identical manifest and capability model
-from [Plugin Platform RFC](plugin-platform-rfc.md); there is no bundled
-bypass flag and CI may not add one.
 
 ## Enabled-by-default set and promotion criteria (accepted)
 
@@ -214,8 +262,8 @@ Accepted v1 value: **no plugin is enabled by default** on a fresh
 installation with no user configuration. The terminal starts with:
 
 - core-owned PTY, parser, grid, selection, input, platform, and renderer;
-- no plugin VM, no tabline provider, no statusline, no palette, and no
-  workspace plugin active;
+- no plugin VM, no workspace (workspaceline, or the deprecated tabline
+  alias) provider, no statusline, no palette, and no panel plugins active;
 - the same surface that `bitty --safe` produces, making safe-mode
   behavior the default rather than a special case.
 
@@ -307,7 +355,7 @@ The typed configuration owns a `plugins` subtree:
 ```lua
 -- Candidate shape; schema lives in the core repository.
 plugins = {
-  ["bitty-terminal.tabs"] = { enabled = false },
+  ["bitty-terminal.workspace"] = { enabled = false },
   ["xuepoo.markdown"] = { enabled = true },
   disabled = { "bitty-terminal.statusline" } -- alternative additive list
 }
@@ -334,7 +382,7 @@ state independently of configuration, so CLI and GUI operate on one model:
 
 ```toml
 # Candidate syntax; extends the package-management candidate.
-[plugins."bitty-terminal.tabs"]
+[plugins."bitty-terminal.workspace"]
 version = "^1.0"
 enabled = false
 
@@ -364,8 +412,8 @@ Candidate verbs (consistent with the package-management candidate and the
 
 ```sh
 bitty plugin list --verbose        # shows bundled, enabled, disabled, source layer, generation
-bitty plugin enable  bitty-terminal.tabs
-bitty plugin disable bitty-terminal.tabs
+bitty plugin enable  bitty-terminal.workspace
+bitty plugin disable bitty-terminal.workspace
 bitty plugin disable --all         # disables every non-core plugin
 bitty plugin doctor                # queue/budget/capability/generation view
 bitty --safe                       # transient safe session, no persistent change
@@ -419,9 +467,9 @@ hostile third-party plugins as noted in [Configuration Model RFC](configuration-
   record is reused. Revocation (`bitty plugin revoke`) is orthogonal and
   takes effect at the next dispatch boundary.
 - **Service and claim release.** Disabling releases reserved commands, event
-  subscriptions, claims (`tabline`, protocol handlers), and service
-  provisions atomically with generation disposal, so the resolver can admit
-  a replacement provider exactly once.
+  subscriptions, claims (`workspaceline`, or the deprecated `tabline` alias,
+  and protocol handlers), and service provisions atomically with generation
+  disposal, so the resolver can admit a replacement provider exactly once.
 - **Budget reclaim.** Disabling reclaims instruction, memory, task, timer,
   and queue budgets (RC-1, RC-2, RC-4, RC-5) and their attribution. Post-
   disable RSS after forced GC must return within 15% of the pre-enable
@@ -511,7 +559,7 @@ linked risk toward `Mitigated`.
 
 | Alternative                                                              | Why rejected or deferred                                                                                                                                                                                                                                      |
 | ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ship `tabs` plus `statusline` enabled by default                         | Gains immediate out-of-box familiarity, but adds startup-time, memory, and capability-surface variance before the budget harness exists; defers the explicit-consent moment and complicates PB-1/PB-2 baselines. Revisit only through the promotion criteria. |
+| Ship `tabs` (now `workspace`) plus `statusline` enabled by default       | Gains immediate out-of-box familiarity, but adds startup-time, memory, and capability-surface variance before the budget harness exists; defers the explicit-consent moment and complicates PB-1/PB-2 baselines. Revisit only through the promotion criteria. |
 | Bundle nothing and fetch on first enable                                 | Minimizes distribution size, but makes first-enable network-dependent and breaks offline reproducibility and the "staged without network fetch" expectation; retained as deferred for minimal-install variants, not the default distribution.                 |
 | `bitty --safe` as a persistent toggle that rewrites config               | Would conflate transient recovery with persistent preference and risk persisting a broken state; rejected — safe mode is explicitly transient and never mutates the stored `enabled` set.                                                                     |
 | Single `enabled=false` comment in `init.lua` as the only disable surface | Fragile and undiscoverable; file edits race with CLI/manifest updates and lack attribution. Rejected — disables must be reachable from config, manifest, and CLI with consistent precedence.                                                                  |
@@ -607,7 +655,9 @@ As of 2026-08-29, the distribution, disable, and budget contracts remain design 
 ## References
 
 - Bitty crate evidence: `crates/bitty-config` (typed ConfigPlan and layer
-  merge), `crates/bitty-plugin-host` (generation, registry, budget snapshot),
+  merge), `crates/bitty-plugin-host` (generation, registry, budget snapshot,
+  and the `bundled.rs` ten-plugin catalog with the deprecated
+  `bitty-terminal.tabs` alias of `bitty-terminal.workspace`),
   `crates/bitty-package` (staged activation) — all accepted model crates whose
   call sites this RFC reuses without retuning.
 - Distribution budgets: [Performance Budget RFC](performance-budget-rfc.md)

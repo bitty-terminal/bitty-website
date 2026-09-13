@@ -71,6 +71,7 @@ function redirectArtifacts() {
 }
 
 export default defineConfig({
+  site: "https://bitty.run",
   output: "static",
   outDir: "./dist",
   redirects: { ...BASE_REDIRECTS },

@@ -11,6 +11,43 @@ repository only mirrors and presents it. The authoritative mechanism,
 route mapping, and operator contract live in the canonical `bitty-docs`
 guide `docs/development/website-sync.md` (Website Delivery RFC, OQ-023).
 
+## Target stack and site map (deferred)
+
+The 2026-09-14 project decision selects Astro plus Astro Starlight for the
+Bitty developer portal at <https://bitty.run>. No part of that migration is
+implemented yet: this repository remains the Astro static shell and pinned
+`bitty-docs` mirror described above, and Starlight adoption, UI/UX,
+internationalization, themes, search, and deployment automation are deferred
+to the 0.1.0 release window. The canonical Website Delivery RFC still lists a
+required Starlight theme as deferred; recording the target here does not
+change that contract, and the presentation decision must be accepted before
+migration work starts.
+
+Target site map (planned; not routed yet):
+
+| Route                   | Planned purpose                                                             |
+| ----------------------- | --------------------------------------------------------------------------- |
+| `/`                     | Home: why Bitty, features, install                                          |
+| `/docs/...`             | Getting started, configuration, keybindings, panels, IPC, Lua, architecture |
+| `/api/...`              | Lua, plugin, and IPC reference                                              |
+| `/plugins/`             | Entry point that links or redirects to <https://plugins.bitty.run>          |
+| `/ai/`                  | AI subsystem documentation                                                  |
+| `/blog/`, `/changelog/` | Announcements and release history                                           |
+
+The plugin store is a separate Vite application at
+<https://plugins.bitty.run>; it is not built, deployed, or documented from this
+repository. Canonical content is planned to be aggregated at build time from
+three pinned sources — `bitty-terminal-docs`, `bitty-plugins-docs`, and
+`bitty-ai-docs` — while only the single pinned `bitty-docs` revision is
+consumed today (see `src/content/docs-revision.json`). The source naming and
+multi-source aggregation require an accepted decision before implementation.
+
+`astro.config.mjs` records the canonical origin as
+`site: "https://bitty.run"`. The domain is registered through Cloudflare;
+verification and any real deployment are still pending. `i18n/` and
+`content-sources/` are documented placeholders for the deferred locale layout
+and source-aggregation plan; they contain guidance only.
+
 ## See the project workflow (CarryCtx)
 
 CarryCtx is the local-first tool that records this project's tasks, decisions,
@@ -118,7 +155,10 @@ secret that leaked before rotation must still be rotated at the source.
 
 The deployment workflow is manual, restricted to the main branch, and guarded
 by the production environment. Its presence is configuration only: no
-deployment has been performed or verified by this bootstrap.
+deployment has been performed or verified by this bootstrap. The canonical
+origin for the portal is <https://bitty.run>; domain verification through
+Cloudflare is still pending, and deploy or release automation changes are
+deferred to the 0.1.0 window under a scoped task.
 
 The workflow references the approved GitHub secret names only at the deployment
 step. Never place credential values in source files, command arguments, logs,

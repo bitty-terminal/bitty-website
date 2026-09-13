@@ -12,6 +12,31 @@
 - Product code requires an explicitly scoped task. Governance initialization
   does not authorize an Astro application or other website implementation.
 
+## Target architecture and site map (deferred)
+
+- The 2026-09-14 project decision selects Astro plus Astro Starlight for the
+  Bitty developer portal at <https://bitty.run>. The canonical Website
+  Delivery RFC still lists a Starlight theme as deferred, so this section
+  records direction only: Starlight migration, UI/UX, navigation, search,
+  themes, internationalization, and real deployment require scoped tasks and
+  accepted decisions before implementation.
+- Target routes, none of them routed today: `/` (home), `/docs/...` (getting
+  started, configuration, keybindings, panels, IPC, Lua, architecture),
+  `/api/...`, `/plugins/` (entry point that links or redirects to
+  <https://plugins.bitty.run>), `/ai/`, and `/blog/`, `/changelog/`.
+- The plugin store at <https://plugins.bitty.run> is a separate Vite
+  application; it is never built or deployed from this repository.
+- `i18n/` and `content-sources/` are documented placeholders. Canonical
+  content is planned to be aggregated at build time from three pinned sources
+  (`bitty-terminal-docs`, `bitty-plugins-docs`, `bitty-ai-docs`); only the
+  single pinned `bitty-docs` revision is consumed today. Canonical content
+  stays English-only until an accepted cross-repository decision, and source
+  naming or aggregation changes need one as well.
+- `astro.config.mjs` records `https://bitty.run` as the canonical Astro
+  `site`. Cloudflare domain verification is pending and deployment automation
+  is deferred. Do not add or modify deploy or release workflows without a
+  scoped task.
+
 ## Read before acting
 
 1. Read this guide and the active task's files under `.carryctx/rules/`.

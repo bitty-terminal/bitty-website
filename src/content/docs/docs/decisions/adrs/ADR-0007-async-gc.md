@@ -21,11 +21,11 @@ does not describe implemented behavior, does not authorize shipped, stable,
 normative, or compatibility-guaranteed behavior, and does not weaken any
 normative security control. This ADR refines
 [ADR 0005](ADR-0005-lua-pins-and-stdlib.md) and the
-[Lua Runtime RFC](../../specifications/lua-runtime-rfc.md) without
+[Lua Runtime RFC](../../projects/bitty/specifications/lua-runtime-rfc.md) without
 contradicting either, and jointly clarifies the reload contract with the
-[Configuration Model RFC](../../specifications/configuration-model-rfc.md)
+[Configuration Model RFC](../../projects/bitty/specifications/configuration-model-rfc.md)
 and resource budgets with the
-[Isolation Resource RFC](../../specifications/isolation-resource-rfc.md).
+[Isolation Resource RFC](../../projects/bitty/specifications/isolation-resource-rfc.md).
 No dependency is added to any repository by this ADR; `Cargo.lock` wiring is
 owned by the implementing task. Frontmatter `status` is `accepted` per the
 repository metadata schema; document status is Accepted. Lifecycle is
@@ -47,7 +47,7 @@ repository metadata schema; document status is Accepted. Lifecycle is
   ADR 0004 upstream set, Lua Runtime RFC Accepted 2026-08-27,
   Configuration Model RFC Accepted 2026-08-27,
   Isolation Resource RFC Proposed (RC tables),
-  [Performance Budget RFC](../../specifications/performance-budget-rfc.md)
+  [Performance Budget RFC](../../projects/bitty/specifications/performance-budget-rfc.md)
   PB-1 and PB-2, ADR 0003 MSRV 1.85, technology strategy async row,
   `bitty` CTX-0040 `d67a65b` measurement evidence.
 
@@ -299,10 +299,10 @@ Isolation Resource RFC (FS-6 reload ordering). This ADR specifies the Lua side.
 
 - [OQ-032](../open-questions.md) row migrated from OQ-009 CTX-0047 2026-08-27
 - [ADR 0005](ADR-0005-lua-pins-and-stdlib.md) — vendored Lua 5.4.x, mlua, piccolo 0.3.3 pins, allowlist, and audit gates
-- [Lua Runtime RFC](../../specifications/lua-runtime-rfc.md) — Accepted 2026-08-27 sandbox, stdlib baseline, module search, diagnostics
-- [Configuration Model RFC](../../specifications/configuration-model-rfc.md) — Accepted 2026-08-27 pipeline, reload classification, project trust
-- [Isolation Resource RFC](../../specifications/isolation-resource-rfc.md) — RC-1 (10^7/50 ms/8 ms), RC-2 (32 MiB), RC-4 (64 tasks/32 timers), RC-5 queues, FS-5/FS-6
-- [Performance Budget RFC](../../specifications/performance-budget-rfc.md) — PB-1 cold startup 100 ms p50/200 ms p99, PB-2 idle 80 MiB
+- [Lua Runtime RFC](../../projects/bitty/specifications/lua-runtime-rfc.md) — Accepted 2026-08-27 sandbox, stdlib baseline, module search, diagnostics
+- [Configuration Model RFC](../../projects/bitty/specifications/configuration-model-rfc.md) — Accepted 2026-08-27 pipeline, reload classification, project trust
+- [Isolation Resource RFC](../../projects/bitty/specifications/isolation-resource-rfc.md) — RC-1 (10^7/50 ms/8 ms), RC-2 (32 MiB), RC-4 (64 tasks/32 timers), RC-5 queues, FS-5/FS-6
+- [Performance Budget RFC](../../projects/bitty/specifications/performance-budget-rfc.md) — PB-1 cold startup 100 ms p50/200 ms p99, PB-2 idle 80 MiB
 - [Technology Strategy](../../project/technology-strategy.md) — async row runtime-agnostic Core with local Tokio in services
 - `bitty/Cargo.toml` `rust-version 1.85` `unsafe_code = "deny"`, `rust-toolchain.toml`, `Cargo.lock` main plus worktree `ctx-0040` with piccolo
 - `bitty/crates/bitty-lua/Cargo.toml` `src/lib.rs` `tests/measurement_lua.rs` RC-1/RC-2 harness and `bitty/crates/bitty-plugin-host/tests/measurement.rs` queue harness
@@ -318,7 +318,7 @@ The following gates were satisfied per the
 4. **GC tuning gate:** headless matrix asserts `mlua` incremental pause 200 stepmul 100 (and step 13 where exposed) plus `piccolo` arena debt pacing, with `VmBudgetSnapshot` `gc_steps` and `gc_bytes` visible; tuning bump to pause 150 or stepmul 150 requires measured PB-2 delta.
 5. **Budget-charging gate:** `hyperfine`-style startup harness asserts Config VM wall cost inside PB-1 p50/p99 and Config VM plus `ConfigPlan` retained RSS inside PB-2 80 MiB; suspension path from RC-1 produces fail-closed fallback to last good plan.
 6. **Reload and module-cache gate:** ten-cycle reload test asserts `total_memory()` after each cycle stays within 15 percent of cycle one, `package.loaded` per generation is isolated, and generation `N` resources are disposed before `N+1` activates per FS-6.
-7. **Docs sync:** this ADR appears in [decision register](../index.md) and [ADR index](README.md) plus `docs/specifications/lua-runtime-rfc.md` open-items note plus [open-question register](../open-questions.md) OQ-032 row to Accepted ADR 0007 in the same PR per register close rule.
+7. **Docs sync:** this ADR appears in [decision register](../index.md) and [ADR index](README.md) plus `docs/projects/bitty/specifications/lua-runtime-rfc.md` open-items note plus [open-question register](../open-questions.md) OQ-032 row to Accepted ADR 0007 in the same PR per register close rule.
 
 ### Evidence needed to move OQ-032 from Open to Accepted
 
@@ -342,12 +342,12 @@ following evidence was recorded for acceptance on 2026-08-29.
 
 <!-- markdownlint-disable MD013 -->
 
-| Role                                  | Reviewer          | Verdict | Evidence / scope                                                                                                                                                                                                                                                                                                                                                                       | Date       |
-| ------------------------------------- | ----------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| security-auditor                      | `bitty-security`  | pass    | R-006, R-007, R-018, T-07, T-14, `!Send`/`!Sync` VMs, host-owned `Send` handles, RC-1 10^7/50 ms/8 ms and RC-2 32 MiB hard-gated, GC incremental pause 200 stepmul 100, Config VM PB-1/PB-2 charging, reload FS-6 per-generation isolation                                                                                                                                             | 2026-08-29 |
-| category-owner (security-and-quality) | `bitty-quality`   | pass    | RC-4 64 tasks/32 timers per `(PluginId, generation)` with `E_BUDGET_TASK`/`E_BUDGET_TIMER`, host registries 64/32, `VmBudgetSnapshot` `gc_steps`/`gc_bytes`, Config VM wall/memory charging with fail-closed `budget` fallback, ten-cycle `total_memory()` 15% PB-3 reclaim                                                                                                            | 2026-08-29 |
-| category-owner (architecture)         | `bitty-architect` | pass    | `mlua` vendored Lua 5.4 blocking under RC-1 deadline vs `piccolo` 0.3.3 handle via event pipeline, `!Send` affirmation, incremental vs arena `gc-arena` 0.5.3 tuning, budget coupling, per-VM `package.loaded` fresh Lua per reload, no cross-VM cache, generation disposal before activate                                                                                            | 2026-08-29 |
-| docs-curator                          | `bitty-curator`   | pass    | Frontmatter `accepted`, lifecycle `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`, links to [Lua Runtime RFC](../../specifications/lua-runtime-rfc.md) and [Isolation Resource RFC](../../specifications/isolation-resource-rfc.md) and [Configuration Model RFC](../../specifications/configuration-model-rfc.md), English-only, decision-register sync | 2026-08-29 |
+| Role                                  | Reviewer          | Verdict | Evidence / scope                                                                                                                                                                                                                                                                                                                                                                                                                    | Date       |
+| ------------------------------------- | ----------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| security-auditor                      | `bitty-security`  | pass    | R-006, R-007, R-018, T-07, T-14, `!Send`/`!Sync` VMs, host-owned `Send` handles, RC-1 10^7/50 ms/8 ms and RC-2 32 MiB hard-gated, GC incremental pause 200 stepmul 100, Config VM PB-1/PB-2 charging, reload FS-6 per-generation isolation                                                                                                                                                                                          | 2026-08-29 |
+| category-owner (security-and-quality) | `bitty-quality`   | pass    | RC-4 64 tasks/32 timers per `(PluginId, generation)` with `E_BUDGET_TASK`/`E_BUDGET_TIMER`, host registries 64/32, `VmBudgetSnapshot` `gc_steps`/`gc_bytes`, Config VM wall/memory charging with fail-closed `budget` fallback, ten-cycle `total_memory()` 15% PB-3 reclaim                                                                                                                                                         | 2026-08-29 |
+| category-owner (architecture)         | `bitty-architect` | pass    | `mlua` vendored Lua 5.4 blocking under RC-1 deadline vs `piccolo` 0.3.3 handle via event pipeline, `!Send` affirmation, incremental vs arena `gc-arena` 0.5.3 tuning, budget coupling, per-VM `package.loaded` fresh Lua per reload, no cross-VM cache, generation disposal before activate                                                                                                                                         | 2026-08-29 |
+| docs-curator                          | `bitty-curator`   | pass    | Frontmatter `accepted`, lifecycle `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`, links to [Lua Runtime RFC](../../projects/bitty/specifications/lua-runtime-rfc.md) and [Isolation Resource RFC](../../projects/bitty/specifications/isolation-resource-rfc.md) and [Configuration Model RFC](../../projects/bitty/specifications/configuration-model-rfc.md), English-only, decision-register sync | 2026-08-29 |
 
 Closes OQ-032: this ADR closes that open question at the design level; the
 register rows are updated per the open-question register rules. The lifecycle is

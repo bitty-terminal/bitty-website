@@ -24,15 +24,15 @@ status is Accepted.
 - Deciders: project initiator (DEC-001), security-auditor persona (audit gate
   per [Threat Model](../../security/threat-model.md) T-09 and R-011 and P0-AC-021
   and invariant 5), `bitty-runtime` and `bitty-ipc` maintainers (CTX-0061).
-- Related: OQ-020 (primary), [Product Vision](../../product/vision.md) non-goals
-  and experience vision, [Architecture Overview](../../architecture/overview.md)
+- Related: OQ-020 (primary), [Product Vision](../../projects/bitty/product/vision.md) non-goals
+  and experience vision, [Architecture Overview](../../projects/bitty/architecture/overview.md)
   candidate long-term evolution,
-  [Proposed Delivery Sequence](../../product/proposed-delivery-sequence.md)
+  [Proposed Delivery Sequence](../../projects/bitty/product/proposed-delivery-sequence.md)
   candidate daemon staging,
   [Security Overview](../../security/overview.md) invariants 5 and 6 and trust
   boundaries, [Threat Model](../../security/threat-model.md) boundary map and
   T-09 and R-011 and R-012 and R-013,
-  [IPC and Agent RFC](../../specifications/ipc-agent-rfc.md) OQ-018 scope
+  [IPC and Agent RFC](../../projects/bitty/specifications/ipc-agent-rfc.md) OQ-018 scope
   separation, [Technology Strategy](../../project/technology-strategy.md),
   [Shared-Conversation Coverage](../../sources/chatgpt-share-coverage.md)
   Phase 10, ADR 0003 workspace topology, ADR 0004 upstream set.
@@ -58,7 +58,7 @@ Agent` and a version ladder v0.0.x through v1.0 with **no `bittyd` before
   (or at earliest near v1.0), candidate scope detach/attach, persistent sessions,
   remote frontend, multiplexer-style ownership of multiple terminals, and
   rationale lifecycle complexity versus single-process. This corpus records that
-  prose as a candidate in [Proposed Delivery Sequence](../../product/proposed-delivery-sequence.md)
+  prose as a candidate in [Proposed Delivery Sequence](../../projects/bitty/product/proposed-delivery-sequence.md)
   without adopting it; before this ADR, OQ-020 remained open, including its
   trust-boundary half.
 - **Architecture overview accommodates without committing.** The overview's
@@ -70,7 +70,7 @@ Agent` and a version ladder v0.0.x through v1.0 with **no `bittyd` before
   clients to attach. Whether such a daemon is in scope, and how it would be
   staged, remained open in OQ-020." That was the boundary-level description;
   this ADR is its accepted OQ-020 answer.
-- **IPC RFC explicitly excludes it.** The [IPC and Agent RFC](../../specifications/ipc-agent-rfc.md)
+- **IPC RFC explicitly excludes it.** The [IPC and Agent RFC](../../projects/bitty/specifications/ipc-agent-rfc.md)
   scopes itself to the local-user surface (Unix `$XDG_RUNTIME_DIR/bitty` socket
   `0700`/`0600` with `SO_PEERCRED` or macOS `LOCAL_PEERCRED`, Windows named pipe
   current-user ACL, no TCP by default) and lists out of scope "remote TCP or
@@ -120,7 +120,7 @@ Agent` and a version ladder v0.0.x through v1.0 with **no `bittyd` before
   takeover of IPC), R-011 (IPC scope escalation), R-012 (credential leak via
   environment/SSH), R-013 (confused deputy via terminal output), R-014 (secret
   exposure via traces), plus parser bounds T-01 where framing would be analogous.
-- [Core and Plugin Boundaries](../../architecture/core-boundaries.md) core-owned
+- [Core and Plugin Boundaries](../../projects/bitty/architecture/core-boundaries.md) core-owned
   Terminal Truth, hot-path isolation (Lua never enters PTY/parse/render/input hot
   paths), and two-security-domain model.
 
@@ -300,8 +300,8 @@ AgentId)`, and a network-exposed fuzz and property corpus for the framing wire
   process, persistent sessions, optional remote) is explicitly deferred, so
   security planning stays accurate and does not silently underwrite a future
   multi-tenant risk.
-- **Delivery.** Roadmap claims stay honest: [Proposed Delivery Sequence](../../product/proposed-delivery-sequence.md)
-  and [Architecture Overview](../../architecture/overview.md) remain draft with
+- **Delivery.** Roadmap claims stay honest: [Proposed Delivery Sequence](../../projects/bitty/product/proposed-delivery-sequence.md)
+  and [Architecture Overview](../../projects/bitty/architecture/overview.md) remain draft with
   OQ-020 deferred. Teams do not need a daemon plan to close OQ-018, OQ-019, or
   OQ-014; daemon work has an informational depends on OQ-014 and OQ-018 acceptance,
   never the reverse.
@@ -333,21 +333,21 @@ AgentId)`, and a network-exposed fuzz and property corpus for the framing wire
 ### References
 
 - [OQ-020](../open-questions.md) — Is a headless daemon with detach/reattach or remote UI in scope, and what is its trust boundary? (primary)
-- [Product Vision](../../product/vision.md) — non-goals refuse `bittyd` and remote multi-client commitment at documentation phase
-- [Proposed Delivery Sequence](../../product/proposed-delivery-sequence.md) — candidate daemon staging (deferred after v1.0, candidate scope detach/attach/persistent/remote/multiplexer, complexity rationale) and v1.0 staircase; OQ-020 candidate staging paragraph
-- [Architecture Overview](../../architecture/overview.md) — candidate long-term evolution bullets (headless runtime, `bittyd` owning multiple Terminals), Terminal/View/Layout separation, snapshot-only renderer coupling
+- [Product Vision](../../projects/bitty/product/vision.md) — non-goals refuse `bittyd` and remote multi-client commitment at documentation phase
+- [Proposed Delivery Sequence](../../projects/bitty/product/proposed-delivery-sequence.md) — candidate daemon staging (deferred after v1.0, candidate scope detach/attach/persistent/remote/multiplexer, complexity rationale) and v1.0 staircase; OQ-020 candidate staging paragraph
+- [Architecture Overview](../../projects/bitty/architecture/overview.md) — candidate long-term evolution bullets (headless runtime, `bittyd` owning multiple Terminals), Terminal/View/Layout separation, snapshot-only renderer coupling
 - [Shared-Conversation Coverage](../../sources/chatgpt-share-coverage.md) — Phase 10 `bittyd` after v1.0 mapping, historical provenance for OQ-020 before this ADR
 - [Security Overview](../../security/overview.md) — invariants 5 and 6, trust-boundary table, capability families, deferral-must-not-create-bypass rule
 - [Threat Model](../../security/threat-model.md) — future-daemon scope line, boundary map, T-09 and R-011 and R-012 and R-013 and R-014
 - [Risk Register](../../security/risk-register.md) — R-011, R-012, R-013 link to consent and credential handling
 - [P0 Acceptance Criteria](../../security/p0-acceptance-criteria.md) — P0-AC-021 peer credential, P0-AC-022 scope, P0-AC-023 short-lived per-terminal token not in env, P0-AC-026 trace minimization
-- [IPC and Agent RFC](../../specifications/ipc-agent-rfc.md) — accepted local transport, framing, scope, rate-limit baseline that the daemon must meet or exceed; out-of-scope notice for OQ-020 daemon/remote
-- [Core and Plugin Boundaries](../../architecture/core-boundaries.md) — Terminal Truth, hot-path isolation, two-domain model
+- [IPC and Agent RFC](../../projects/bitty/specifications/ipc-agent-rfc.md) — accepted local transport, framing, scope, rate-limit baseline that the daemon must meet or exceed; out-of-scope notice for OQ-020 daemon/remote
+- [Core and Plugin Boundaries](../../projects/bitty/architecture/core-boundaries.md) — Terminal Truth, hot-path isolation, two-domain model
 - ADR 0003 — [Core Workspace Topology](ADR-0003-core-workspace-topology.md) — crate DAG and snapshot-only rule the headless separation must respect
 - ADR 0004 — [Upstream Dependency Set](ADR-0004-upstream-dependencies.md) — maintenance policy that future daemon crates must follow
 - ADR 0005 — [Lua Pins](ADR-0005-lua-pins-and-stdlib.md) — two-VM reality (`mlua` vendored and `piccolo 0.3.3`) that the daemon's plugin-host ownership must reuse without forking the hosting contract
 - [Technology Strategy](../../project/technology-strategy.md) — async row validation seam for any daemon executor
-- `docs/product/proposed-delivery-sequence.md` candidate daemon staging plus [open-question register](../open-questions.md) state before this ADR
+- `docs/projects/bitty/product/proposed-delivery-sequence.md` candidate daemon staging plus [open-question register](../open-questions.md) state before this ADR
 
 ### Verification gates
 
@@ -358,8 +358,8 @@ not prerequisites for the already Accepted and Closed OQ-020 decision.
 1. **Staging gate:** this ADR's "defer to post-v1.0, accommodate early" position
    is the accepted direction; no `docs/**/*.md` claims a daemon binary, service
    file, autostart, TCP listener, or remote UI as v1.0 deliverable, and
-   [Proposed Delivery Sequence](../../product/proposed-delivery-sequence.md)
-   plus [Architecture Overview](../../architecture/overview.md) long-term bullets
+   [Proposed Delivery Sequence](../../projects/bitty/product/proposed-delivery-sequence.md)
+   plus [Architecture Overview](../../projects/bitty/architecture/overview.md) long-term bullets
    now cite this ADR rather than the second historical conversation alone.
 2. **Scope gate:** headless runtime versus daemon versus remote UI definitions
    are the single authoritative taxonomy; no other doc redefines them
@@ -376,8 +376,8 @@ not prerequisites for the already Accepted and Closed OQ-020 decision.
    mTLS/SSH and fuzz parity) are listed as mandatory future evidence and the
    security corpus remains co-owner per the change-trigger matrix.
 5. **Docs-sync gate:** this ADR appears in [decision register](../index.md) and
-   [ADR index](README.md) plus [Proposed Delivery Sequence](../../product/proposed-delivery-sequence.md)
-   candidate daemon staging and [Architecture Overview](../../architecture/overview.md)
+   [ADR index](README.md) plus [Proposed Delivery Sequence](../../projects/bitty/product/proposed-delivery-sequence.md)
+   candidate daemon staging and [Architecture Overview](../../projects/bitty/architecture/overview.md)
    bullets plus [open-question register](../open-questions.md) OQ-020 row to
    Accepted ADR 0008 in the same PR per register close rule, with `just check`
    (fmt-check plus markdownlint plus links plus metadata plus language plus
@@ -430,21 +430,21 @@ is authorized.
 For readers tracing the second historical conversation without reopening it,
 the candidate staging this ADR defers is:
 
-| Question                 | Candidate considerations from `6a8dae4b` (now deferred)                           |
-| ------------------------ | --------------------------------------------------------------------------------- |
-| Positioning              | After v1.0, or at earliest near v1.0; accommodate early, do not implement early.  |
-| Candidate feature scope  | Detach/attach, persistent sessions, remote frontend, multiplexer-style ownership. |
-| Recorded rationale       | Building daemon first would greatly increase terminal-lifecycle complexity.       |
-| Trust boundary half      | Analysis against [Threat Model](../../security/threat-model.md) required.         |
-| Existing corpus boundary | [Architecture Overview](../../architecture/overview.md) evolution bullets.        |
+| Question                 | Candidate considerations from `6a8dae4b` (now deferred)                                   |
+| ------------------------ | ----------------------------------------------------------------------------------------- |
+| Positioning              | After v1.0, or at earliest near v1.0; accommodate early, do not implement early.          |
+| Candidate feature scope  | Detach/attach, persistent sessions, remote frontend, multiplexer-style ownership.         |
+| Recorded rationale       | Building daemon first would greatly increase terminal-lifecycle complexity.               |
+| Trust boundary half      | Analysis against [Threat Model](../../security/threat-model.md) required.                 |
+| Existing corpus boundary | [Architecture Overview](../../projects/bitty/architecture/overview.md) evolution bullets. |
 
 ## Appendix: IPC RFC versus daemon scope split
 
-| Surface               | Owner after this ADR                                       | Transport baseline                                         | Auth and scope requirement                                        |
-| --------------------- | ---------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------- |
-| Local IPC `bitty ctl` | [IPC and Agent RFC](../../specifications/ipc-agent-rfc.md) | Unix socket / Windows named pipe, no TCP, peer credentials | Same-user peer credential, per-request scopes, RC-9/RC-10         |
-| Daemon local attach   | Future daemon ADR (post-v1.0)                              | Same as IPC, then daemon multiplexing                      | At least IPC parity, plus multi-terminal session caps             |
-| Remote UI             | Separate future remote ADR (strictly after daemon)         | mTLS or SSH tunnel, not bearer env token                   | Network identity plus ledgered per-remote consent, fuzzed framing |
+| Surface               | Owner after this ADR                                                      | Transport baseline                                         | Auth and scope requirement                                        |
+| --------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------- |
+| Local IPC `bitty ctl` | [IPC and Agent RFC](../../projects/bitty/specifications/ipc-agent-rfc.md) | Unix socket / Windows named pipe, no TCP, peer credentials | Same-user peer credential, per-request scopes, RC-9/RC-10         |
+| Daemon local attach   | Future daemon ADR (post-v1.0)                                             | Same as IPC, then daemon multiplexing                      | At least IPC parity, plus multi-terminal session caps             |
+| Remote UI             | Separate future remote ADR (strictly after daemon)                        | mTLS or SSH tunnel, not bearer env token                   | Network identity plus ledgered per-remote consent, fuzzed framing |
 
 ## Appendix: Deferred remediation map
 

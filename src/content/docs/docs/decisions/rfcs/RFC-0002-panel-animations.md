@@ -19,13 +19,13 @@ sidebar_order: 46
 > no product code; the contract is now **implemented** in `bitty` PR #580 (merge
 > commit `3c5878e`, CTX-0341), so `appearance.animations.*` is a supported
 > `init.lua` key and the shipped surface is documented in
-> [Lua and XDG](../../configuration/lua-and-xdg.md). It adds no product code
+> [Lua and XDG](../../projects/bitty/configuration/lua-and-xdg.md). It adds no product code
 > beyond that change and does not weaken any normative control in the
 > [Security Overview](../../security/overview.md),
 > [Threat Model](../../security/threat-model.md), or the
-> [Performance Budget RFC](../../specifications/performance-budget-rfc.md).
+> [Performance Budget RFC](../../projects/bitty/specifications/performance-budget-rfc.md).
 > The decoration contract stays with the
-> [Workspace Compositor Specification](../../specifications/workspace-compositor.md);
+> [Workspace Compositor Specification](../../projects/bitty/specifications/workspace-compositor.md);
 > the focused/idle outline color that a focus transition interpolates is
 > [RFC-0001](RFC-0001-appearance-configuration.md) (accepted OQ-039).
 
@@ -34,7 +34,7 @@ sidebar_order: 46
 User direction (bitty `CTX-0340`, m0299) asks for configurable panel animations
 and effects while keeping Bitty lightweight. Hyprland is the explicit
 read-only philosophy reference already adopted by the
-[Workspace Compositor Specification](../../specifications/workspace-compositor.md):
+[Workspace Compositor Specification](../../projects/bitty/specifications/workspace-compositor.md):
 its `windows`/`workspaces` animation leaves and named Bézier curves show that
 tiling transitions are desirable, and its own documentation warns that looping
 styles force constant frame production and stress battery life. Bitty imports
@@ -55,11 +55,11 @@ reduced-motion and safe-mode contract, a renderer-side versus compositor-side
 split, and the accepted Lua surface.
 
 Out of scope and owned elsewhere: frame decoration values and colors
-([Workspace Compositor Specification](../../specifications/workspace-compositor.md)
+([Workspace Compositor Specification](../../projects/bitty/specifications/workspace-compositor.md)
 and [RFC-0001](RFC-0001-appearance-configuration.md)); grid, cursor, scrollback,
-and damage invariants ([Terminal State RFC](../../specifications/terminal-state-rfc.md));
+and damage invariants ([Terminal State RFC](../../projects/bitty/specifications/terminal-state-rfc.md));
 rich scene animation inside a `Rich` or `Browser` `View`
-([Rich Presentation RFC](../../specifications/rich-presentation-rfc.md));
+([Rich Presentation RFC](../../projects/bitty/specifications/rich-presentation-rfc.md));
 language-level animation APIs for plugins (candidate, not scoped here); and the
 platform surface contract owned by `bitty-platform` and `bitty-render`.
 
@@ -141,7 +141,7 @@ Accepted contract:
 ## Present-path performance budget
 
 Animations must not regress the accepted budgets in the
-[Performance Budget RFC](../../specifications/performance-budget-rfc.md):
+[Performance Budget RFC](../../projects/bitty/specifications/performance-budget-rfc.md):
 PB-4 (input latency), PB-7 (idle resource usage), and the frame-on-demand rule.
 Accepted budget rules:
 
@@ -198,7 +198,7 @@ Rules:
    the renderer-side (or instant) path when unavailable rather than failing
    startup.
 3. No plugin may animate Core-owned chrome; plugins may animate only their own
-   declarative scene nodes under the [Rich Presentation RFC](../../specifications/rich-presentation-rfc.md)
+   declarative scene nodes under the [Rich Presentation RFC](../../projects/bitty/specifications/rich-presentation-rfc.md)
    budget, which is a separate contract.
 
 ## Lua exposure and reload
@@ -332,13 +332,13 @@ must use a new RFC per the [RFC index](README.md) rules.
 
 - [Appearance Configuration RFC](RFC-0001-appearance-configuration.md)
   (accepted OQ-039; OQ-036 through OQ-038 remain open).
-- [Workspace Compositor Specification](../../specifications/workspace-compositor.md)
+- [Workspace Compositor Specification](../../projects/bitty/specifications/workspace-compositor.md)
   (accepted Core-owned decoration and Hyprland import rules).
-- [Performance Budget RFC](../../specifications/performance-budget-rfc.md)
+- [Performance Budget RFC](../../projects/bitty/specifications/performance-budget-rfc.md)
   (PB-1 through PB-7).
-- [Configuration Model RFC](../../specifications/configuration-model-rfc.md).
-- [Rich Presentation RFC](../../specifications/rich-presentation-rfc.md).
-- [Core and Plugin Boundaries](../../architecture/core-boundaries.md).
+- [Configuration Model RFC](../../projects/bitty/specifications/configuration-model-rfc.md).
+- [Rich Presentation RFC](../../projects/bitty/specifications/rich-presentation-rfc.md).
+- [Core and Plugin Boundaries](../../projects/bitty/architecture/core-boundaries.md).
 - [Security Overview](../../security/overview.md) and
   [Threat Model](../../security/threat-model.md).
 - Hyprland: read-only philosophy reference for tiling transitions and named

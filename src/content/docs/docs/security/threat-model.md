@@ -72,6 +72,13 @@ must not be precluded by P0 APIs.
 The origin `Unknown` uses the restrictive policy. Detection that a shell is
 remote is advisory only and must never be the sole security boundary.
 
+A candidate trust-level model for plugin, helper, and tool boundaries — level 0
+Core, 1 bundled Lua, 2 third-party Lua, 3 native sidecar, 4 external
+tools/MCP/network — is registered as
+[OQ-085](../decisions/open-questions.md). It records allowed capability domains
+per level and does not change any current boundary, policy, or P0 gate until it
+is accepted.
+
 ## Principal data flows and controls
 
 ### PTY to terminal state
@@ -166,6 +173,34 @@ DevTools distinguishes `debug.inspect`, `debug.trace`, and `debug.control`.
 Connection alone grants none of them. Trace collection minimizes data by
 default, redacts typed sensitive fields, keeps input recording opt-in, and
 creates user-only files.
+
+### Agent automation and credential prompts (candidate)
+
+A candidate defense model for agent-driven interactive input is registered as
+[OQ-086](../decisions/open-questions.md) and specified in the
+[IPC and Agent RFC](../projects/bitty/specifications/ipc-agent-rfc.md#candidate-sensitive-input-interlock-and-interaction-policy-oq-086)
+candidate sensitive-input interlock; the command-side audit is specified by the
+[AI Architecture](../projects/bitty/specifications/ai-architecture.md) candidate command risk
+classification ([OQ-087](../decisions/open-questions.md)). It composes with
+the normative rules above and does not replace them:
+
+- sensitive-input detection uses kernel PTY state (no-echo) rather than output
+  text patterns, because prompts are locale-dependent, false-positive prone,
+  and spoofable by hostile output;
+- an interaction class decides whether automation is allowed at all: secret
+  input stays human-only, destructive confirmations require an explicit human
+  decision, and only safe interactive prompts may be auto-answered under the
+  agent's own granted input scope;
+- while the target PTY is in no-echo mode, agent input dispatch fails closed
+  regardless of grant, and no-echo input never enters grid, scrollback,
+  snapshots, traces, or agent observations;
+- candidate acceptance evidence must prove both directions (no-echo programs
+  enter the interlock; echo-on and spoofed prompts do not) before the model
+  moves beyond candidate.
+
+This candidate adds no capability and weakens no P0 gate: T-10, T-11, R-013,
+and R-014 keep their current required defenses until a reviewed acceptance
+decision replaces or extends them.
 
 ### Plugin and dependency supply chain
 

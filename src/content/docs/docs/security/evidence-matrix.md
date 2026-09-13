@@ -19,7 +19,7 @@ per RS-1..RS-7 and independent review; `R-004` remains
 `Open` at `7a4ee41` (audit 2026-08-31); all other rows remain `Open` because
 implementation is `Implemented` (headless hardening through `29772a3`)
 plus experimental `c0aadd2`/`7e3104d`/`a8735d0` at `a8735d0` but
-not yet `Verified` per [risk evidence RFC](../specifications/risk-evidence-rfc.md)
+not yet `Verified` per [risk evidence RFC](../projects/bitty/specifications/risk-evidence-rfc.md)
 RS-1..RS-7. Lifecycle is `Draft -> Experimental Implementation -> Accepted -> Verified -> Compatible`
 (spec) and `Open -> Mitigated -> Accepted` (risk) and
 `Specified -> Accepted -> Implemented -> Verified -> Compatible -> Release-ready`
@@ -157,7 +157,7 @@ in the ledger only and carry no matrix row.
 
 ## Review gates and lifecycle
 
-Per [risk evidence RFC](../specifications/risk-evidence-rfc.md) RS-1..RS-7:
+Per [risk evidence RFC](../projects/bitty/specifications/risk-evidence-rfc.md) RS-1..RS-7:
 
 - `Open -> Mitigated` requires, for the risk's linked P0-AC set, all of
   unit/integration green, adversarial corpus zero crashes/hangs, negative/limit
@@ -232,9 +232,9 @@ Per [risk evidence RFC](../specifications/risk-evidence-rfc.md) RS-1..RS-7:
 - [Threat model](threat-model.md)
 - [Risk register](risk-register.md)
 - [P0 acceptance criteria](p0-acceptance-criteria.md)
-- [Risk evidence RFC](../specifications/risk-evidence-rfc.md)
-- [Isolation resource RFC](../specifications/isolation-resource-rfc.md)
-- [Rich presentation RFC](../specifications/rich-presentation-rfc.md)
-- [IPC and Agent RFC](../specifications/ipc-agent-rfc.md)
-- [Package lifecycle RFC](../specifications/package-lifecycle-rfc.md)
+- [Risk evidence RFC](../projects/bitty/specifications/risk-evidence-rfc.md)
+- [Isolation resource RFC](../projects/bitty/specifications/isolation-resource-rfc.md)
+- [Rich presentation RFC](../projects/bitty/specifications/rich-presentation-rfc.md)
+- [IPC and Agent RFC](../projects/bitty/specifications/ipc-agent-rfc.md)
+- [Package lifecycle RFC](../projects/bitty/specifications/package-lifecycle-rfc.md)
 - [P0 review checklist](../reviews/p0-review-checklist.md)

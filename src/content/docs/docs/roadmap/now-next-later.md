@@ -18,7 +18,7 @@ sidebar_order: 11
 > It does not self-accept any requirement, does not weaken any normative
 > security control, and does not authorize website publication. Website
 > publication remains gated on a pinned immutable `bitty-docs` revision per the
-> [Website Delivery RFC](../specifications/website-delivery-rfc.md). Current
+> [Website Delivery RFC](../projects/bitty/specifications/website-delivery-rfc.md). Current
 > snapshot is `bitty` `29772a3` (previous `c49ead1`, baseline `de134ec`,
 > 18 crates, release `v0.0.19`) at **Pre-alpha / Engineering Milestones M1-M8**;
 > the retired `a8735d0` / 16-crate / M1 baseline no longer describes the head.
@@ -30,13 +30,13 @@ requirements, dependencies, owner, success evidence, and an explicit confidence
 or planning horizon. This document satisfies that bar without introducing a
 date promise:
 
-| Admission requirement  | Where satisfied here                                                                                          | Evidence or link                                                                                                                                                                             |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Accepted requirements  | Now cites Verified R-001 and R-002 with RS lifecycle; Next cites P0 Accepted risks; Later cites ladder slices | [Security Evidence Matrix](../security/evidence-matrix.md), [P0 Security Acceptance Criteria](../security/p0-acceptance-criteria.md), [Security Risk Register](../security/risk-register.md) |
-| Dependencies           | Per-section dependency lists anchored to ladder spine and threat posture                                      | [Release Ladder](../product/release-ladder.md), [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md), [Risk Evidence RFC](../specifications/risk-evidence-rfc.md)          |
-| Owner                  | Per-horizon owner table below; roadmap ownership is docs curation with security review                        | [Documentation workflow](../development/documentation-workflow.md)                                                                                                                           |
-| Success evidence       | Per-item RS-gated criteria with bitty commit and harness citations                                            | Evidence matrix Phase E, p0-acceptance P0-AC-001..P0-AC-034, risk-evidence RFC RS-1..RS-7                                                                                                    |
-| Confidence and horizon | Explicit confidence per horizon; horizon is maturity-gated, not calendared                                    | This section and [Release Ladder](../product/release-ladder.md)                                                                                                                              |
+| Admission requirement  | Where satisfied here                                                                                          | Evidence or link                                                                                                                                                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Accepted requirements  | Now cites Verified R-001 and R-002 with RS lifecycle; Next cites P0 Accepted risks; Later cites ladder slices | [Security Evidence Matrix](../security/evidence-matrix.md), [P0 Security Acceptance Criteria](../security/p0-acceptance-criteria.md), [Security Risk Register](../security/risk-register.md)                                     |
+| Dependencies           | Per-section dependency lists anchored to ladder spine and threat posture                                      | [Release Ladder](../projects/bitty/product/release-ladder.md), [Proposed Delivery Sequence](../projects/bitty/product/proposed-delivery-sequence.md), [Risk Evidence RFC](../projects/bitty/specifications/risk-evidence-rfc.md) |
+| Owner                  | Per-horizon owner table below; roadmap ownership is docs curation with security review                        | [Documentation workflow](../development/documentation-workflow.md)                                                                                                                                                               |
+| Success evidence       | Per-item RS-gated criteria with bitty commit and harness citations                                            | Evidence matrix Phase E, p0-acceptance P0-AC-001..P0-AC-034, risk-evidence RFC RS-1..RS-7                                                                                                                                        |
+| Confidence and horizon | Explicit confidence per horizon; horizon is maturity-gated, not calendared                                    | This section and [Release Ladder](../projects/bitty/product/release-ladder.md)                                                                                                                                                   |
 
 No item below promises a date, a release tag, or website availability. Website
 content remains not published from this document (`website_publish: false`);
@@ -95,7 +95,7 @@ the Risk Evidence RFC checklist plus auditor review says otherwise.
 
 ### Anchor: release ladder and candidate spine
 
-- **Horizon anchor:** [Release Ladder](../product/release-ladder.md) stage
+- **Horizon anchor:** [Release Ladder](../projects/bitty/product/release-ladder.md) stage
   **Pre-alpha / Engineering Milestones M1-M8** at `bitty` `29772a3` (`18 crates`, `32 OQs`
   `Accepted`, release `v0.0.19`, compat-lab/perf hardening and UX wave through
   `29772a3` plus semantic-terminal P1-P5 `Implemented`-only plus scrollbar overlay
@@ -114,7 +114,7 @@ the Risk Evidence RFC checklist plus auditor review says otherwise.
   are `Implemented` not `Verified`; overall maturity remains `Pre-alpha`.
 - **Lifecycle:** `Draft -> Experimental Implementation -> Accepted -> Verified -> Compatible -> Release-ready`
   (spec) and `Specified -> Accepted -> Implemented -> Verified -> Compatible -> Release-ready`
-  (crate) per the [Risk Evidence RFC](../specifications/risk-evidence-rfc.md) RS-1
+  (crate) per the [Risk Evidence RFC](../projects/bitty/specifications/risk-evidence-rfc.md) RS-1
   through RS-7. All RFCs and ADRs that underpin the risks below are `Accepted`
   and `Implemented` (headless `Implemented` at `be3bdb4`, experimental `Implemented`
   at `a8735d0` via `c0aadd2`/`7e3104d`/`a8735d0`) but remain `Implemented` not yet
@@ -124,7 +124,7 @@ the Risk Evidence RFC checklist plus auditor review says otherwise.
   this document records `Verified`/`Mitigated` closure with cited auditor
   evidence. `R-004` is explicitly not `Verified` or `Mitigated`; the 2026-08-31
   audit keeps it `Open`; experimental slice does not change risk state.
-- **Candidate spine:** [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md)
+- **Candidate spine:** [Proposed Delivery Sequence](../projects/bitty/product/proposed-delivery-sequence.md)
   candidate build-order spine `PTY -> VT -> Grid -> Font -> GPU -> Correct
 Terminal -> Config -> Command/Event -> Plugin Runtime -> Plugin Manager ->
 DevTools -> Rich Presentation -> IPC -> Agent` and version ladder `v0.1`
@@ -206,8 +206,8 @@ cells with stack inset-only), scrolled-viewport snap on input `884fd30`
 `frameHash` digest method `3f5ed24` (CTX-0244, `bitty` #421), and V1-V3
 panel-live visual gates `29772a3` (CTX-0242, `bitty` #423) — all
 `Implemented` not `Verified`, none moving any risk or acceptance; see the
-[Panel Extensibility Vision](../product/panel-vision.md) rename note and
-the [DevTools RFC](../specifications/devtools-rfc.md) Amendment A2.
+[Panel Extensibility Vision](../projects/bitty/product/panel-vision.md) rename note and
+the [DevTools RFC](../projects/bitty/specifications/devtools-rfc.md) Amendment A2.
 
 The [CTX-0251 gap register](#gap-register-modern-terminal-feature-survey-candidate)
 cites further post-`29772a3` `bitty` origin `main` commits as survey-gap status
@@ -250,8 +250,8 @@ docs planning reflects it, it does not promise beyond it, overall product not
   that satisfies RS-2 entry to Mitigated (now Verified) for R-001; the evidence
   matrix records the per-criterion mapping and the CarryCtx decision that
   accepted the move.
-- **Dependencies:** [Terminal State RFC](../specifications/terminal-state-rfc.md)
-  and [Performance Budget RFC](../specifications/performance-budget-rfc.md)
+- **Dependencies:** [Terminal State RFC](../projects/bitty/specifications/terminal-state-rfc.md)
+  and [Performance Budget RFC](../projects/bitty/specifications/performance-budget-rfc.md)
   accepted limits; no weakening of parser invariants.
 - **Owner:** `security-auditor` for the Mitigated review that moves R-001,
   `architecture` category-owner for parser correctness, `docs-curator` for
@@ -266,7 +266,7 @@ docs planning reflects it, it does not promise beyond it, overall product not
 ### Now-2: R-002 Rich and graphics decompression budgets — Verified
 
 - **Requirement:** Pre-allocation rejection of decompression bombs and
-  aggregate image-store budgeting per [Rich Presentation RFC](../specifications/rich-presentation-rfc.md)
+  aggregate image-store budgeting per [Rich Presentation RFC](../projects/bitty/specifications/rich-presentation-rfc.md)
   IMG-1..IMG-9 (`4 MiB` compressed, `4096x4096` decoded, `64 MiB` per image
   `width*height*4`, `256 MiB` total store, `256` images, `64` frames, `128`
   placements). Threat T-02, severity Critical.
@@ -303,7 +303,7 @@ docs planning reflects it, it does not promise beyond it, overall product not
 - **P0 criteria:** [P0-AC-009](../security/p0-acceptance-criteria.md#local-resources-clipboard-links) Hyperlink scheme policy and direct launch.
 - **Risk and evidence:** [R-005](../security/risk-register.md) via [Evidence Matrix R-005](../security/evidence-matrix.md) Phase E row `Mitigated at 5bdcdbd` (PR #144, Issue #137) with implementation `bitty-platform` `url.rs` + `bitty-rich` `hyperlink.rs` + `bitty-runtime` activation gate, test and adversarial evidence below, CI `cargo clippy -D warnings` and `just check` green, independent review APPROVE.
 - **Mitigated evidence (`bitty` CTX-0092):** squash `5bdcdbd` PR #144 `feat(rich): verify hyperlink allowlist and activation gate for R-005` (`8 files +816 -11`, `crates/bitty-platform/src/url.rs` 317 new, `crates/bitty-rich/src/hyperlink.rs` `is_safe_hyperlink_uri` + `hyperlink_at` overflow guard, `crates/bitty-runtime/src/runtime.rs` `ActivationGesture`+`intercept_open_url` gate, adversarial `javascript`/`%3B`/`$HOME` corpus denied, `https`/`mailto`/`file:///` accepted). RS-1..RS-7 evidenced per PR independent review.
-- **Dependencies:** [Rich Presentation RFC](../specifications/rich-presentation-rfc.md) hyperlink transport, [Platform Support Tiers](../decisions/adrs/ADR-0002-platform-support-tiers.md) native handler policy, ladder `v0.8` rich slice.
+- **Dependencies:** [Rich Presentation RFC](../projects/bitty/specifications/rich-presentation-rfc.md) hyperlink transport, [Platform Support Tiers](../decisions/adrs/ADR-0002-platform-support-tiers.md) native handler policy, ladder `v0.8` rich slice.
 - **Owner:** `security-auditor` for the Mitigated review that moves R-005, `extensibility` category-owner, `docs-curator` for links.
 - **Success evidence:** `R-005` is `Mitigated` because allowlist denies dangerous schemes/encodings/shell chars with one-layer decode and `file:///` authority-free check, activation requires single-use gesture + veto-wins intercept + re-validate at spawn with no shell interpolation, and `hyperlink_at` overflow guard proves no panic; residual real-window UX and `FileUrlActivation` distinct gate remain pending but do not block `Mitigated`.
 
@@ -313,7 +313,7 @@ docs planning reflects it, it does not promise beyond it, overall product not
 - **P0 criteria:** [P0-AC-011](../security/p0-acceptance-criteria.md#plugins) Restricted stdlib, [P0-AC-012](../security/p0-acceptance-criteria.md#plugins) Capability-checked host API, [P0-AC-013](../security/p0-acceptance-criteria.md#plugins) Per-plugin VM isolation and failure containment.
 - **Risk and evidence:** [R-006](../security/risk-register.md) via [Evidence Matrix R-006](../security/evidence-matrix.md) Phase E row `Mitigated at 0afc94d` (PR #145, Issue #138) with implementation `bitty-plugin-host` `capability.rs`/`grant.rs`/`manifest.rs` + `bitty-lua` `piccolo` restricted stdlib, CI and independent review APPROVE.
 - **Mitigated evidence (`bitty` CTX-0092):** squash `0afc94d` PR #145 `feat(plugin): verify capability deny-by-default and restricted stdlib for R-006` (`6 files +197 -17`, `capability.rs` `denied_without_grant` + `closed_identifiers` + `protocol.register`, `grant.rs` declared+granted+hash intersection, `manifest.rs` fs pattern control deny, `lib.rs` `restricted_stdlib_denies_ambient_io` test `io==nil`). RS-1..RS-7 evidenced.
-- **Dependencies:** [Plugin Platform RFC](../specifications/plugin-platform-rfc.md) (OQ-011/012/013), [Lua Runtime RFC](../specifications/lua-runtime-rfc.md) (OQ-009), ladder `v0.4` Lua and `v0.5` Plugin API.
+- **Dependencies:** [Plugin Platform RFC](../projects/bitty/specifications/plugin-platform-rfc.md) (OQ-011/012/013), [Lua Runtime RFC](../projects/bitty/specifications/lua-runtime-rfc.md) (OQ-009), ladder `v0.4` Lua and `v0.5` Plugin API.
 - **Owner:** `security-auditor` for the Mitigated review, `extensibility` and `architecture` owners, `docs-curator` for frontmatter.
 - **Success evidence:** `R-006` is `Mitigated` because every family is closed and denied without grant, every capability-denial family suite passes plus ambient-authority fuzz (`io`, `os`, `debug`, native load) all denied, hash + declared intersection denies `clipboard.read` absent in manifest; `121 tests ok` (`cargo test -p bitty-plugin-host -p bitty-lua -p bitty-runtime --lib`) proves deny-by-default; residual grant UX hardening pending.
 
@@ -323,14 +323,14 @@ docs planning reflects it, it does not promise beyond it, overall product not
 - **P0 criteria:** [P0-AC-013](../security/p0-acceptance-criteria.md#plugins), [P0-AC-014](../security/p0-acceptance-criteria.md#plugins) Budgets attributable, [P0-AC-015](../security/p0-acceptance-criteria.md#plugins) Plugins out of hot paths.
 - **Risk and evidence:** [R-007](../security/risk-register.md) via [Evidence Matrix R-007](../security/evidence-matrix.md) Phase E row `Mitigated at d4d75e9` (PR #146, Issue #139) with implementation `bitty-lua` Fuel + `bitty-plugin-host` queue budgets + attribution, measurement suites, fault-injection proof, independent review CONDITIONAL APPROVE.
 - **Mitigated evidence (`bitty` CTX-0092):** squash `d4d75e9` PR #146 `feat(plugin): verify per-plugin VM isolation and attributable budgets for R-007` (`2 files +344 -13`, `host.rs` queue isolation + `registry.rs` transactional reload `checked_add` overflow guard), headless measurement `21` + `15` tests at `d67a65b`, `reload_*` + `measurement` suites.
-- **Dependencies:** [Isolation Resource RFC](../specifications/isolation-resource-rfc.md) RC-1..RC-5 and FS-1..FS-9 (OQ-014 Accepted 2026-08-28), ladder `v0.5`/`v0.7`.
+- **Dependencies:** [Isolation Resource RFC](../projects/bitty/specifications/isolation-resource-rfc.md) RC-1..RC-5 and FS-1..FS-9 (OQ-014 Accepted 2026-08-28), ladder `v0.5`/`v0.7`.
 - **Owner:** `security-auditor` for the Mitigated review that moves R-007, `architecture` and `extensibility` owners, `docs-curator` for docs sync.
 - **Success evidence:** `R-007` is `Mitigated` because Fuel/wall/memory and queue budgets are hard-gated at `Host::publish`/`EventPipeline::publish` with `DropOldest` and attribution `PluginId`+generation, fault-injection proves crash/loop/storm/alloc each isolated to owning VM with host responsive, reclaim PB-3 `15%` after GC ten-cycle `total_memory()` observably fires, and transactional reload preserves old generation on hash/safe-mode/overflow deny; overall product remains not `Verified` until other P0 rows move.
 
 ### Now guardrails
 
 - All five Now items preserve all five release-blocking invariants cited in the
-  [Release Ladder](../product/release-ladder.md) and do not downgrade any
+  [Release Ladder](../projects/bitty/product/release-ladder.md) and do not downgrade any
   normative control in the security corpus. The headless `Implemented` soak at
   `be3bdb4` (`~808` tests, `cargo test --workspace --all-targets --locked`
   `904` tests including non-headless at `904` in the matrix trunk) plus
@@ -363,7 +363,7 @@ Verified. None weakens the control it cites.
 | R-004 | [R-004](../security/risk-register.md) OSC 52 or paste handling leaks clipboard                                           | [P0-AC-007](../security/p0-acceptance-criteria.md#local-resources-clipboard-links) Separate read/write policy, [P0-AC-008](../security/p0-acceptance-criteria.md#local-resources-clipboard-links) Suspicious paste inspection                                                    | [Evidence Matrix R-004](../security/evidence-matrix.md): `bitty` `7a4ee41` (baseline `de134ec`) `23` `suspicious_paste` (`19` baseline + `4` remediation) + `13` `paste` unit + `CLIPBOARD_MAX_BYTES=8192` char-boundary + `osc_clipboard_read/write` deny-by-default; audit [`clipboard-2026-09.md`](https://github.com/bitty-terminal/bitty/blob/7a4ee41/docs/security/audits/clipboard-2026-09.md) (CTX-0097) keeps **Open** due to residual platform backends, real-window UX, `8192` post-acquisition bound-scope | Terminal State RFC OSC 52 handling, platform clipboard isolation, ladder `v0.2` VT/TUI slice                                                                                                                                                                                                                                | `osc_clipboard_*` + `headless_clipboard_roundtrip_is_deterministic` + `23` `suspicious_paste` / `13` `paste` unit / `4` remediation (`public_paste_text_api_is_also_gated`, `string_paste_apis_bound_oversized_*`, `sequential_suspicious_requests_preserve_first_pending_paste`) + `selection_clipboard` OSC gate; adversarial C0/NUL/ESC/CR/LF/C1/BiDi each triggers inspection with no silent delivery; bracketed `?2004` defense-in-depth only after confirm; residual Open: `arboard` backends not validated, windowed UX not proven, `8192` bound is retained/inspection bound not strict peak-memory |
 | R-005 | [R-005](../security/risk-register.md) OSC 8 or rich links invoke dangerous schemes                                       | [P0-AC-009](../security/p0-acceptance-criteria.md#local-resources-clipboard-links) Hyperlink scheme policy and direct launch                                                                                                                                                     | [Evidence Matrix R-005](../security/evidence-matrix.md): `bitty` `d4d75e9` (`5bdcdbd` PR #144, Issue #137) `bitty-platform` `url.rs` `ValidatedUrl` + `bitty-rich` `hyperlink.rs` `is_safe_hyperlink_uri` + `bitty-runtime` `ActivationGesture` single-use; `Mitigated` at `d4d75e9` per RS-1..RS-7 (adversarial `javascript`/`%3B` corpus denied, `https`/`file:///` allowlist, no shell interpolation)                                                                                                               | Rich Presentation RFC hyperlink transport, platform URL policy, ladder `v0.8`                                                                                                                                                                                                                                               | `Mitigated` at `d4d75e9` — see Now-3: adversarial URI corpus each denied `InvalidUrl`, `ValidatedUrl` only opener input, `ActivationGesture` + veto-wins intercept + re-validate at spawn, `hyperlink_at` `checked_mul` overflow guard; residual real-window UX pending                                                                                                                                                                                                                                                                                                                                     |
 | R-006 | [R-006](../security/risk-register.md) Plugin gains ambient filesystem, process, network, clipboard, or runtime authority | [P0-AC-011](../security/p0-acceptance-criteria.md#plugins) Restricted stdlib, [P0-AC-012](../security/p0-acceptance-criteria.md#plugins) Capability-checked host API, [P0-AC-013](../security/p0-acceptance-criteria.md#plugins) Per-plugin VM isolation and failure containment | [Evidence Matrix R-006](../security/evidence-matrix.md): `bitty` `d4d75e9` (`0afc94d` PR #145, Issue #138) `bitty-plugin-host` closed set + `grant.rs` declared+granted+hash + `bitty-lua` restricted stdlib; `Mitigated` at `d4d75e9` per RS-1..RS-7 (`121 tests ok`, ambient `io`/`os`/`package` denied)                                                                                                                                                                                                             | Plugin Platform RFC ([OQ-011](../decisions/open-questions.md), [OQ-012](../decisions/open-questions.md), [OQ-013](../decisions/open-questions.md)), Lua Runtime RFC ([OQ-009](../decisions/open-questions.md)), Configuration Model RFC ([OQ-010](../decisions/open-questions.md)), ladder `v0.4` Lua and `v0.5` Plugin API | `Mitigated` at `d4d75e9` — see Now-4: every family closed + denied without grant, `121 tests ok`, ambient-authority fuzz denied, wildcard/unknown/controls rejected; residual grant UX hardening pending                                                                                                                                                                                                                                                                                                                                                                                                    |
-| R-007 | [R-007](../security/risk-register.md) Plugin crash, loop, callback storm, or allocation blocks the terminal              | [P0-AC-013](../security/p0-acceptance-criteria.md#plugins), [P0-AC-014](../security/p0-acceptance-criteria.md#plugins) Budgets attributable, [P0-AC-015](../security/p0-acceptance-criteria.md#plugins) Plugins out of hot paths                                                 | [Evidence Matrix R-007](../security/evidence-matrix.md): `bitty` `d4d75e9` (`d4d75e9` PR #146, Issue #139) Fuel + wall deadline + `32 MiB` hard + queue budgets PerSub `64`/PerPlugin `1024`/`256 KiB`/Global `8192`/`2 MiB` `DropOldest` + attribution `PluginId`+generation + transactional `reload`; `Mitigated` at `d4d75e9` per RS-1..RS-7                                                                                                                                                                        | [Isolation Resource RFC](../specifications/isolation-resource-rfc.md) RC-1 through RC-5 and FS-1 through FS-9 ([OQ-014](../decisions/open-questions.md) Accepted 2026-08-28), ladder `v0.5`/`v0.7`                                                                                                                          | `Mitigated` at `d4d75e9` — see Now-5: fault-injection crash/loop/storm/alloc each isolated, host responsive, reclaim PB-3 `15%` after GC ten-cycle, `reload` transactional overflow guard                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| R-007 | [R-007](../security/risk-register.md) Plugin crash, loop, callback storm, or allocation blocks the terminal              | [P0-AC-013](../security/p0-acceptance-criteria.md#plugins), [P0-AC-014](../security/p0-acceptance-criteria.md#plugins) Budgets attributable, [P0-AC-015](../security/p0-acceptance-criteria.md#plugins) Plugins out of hot paths                                                 | [Evidence Matrix R-007](../security/evidence-matrix.md): `bitty` `d4d75e9` (`d4d75e9` PR #146, Issue #139) Fuel + wall deadline + `32 MiB` hard + queue budgets PerSub `64`/PerPlugin `1024`/`256 KiB`/Global `8192`/`2 MiB` `DropOldest` + attribution `PluginId`+generation + transactional `reload`; `Mitigated` at `d4d75e9` per RS-1..RS-7                                                                                                                                                                        | [Isolation Resource RFC](../projects/bitty/specifications/isolation-resource-rfc.md) RC-1 through RC-5 and FS-1 through FS-9 ([OQ-014](../decisions/open-questions.md) Accepted 2026-08-28), ladder `v0.5`/`v0.7`                                                                                                           | `Mitigated` at `d4d75e9` — see Now-5: fault-injection crash/loop/storm/alloc each isolated, host responsive, reclaim PB-3 `15%` after GC ten-cycle, `reload` transactional overflow guard                                                                                                                                                                                                                                                                                                                                                                                                                   |
 
 **Common Next gates before any Next risk moves:** full `adversarial` corpus
 with zero panics or hangs and corpus retained in `fuzz/corpora/` or as
@@ -394,7 +394,7 @@ independent review before it can be admitted as more than a candidate.
 
 ### Later-1: v0.8 Rich presentation, Markdown stress, and shell integration
 
-- **Ladder slice:** [Release Ladder v0.8](../product/release-ladder.md#candidate-maturity-ladder-from-proposed-delivery-sequence)
+- **Ladder slice:** [Release Ladder v0.8](../projects/bitty/product/release-ladder.md#candidate-maturity-ladder-from-proposed-delivery-sequence)
   Rich presentation, Markdown stress. Workspace focus `rich` blocks,
   `scene` and `zone`, images per [OQ-008](../decisions/open-questions.md),
   [OQ-015](../decisions/open-questions.md), [OQ-016](../decisions/open-questions.md).
@@ -408,8 +408,8 @@ Verified at 8e6c8a9` (the slice itself remains `Implemented` not yet
   clipping. Security row [R-021](../security/risk-register.md) via
   [P0-AC-010](../security/p0-acceptance-criteria.md#plugins) remains `Open`
   pending `rich-constrained-ast-2026-xx` auditor review.
-- **Dependencies:** Now-2 budgets, [Rich Presentation RFC](../specifications/rich-presentation-rfc.md),
-  [Architecture overview](../architecture/overview.md) Terminal/View/Layout
+- **Dependencies:** Now-2 budgets, [Rich Presentation RFC](../projects/bitty/specifications/rich-presentation-rfc.md),
+  [Architecture overview](../projects/bitty/architecture/overview.md) Terminal/View/Layout
   separation, and the Proposed Delivery Sequence spine ordering rich before IPC.
 - **What would promote the slice:** a dedicated `v0.8` hardening task that
   satisfies the Rich Presentation RFC verification plan (image, placement,
@@ -419,7 +419,7 @@ Verified at 8e6c8a9` (the slice itself remains `Implemented` not yet
 
 ### Later-2: v0.9 IPC, `bitty ctl`, MCP adapter, and stabilization
 
-- **Ladder slice:** [Release Ladder v0.9](../product/release-ladder.md#candidate-maturity-ladder-from-proposed-delivery-sequence)
+- **Ladder slice:** [Release Ladder v0.9](../projects/bitty/product/release-ladder.md#candidate-maturity-ladder-from-proposed-delivery-sequence)
   IPC, `bitty ctl`, MCP adapter. Workspace focus `ipc` plus `agent` bounded
   framing and scopes per [OQ-018](../decisions/open-questions.md). M1 Hardening
   status `Accepted and Implemented at be3bdb4` (`256 KiB` framing, peer
@@ -464,15 +464,15 @@ Verified at 8e6c8a9` (the slice itself remains `Implemented` not yet
 
 ### Later-3: v1.0 Stabilized contracts
 
-- **Ladder slice:** [Release Ladder v1.0](../product/release-ladder.md#candidate-maturity-ladder-from-proposed-delivery-sequence)
+- **Ladder slice:** [Release Ladder v1.0](../projects/bitty/product/release-ladder.md#candidate-maturity-ladder-from-proposed-delivery-sequence)
   Stabilized contracts: all surfaces above under semver-compatible surfaces.
   Requires `Verified` plus `Compatible` per the Risk Evidence RFC; not yet
   claimed at `be3bdb4` or at `8e6c8a9`. The candidate `v1.0` criteria from the
-  [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md)
+  [Proposed Delivery Sequence](../projects/bitty/product/proposed-delivery-sequence.md)
   table (platforms Tier `1` Linux, Windows, and macOS plus Tier `2` BSD per
   [ADR 0002](../decisions/adrs/ADR-0002-platform-support-tiers.md), five-shell
   coverage per [OQ-004](../decisions/open-questions.md) and the
-  [Compatibility Milestone RFC](../specifications/compatibility-milestone-rfc.md),
+  [Compatibility Milestone RFC](../projects/bitty/specifications/compatibility-milestone-rfc.md),
   and stable versioned surfaces) remain proposals within that draft record.
 - **Dependencies:** all Next hardening plus Later-1 and Later-2; the
   [Security overview](../security/overview.md) release gates and the
@@ -494,7 +494,7 @@ Verified at 8e6c8a9` (the slice itself remains `Implemented` not yet
   analysis against the [Threat model](../security/threat-model.md) and
   [Security overview](../security/overview.md) invariants 5 and 6 (local-user-only
   IPC, read-only MCP default, terminal content as untrusted observation data).
-  The [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md)
+  The [Proposed Delivery Sequence](../projects/bitty/product/proposed-delivery-sequence.md)
   candidate spine records the same positioning; the current Phase 3.5 through
   Phase 10 route items remain recorded per [Shared-conversation coverage](../sources/chatgpt-share-coverage.md) as provenance, not as admitted roadmap.
 - **What deferral means here:** `Later` records this deferred horizon so that
@@ -516,18 +516,18 @@ Verified at 8e6c8a9` (the slice itself remains `Implemented` not yet
   (CTX-0094, pending review) proposes Panel as a workspace-managed application
   container generalizing `View` content. Panel is not the native OS `Window` and
   is not a PTY. The
-  [Workspace Compositor](../specifications/workspace-compositor.md) remains
+  [Workspace Compositor](../projects/bitty/specifications/workspace-compositor.md) remains
   `Draft`; its H/V `LayoutTree`, Core decoration, validation, and security
   boundaries are not accepted or changed by this roadmap.
 - **Candidate scope:** after v1.0, a future Panel RFC may define Panel
   providers, a Panel Runtime, and an inter-Panel Event Bus, followed by
   capability-checked providers for terminal, files, Git, Markdown, logs,
-  browser, or AI workflows. The accepted [IPC and Agent RFC](../specifications/ipc-agent-rfc.md)
+  browser, or AI workflows. The accepted [IPC and Agent RFC](../projects/bitty/specifications/ipc-agent-rfc.md)
   supplies the bounded, authenticated, scoped IPC baseline; it does not define
   Panel lifecycle or implementation.
 - **Distribution candidates:** `bitty-minimal`, `bitty-dev`, `bitty-cloud`,
   and `bitty-social` may become explicit post-v1.0 presets over the accepted
-  [Default Distribution RFC](../specifications/default-distribution-rfc.md).
+  [Default Distribution RFC](../projects/bitty/specifications/default-distribution-rfc.md).
   Presets remain optional bundles, preserve safe-mode and disable precedence,
   and do not imply enabled-by-default plugins.
 - **Horizon and evidence:** no date, release promise, or website publication is
@@ -563,7 +563,7 @@ gating, OSC 7/8/133 parsing, title, terminfo, and CJK-aware selection) but
 missing end-user table stakes: windows, tabs, scrollback search, copy mode,
 hints, palette, zoom, notifications, profiles, session restore,
 accessibility, and IME. The draft
-[Core and Plugin Boundaries](../architecture/core-boundaries.md) M1 Hardening
+[Core and Plugin Boundaries](../projects/bitty/architecture/core-boundaries.md) M1 Hardening
 table proposes plugin policy ownership for several of these experiences
 (tabs, search, sessions, shell enhancement, quake, palette) over Core
 mechanisms; that table is draft, ships and admits no plugin, and the
@@ -571,33 +571,33 @@ underlying mechanisms remain candidate work below.
 
 ### P0 — table-stakes survey gaps
 
-| Gap                              | Survey state at `3f5ed24`                                                                                          | Bitty status and candidate owner                                                                                                                                                                                                                                                                                                                                                   |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Multiple OS windows              | Absent; no `NewWindow` action. All six references support multiple OS windows (Alacritty via `msg create-window`). | Core mechanism: [Workspace Compositor](../specifications/workspace-compositor.md) `Instance -> Window` hierarchy and `bitty-platform` window ownership. The [Single-Window Vertical Slice](../product/vertical-slice-acceptance.md) explicitly excludes multi-window. Post-survey workspace ops (`bitty` #433 `227ca3a`, CTX-0257) are in-app workspace switching, not OS windows. |
-| OSC 8 hyperlink click-to-open UX | Absent UX; OSC 8 parsed (`OscHyperlink`) only. All six references open hyperlinks.                                 | Tracked as the `R-005` residual real-window activation UX in Now-3 and the `R-005` Next row; no separate task owns the UX yet.                                                                                                                                                                                                                                                     |
+| Gap                              | Survey state at `3f5ed24`                                                                                          | Bitty status and candidate owner                                                                                                                                                                                                                                                                                                                                                                                 |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Multiple OS windows              | Absent; no `NewWindow` action. All six references support multiple OS windows (Alacritty via `msg create-window`). | Core mechanism: [Workspace Compositor](../projects/bitty/specifications/workspace-compositor.md) `Instance -> Window` hierarchy and `bitty-platform` window ownership. The [Single-Window Vertical Slice](../projects/bitty/product/vertical-slice-acceptance.md) explicitly excludes multi-window. Post-survey workspace ops (`bitty` #433 `227ca3a`, CTX-0257) are in-app workspace switching, not OS windows. |
+| OSC 8 hyperlink click-to-open UX | Absent UX; OSC 8 parsed (`OscHyperlink`) only. All six references open hyperlinks.                                 | Tracked as the `R-005` residual real-window activation UX in Now-3 and the `R-005` Next row; no separate task owns the UX yet.                                                                                                                                                                                                                                                                                   |
 
 ### P1 — majority-have survey gaps
 
-| Gap                                                   | Survey state at `3f5ed24`                                                   | Movement since survey (`Implemented` only)                                                                                                                      | Candidate home                                                                                                                                                                                                                                                                                                            |
-| ----------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tabs + tab bar                                        | Absent; `Stack` layout is tab-like only.                                    | None. `227ca3a` (#433, CTX-0257) adds workspace ops and a workspaceline overlay, not a tab bar.                                                                 | Plugin policy over Core primitives per [Core and Plugin Boundaries](../architecture/core-boundaries.md) and `bitty-terminal.tabs` in the [plugin roadmap](../product/plugin-roadmap.md); layout stays with the compositor.                                                                                                |
-| Find in scrollback                                    | Absent; no search action.                                                   | None.                                                                                                                                                           | Plugin-owned search UX over a controlled snapshot per Core and Plugin Boundaries; future dogfood candidate in the plugin roadmap. Needs a bounded search contract first.                                                                                                                                                  |
-| Kitty keyboard protocol                               | Absent.                                                                     | None.                                                                                                                                                           | Core input mechanism: [Input and Pointer Contract](../specifications/input-pointer-rfc.md) (Draft) opt-in negotiation; [Compatibility Milestone RFC](../specifications/compatibility-milestone-rfc.md) keeps it a progressive enhancement rather than M1-required.                                                        |
-| Vi / copy mode                                        | Absent; mouse selection exists.                                             | None.                                                                                                                                                           | Selection and input contract; keyboard selection mode is unowned.                                                                                                                                                                                                                                                         |
-| Hints / quick-select                                  | Absent.                                                                     | None.                                                                                                                                                           | [Semantic Terminal RFC](../specifications/semantic-terminal-rfc.md) hints unit (draft) covers semantic targets; no mouse quick-select UX contract.                                                                                                                                                                        |
-| Shell-integration prompt-jump UX                      | OSC 133/7 parsed; jump UX unverified.                                       | None.                                                                                                                                                           | Plugin-owned shell enhancement over semantic zones per Core and Plugin Boundaries and `bitty-terminal.shell-integration` in the plugin roadmap, gated on the Semantic Terminal RFC.                                                                                                                                       |
-| Synchronized output (DEC 2026)                        | Absent.                                                                     | None.                                                                                                                                                           | Core renderer protocol in scope of the Input and Pointer Contract.                                                                                                                                                                                                                                                        |
-| Quake / hotkey window                                 | Absent.                                                                     | None.                                                                                                                                                           | Plugin-owned window and presentation policy over the Core window mechanism per Core and Plugin Boundaries; needs a scoped ADR or RFC.                                                                                                                                                                                     |
-| Command palette                                       | Absent; opt-in Command Composer only.                                       | None.                                                                                                                                                           | Plugin-owned palette and picker over overlay primitives per Core and Plugin Boundaries; `bitty-terminal.palette` is bundled disabled in the [Default Distribution RFC](../specifications/default-distribution-rfc.md), with overlay types in the [Panel Runtime Pre-Study](../specifications/panel-runtime-pre-study.md). |
-| Theme gallery + switching                             | Few built-in presets only.                                                  | None.                                                                                                                                                           | No owning gallery contract; the theme marketplace remains deferred in Later-4.                                                                                                                                                                                                                                            |
-| Per-codepoint font fallback                           | Absent (crossfont only).                                                    | None.                                                                                                                                                           | [Text and Rendering RFC](../specifications/text-rendering-rfc.md) (Draft) font discovery and coverage-driven fallback candidate scope.                                                                                                                                                                                    |
-| Grapheme-cluster measurement                          | Unverified; `char_cell_width` approximation.                                | None.                                                                                                                                                           | Text and Rendering RFC UAX #29 grapheme-to-cell replacement; excluded from the vertical slice today.                                                                                                                                                                                                                      |
-| Kitty graphics present path                           | Work in progress (CTX-0248 at survey).                                      | Landed `0cc82de` (#425), `bd15d94` (#427), and follow-ups `3d45924` (#465), `6d4aa2f` (#463), `18c333a` (#467), `fdd9e28` (#505); `Implemented` not `Verified`. | [Rich Presentation RFC](../specifications/rich-presentation-rfc.md); already in flight, do not re-plan.                                                                                                                                                                                                                   |
-| User-facing scriptability (window, tab, pane control) | Devtools socket only; consent-gated.                                        | `bitty ctl` workspace verbs landed `227ca3a` (#433, scope-gated `view.manage` / `terminal.manage`) and `8b987a0` (#457); `Implemented` not `Verified`.          | [IPC and Agent RFC](../specifications/ipc-agent-rfc.md) and [DevTools RFC](../specifications/devtools-rfc.md); Later-2 `v0.9`.                                                                                                                                                                                            |
-| Font-size zoom                                        | Absent at survey; cross-vendor rank **evidence-limited**.                   | Per-window font zoom landed `bc1fbba` (#439, CTX-0263); `Implemented` not `Verified`.                                                                           | Input and configuration surface; the cross-vendor rank still needs its source pass.                                                                                                                                                                                                                                       |
-| Live config reload (file watcher)                     | Reload module exists; watcher unverified; **evidence-limited**.             | `5afb8a2` (#490, CTX-0295) adds reload knob-effect tests; watcher evidence remains unproven.                                                                    | [Configuration Model RFC](../specifications/configuration-model-rfc.md) `Live` reload semantics.                                                                                                                                                                                                                          |
-| Screen-reader / accessibility API                     | Absent; only Windows Terminal verified in the survey; **evidence-limited**. | None.                                                                                                                                                           | No owning contract; the `Scene` accessibility-tree consumer in the Rich Presentation RFC is the nearest candidate and needs a scoped study.                                                                                                                                                                               |
-| IME / CJK input pipeline                              | Draft-only; **evidence-limited**.                                           | None.                                                                                                                                                           | Input and Pointer Contract plus Text and Rendering RFC IME overlay; the vertical slice carries IME only as a candidate input and keeps preedit in presentation state until encoded.                                                                                                                                       |
+| Gap                                                   | Survey state at `3f5ed24`                                                   | Movement since survey (`Implemented` only)                                                                                                                      | Candidate home                                                                                                                                                                                                                                                                                                                                          |
+| ----------------------------------------------------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tabs + tab bar                                        | Absent; `Stack` layout is tab-like only.                                    | None. `227ca3a` (#433, CTX-0257) adds workspace ops and a workspaceline overlay, not a tab bar.                                                                 | Plugin policy over Core primitives per [Core and Plugin Boundaries](../projects/bitty/architecture/core-boundaries.md) and `bitty-terminal.tabs` in the [plugin roadmap](../projects/bitty/product/plugin-roadmap.md); layout stays with the compositor.                                                                                                |
+| Find in scrollback                                    | Absent; no search action.                                                   | None.                                                                                                                                                           | Plugin-owned search UX over a controlled snapshot per Core and Plugin Boundaries; future dogfood candidate in the plugin roadmap. Needs a bounded search contract first.                                                                                                                                                                                |
+| Kitty keyboard protocol                               | Absent.                                                                     | None.                                                                                                                                                           | Core input mechanism: [Input and Pointer Contract](../projects/bitty/specifications/input-pointer-rfc.md) (Draft) opt-in negotiation; [Compatibility Milestone RFC](../projects/bitty/specifications/compatibility-milestone-rfc.md) keeps it a progressive enhancement rather than M1-required.                                                        |
+| Vi / copy mode                                        | Absent; mouse selection exists.                                             | None.                                                                                                                                                           | Selection and input contract; keyboard selection mode is unowned.                                                                                                                                                                                                                                                                                       |
+| Hints / quick-select                                  | Absent.                                                                     | None.                                                                                                                                                           | [Semantic Terminal RFC](../projects/bitty/specifications/semantic-terminal-rfc.md) hints unit (draft) covers semantic targets; no mouse quick-select UX contract.                                                                                                                                                                                       |
+| Shell-integration prompt-jump UX                      | OSC 133/7 parsed; jump UX unverified.                                       | None.                                                                                                                                                           | Plugin-owned shell enhancement over semantic zones per Core and Plugin Boundaries and `bitty-terminal.shell-integration` in the plugin roadmap, gated on the Semantic Terminal RFC.                                                                                                                                                                     |
+| Synchronized output (DEC 2026)                        | Absent.                                                                     | None.                                                                                                                                                           | Core renderer protocol in scope of the Input and Pointer Contract.                                                                                                                                                                                                                                                                                      |
+| Quake / hotkey window                                 | Absent.                                                                     | None.                                                                                                                                                           | Plugin-owned window and presentation policy over the Core window mechanism per Core and Plugin Boundaries; needs a scoped ADR or RFC.                                                                                                                                                                                                                   |
+| Command palette                                       | Absent; opt-in Command Composer only.                                       | None.                                                                                                                                                           | Plugin-owned palette and picker over overlay primitives per Core and Plugin Boundaries; `bitty-terminal.palette` is bundled disabled in the [Default Distribution RFC](../projects/bitty/specifications/default-distribution-rfc.md), with overlay types in the [Panel Runtime Pre-Study](../projects/bitty/specifications/panel-runtime-pre-study.md). |
+| Theme gallery + switching                             | Few built-in presets only.                                                  | None.                                                                                                                                                           | No owning gallery contract; the theme marketplace remains deferred in Later-4.                                                                                                                                                                                                                                                                          |
+| Per-codepoint font fallback                           | Absent (crossfont only).                                                    | None.                                                                                                                                                           | [Text and Rendering RFC](../projects/bitty/specifications/text-rendering-rfc.md) (Draft) font discovery and coverage-driven fallback candidate scope.                                                                                                                                                                                                   |
+| Grapheme-cluster measurement                          | Unverified; `char_cell_width` approximation.                                | None.                                                                                                                                                           | Text and Rendering RFC UAX #29 grapheme-to-cell replacement; excluded from the vertical slice today.                                                                                                                                                                                                                                                    |
+| Kitty graphics present path                           | Work in progress (CTX-0248 at survey).                                      | Landed `0cc82de` (#425), `bd15d94` (#427), and follow-ups `3d45924` (#465), `6d4aa2f` (#463), `18c333a` (#467), `fdd9e28` (#505); `Implemented` not `Verified`. | [Rich Presentation RFC](../projects/bitty/specifications/rich-presentation-rfc.md); already in flight, do not re-plan.                                                                                                                                                                                                                                  |
+| User-facing scriptability (window, tab, pane control) | Devtools socket only; consent-gated.                                        | `bitty ctl` workspace verbs landed `227ca3a` (#433, scope-gated `view.manage` / `terminal.manage`) and `8b987a0` (#457); `Implemented` not `Verified`.          | [IPC and Agent RFC](../projects/bitty/specifications/ipc-agent-rfc.md) and [DevTools RFC](../projects/bitty/specifications/devtools-rfc.md); Later-2 `v0.9`.                                                                                                                                                                                            |
+| Font-size zoom                                        | Absent at survey; cross-vendor rank **evidence-limited**.                   | Per-window font zoom landed `bc1fbba` (#439, CTX-0263); `Implemented` not `Verified`.                                                                           | Input and configuration surface; the cross-vendor rank still needs its source pass.                                                                                                                                                                                                                                                                     |
+| Live config reload (file watcher)                     | Reload module exists; watcher unverified; **evidence-limited**.             | `5afb8a2` (#490, CTX-0295) adds reload knob-effect tests; watcher evidence remains unproven.                                                                    | [Configuration Model RFC](../projects/bitty/specifications/configuration-model-rfc.md) `Live` reload semantics.                                                                                                                                                                                                                                         |
+| Screen-reader / accessibility API                     | Absent; only Windows Terminal verified in the survey; **evidence-limited**. | None.                                                                                                                                                           | No owning contract; the `Scene` accessibility-tree consumer in the Rich Presentation RFC is the nearest candidate and needs a scoped study.                                                                                                                                                                                                             |
+| IME / CJK input pipeline                              | Draft-only; **evidence-limited**.                                           | None.                                                                                                                                                           | Input and Pointer Contract plus Text and Rendering RFC IME overlay; the vertical slice carries IME only as a candidate input and keeps preedit in presentation state until encoded.                                                                                                                                                                     |
 
 ### P2 — differentiators, precedents, and explicit refusals
 
@@ -641,7 +641,7 @@ Remaining P2 differentiators (consider, do not chase without demand):
 
 **What would admit a row.** A scoped CarryCtx task, the owning RFC or ADR
 accepted with independent review, a named owner, success evidence mapped to
-the [Risk Evidence RFC](../specifications/risk-evidence-rfc.md) taxonomy where
+the [Risk Evidence RFC](../projects/bitty/specifications/risk-evidence-rfc.md) taxonomy where
 security-relevant, and an explicit confidence level. Until then every row in
 this register is candidate; no edit here admits scope, authorizes code, or
 moves a milestone.
@@ -663,7 +663,7 @@ document is sequencing only.
 
 ## Success evidence and evidence anchors
 
-Every success claim below maps to the taxonomy in the [Risk Evidence RFC](../specifications/risk-evidence-rfc.md)
+Every success claim below maps to the taxonomy in the [Risk Evidence RFC](../projects/bitty/specifications/risk-evidence-rfc.md)
 (`unit`/`integration`/`adversarial`/`manual-audit`/`ci-gate`) and to a row in
 the [Evidence Matrix](../security/evidence-matrix.md). The matrix is the Phase
 E companion to the [Risk register](../security/risk-register.md) and the
@@ -689,11 +689,11 @@ at `be3bdb4` is `Implemented` evidence, not `Verified` closure.
 
 - No calendar dates, no release train commitment, and no website publication
   promise for any version tag. Version strings are maturity labels per the
-  [Release Ladder](../product/release-ladder.md) candidate ladder, not dates.
+  [Release Ladder](../projects/bitty/product/release-ladder.md) candidate ladder, not dates.
 - No weakening of any normative control in the [Security overview](../security/overview.md),
   [Threat model](../security/threat-model.md), or [P0 acceptance criteria](../security/p0-acceptance-criteria.md).
   Listing a control here as a P0 gate does not relax its threshold.
-- No bypass of the [Risk Evidence RFC](../specifications/risk-evidence-rfc.md)
+- No bypass of the [Risk Evidence RFC](../projects/bitty/specifications/risk-evidence-rfc.md)
   review gates, including the three-independent-review rule and the
   safe-mode invariance RS-7 (`bitty --safe` with minimal built-in config and
   zero third-party plugins).
@@ -701,8 +701,8 @@ at `be3bdb4` is `Implemented` evidence, not `Verified` closure.
   UI, AI features, plugin store, fancy chrome, markdown-rich enhancements
   beyond IMG limits, SSH manager, or theme marketplace. Those remain deferred
   per [ADR 0008](../decisions/adrs/ADR-0008-headless.md) or per the
-  [Product vision](../product/vision.md) non-goals and the
-  [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md)
+  [Product vision](../projects/bitty/product/vision.md) non-goals and the
+  [Proposed Delivery Sequence](../projects/bitty/product/proposed-delivery-sequence.md)
   candidate early-deferral list, both strictly larger than the documented
   non-goals.
 - No self-acceptance: this document is `draft` per the
@@ -722,13 +722,13 @@ at `be3bdb4` is `Implemented` evidence, not `Verified` closure.
   completed outcomes to release evidence per the
   [Roadmap index](README.md) naming and maintenance rule.
 - When a Later slice moves from `Implemented` to `Verified`, update its status
-  in the [Release Ladder](../product/release-ladder.md) and the linked
+  in the [Release Ladder](../projects/bitty/product/release-ladder.md) and the linked
   [Risk register](../security/risk-register.md) row per the Risk Evidence RFC;
   `Verified` requires independent `security-auditor` and P0-AC evidence. The
   update belongs in a dedicated CarryCtx task for that slice, not as a
   side edit to this horizon.
 - The first real single-window slice is gated by the
-  [Single-Window Vertical Slice Acceptance Plan](../product/vertical-slice-acceptance.md)
+  [Single-Window Vertical Slice Acceptance Plan](../projects/bitty/product/vertical-slice-acceptance.md)
   (CTX-0109, draft, depends on CTX-0107/0108; one process/window/workspace/terminal,
   cursor/scrollback/resize/selection/copy-paste, PB-1..PB-7, Tier 1/2, explicit
   exclusions). Until its independent review passes, no implementation slice may
@@ -743,7 +743,7 @@ at `be3bdb4` is `Implemented` evidence, not `Verified` closure.
   filesystem link appears in the root `README.md` or in any `AGENTS.md`.
   Validate with `just links` and `just metadata` before any PR.
 - The [Shared-conversation coverage](../sources/chatgpt-share-coverage.md)
-  route-item matrix and the [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md)
+  route-item matrix and the [Proposed Delivery Sequence](../projects/bitty/product/proposed-delivery-sequence.md)
   `6a8dae4b` spine remain provenance for the sequencing narrative here; the
   [Roadmap index](README.md) admits sequencing only via the criteria satisfied
   above, so no provenance citation is accepted direction by implication.
@@ -760,16 +760,16 @@ at `be3bdb4` is `Implemented` evidence, not `Verified` closure.
 ## References
 
 - [Roadmap index](README.md) — admission criteria and authority.
-- [Release Ladder](../product/release-ladder.md) — Pre-alpha / Engineering Milestones M1-M8 `29772a3` to `v0.1`..`v1.0`.
-- [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md) — candidate spine and ladders, draft research record from [6a8dae4b-2aec-83ea-9174-03abc1f81531](https://chatgpt.com/share/6a8dae4b-2aec-83ea-9174-03abc1f81531).
+- [Release Ladder](../projects/bitty/product/release-ladder.md) — Pre-alpha / Engineering Milestones M1-M8 `29772a3` to `v0.1`..`v1.0`.
+- [Proposed Delivery Sequence](../projects/bitty/product/proposed-delivery-sequence.md) — candidate spine and ladders, draft research record from [6a8dae4b-2aec-83ea-9174-03abc1f81531](https://chatgpt.com/share/6a8dae4b-2aec-83ea-9174-03abc1f81531).
 - [Shared-conversation coverage](../sources/chatgpt-share-coverage.md) — provenance matrices for both historical conversations.
 - [Security Risk Register](../security/risk-register.md) — R-001..R-022, severity and stage.
 - [Security Evidence Matrix](../security/evidence-matrix.md) — Phase E `R-001`..`R-022` vs `P0-AC-001`..`P0-AC-034` with implementation, test, CI, adversarial, and audit columns.
 - [P0 Security Acceptance Criteria](../security/p0-acceptance-criteria.md) — `P0-AC-001`..`P0-AC-034` testable given/when/then criteria.
-- [Risk Evidence RFC](../specifications/risk-evidence-rfc.md) — RS-1..RS-7 lifecycle, traceability, and entry checklist for `OQ-025`.
+- [Risk Evidence RFC](../projects/bitty/specifications/risk-evidence-rfc.md) — RS-1..RS-7 lifecycle, traceability, and entry checklist for `OQ-025`.
 - [Security overview](../security/overview.md) and [Threat model](../security/threat-model.md) — normative controls that this roadmap must not weaken.
-- [Website Delivery RFC](../specifications/website-delivery-rfc.md) — pinned `src/content/docs-revision.json` and `/docs/<version>/<path>/` for website publication; this roadmap is not published via that path while `website_publish: false`.
+- [Website Delivery RFC](../projects/bitty/specifications/website-delivery-rfc.md) — pinned `src/content/docs-revision.json` and `/docs/<version>/<path>/` for website publication; this roadmap is not published via that path while `website_publish: false`.
 - [Documentation workflow](../development/documentation-workflow.md) — flat frontmatter schema, `title` equals H1, English-only, and lifecycle rules.
 - [ADR 0008 - Headless Daemon, Detach/Reattach and Remote UI Trust Boundary](../decisions/adrs/ADR-0008-headless.md) — post-v1.0 deferral for `bittyd` and remote UI ([OQ-020](../decisions/open-questions.md)).
-- [Single-Window Vertical Slice Acceptance Plan](../product/vertical-slice-acceptance.md) — candidate acceptance contract for the first real one-window terminal slice (CTX-0109, draft, depends on CTX-0107/0108; PB-1..PB-7, Tier 1/2, explicit exclusions; no code authorized until review gates).
+- [Single-Window Vertical Slice Acceptance Plan](../projects/bitty/product/vertical-slice-acceptance.md) — candidate acceptance contract for the first real one-window terminal slice (CTX-0109, draft, depends on CTX-0107/0108; PB-1..PB-7, Tier 1/2, explicit exclusions; no code authorized until review gates).
 - CTX-0251 terminal feature survey — scratch-only read-only survey of six modern terminals against `bitty` `3f5ed24` (2026-09-09), with reference clones and revision notes under `bitty` `recording/references/` and survey evidence under `bitty` `recording/ctx-0251/`; untrusted, never executed, not copied into this repository, and superseded only by a reviewed successor survey. The [gap register](#gap-register-modern-terminal-feature-survey-candidate) above is the canonical summary.

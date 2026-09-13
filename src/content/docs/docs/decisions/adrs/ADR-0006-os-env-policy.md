@@ -21,7 +21,7 @@ and migration at the design level; it closes
 not authorize shipped, stable, normative, or compatibility-guaranteed behavior,
 and does not weaken any normative security control. This ADR refines
 [ADR 0005](ADR-0005-lua-pins-and-stdlib.md) and the
-[Lua Runtime RFC](../../specifications/lua-runtime-rfc.md)
+[Lua Runtime RFC](../../projects/bitty/specifications/lua-runtime-rfc.md)
 without contradicting either. It answers the residual Configuration VM exposure
 question the Lua Runtime RFC explicitly deferred to OQ-031. Frontmatter `status`
 is `accepted` per the repository metadata schema; document status is Accepted.
@@ -202,7 +202,7 @@ Per-plugin VMs are untrusted and start with no environment authority:
   `env` capability. Declared keys use the capability family `env:<KEY>` or
   patterned form `env:BITTY_*` where `*` is a single trailing suffix wildcard
   for a narrow namespace. The capability table and its semantics are owned by
-  the [Plugin Platform RFC](../../specifications/plugin-platform-rfc.md)
+  the [Plugin Platform RFC](../../projects/bitty/specifications/plugin-platform-rfc.md)
   OQ-012; this ADR only defines the `env` family members and their gating.
 - Grants are stored per plugin and require explicit user consent. Updates that
   add a new `env:<KEY>` block on the same permission-diff gate as
@@ -275,12 +275,12 @@ Per-plugin VMs are untrusted and start with no environment authority:
 
 - [OQ-031](../open-questions.md) row migrated from OQ-009 CTX-0047 2026-08-27
 - [ADR 0005](ADR-0005-lua-pins-and-stdlib.md) — final restricted standard library and debug allowlist where os.getenv exposure is OQ-031
-- [Lua Runtime RFC](../../specifications/lua-runtime-rfc.md) — Accepted 2026-08-27 sandbox and standard-library baseline and rooted module resolution and host bridge ownership
+- [Lua Runtime RFC](../../projects/bitty/specifications/lua-runtime-rfc.md) — Accepted 2026-08-27 sandbox and standard-library baseline and rooted module resolution and host bridge ownership
 - [Security overview](../../security/overview.md) — invariant 9, trust boundaries, sensitive-data handling, capability families
 - [Risk register](../../security/risk-register.md) — R-006 ambient authority, R-014 DevTools traces and environment exposure, R-007 budgets and attribution
 - [P0 acceptance criteria](../../security/p0-acceptance-criteria.md) — P0-AC-026 trace minimization and redaction and P0-AC-011 and P0-AC-025 and P0-AC-030 patterns
-- [Configuration Model RFC](../../specifications/configuration-model-rfc.md) — Accepted 2026-08-27 pipeline, layers, reload classification, project trust
-- [Plugin Platform RFC](../../specifications/plugin-platform-rfc.md) — OQ-012 capability identifiers and grant storage and revocation
+- [Configuration Model RFC](../../projects/bitty/specifications/configuration-model-rfc.md) — Accepted 2026-08-27 pipeline, layers, reload classification, project trust
+- [Plugin Platform RFC](../../projects/bitty/specifications/plugin-platform-rfc.md) — OQ-012 capability identifiers and grant storage and revocation
 
 ### Verification gates
 
@@ -309,7 +309,7 @@ The following gates were satisfied per the
    `timestamp`, `vm_class`, `key`, `granted`, `caller_location`, never the
    value; grant and revoke events for `env:<KEY>` are also logged.
 6. **Docs sync:** this ADR appears in the [decision register](../index.md) and
-   [ADR index](README.md) plus `docs/specifications/lua-runtime-rfc.md`
+   [ADR index](README.md) plus `docs/projects/bitty/specifications/lua-runtime-rfc.md`
    open items note updated plus the [open-question register](../open-questions.md)
    OQ-031 row to Accepted ADR 0006 in the same PR per register close rule.
 
@@ -350,12 +350,12 @@ following evidence was recorded for acceptance on 2026-08-29.
 
 <!-- markdownlint-disable MD013 -->
 
-| Role                                  | Reviewer          | Verdict | Evidence / scope                                                                                                                                                                                                                                                                                                                                      | Date       |
-| ------------------------------------- | ----------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| security-auditor                      | `bitty-security`  | pass    | R-006, R-014, T-11, P0-AC-026, `os.getenv` denial typed `E_ENV_DENIED` `runtime` class, `bitty.env.get` capability-gated allowlist `env:<KEY>`/`env:BITTY_*`, desensitization and minimization, size bound 4 KiB `E_ENV_VALUE_TOO_LARGE`, redaction `0600` mode export preview, audit logging per invocation and grant/revoke without value leakage   | 2026-08-29 |
-| category-owner (security-and-quality) | `bitty-quality`   | pass    | Config VM `env.allowlist` host-owned outside Lua, plugin `env:<KEY>` manifest + grant with diff-blocking update per P0-AC-030, deny-by-default `nil` without membership leakage, pattern `^[A-Z_][A-Z0-9_]*$` 1..64 bounded ASCII, snapshot at VM creation no ambient fallback, `bitty.env.has` presence-only                                         | 2026-08-29 |
-| category-owner (architecture)         | `bitty-architect` | pass    | per-VM deltas Config VM vs plugin VM via `mlua` vendored Lua 5.4 vs `piccolo` 0.3.3, typed denial `rawget(os, "getenv")` errors with `E_ENV_DENIED` hint `bitty.env.get`, audit channel `timestamp`/`vm_class`/`key`/`granted`/`caller_location` never value, non-overridable policy and capability family `env:<KEY>`                                | 2026-08-29 |
-| docs-curator                          | `bitty-curator`   | pass    | Frontmatter `accepted`, lifecycle `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`, links to [Lua Runtime RFC](../../specifications/lua-runtime-rfc.md) and [Security overview](../../security/overview.md) invariant 9 and [Risk register](../../security/risk-register.md) R-014, English-only, decision-register sync | 2026-08-29 |
+| Role                                  | Reviewer          | Verdict | Evidence / scope                                                                                                                                                                                                                                                                                                                                                     | Date       |
+| ------------------------------------- | ----------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| security-auditor                      | `bitty-security`  | pass    | R-006, R-014, T-11, P0-AC-026, `os.getenv` denial typed `E_ENV_DENIED` `runtime` class, `bitty.env.get` capability-gated allowlist `env:<KEY>`/`env:BITTY_*`, desensitization and minimization, size bound 4 KiB `E_ENV_VALUE_TOO_LARGE`, redaction `0600` mode export preview, audit logging per invocation and grant/revoke without value leakage                  | 2026-08-29 |
+| category-owner (security-and-quality) | `bitty-quality`   | pass    | Config VM `env.allowlist` host-owned outside Lua, plugin `env:<KEY>` manifest + grant with diff-blocking update per P0-AC-030, deny-by-default `nil` without membership leakage, pattern `^[A-Z_][A-Z0-9_]*$` 1..64 bounded ASCII, snapshot at VM creation no ambient fallback, `bitty.env.has` presence-only                                                        | 2026-08-29 |
+| category-owner (architecture)         | `bitty-architect` | pass    | per-VM deltas Config VM vs plugin VM via `mlua` vendored Lua 5.4 vs `piccolo` 0.3.3, typed denial `rawget(os, "getenv")` errors with `E_ENV_DENIED` hint `bitty.env.get`, audit channel `timestamp`/`vm_class`/`key`/`granted`/`caller_location` never value, non-overridable policy and capability family `env:<KEY>`                                               | 2026-08-29 |
+| docs-curator                          | `bitty-curator`   | pass    | Frontmatter `accepted`, lifecycle `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`, links to [Lua Runtime RFC](../../projects/bitty/specifications/lua-runtime-rfc.md) and [Security overview](../../security/overview.md) invariant 9 and [Risk register](../../security/risk-register.md) R-014, English-only, decision-register sync | 2026-08-29 |
 
 Closes OQ-031: this ADR closes that open question at the design level; the
 register rows are updated per the open-question register rules. The lifecycle is

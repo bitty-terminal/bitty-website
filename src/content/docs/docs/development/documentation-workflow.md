@@ -24,6 +24,88 @@ translated URL routing, and synchronization between languages are deferred.
 They require a future cross-repository decision before any localized tree is
 created.
 
+## Repository layout and routing
+
+Documentation is partitioned into shared cross-project governance and
+per-project content. The partition was approved on 2026-09-13 ("full partition
+plus shared top level") and routes documents as follows.
+
+Shared governance stays in the existing top-level directories:
+
+| Directory      | Owns                                                                  |
+| -------------- | --------------------------------------------------------------------- |
+| `decisions/`   | ADRs and the single global open-question register.                    |
+| `security/`    | Normative security corpus, threat model, risk register, and evidence. |
+| `development/` | Contributor policy, workflow, toolchain, and repository baseline.     |
+| `sources/`     | Historical conversation and research provenance records.              |
+| `findings/`    | Durable reviewed findings and evidence.                               |
+| `reviews/`     | Review records and dispositions.                                      |
+| `handoff/`     | Cross-session handoff records.                                        |
+| `project/`     | Shared project-state, repository map, and technology governance.      |
+| `roadmap/`     | Evidence-based sequencing shared across projects.                     |
+| `releases/`    | Release notes backed by published artifacts.                          |
+
+Per-project content lives under `docs/projects/<project>/`:
+
+| Project     | Scope                                                                             |
+| ----------- | --------------------------------------------------------------------------------- |
+| `bitty/`    | Terminal platform: core, VT, PTY, UI, configuration, plugin host, IPC, packaging. |
+| `bitty-ai/` | Independent AI-core project: runtime, providers, and context.                     |
+| `plugins/`  | Per-plugin documentation for first-party and featured plugin candidates.          |
+
+`docs/project/` (singular) remains shared project-state and technology
+governance; `docs/projects/` (plural) is the per-project documentation
+partition.
+
+Routing rules:
+
+1. New project-specific documents go under `docs/projects/<project>/`.
+2. Cross-project contracts, registers, policies, and the security corpus stay
+   in the shared top-level directories; a project tree links to them instead
+   of copying them.
+3. Open-question and ADR/RFC numbering stay global; the single
+   [open-question register](../decisions/open-questions.md) owns every OQ.
+4. Each plugin gets `docs/projects/plugins/<plugin>/` with the standard page
+   set defined below.
+
+### Migration plan
+
+Phase 1 added the partition, index pages, and skeletons only; no existing file
+moved. Phase 2 (CTX-0185) migrated the existing terminal-platform documents
+(`architecture/`, `specifications/`, `configuration/`, `product/`,
+`interfaces/`, `user-guide/`, `tutorials/`, `how-to/`, `reference/`,
+`examples/`, `extensibility/`, `requirements/`, `troubleshooting/`,
+`migrations/`) into `docs/projects/bitty/` with `git mv`, rewriting relative
+and absolute links and preserving each document's `website_publish` flag plus
+the deprecation and redirect policy in this document. It also updated
+path-sensitive consumers (navigation indexes, the project-state snapshot and
+its canonical summary checks) and kept `just check` green. Phase 3 lands
+`bitty-ai/` and per-plugin content as their owning repositories produce it.
+
+## Per-plugin documentation page set
+
+Each documented plugin gets `docs/projects/plugins/<plugin>/` following the
+standard page set. The set separates candidate intent, accepted contracts, and
+evidence so no page implies shipped behavior it cannot support.
+
+| Page          | Typical `document_type`   | Purpose                                                              |
+| ------------- | ------------------------- | -------------------------------------------------------------------- |
+| `README.md`   | `index`                   | Identity, current stage, owning repository, and page links.          |
+| `design.md`   | `specification`           | Scope, UX, capability boundaries, and mechanism/policy split.        |
+| `schemas.md`  | `contract` or `reference` | Manifest fields, configuration keys, wire/API schemas, and versions. |
+| `evidence.md` | `register`                | Decision links, experiments, reviews, and test/release evidence.     |
+
+Rules:
+
+- Start from the template at
+  [`../projects/plugins/TEMPLATE.md`](../projects/plugins/TEMPLATE.md).
+- Cross-project contracts and registers stay in the shared directories; a
+  plugin page links to them instead of restating them.
+- Use only the allowed metadata values; "candidate" and "planned" are prose,
+  not an implementation claim.
+- Create only pages that have real content; empty placeholder pages are
+  avoided so the tree does not imply work that has not happened.
+
 ## Document types and authority
 
 | Type                    | Purpose                                                                         | Authority rule                                                    |
@@ -178,11 +260,11 @@ CarryCtx task with independent review, CI green (`just check` includes
 provenance record. The snapshot records state; it must not auto-accept risks
 or replace CarryCtx and security-auditor review. Risk state transitions still
 require the per-risk RS-1..RS-7 checklist and auditor sign-off per the
-[risk evidence RFC](../specifications/risk-evidence-rfc.md).
+[risk evidence RFC](../projects/bitty/specifications/risk-evidence-rfc.md).
 
 Canonical human-readable summaries in `README.md`, `TODO.md`,
 `docs/README.md`, `docs/security/risk-register.md`,
-`docs/security/evidence-matrix.md`, and `docs/product/release-ladder.md` are
+`docs/security/evidence-matrix.md`, and `docs/projects/bitty/product/release-ladder.md` are
 derived from the snapshot and validated deterministically by
 `bun .github/scripts/check-state.mjs` (also `just state` and CI). Divergence
 is a defect. Test counts remain in audit and implementation evidence and are

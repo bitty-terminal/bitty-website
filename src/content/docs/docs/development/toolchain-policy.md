@@ -18,6 +18,9 @@ sidebar_order: 15
   pinned versions. Free-version drift between agents is a defect, not a
   convenience. Every command below is the single canonical way to perform its
   task in this workspace.
+- Related: [Repository Metadata and GitHub Baseline](repository-metadata-baseline.md)
+  owns the shared-versus-per-repository classification of `.github/` and root
+  metadata; this document owns local tool versions and gate commands.
 
 ## Normative rules
 

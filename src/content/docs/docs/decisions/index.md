@@ -114,6 +114,45 @@ facts before relying on them operationally.
 The following proposals have not been accepted merely because they appeared in
 the historical conversation:
 
+- Appearance configuration: focused/idle outline colors, and (still open)
+  workspace/tab label position, frame and margin-line color, per-surface
+  background opacity, and blur. (Accepted:
+  [Appearance Configuration RFC](rfcs/RFC-0001-appearance-configuration.md) —
+  focused/idle outline color pair accepted for OQ-039 on 2026-09-12; the
+  remaining already-supported appearance knobs are recorded as reference while
+  [OQ-036](open-questions.md), [OQ-037](open-questions.md), and
+  [OQ-038](open-questions.md) remain `Open`; frontmatter `accepted`.)
+- Per-View/per-panel appearance overrides and the UI extension architecture:
+  selector grammar, precedence, reload, safe mode, focus/idle outline width,
+  per-panel animations, and plugin-supplied appearance. (Accepted: the per-View
+  override contract and the outline-width contract in the
+  [Appearance Configuration RFC](rfcs/RFC-0001-appearance-configuration.md),
+  docs `CTX-0163`, closing [OQ-041](open-questions.md) and
+  [OQ-045](open-questions.md) on 2026-09-12; the
+  [UI Extensibility Architecture](../specifications/ui-extensibility-architecture.md)
+  records the acceptance; [OQ-043](open-questions.md) is narrowed to the
+  animation field set, while [OQ-044](open-questions.md) and
+  [OQ-049](open-questions.md) remain open. No implementation claim.)
+- Per-panel background images for user configuration. (Accepted:
+  [Appearance Configuration RFC](rfcs/RFC-0001-appearance-configuration.md) —
+  resolves the Core-owned user-configuration half of
+  [OQ-042](open-questions.md) on 2026-09-12 under docs `CTX-0159`; the
+  `decoration.background_image` / `_fit` / `_image_roots` keys are a reviewed
+  contract, not shipped. Plugin-supplied images remain open as
+  [OQ-049](open-questions.md).)
+- Panel animations and effects: panel open/close, focus-change, and optional
+  workspace-switch transitions with bounded durations/easings, reduced-motion
+  and safe-mode behavior, and a present-path budget. (Accepted:
+  [Panel Animations and Effects RFC](rfcs/RFC-0002-panel-animations.md) —
+  resolves the bitty `CTX-0340` request and closes
+  [OQ-040](open-questions.md) on 2026-09-12; frontmatter `accepted`.)
+- Theme preset catalog: dark/light preset families, category selectability,
+  custom/user themes, and automatic light/dark switching. (Shipped reference in
+  the [theme preset catalog](../configuration/themes.md); 30 presets landed in
+  bitty `CTX-0350` PR #578 `20cd735` with the AC-2 correction in PR #586
+  `a7d9e6a`; registers [OQ-046](open-questions.md),
+  [OQ-047](open-questions.md), and [OQ-048](open-questions.md), which remain
+  open.)
 - Plugin API v1, capability/manifest model, and event phases. (Accepted:
   [Plugin Platform RFC](../specifications/plugin-platform-rfc.md) — Plugin API
   v1, capability/manifest model, and event pipeline for OQ-011/OQ-012/OQ-013;
@@ -125,6 +164,15 @@ the historical conversation:
   LUA-OQ-1 through LUA-OQ-12; contract authority in `bitty-docs`,
   implementation and parity in `bitty`, SDK generated; frontmatter `accepted`
   on 2026-09-11.)
+- Runtime plugin host bridge, per-plugin VM lifecycle, source resolution and
+  staging, and host-service wiring. (Accepted and shipped:
+  [Plugin Host Runtime RFC](../specifications/plugin-host-runtime-rfc.md) and
+  [ADR 0010](adrs/ADR-0010-plugin-host-runtime-acceptance.md) — resolves
+  [OQ-033](open-questions.md), [OQ-034](open-questions.md), and
+  [OQ-035](open-questions.md) from bitty `CTX-0324` D4/P0 Gaps A/B/C; frontmatter
+  `accepted` on 2026-09-11. First slice shipped in bitty PR #554 merge `e51b5cc`
+  (CTX-0328) and PR #558 merge `064b9de` (CTX-0329); reload/update triggers
+  remain [OQ-072](open-questions.md) and hardening remains bitty `CTX-0330`.)
 - Rich blocks, semantic zones, structured transports, and TUI transformation. (Accepted: [Rich presentation RFC](../specifications/rich-presentation-rfc.md) — image/rich-block/scene/zone and structured transport for [OQ-008](open-questions.md)/[OQ-015](open-questions.md)/[OQ-016](open-questions.md); frontmatter `accepted` on 2026-08-28.)
 - Unified action registry, CLI grammar, IPC contract, and MCP/DevTools protocol. (Accepted: [CLI Contract RFC](../specifications/cli-contract-rfc.md) — top-level commands, dynamic `bitty x` namespace, action and output schemas, aliases, and exit codes 0 through 8 for [OQ-017](open-questions.md); frontmatter `accepted` on 2026-08-28.)
 - Package manifest/lock formats, resolver, registry, and update UX.
@@ -152,6 +200,7 @@ the historical conversation:
   review gates for closing risks without weakening controls for
   [OQ-025](open-questions.md); frontmatter `accepted` on 2026-08-29.)
 - Input and pointer contract. (Draft: [Input and Pointer Contract](../specifications/input-pointer-rfc.md) — candidate keyboard, mouse, wheel, gesture, IME, selection, and PTY encoding contract with Shift override, pixel-scroll accumulation, platform adapter ownership, and hot-path exclusion; reconciles with Terminal State, Platform, Plugin Platform, Clipboard R-004 at 7a4ee41, and Performance; frontmatter `draft` on 2026-08-31.)
+- Repository metadata and `.github` baseline across the estate. (Proposed: [ADR 0011](adrs/ADR-0011-repository-metadata-baseline.md) and the [Repository Metadata and GitHub Baseline](../development/repository-metadata-baseline.md) guide — byte-identical, parameterized, and per-repository tiers; required-check naming atomic with branch protection; action SHA pinning and rust-channel pinning. Extended from the 2026-09-11 configuration-drift audit under `CTX-0155`; not yet accepted and authorizes no consumer-repository change.)
 
 Each candidate is represented by an item in the
 [open-question register](open-questions.md). Acceptance requires an ADR, RFC,

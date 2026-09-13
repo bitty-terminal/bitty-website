@@ -250,7 +250,7 @@ Artifacts are stored where they are auditable without spreading the source of
 truth:
 
 - Local headless and integration logs stay in the workspace under
-  `recordings/evidence/<risk>/<criterion>/` when durable scratch is needed; CI logs
+  `recording/evidence/<risk>/<criterion>/` when durable scratch is needed; CI logs
   remain the authoritative copy and are cited by run URL.
 - Fuzz corpora are committed under the owning crate's fuzz target directory
   or under `fuzz/corpora/`; the register row cites the corpora by path plus
@@ -477,7 +477,7 @@ Deliberately unresolved at draft time; none blocks the contract above from
 review, and none weakens a normative gate. Disposition belongs to acceptance
 or to a follow-up scoped task:
 
-1. Exact directory layout for non-CI artifacts under `recordings/evidence/` versus
+1. Exact directory layout for non-CI artifacts under `recording/evidence/` versus
    `docs/security/audits/` for corpus- and SARIF-adjacent files that should be
    committed versus ephemeral.
 2. Whether the fuzz duration for VT/URI/manifest corpora is expressed as a

@@ -65,8 +65,9 @@ Normative sources this RFC must not weaken:
 - [Terminal State RFC](terminal-state-rfc.md): parser-to-action-to-state is
   the only write path into terminal state; damage and snapshot rules apply.
 - [Compatibility Milestone RFC](compatibility-milestone-rfc.md): M1 mouse
-  modes (1000/1002/1003/1006), focus (1004/1007), bracketed paste (2004),
-  synchronized updates (2026), and Kitty keyboard as opt-in enhancement.
+  modes (1000/1002/1003/1006), focus (1004), alternate scroll (1007),
+  bracketed paste (2004), synchronized updates (2026), and Kitty keyboard as
+  opt-in enhancement.
 - [ADR 0002 Platform Support Tiers](../decisions/adrs/ADR-0002-platform-support-tiers.md):
   Tier 1 is Linux x86_64 (Wayland+X11), Windows x86_64 ConPTY, macOS ARM64
   13+; Tier 2 is Linux ARM64, macOS x86_64, FreeBSD x86_64.
@@ -645,14 +646,14 @@ tests, fuzz corpora, and independent security-auditor review per
 
 ## Reconciliation with accepted contracts
 
-| Accepted contract                    | How this candidate reconciles                                                                                                        |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Terminal State RFC (OQ-007)          | Honors Action-only write path; mouse/keyboard never mutate grid directly; damage stays state-owned.                                  |
-| Compatibility Milestone RFC (OQ-004) | Preserves M1 mouse 1000/1002/1003/1006 SGR, focus 1004/1007, bracketed paste 2004, Kitty as opt-in; adds only compatible extensions. |
-| ADR 0002 Platform tiers              | Assigns every adapter nuance to `bitty-platform`; Tier 1 coverage is the test matrix; Tier 2 is nightly.                             |
-| Plugin Platform RFC (OQ-011/012/013) | Inherits observation/interception classes and three-level queue DropOldest; adds no new interception point or hot-path event.        |
-| Clipboard R-004 at 7a4ee41           | Adopts `CLIPBOARD_MAX_BYTES`, `inspect_paste`, `PendingPaste`, and Open residuals verbatim; does not claim to close R-004.           |
-| Performance Budget RFC PB-4          | Keeps hot path allocation-free and plugin-free; budgets and coalescing are sized to preserve 8 ms p50.                               |
+| Accepted contract                    | How this candidate reconciles                                                                                                                          |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Terminal State RFC (OQ-007)          | Honors Action-only write path; mouse/keyboard never mutate grid directly; damage stays state-owned.                                                    |
+| Compatibility Milestone RFC (OQ-004) | Preserves M1 mouse 1000/1002/1003/1006 SGR, focus 1004, alternate scroll 1007, bracketed paste 2004, Kitty as opt-in; adds only compatible extensions. |
+| ADR 0002 Platform tiers              | Assigns every adapter nuance to `bitty-platform`; Tier 1 coverage is the test matrix; Tier 2 is nightly.                                               |
+| Plugin Platform RFC (OQ-011/012/013) | Inherits observation/interception classes and three-level queue DropOldest; adds no new interception point or hot-path event.                          |
+| Clipboard R-004 at 7a4ee41           | Adopts `CLIPBOARD_MAX_BYTES`, `inspect_paste`, `PendingPaste`, and Open residuals verbatim; does not claim to close R-004.                             |
+| Performance Budget RFC PB-4          | Keeps hot path allocation-free and plugin-free; budgets and coalescing are sized to preserve 8 ms p50.                                                 |
 
 No candidate in this document relaxes a P0 control, widens a trust boundary,
 or moves an accepted owner.

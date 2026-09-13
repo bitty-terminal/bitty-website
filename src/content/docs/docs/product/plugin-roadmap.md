@@ -37,7 +37,8 @@ generation lifecycle), and the
 sequencing.
 
 In scope: the bundled-disabled first-party set that dogfoods Plugin API v1
-(shell integration, tabs, statusline, palette, project), future dogfood
+(shell integration, workspace, statusline, palette, project, file manager,
+git panel, browser panel, AI panel, mail panel), future dogfood
 candidates such as splits and search, the featured second wave (pet, activity,
 contributions to knowledge graph, peek, mirror, lock, scratchpad), their
 mechanism vs policy split, capability sketches, privacy posture
@@ -157,13 +158,39 @@ with `distribution.toml` and `checksums.sha256`, PB-5 `<= 40 MiB` cap).
 Bundled presence alone creates zero VM, queue, or handler cost until
 explicitly enabled.
 
-| Plugin ID                          | Policy owned by the plugin                                                                                             | Core mechanism relied on                                                                | Capability sketch (illustrative)                        | Dogfood validation signal                                                                                             |
-| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `bitty-terminal.shell-integration` | OSC 7/133 semantic zones, cwd and title propagation, prompt and command-region marks, fail-closed fallback when absent | VT parser OSC 7/133 derivation, semantic zones, `ImageStore` anchor fallback            | `terminal.semantic-read` read-only                      | Zones consumed by search, statusline, and peek without plugin-side VT parsing; absence degrades gracefully            |
-| `bitty-terminal.tabs`              | Tab commands, tabline presentation, ordering, key bindings, and closing policy                                         | `LayoutNode` and split primitives, tabline exclusive claim, statusline slot composition | `ui.rich` or status-component slot plus `tabline` claim | Exclusive claim validated: duplicate claim rejected, not last-wins; close policy observable via `bitty plugin doctor` |
-| `bitty-terminal.palette`           | Command palette and picker UI, fuzzy filtering, preview presentation                                                   | Command registry, overlay slot, declarative list and text primitives                    | `ui.overlay`                                            | Validates palette as overlay composition using declarative primitives only, no shader or native window path           |
-| `bitty-terminal.statusline`        | Presentation of cwd, mode, Git and task state, status component composition policy                                     | Statusline slot composition, semantic snapshot, zone metadata from shell integration    | `terminal.semantic-read`, status-component composition  | Composition validated: many providers compose, ordering explicit, no ambient capability via composition               |
-| `bitty-terminal.project`           | Project discovery and session presentation                                                                             | Constrained project discovery and session metadata                                      | `fs.read:PROJECT_GLOB` constrained                      | Validates project-scoped discovery and session presentation without widening trust or filesystem authority            |
+The canonical v1 catalog is `all_bundled_manifests()` in
+`crates/bitty-plugin-host/src/bundled.rs` (`bitty` revision `b761c03`): ten
+bundled-disabled manifests built from the same public `PluginManifest` types a
+third-party `bitty-plugin.toml` uses, with no private channel. The table below
+is synced to that catalog. `bitty-terminal.workspace` is canonical and
+`bitty-terminal.tabs` remains a deprecated alias (removal `>= v0.2.0`). The
+first-party runtime implementations that exercise these manifests live in
+`crates/bitty-runtime` as review evidence; manifest presence is not shipped
+plugin behavior.
+
+Synchronization note: the accepted
+[Default Distribution RFC](../specifications/default-distribution-rfc.md) bundled list
+was revised on 2026-09-13 (CTX-0170) to the ten-plugin code catalog and the
+`workspace` rename, retaining the earlier five-plugin set as history in that
+RFC's
+[superseded set](../specifications/default-distribution-rfc.md#superseded-bundled-set-2026-08-29).
+This roadmap and the RFC now describe the same catalog. Point-in-time
+citations in the pre-studies (for example
+[Browser and Agent Panel Integration Pre-Study](../specifications/browser-agent-pre-study.md))
+stay as committed-snapshot references.
+
+| Plugin ID                          | Policy owned by the plugin                                                                                             | Core mechanism relied on                                                             | Capability sketch (illustrative)                                                                                                                                | Dogfood validation signal                                                                                             |
+| ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `bitty-terminal.shell-integration` | OSC 7/133 semantic zones, cwd and title propagation, prompt and command-region marks, fail-closed fallback when absent | VT parser OSC 7/133 derivation, semantic zones, `ImageStore` anchor fallback         | `terminal.semantic-read` read-only                                                                                                                              | Zones consumed by search, statusline, and peek without plugin-side VT parsing; absence degrades gracefully            |
+| `bitty-terminal.workspace`         | Workspace commands, workspaceline presentation, ordering, key bindings, and closing policy                             | `LayoutNode` and split primitives, workspaceline exclusive claim, status composition | `ui.rich` or status-component slot plus `workspaceline` claim                                                                                                   | Exclusive claim validated: duplicate claim rejected, not last-wins; close policy observable via `bitty plugin doctor` |
+| `bitty-terminal.statusline`        | Presentation of cwd, mode, Git and task state, status component composition policy                                     | Statusline slot composition, semantic snapshot, zone metadata from shell integration | `terminal.semantic-read`, status-component composition                                                                                                          | Composition validated: many providers compose, ordering explicit, no ambient capability via composition               |
+| `bitty-terminal.palette`           | Command palette and picker UI, fuzzy filtering, preview presentation                                                   | Command registry, overlay slot, declarative list and text primitives                 | `ui.overlay`                                                                                                                                                    | Validates palette as overlay composition using declarative primitives only, no shader or native window path           |
+| `bitty-terminal.project`           | Project discovery and session presentation                                                                             | Constrained project discovery and session metadata                                   | `fs.read:PROJECT_GLOB` constrained                                                                                                                              | Validates project-scoped discovery and session presentation without widening trust or filesystem authority            |
+| `bitty-terminal.file-manager`      | Tiled Panel file manager with constrained `fs.read` and optional `fs.write`                                            | Panel Runtime, `ViewContent::Panel(PanelId)`, semantic snapshot                      | `panel.provider`, `panel.create`, `terminal.semantic-read`, `fs.read:~/projects/**`, optional `fs.write:~/projects/**`                                          | Validates a P1 tiled panel with path-scoped grants and bounded `8 KiB`/`32`/`64` payloads                             |
+| `bitty-terminal.git-panel`         | Tiled Panel git branch/status/diff/log presentation                                                                    | Panel Runtime plus allowlisted `process.spawn:git` under manifest `[tools.git]`      | `process.spawn:git` allowlisted, `panel.provider`, `panel.create`, `terminal.semantic-read`                                                                     | Validates CLI reuse (Layer 2) against an allowlisted binary with bounded output under `[tools.git]` argv              |
+| `bitty-terminal.browser-panel`     | View `Browser(BrowserSurfaceId)` plus tiled Panel placement and navigation policy                                      | Browser surface contracts plus Panel Runtime                                         | `browser.embed`, `browser.navigation`, `browser.file-url`, `browser.storage`, `network.connect:...:443`                                                         | Validates Browser view plus Panel composition with a default `https` allowlist and bounded BA-1..BA-3 surfaces        |
+| `bitty-terminal.ai-panel`          | Agent panel surface: chat, tool invocation, memory and consent presentation with an ephemeral workspace                | Panel Runtime, MCP tool bus, `AgentId` context budget `32 KiB`                       | `ai.provider`, `ai.stream`, `ai.model`, `agent.context.terminal`, `agent.context.workspace`, `agent.memory:persist`, `mcp.invoke:read_file`, `mcp.invoke:fetch` | Validates agent surfaces on generic primitives, 32 KiB per-turn context, and bounded memory without core AI coupling  |
+| `bitty-terminal.mail-panel`        | Mail triage panel: list, read, search, and send policy through MCP and explicit network endpoints                      | Panel Runtime, MCP adapter, `network.connect` host:port allowlist, scoped `fs`       | `mcp.invoke:mail.list/read/search/send`, `network.connect:imap.example.com:993`, `network.connect:smtp.example.com:465`, `fs.read`/`fs.write:~/mail/**`         | Validates a P3 panel that needs explicit endpoint grants and remains disabled on a fresh install without consent      |
 
 Accepted rules for this wave:
 
@@ -183,6 +210,139 @@ Accepted rules for this wave:
   RC-1/RC-2/RC-4/RC-5 counters toward baseline before reporting success,
   matching the Distribution RFC generation-disposal and PB-3 15% reclaim
   criterion.
+
+## Statusline and shell-prompt boundary
+
+The bundled `bitty-terminal.statusline` is terminal-owned chrome: a
+waybar/Hyprland-class status surface that occupies a terminal UI slot (the
+statusline/workspaceline slot) and presents terminal and workspace state such
+as cwd, mode, Git and task state from the semantic snapshot. It is not a shell
+prompt.
+
+Starship, Oh My Posh, Powerlevel10k, and similar tools are shell-prompt
+producers: the shell renders their Unicode/ANSI output inside the terminal
+grid as ordinary VT content. The surfaces are distinct and have different
+owners, so "statusline replaces starship" is not the accepted relationship.
+Bitty's obligation toward starship-class prompts is faithful rendering, not
+substitution; the terminal-side compatibility checklist for those prompts is
+maintained in
+[Shell and TUI compatibility](../extensibility/plugin-system.md#shell-and-tui-compatibility).
+
+The recorded user direction (2026-09-13, bitty `CTX-0377`) is that the
+statusline is a good design that _may eventually_ carry starship-class
+information, while starship-class prompts still require perfect terminal
+compatibility. Whether the statusline should absorb prompt-class presentation
+is undecided and is tracked as
+[OQ-079](../decisions/open-questions.md); this roadmap records the possibility
+without converging the two surfaces.
+
+## Independent-plugin migration direction (candidate)
+
+Status: **candidate, non-normative**. Bundled-disabled and independent are
+distribution states, not privilege tiers: an independent first-party plugin
+goes through the same manifest validation, deny-by-default capability consent,
+permission-diff gate, lazy triggers, and `bitty --safe` skip as any third-party
+plugin, with no private channel.
+
+The candidate direction is to publish the complex first-party plugins as
+**independently versioned first-party packages** instead of shipping their
+manifests inside the binary catalog, so each can update on its own cadence and
+so the public Plugin API is pressure-tested by real consumers:
+
+| Candidate for independence                  | Rationale                                                                               |
+| ------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `bitty-terminal.statusline` (workspaceline) | Presentation policy evolves fastest; users may prefer alternatives or compose their own |
+| `bitty-terminal.palette`                    | Picker UX and fuzzy behavior benefit from independent iteration                         |
+| `bitty-terminal.file-manager`               | Panel UX surface with filesystem grants that should stay separately consensual          |
+| `bitty-terminal.git-panel`                  | Wraps an external tool/toolchain that drifts independently                              |
+| `bitty-terminal.browser-panel`              | Heavy optional surface with its own backend and platform risks                          |
+| `bitty-terminal.ai-panel`                   | AI provider/model churn outpaces terminal releases                                      |
+| `bitty-terminal.mail-panel`                 | Niche optional surface with explicit network endpoint grants                            |
+
+Candidate invariants if this migration is accepted:
+
+- Plugin IDs, capability identifiers, and grant records do not change with the
+  move; a migrated plugin keeps its `bitty-terminal.*` identity.
+- Shell integration and the workspace core remain bundled because other
+  plugins and core surfaces consume their observations and claims; whether any
+  other plugin must remain bundled is part of OQ-053.
+- The accepted package lifecycle (signature/provenance, lockfile, atomic
+  activation, rollback) governs independent distribution; the bundled catalog
+  shrinks rather than gaining a second distribution mechanism.
+- Fresh-install behavior stays staged-and-disabled; migration must not turn
+  "previously bundled" into "implicitly enabled".
+
+Tracked as [OQ-053](../decisions/open-questions.md).
+
+## Secrets and credential handling direction (candidate)
+
+Status: **candidate, non-normative**, except where it restates
+[ADR 0006](../decisions/adrs/ADR-0006-os-env-policy.md), which is accepted and
+authoritative.
+
+Accepted baseline that this direction must not weaken:
+
+- `os.getenv` is denied in every Lua VM with a typed denial, not a silent
+  `nil`; the only read path is the host-mediated `bitty.env.get` filtered
+  snapshot, and per-plugin reads require a declared `env:<KEY>` (or
+  `env:BITTY_*` patterned) capability plus user consent and audit.
+- The Lua host constructs its standard library without `io`, `debug`, or
+  package ambient authority, so plugins cannot read or write `.env` files
+  through Lua, and cannot mutate the host environment.
+- Environment-derived values are typed sensitive data: diagnostics and traces
+  quote the key and presence, never the value, and audit events record
+  `timestamp`, `vm_class`, `key`, `granted`, and `caller_location` without the
+  value.
+
+Candidate secret-storage tiers (none implemented today; each needs its own
+review and consent contract):
+
+| Tier                        | Shape                                                                                             | Candidate use                                 |
+| --------------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| Host-consumed environment   | The Rust host reads an allowlisted variable and never exposes it to Lua                           | CI and developer shells that already export   |
+| `secrets.env` (mode `0600`) | `$XDG_CONFIG_HOME/bitty/secrets.env`, host-parsed, never Lua-readable, values redacted in outputs | Local API keys without an OS keyring          |
+| OS keyring                  | Platform credential store (for example Secret Service, Keychain, Credential Manager)              | Desktop default when available                |
+| Command references          | `pass show <path>` / `op read <ref>` style argv executed by the host after consent, stdout only   | Users who already manage secrets in a manager |
+
+Candidate rules for any tier: values resolve on the Rust side only; Lua and
+plugins receive redacted handles or nothing; the consent ledger records which
+`(PluginId, generation)` or `(AgentId, generation)` requested which key and
+when; a failed or absent resolution is fail-closed, never an empty-string
+fallback; and `.env` files are never read or written by Bitty on behalf of
+Lua. Tracked as OQ-054 and OQ-055.
+
+## Plugin capability dimensions (candidate)
+
+Status: **candidate, non-normative**; accepted baselines are noted where they
+exist.
+
+The plugin platform already accepts manifest capabilities, deny-by-default
+grants, lazy triggers, the three-level queue budgets, and provided/required
+services. Five capability dimensions are candidates for explicit contracts as
+the first-party wave grows:
+
+1. **Semantic UI slots** — status components, overlay slots, and exclusive
+   claims exist in the accepted surface. Candidate extension: a documented slot
+   inventory with per-slot bounds and conflict resolution so overlay/status
+   composition stops being implicit.
+2. **Presentation projection** — plugins may observe semantic zones and
+   propose projections (fold state, hints, summaries) but never mutate
+   Terminal Truth. Candidate contract: a projection API that returns bounded
+   presentation data and cannot write state; relates to OQ-050 and OQ-051.
+3. **Workspace policies** — workspace/tab ordering, naming, and close policy
+   are first-party plugin policy today. Candidate contract: which workspace
+   policies are plugin-declarable and which remain Core-owned.
+4. **Events and automation** — observation-class events plus lazy command
+   triggers are accepted. Candidate contract: whether any bounded
+   automation action class (not just observation) is grantable, and how
+   action-class plugins stay out of the hot path.
+5. **Cross-plugin service bus** — provided/required services and versions are
+   accepted. Candidate contract: multiplicity, version negotiation, and
+   failure isolation rules for services with multiple consumers; the
+   contributions/knowledge-graph open question is a concrete case.
+
+Tracked as [OQ-056](../decisions/open-questions.md); it does not re-litigate
+OQ-044/OQ-049 (appearance) or the accepted Plugin Platform RFC surface.
 
 ## Featured wave: install-time plugins that exercise the boundary
 
@@ -306,9 +466,9 @@ without private APIs. Minimum signals before a bundled plugin is considered
 - Manifest and capability round-trip: static graph construction rejects
   duplicate qualified names, unknown capabilities, and undeclared event
   subscriptions; lazy help and completion work without a VM.
-- Register vs claim semantics: `tabs` tabline claim exclusivity and
-  `statusline` composition both behave as specified, with diagnostics
-  instead of load-order shadowing.
+- Register vs claim semantics: `workspace` workspaceline claim exclusivity
+  (legacy `tabline` alias included) and `statusline` composition both behave
+  as specified, with diagnostics instead of load-order shadowing.
 - Observation-only verification: fuzz and property tests show no parser,
   render, or input hot-path callback registration for any first-party
   plugin.

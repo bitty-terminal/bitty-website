@@ -50,6 +50,19 @@ The governing boundary is:
 
 > Plugins may alter presentation, but must not alter terminal truth.
 
+Two candidate design rules sharpen the boundary between the Lua layer and the
+host:
+
+- **Lua decides policy and composition; Rust enforces capability and
+  mechanism.** Plugins choose what should happen and compose host-provided
+  services; the host decides whether it may happen and how it is bounded.
+- **Semantic primitives are the extension ceiling.** Plugins compose
+  host-provided semantic primitives and cannot create a primitive the host
+  does not define, so a missing primitive is an upstream design task rather
+  than a plugin-side workaround. Core owes plugins aggregated semantic hook
+  points (for example a completed-command event with exit status) instead of
+  raw per-byte or per-cell callbacks.
+
 This is an architecture direction, not a claim that the APIs described below
 exist.
 
@@ -134,10 +147,17 @@ CPU/instruction, memory, task, callback-time, and queue budgets are per-plugin,
 attributable, and enforceable. A plugin failure is isolated and must not crash
 the host.
 
-Status: **candidate contract.**
+Status: **accepted contract; first slice shipped.**
 
 Exact VM creation, reuse, unload/reload lifecycle, service transport, state
-migration, and cost optimizations still require validation. A plugin may load
+migration, and cost optimizations are defined by the accepted
+[Plugin Host Runtime RFC](../specifications/plugin-host-runtime-rfc.md)
+(OQ-033/OQ-034/OQ-035, ratified through
+[ADR 0010](../decisions/adrs/ADR-0010-plugin-host-runtime-acceptance.md)). The
+first sliced implementation shipped in bitty PR #554 merge `e51b5cc`
+(CTX-0328: bridge and VM lifecycle) and PR #558 merge `064b9de` (CTX-0329:
+store staging and integrity verification); hardening and the reload/update
+trigger contract remain follow-ups (bitty `CTX-0330`; OQ-072). A plugin may load
 its own modules but not another plugin's private module tree.
 
 Plugin-to-plugin collaboration goes through versioned services or other
@@ -336,6 +356,15 @@ producers. Their Unicode and ANSI/VT output should work without a Bitty-specific
 plugin. Bitty owns terminal appearance; prompt tools own prompt appearance;
 terminal plugins own declared extensions. None owns the others.
 
+A terminal statusline (for example the bundled `bitty-terminal.statusline`) is
+terminal-owned chrome in a terminal UI slot, a waybar-class bar; it is not a
+shell prompt. A starship-class prompt is produced and rendered by the shell
+inside the terminal grid. The two surfaces therefore do not substitute for one
+another, and the terminal-side obligation is to render prompt output faithfully
+(see the checklist below). Whether the statusline may later present
+starship-class information is tracked as
+[OQ-079](../decisions/open-questions.md), not decided here.
+
 Shell integration must observe or chain shell lifecycle hooks instead of
 overwriting `PROMPT_COMMAND` or another shell's equivalent. It should primarily
 emit semantic metadata such as OSC 7 or OSC 133 and must not assume Bash, Unix,
@@ -350,6 +379,30 @@ Compatibility coverage should eventually combine shells and prompt tools with
 Unicode, Nerd Font glyphs, emoji, CJK paths, true color, multiline/right/
 transient prompts, resizing, and long working directories. This is a test-plan
 direction, not a statement of current coverage.
+
+### Terminal-side checklist for starship-class prompts
+
+The requirements below are what Bitty must provide so starship-class prompts
+render correctly; they are not requirements on the prompt tools. Implementation
+status is a scoped snapshot, not an M1 completion claim: **Shipped** means
+named `bitty` implementation evidence exists, **Candidate** means the direction
+or contract is recorded without dedicated acceptance evidence, **Open** means
+no contract or implementation. Every Shipped row still owes the cross-platform
+evidence and independent sign-off the
+[Compatibility Milestone RFC](../specifications/compatibility-milestone-rfc.md)
+requires before milestone M1 can be declared complete.
+
+| Requirement                                                   | Status           | Evidence and remaining gap                                                                                                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| True color (24-bit SGR)                                       | Shipped          | 16/256/truecolor SGR is M1-required; `COLORTERM=truecolor` session default shipped (bitty CTX-0165, commit `8529b6b`, PR #272).                                                                                                                                                                                                                                      |
+| Nerd Font and Powerline glyph fallback                        | Shipped          | Coverage-driven font fallback plus tofu for uncovered scalars (bitty CTX-0368, commit `828a787`, PR #612); tall powerline/Nerd glyph clipping fix (bitty CTX-0237, commit `308687d`, PR #413); documented monospace/Nerd fallback chain (bitty CTX-0157, commit `eb6fd43`, PR #296). Glyph coverage depends on installed fonts; there is no per-codepoint guarantee. |
+| Wide and CJK cells                                            | Shipped          | Unicode/IME corpora with a width model (bitty CTX-0079, commit `26087d3`, PR #117); wide-aware reflow on narrow (bitty CTX-0266, commit `1330c31`, PR #441).                                                                                                                                                                                                         |
+| Emoji and ZWJ sequences                                       | Candidate        | Emoji-ZWJ corpus cases exist (bitty CTX-0079); color-emoji bitmap rendering is deferred (bitty `DEC-0053`, monochrome alpha flatten via atlas), and platform emoji-tail font enumeration is not shipped.                                                                                                                                                             |
+| Cursor placement and wrapping around multi-line/right prompts | Open             | Recorded here as a test-plan direction only; no dedicated acceptance evidence for cursor position or wrap behavior around multi-line/right prompts.                                                                                                                                                                                                                  |
+| OSC 7/OSC 133 shell integration and prompt marks              | Shipped (opt-in) | First-party `bitty-terminal.shell-integration` plugin shipped (bitty CTX-0103, commit `34eae1c`, PR #161); `shell_prompt_marks` compat corpus (bitty CTX-0074, commit `22f7eee`, PR #111). The Compatibility Milestone RFC keeps OSC 7/133 an opt-in enhancement, never required, and forbids prompt-text heuristics.                                                |
+| Prompt redraw performance                                     | Candidate        | General PB-1..PB-7 budgets and the `bitty-perf` latency harness exist; no prompt-redraw-specific benchmark or budget is recorded.                                                                                                                                                                                                                                    |
+| Bracketed paste (mode 2004)                                   | Shipped          | M1-required; suspicious-paste inspection (bitty CTX-0091, commit `de134ec`, PR #136); visible multi-line paste confirmation (bitty CTX-0186, commit `826b1b5`, PR #290); honest LF/CR classification and discoverable paste confirm (bitty CTX-0369, commit `8e2f975`, PR #608).                                                                                     |
+| Cursor shape/style (DECSCUSR)                                 | Shipped          | DECSCUSR cursor shapes (bitty CTX-0162, commit `6c7cf3e`, PR #293).                                                                                                                                                                                                                                                                                                  |
 
 ## Plugin author rules
 

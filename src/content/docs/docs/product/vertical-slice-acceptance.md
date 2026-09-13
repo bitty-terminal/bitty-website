@@ -434,7 +434,7 @@ For each Tier 1 platform where a visible run is claimed:
    echo, cursor blink/visibility, selection drag, copy/paste round-trip,
    window resize that resizes the PTY grid, scrollback scroll, `nvim` smoke,
    `tmux` smoke, and alternate-screen restoration. Each recording is stored
-   under `recordings/` per workspace hygiene and referenced from the evidence
+   under `recording/` per workspace hygiene and referenced from the evidence
    PR description.
 2. A `VT-SLICE-{{platform}}-{{date}}.md` note recording grid size, shell,
    font, DPI scale, and the `clipboard-{{platform}}` limitation paragraph

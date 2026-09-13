@@ -328,7 +328,7 @@ following evidence was recorded for acceptance on 2026-08-29.
 - [ ] **E1 — Send boundary proof:** compile-fail and test diffs proving VMs are `!Send`/`!Sync`, host handles are `Send`, and the async boundary matches the table above.
 - [ ] **E2 — Host-call proof:** Lua script matrix where a Config VM host call that exceeds RC-1 suspends and a plugin call that returns a handle completes without blocking the host tick, both with attribution.
 - [ ] **E3 — Task and timer cap proof:** `bitty-plugin-host` harness exercising 64 tasks/32 timers per plugin with refusal and reclaim after dispose (PB-3 shape).
-- [ ] **E4 — GC tuning proof:** matrix exercising `mlua` pause/stepmul and `piccolo` arena debt pacing with widened-tuning comparison and `VmBudgetSnapshot` counters stored under `recordings/evidence/`.
+- [ ] **E4 — GC tuning proof:** matrix exercising `mlua` pause/stepmul and `piccolo` arena debt pacing with widened-tuning comparison and `VmBudgetSnapshot` counters stored under `recording/evidence/`.
 - [ ] **E5 — Config VM PB-1/PB-2 charging proof:** startup bench `hyperfine` plus RSS sample proving PB-1 p50/p99 and PB-2 80 MiB with Config VM accounted, and fail-closed path exercised.
 - [ ] **E6 — Reload and cache isolation proof:** ten-cycle reload test with per-generation `package.loaded` assertions and FS-6 disposal verification, plus cross-tree `require` denial still green.
 - [ ] **E7 — Supply-chain and unsafe proof:** `cargo vet`, `cargo audit`, `cargo geiger` clean or with recorded waivers for the pinned line from ADR 0005; no new dependency widening.

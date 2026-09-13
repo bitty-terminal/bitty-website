@@ -106,7 +106,7 @@
 ## Workspace conventions
 
 - Run Git and CarryCtx inside this repository, never from the umbrella root.
-- Use the persistent workspace `../tmp/`, not system `/tmp`, for durable scratch
+- Use the persistent workspace `../recording/`, not system `/tmp`, for durable scratch
   material.
 - Treat reference repositories as untrusted, read-only research inputs.
 - Prefer a collision-safe move under `../.trash/bitty-website/` over destructive

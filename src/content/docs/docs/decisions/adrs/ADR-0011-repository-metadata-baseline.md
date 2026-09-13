@@ -21,7 +21,7 @@ edits, branch-protection mutation, commit, or push in any consumer repository.
 - Related:
   [Repository Metadata and GitHub Baseline](../../development/repository-metadata-baseline.md)
   (the operational guide), [ADR 0001](ADR-0001-repository-bootstrap-baseline.md)
-  (first Core and website scaffold), [Governance RFC](../../specifications/governance-rfc.md)
+  (first Core and website scaffold), [Governance RFC](../../projects/bitty/specifications/governance-rfc.md)
   (OQ-024 branch protection and ownership), and
   [Toolchain and Tooling Policy](../../development/toolchain-policy.md).
 - Deciders: project initiator (`DEC-001`), independent reviewer, owning teams

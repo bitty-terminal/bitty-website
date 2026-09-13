@@ -16,7 +16,7 @@ sidebar_order: 39
 **Accepted** on 2026-09-11 by the project initiator (user) as a wholesale
 ratification of all twelve resolutions (LUA-OQ-1 through LUA-OQ-12) exactly as
 proposed. The
-[Plugin API v1 Lua Surface RFC](../../specifications/plugin-api-v1-lua-surface-rfc.md)
+[Plugin API v1 Lua Surface RFC](../../projects/bitty/specifications/plugin-api-v1-lua-surface-rfc.md)
 now carries frontmatter `status: accepted` and records the resolved
 dispositions; the synchronized documents listed under
 [Acceptance effects](#acceptance-effects) were updated in the same change. This
@@ -32,12 +32,12 @@ by itself and does not weaken any normative security control.
 - Related: PX-1199 / `bitty` CTX-0221 (SDK/template gates R-SDK-1..3 and
   R-TPL-1); [ADR 0005](ADR-0005-lua-pins-and-stdlib.md),
   [ADR 0006](ADR-0006-os-env-policy.md), [ADR 0007](ADR-0007-async-gc.md);
-  accepted [Plugin Platform RFC](../../specifications/plugin-platform-rfc.md),
-  [Lua Runtime RFC](../../specifications/lua-runtime-rfc.md),
-  [CLI Contract RFC](../../specifications/cli-contract-rfc.md),
-  [TerminalRegistry and View Lifecycle Contract](../../specifications/terminal-registry-view-lifecycle-rfc.md),
-  [Rich Presentation RFC](../../specifications/rich-presentation-rfc.md),
-  [Isolation Resource RFC](../../specifications/isolation-resource-rfc.md).
+  accepted [Plugin Platform RFC](../../projects/bitty/specifications/plugin-platform-rfc.md),
+  [Lua Runtime RFC](../../projects/bitty/specifications/lua-runtime-rfc.md),
+  [CLI Contract RFC](../../projects/bitty/specifications/cli-contract-rfc.md),
+  [TerminalRegistry and View Lifecycle Contract](../../projects/bitty/specifications/terminal-registry-view-lifecycle-rfc.md),
+  [Rich Presentation RFC](../../projects/bitty/specifications/rich-presentation-rfc.md),
+  [Isolation Resource RFC](../../projects/bitty/specifications/isolation-resource-rfc.md).
 - Read-only evidence revisions: `bitty` `1ea2f66`
   (`crates/bitty-plugin-host/src/{event,registry,host,capability,manifest}.rs`,
   `crates/bitty-lua/src/lib.rs`, `crates/bitty-term-state/src/cell.rs`,
@@ -81,9 +81,9 @@ Implementation authority lives in the `bitty` repository: the executable
 and may refine mechanics, but may not add or rename v1 identifiers without a
 `bitty-docs` revision. Generation authority lives in the SDK: R-SDK-1/R-SDK-2
 are derived from the accepted surface and may not invent identifiers. The
-authority sentence in [Core boundaries](../../architecture/core-boundaries.md)
+authority sentence in [Core boundaries](../../projects/bitty/architecture/core-boundaries.md)
 and the identity paragraph in the
-[Plugin Platform RFC](../../specifications/plugin-platform-rfc.md) are amended
+[Plugin Platform RFC](../../projects/bitty/specifications/plugin-platform-rfc.md) are amended
 at ratification to record this three-way split instead of sole core ownership.
 
 **Rationale.** Every accepted contract in the project lives in `bitty-docs`,
@@ -143,7 +143,7 @@ rather than changing it.
 
 **Decision (recommended).** Parameter and result metadata use the bounded JSON
 Schema model already accepted by the
-[CLI Contract RFC](../../specifications/cli-contract-rfc.md) for registry
+[CLI Contract RFC](../../projects/bitty/specifications/cli-contract-rfc.md) for registry
 executables: `args_schema` and `result_schema`, depth at most 16, bounded
 string fields, bounded total size (`CMD_SCHEMA_MAX_BYTES`, default 16 KiB per
 schema), no remote `$ref` and no unbounded patterns. The runtime
@@ -190,7 +190,7 @@ extension of the accepted manifest schema at ratification.
   (registry generation), `snapshot_generation` (damage generation), `width`,
   `height`, `rows`, `cursor`, `modes`, `title`, `zones?`. This extends the
   RFC's shape with the identity tuple already required by the accepted
-  [TerminalRegistry contract](../../specifications/terminal-registry-view-lifecycle-rfc.md).
+  [TerminalRegistry contract](../../projects/bitty/specifications/terminal-registry-view-lifecycle-rfc.md).
 - Region: the visible viewport only, top-down. No scrollback text and no
   full-grid selection in v1; zones may reference line ranges but their text is
   not expanded outside the visible rows.
@@ -243,7 +243,7 @@ Lua call made during activation, not a manifest declaration.
 names a command registered by the same generation and `when` must be absent or
 `"global"` in v1; any other value is a registration error naming the supported
 context. The chord grammar is exactly the shipped configuration grammar from
-the [Configuration Model RFC](../../specifications/configuration-model-rfc.md):
+the [Configuration Model RFC](../../projects/bitty/specifications/configuration-model-rfc.md):
 trimmed, case-insensitive modifiers joined with `+` (`ctrl`, `alt`, `shift`,
 `super`), named keys from the shipped vocabulary (`tab` through `f35`,
 including the `ins`/`del`/`hm`/`end`/`pu`/`pd` aliases), and single-character
@@ -576,25 +576,25 @@ divergent copy is created:
 
 1. This ADR: document status Proposed to Accepted (frontmatter `status: draft`
    to `accepted`), retaining the resolution text as the record.
-2. [Plugin API v1 Lua Surface RFC](../../specifications/plugin-api-v1-lua-surface-rfc.md):
+2. [Plugin API v1 Lua Surface RFC](../../projects/bitty/specifications/plugin-api-v1-lua-surface-rfc.md):
    frontmatter `status: draft` to `accepted`; the Open questions section
    replaced by the resolved dispositions pointing here; payload tables,
    function signatures, and the manifest references updated to the resolutions
    above.
-3. [Plugin Platform RFC](../../specifications/plugin-platform-rfc.md):
+3. [Plugin Platform RFC](../../projects/bitty/specifications/plugin-platform-rfc.md):
    the "final spelling belongs to the core repository" identity paragraph
    amended per LUA-OQ-1; the host-namespace block reconciled to the accepted
    spellings; the manifest schema extended per LUA-OQ-3 and LUA-OQ-8; the
    disposal sentence refined per LUA-OQ-6.
-4. [Core boundaries](../../architecture/core-boundaries.md): authority sentence
+4. [Core boundaries](../../projects/bitty/architecture/core-boundaries.md): authority sentence
    amended per LUA-OQ-1; the candidate semantic API examples aligned to the
    accepted spellings.
 5. [ADR 0007](ADR-0007-async-gc.md): reconciliation note for the LUA-OQ-9
    spellings; [ADR 0006](ADR-0006-os-env-policy.md): note recording the LUA-OQ-2
    denial-stub interpretation.
-6. [Isolation Resource RFC](../../specifications/isolation-resource-rfc.md):
+6. [Isolation Resource RFC](../../projects/bitty/specifications/isolation-resource-rfc.md):
    `RC-11` store quota row added from the ratified LUA-OQ-6 numbers.
-7. [Specifications index](../../specifications/README.md),
+7. [Specifications index](../../projects/bitty/specifications/README.md),
    [decision register](../index.md), and
    [ADR index](README.md): RFC moved from Draft to Accepted; ADR 0009 added.
 8. CarryCtx CTX-0144 records the ratification decision; SDK/template tasks for
@@ -612,31 +612,31 @@ or deferred exactly as the RFC's exclusion list states.
 
 ## References
 
-- [Plugin API v1 Lua Surface RFC](../../specifications/plugin-api-v1-lua-surface-rfc.md)
+- [Plugin API v1 Lua Surface RFC](../../projects/bitty/specifications/plugin-api-v1-lua-surface-rfc.md)
   (accepted 2026-09-11, CTX-0143/CTX-0144; draft `05ccdd9`) — resolved
   surface, and the resolutions recorded by this ADR.
-- [Plugin Platform RFC](../../specifications/plugin-platform-rfc.md) — accepted
+- [Plugin Platform RFC](../../projects/bitty/specifications/plugin-platform-rfc.md) — accepted
   manifest, capabilities, namespaces, lifecycle, event pipeline.
-- [Lua Runtime RFC](../../specifications/lua-runtime-rfc.md) — accepted host
+- [Lua Runtime RFC](../../projects/bitty/specifications/lua-runtime-rfc.md) — accepted host
   bridge, diagnostics classes, module resolution.
-- [Core boundaries](../../architecture/core-boundaries.md) — ownership and
+- [Core boundaries](../../projects/bitty/architecture/core-boundaries.md) — ownership and
   authority statements.
 - [ADR 0006](ADR-0006-os-env-policy.md), [ADR 0007](ADR-0007-async-gc.md) —
   accepted environment and async contracts.
-- [CLI Contract RFC](../../specifications/cli-contract-rfc.md) — accepted typed
+- [CLI Contract RFC](../../projects/bitty/specifications/cli-contract-rfc.md) — accepted typed
   executable registry and JSON Schema limits.
-- [TerminalRegistry and View Lifecycle Contract](../../specifications/terminal-registry-view-lifecycle-rfc.md)
+- [TerminalRegistry and View Lifecycle Contract](../../projects/bitty/specifications/terminal-registry-view-lifecycle-rfc.md)
   — accepted identity tuple, `TerminalClosed`/`TerminalExited`, generation
   rules.
-- [Rich Presentation RFC](../../specifications/rich-presentation-rfc.md) —
+- [Rich Presentation RFC](../../projects/bitty/specifications/rich-presentation-rfc.md) —
   accepted `RichBlock`, `SceneNode`, and semantic-zone contracts.
-- [Isolation Resource RFC](../../specifications/isolation-resource-rfc.md) —
+- [Isolation Resource RFC](../../projects/bitty/specifications/isolation-resource-rfc.md) —
   accepted RC-1..RC-10 ceilings and reclaim rules.
-- [Configuration Model RFC](../../specifications/configuration-model-rfc.md) —
+- [Configuration Model RFC](../../projects/bitty/specifications/configuration-model-rfc.md) —
   shipped `keymaps` grammar and merge classes.
-- [Panel Runtime and Event Bus Pre-Study](../../specifications/panel-runtime-pre-study.md)
+- [Panel Runtime and Event Bus Pre-Study](../../projects/bitty/specifications/panel-runtime-pre-study.md)
   — draft overlay definition and bounds indicators.
-- [Plugin Reuse and Provider Ecology RFC](../../specifications/plugin-reuse-and-providers.md)
+- [Plugin Reuse and Provider Ecology RFC](../../projects/bitty/specifications/plugin-reuse-and-providers.md)
   — draft post-1.0 provider direction.
 - `bitty` `1ea2f66` host crates; `bitty-plugin-sdk` CTX-0015 `d2cad1f` +
   `07e2122`; PX-1199 (`bitty` CTX-0221) gates R-SDK-1..3 and R-TPL-1.

@@ -22,6 +22,7 @@ const ALLOWED_CATEGORIES = new Set([
   "migrations",
   "product",
   "project",
+  "projects",
   "provenance",
   "reference",
   "releases",

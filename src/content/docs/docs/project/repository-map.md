@@ -32,7 +32,7 @@ Core Cargo workspace for initialization; the expanded crate graph is now
   `bitty-perf`. The accepted ten-crate topology is fixed in
   [ADR 0003](../decisions/adrs/ADR-0003-core-workspace-topology.md);
   `bitty-package` lifecycle and integrity model is accepted
-  ([Package Lifecycle RFC](../specifications/package-lifecycle-rfc.md), OQ-021,
+  ([Package Lifecycle RFC](../projects/bitty/specifications/package-lifecycle-rfc.md), OQ-021,
   2026-08-27) with real signature verification remaining draft per crate docs,
   and the tail crates (`bitty-rich` OQ-008/015/016, `bitty-ipc`/`bitty-agent`
   OQ-018, `bitty-lua` OQ-009/030-032) are `Implemented` (headless tests ~808)
@@ -150,7 +150,7 @@ structure below is what `bitty/Cargo.toml` currently resolves to. Presence is
 evidence; lifecycle is
 `Specified -> Accepted -> Implemented -> Verified -> Compatible -> Release-ready`
 per the
-[risk evidence RFC](../specifications/risk-evidence-rfc.md). Presence does
+[risk evidence RFC](../projects/bitty/specifications/risk-evidence-rfc.md). Presence does
 not imply `Verified`: `bitty-package` lifecycle and integrity model is
 `Accepted` (OQ-021, 2026-08-27) with signatures still draft, `bitty-lua`
 accepted (OQ-009/030-032, 2026-08-29), and `bitty-rich`/`bitty-ipc`/`bitty-agent`
@@ -236,7 +236,7 @@ bitty-website presentation and publishing (loader accepted)
 
 The accepted boundary makes `bitty-docs` the canonical content owner and
 `bitty-website` its presentation consumer with an accepted loader
-([Website Delivery RFC](../specifications/website-delivery-rfc.md), OQ-023,
+([Website Delivery RFC](../projects/bitty/specifications/website-delivery-rfc.md), OQ-023,
 2026-08-29, `Governance RFC` OQ-024 for branch protections and release train).
 ADR 0001 accepts the Astro static shell, Bun, and Cloudflare Workers Static
 Assets deployment. Public-route mapping and redirects are accepted per OQ-023;

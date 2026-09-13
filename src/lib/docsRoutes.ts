@@ -5,6 +5,9 @@
  * Route:  `/docs/<version>/<category>/<slug>/`
  *
  * - Category is the single segment after `docs/`.
+ * - `docs/projects/<project>/<category>/...` keeps the project segment in the
+ *   route hierarchy (`/docs/<version>/projects/<project>/<category>/...`), as
+ *   accepted by the project partition migration (bitty-docs CTX-0185).
  * - README.md maps to the category (or revision) index.
  * - Extension must be `.md`; only the final segment is slugified
  *   (lowercased, non-alphanumerics -> `-`).
@@ -33,6 +36,7 @@ const ALLOWED_CATEGORIES = new Set<string>([
   "migrations",
   "product",
   "project",
+  "projects",
   "provenance",
   "reference",
   "releases",

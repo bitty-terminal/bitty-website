@@ -18,7 +18,7 @@ passing evidence per its verification method.
 
 Every criterion below converts a normative P0 control from
 [security overview](overview.md), [threat model](threat-model.md), and
-[plugin system](../extensibility/plugin-system.md) into an individually
+[plugin system](../projects/bitty/extensibility/plugin-system.md) into an individually
 testable statement. Until each criterion has recorded passing evidence per its
 verification method, all linked risks in the
 [risk register](risk-register.md) remain **Open**. No criterion is satisfied by

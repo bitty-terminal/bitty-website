@@ -1,1 +1,100 @@
-[]
+[
+  {
+    "old": "/docs/architecture/",
+    "new": "/docs/projects/bitty/architecture/",
+    "status": 301,
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/architecture/ -> docs/projects/bitty/architecture/",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/configuration/",
+    "new": "/docs/projects/bitty/configuration/",
+    "status": 301,
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/configuration/ -> docs/projects/bitty/configuration/",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/examples/",
+    "new": "/docs/projects/bitty/examples/",
+    "status": 301,
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/examples/ -> docs/projects/bitty/examples/",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/extensibility/",
+    "new": "/docs/projects/bitty/extensibility/",
+    "status": 301,
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/extensibility/ -> docs/projects/bitty/extensibility/",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/how-to/",
+    "new": "/docs/projects/bitty/how-to/",
+    "status": 301,
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/how-to/ -> docs/projects/bitty/how-to/",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/interfaces/",
+    "new": "/docs/projects/bitty/interfaces/",
+    "status": 301,
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/interfaces/ -> docs/projects/bitty/interfaces/",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/migrations/",
+    "new": "/docs/projects/bitty/migrations/",
+    "status": 301,
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/migrations/ -> docs/projects/bitty/migrations/",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/product/",
+    "new": "/docs/projects/bitty/product/",
+    "status": 301,
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/product/ -> docs/projects/bitty/product/",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/reference/",
+    "new": "/docs/projects/bitty/reference/",
+    "status": 301,
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/reference/ -> docs/projects/bitty/reference/",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/requirements/",
+    "new": "/docs/projects/bitty/requirements/",
+    "status": 301,
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/requirements/ -> docs/projects/bitty/requirements/",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/specifications/",
+    "new": "/docs/projects/bitty/specifications/",
+    "status": 301,
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/specifications/ -> docs/projects/bitty/specifications/",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/troubleshooting/",
+    "new": "/docs/projects/bitty/troubleshooting/",
+    "status": 301,
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/troubleshooting/ -> docs/projects/bitty/troubleshooting/",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/tutorials/",
+    "new": "/docs/projects/bitty/tutorials/",
+    "status": 301,
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/tutorials/ -> docs/projects/bitty/tutorials/",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/user-guide/",
+    "new": "/docs/projects/bitty/user-guide/",
+    "status": 301,
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/user-guide/ -> docs/projects/bitty/user-guide/",
+    "effective_version": "0.1.0"
+  }
+]

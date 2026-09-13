@@ -11,7 +11,7 @@
     "lint:md": "markdownlint-cli2",
     "typecheck": "ASTRO_TELEMETRY_DISABLED=1 astro sync && tsc --noEmit --project tsconfig.json",
     "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
-    "validate:dist": "test -f dist/index.html && test ! -e dist/_worker.js",
+    "validate:dist": "test -f dist/index.html && test ! -e dist/_worker.js && test -s dist/_redirects && test -s dist/redirects.json",
     "wrangler:dry-run": "bash -euo pipefail -c 'repo_root=$(dirname \"$(git rev-parse --path-format=absolute --git-common-dir)\"); scratch=\"$repo_root/../recording/bitty-website\"; mkdir -p \"$scratch/wrangler-dry-run\"; log=\"$scratch/wrangler-dry-run.log\"; timeout --signal=INT --kill-after=5s --preserve-status 15s env WRANGLER_SEND_METRICS=false wrangler deploy --dry-run --outdir \"$scratch/wrangler-dry-run\" 2>&1 | tee \"$log\"; grep -Fq -- \"--dry-run: exiting now.\" \"$log\"; grep -Fq -- \"No bindings found.\" \"$log\"'",
     "check": "bun run format:check && bun run lint:md && bun run docs:check && bun run typecheck && bun run build && bun run validate:dist && bun run wrangler:dry-run",
     "deploy": "WRANGLER_SEND_METRICS=false wrangler deploy",

@@ -275,7 +275,7 @@ are recorded here as text:
   queue.
 - [ADR 0011 - Repository Metadata and GitHub Baseline](../decisions/adrs/ADR-0011-repository-metadata-baseline.md)
 - [ADR 0001 - Repository Bootstrap Baseline](../decisions/adrs/ADR-0001-repository-bootstrap-baseline.md)
-- [Governance RFC](../specifications/governance-rfc.md) - OQ-024 license,
+- [Governance RFC](../projects/bitty/specifications/governance-rfc.md) - OQ-024 license,
   branch protection, ownership, and release train.
 - [Toolchain and Tooling Policy](toolchain-policy.md) - pinned local tools and
   canonical gate commands.

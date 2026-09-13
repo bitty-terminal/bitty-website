@@ -15,7 +15,7 @@ sidebar_order: 40
 
 **Accepted** on 2026-09-11 by the project initiator (user), which ratified the
 bounded resolutions in the
-[Plugin Host Runtime RFC](../../specifications/plugin-host-runtime-rfc.md) for
+[Plugin Host Runtime RFC](../../projects/bitty/specifications/plugin-host-runtime-rfc.md) for
 [OQ-033](../open-questions.md), OQ-034, and OQ-035 exactly as proposed,
 including the four named numeric defaults. The RFC now carries frontmatter
 `status: accepted`; the synchronized documents listed under
@@ -37,11 +37,11 @@ not weaken any normative security control.
   three-way authority split), [ADR 0005](ADR-0005-lua-pins-and-stdlib.md),
   [ADR 0006](ADR-0006-os-env-policy.md),
   [ADR 0007](ADR-0007-async-gc.md),
-  accepted [Plugin Platform RFC](../../specifications/plugin-platform-rfc.md),
-  [Plugin API v1 Lua Surface RFC](../../specifications/plugin-api-v1-lua-surface-rfc.md),
-  [Lua Runtime RFC](../../specifications/lua-runtime-rfc.md),
-  [Isolation Resource RFC](../../specifications/isolation-resource-rfc.md), and
-  [Package Lifecycle RFC](../../specifications/package-lifecycle-rfc.md).
+  accepted [Plugin Platform RFC](../../projects/bitty/specifications/plugin-platform-rfc.md),
+  [Plugin API v1 Lua Surface RFC](../../projects/bitty/specifications/plugin-api-v1-lua-surface-rfc.md),
+  [Lua Runtime RFC](../../projects/bitty/specifications/lua-runtime-rfc.md),
+  [Isolation Resource RFC](../../projects/bitty/specifications/isolation-resource-rfc.md), and
+  [Package Lifecycle RFC](../../projects/bitty/specifications/package-lifecycle-rfc.md).
 
 ## Context
 
@@ -55,18 +55,18 @@ staging including the development local-path flow (Gap B), and the host-service
 wiring boundary (Gap C).
 
 The accepted sources fixed the surrounding contracts but not the mechanisms:
-the [Lua Runtime RFC](../../specifications/lua-runtime-rfc.md) fixes one
+the [Lua Runtime RFC](../../projects/bitty/specifications/lua-runtime-rfc.md) fixes one
 host bridge per VM and rooted source-only resolution; the
-[Plugin API v1 Lua Surface RFC](../../specifications/plugin-api-v1-lua-surface-rfc.md)
+[Plugin API v1 Lua Surface RFC](../../projects/bitty/specifications/plugin-api-v1-lua-surface-rfc.md)
 fixes the surface, `init.lua`, and generation-owned resources; the
-[Package Lifecycle RFC](../../specifications/package-lifecycle-rfc.md) fixes
+[Package Lifecycle RFC](../../projects/bitty/specifications/package-lifecycle-rfc.md) fixes
 staged activation but delegates the stored tree location. The CTX-0148 Draft RFC
 recorded bounded resolutions for all three gaps. The project initiator has now
 ratified them.
 
 ## Decision
 
-Adopt the [Plugin Host Runtime RFC](../../specifications/plugin-host-runtime-rfc.md)
+Adopt the [Plugin Host Runtime RFC](../../projects/bitty/specifications/plugin-host-runtime-rfc.md)
 as an accepted specification and resolve the three registered open questions.
 
 1. **OQ-033 (host bridge and VM lifecycle).** Adopt the three-way authority
@@ -145,24 +145,24 @@ any accepted number requires an RFC revision, not silent drift.
 
 The following synchronized documents were updated in the same change:
 
-- [Plugin Host Runtime RFC](../../specifications/plugin-host-runtime-rfc.md) -
+- [Plugin Host Runtime RFC](../../projects/bitty/specifications/plugin-host-runtime-rfc.md) -
   frontmatter `status: accepted`, dated ratification note, ratified numeric
   defaults, and resolved open-questions section.
 - [Open-question register](../open-questions.md) - OQ-033, OQ-034, and OQ-035
   marked Accepted with their ratified resolutions; the OQ-034 source-layout
   dependency is recorded as resolved.
 - [Decision register](../index.md) - candidate-queue entry marked Accepted.
-- [Specifications index](../../specifications/README.md) - the RFC moved from
+- [Specifications index](../../projects/bitty/specifications/README.md) - the RFC moved from
   the Draft table to the accepted table.
-- [Plugin system](../../extensibility/plugin-system.md) - validation note points
+- [Plugin system](../../projects/bitty/extensibility/plugin-system.md) - validation note points
   at the accepted RFC.
-- [Core boundaries](../../architecture/core-boundaries.md) - pending-decision
+- [Core boundaries](../../projects/bitty/architecture/core-boundaries.md) - pending-decision
   pointer updated to the accepted RFC.
 - [ADR index](README.md) - this ADR added.
 
 ## Evidence and review
 
-- Draft RFC `docs/specifications/plugin-host-runtime-rfc.md` (504 lines) authored
+- Draft RFC `docs/projects/bitty/specifications/plugin-host-runtime-rfc.md` (504 lines) authored
   and delivered under `bitty-docs` CTX-0148 (Issue #195, PR #196).
 - Local gate `just check` green and the Docs quality workflow green on the Draft
   revision; evidence recorded in CarryCtx under CTX-0148.

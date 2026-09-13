@@ -49,17 +49,17 @@ sidebar_order: 45
 > acceptance itself shipped no product code, but the earlier accepted OQ-039
 > outline-color pair is now implemented in `bitty` PR #572 (merge commit
 > `f83b1e1`, CTX-0340) and is documented in
-> [Lua and XDG](../../configuration/lua-and-xdg.md). It does not weaken any
+> [Lua and XDG](../../projects/bitty/configuration/lua-and-xdg.md). It does not weaken any
 > normative control in the [Security Overview](../../security/overview.md),
 > [Threat Model](../../security/threat-model.md), or the
-> [Configuration Model RFC](../../specifications/configuration-model-rfc.md).
+> [Configuration Model RFC](../../projects/bitty/specifications/configuration-model-rfc.md).
 > The supported-knob entries below are implementation-derived reference read
 > read-only from `bitty` `origin/main` `3eb8e0e`; the accepted amendments above
 > are reviewed contracts and the remaining knobs are candidate or open.
 > The accepted animation contract is
 > [RFC-0002](RFC-0002-panel-animations.md). The cross-cutting extension
 > architecture is reviewed in the
-> [UI Extensibility Architecture](../../specifications/ui-extensibility-architecture.md)
+> [UI Extensibility Architecture](../../projects/bitty/specifications/ui-extensibility-architecture.md)
 > (candidate).
 
 ## Motivation
@@ -82,8 +82,8 @@ frame/color, per-surface opacity, and blur under the existing `ConfigPlan`
 validation, layering, attribution, and reload rules.
 
 Out of scope and owned elsewhere: the compositor geometry contract
-([Workspace Compositor Specification](../../specifications/workspace-compositor.md)),
-the merge/reload mechanics ([Configuration Model RFC](../../specifications/configuration-model-rfc.md)),
+([Workspace Compositor Specification](../../projects/bitty/specifications/workspace-compositor.md)),
+the merge/reload mechanics ([Configuration Model RFC](../../projects/bitty/specifications/configuration-model-rfc.md)),
 theme preset values and their security posture
 ([Security Overview](../../security/overview.md)), and any shared-memory or
 platform-surface contract owned by `bitty-platform` and `bitty-render`.
@@ -112,8 +112,8 @@ Non-goals:
 
 Status: read-only reference from `bitty` `origin/main` `3eb8e0e`. The owning
 configuration contract is the
-[Configuration Model RFC](../../specifications/configuration-model-rfc.md); the
-shipped reference prose is [Lua and XDG](../../configuration/lua-and-xdg.md).
+[Configuration Model RFC](../../projects/bitty/specifications/configuration-model-rfc.md); the
+shipped reference prose is [Lua and XDG](../../projects/bitty/configuration/lua-and-xdg.md).
 `decoration.content_inset` and the unified `decoration.gaps_in` default are the
 `CTX-0333` amendment (`bitty` PR #562, merge commit `9031b3f`); the
 focused/idle outline pair is `CTX-0340` (`bitty` PR #572, merge commit
@@ -181,7 +181,7 @@ Candidate clarification (no new key): the effective gap is
 `decoration.gap * DPI_scale + layout.gap_cells * cell_axis`, so the two layers
 compose. With the default `layout` gaps of `0`, the effective gap is the
 `decoration` value. This matches the `CTX-0333` model documented in the
-[Workspace Compositor Specification](../../specifications/workspace-compositor.md).
+[Workspace Compositor Specification](../../projects/bitty/specifications/workspace-compositor.md).
 
 ## Label position: proposal (OQ-036)
 
@@ -409,7 +409,7 @@ properties — per-panel opacity, blur, background image, border/outline color,
 and animation options — instead of one global look, so the UI is freer and
 plugins can extend it. This is the appearance half of that directive; the
 extension-architecture half is the
-[UI Extensibility Architecture](../../specifications/ui-extensibility-architecture.md).
+[UI Extensibility Architecture](../../projects/bitty/specifications/ui-extensibility-architecture.md).
 
 Status: **accepted** as a reviewed contract by the 2026-09-12 acceptance
 amendment (docs `CTX-0163`, [OQ-041](../open-questions.md)). Acceptance records
@@ -461,13 +461,13 @@ never ignored and never partially matched:
    identity used by `workspace_focus:<1..=16>` and `ctl workspace … ws:N`, not a
    display title. The label is bounded to `1..=16` by the accepted
    workspaces-per-`Window` ceiling in the
-   [Terminal Registry and View Lifecycle RFC](../../specifications/terminal-registry-view-lifecycle-rfc.md)
+   [Terminal Registry and View Lifecycle RFC](../../projects/bitty/specifications/terminal-registry-view-lifecycle-rfc.md)
    (`max_workspaces_per_window` in `[1, 16]`); `ws:0`, `ws:17`, a non-integer,
    or a leading-zero spelling is rejected. If a future Workspace-naming feature
    lands, it must not silently change this selector's meaning.
 3. `view:<ViewId>` uses canonical decimal without leading zeros, bounded to the
    `u64` `ViewId` range defined in the
-   [Workspace Compositor Specification](../../specifications/workspace-compositor.md).
+   [Workspace Compositor Specification](../../projects/bitty/specifications/workspace-compositor.md).
    It matches the `View` that currently holds that `ViewId`; because `ViewId`
    numeric reuse requires a generation bump on disposal, a selector matches a
    live `View` or is inert, never a stale handle.
@@ -481,7 +481,7 @@ never ignored and never partially matched:
    bounded by the accepted `View`/`Workspace` ceilings, and the aggregate parse
    is bounded by the Config VM RC-1/RC-2 budgets and PB-1 in
    [ADR 0007](../adrs/ADR-0007-async-gc.md) and the
-   [Performance Budget RFC](../../specifications/performance-budget-rfc.md).
+   [Performance Budget RFC](../../projects/bitty/specifications/performance-budget-rfc.md).
    No new numeric ceiling is invented.
 
 ### Accepted overridable field set
@@ -550,7 +550,7 @@ Rules:
    for the same field, so two `init.lua` files that declare the same selectors
    in different order resolve identically. This keeps merged layers
    byte-comparable, matching the
-   [Configuration Model RFC](../../specifications/configuration-model-rfc.md).
+   [Configuration Model RFC](../../projects/bitty/specifications/configuration-model-rfc.md).
 3. Within a tier at most one selector matches a given `View` (one content type,
    one workspace, one exact `ViewId`), so there is no intra-tier ambiguity and
    no last-declared-wins rule.
@@ -623,7 +623,7 @@ reload class:
 
 `bitty --safe` ignores every `views.*` entry, including `"*"`, and reads no
 external configuration layer (the shipped safe-mode precedence documented in
-the [CLI reference](../../interfaces/cli.md#safe-mode-configuration-precedence)).
+the [CLI reference](../../projects/bitty/interfaces/cli.md#safe-mode-configuration-precedence)).
 It forces the safe global values: the opaque outline pair `#FFFFFF` focused /
 `#808080` idle, `border_width`/`_focused`/`_idle` each `1`, opacity `1.0`, no
 blur, and no background image. Safe mode never leaves an override in effect,
@@ -658,7 +658,7 @@ Status: **accepted** as a reviewed contract on 2026-09-12 (docs `CTX-0159`,
 user directives m0309/m0313/m0318). Acceptance resolves the user-configuration
 half of [OQ-042](../open-questions.md) and adds no unreviewed ceiling. Of the
 numeric bounds below, BG-1..BG-5 alias the accepted image-store limits in the
-[Rich Presentation RFC](../../specifications/rich-presentation-rfc.md)
+[Rich Presentation RFC](../../projects/bitty/specifications/rich-presentation-rfc.md)
 (IMG-1..IMG-5); BG-6 is a design choice (one background image per `View`) and
 BG-7 is inherited from present-path evidence; the remaining controls derive from
 the Graphics P0 row in the
@@ -800,7 +800,7 @@ unknown `views.*` field rejects the **entire reload**. The previous resolved
 appearance stays active and a source-attributed diagnostic names the offending
 key; Core never clamps, downsizes, truncates, or silently drops one image while
 applying the rest. This is the Configuration Model RFC `Rejected` reload class
-([Configuration Model RFC](../../specifications/configuration-model-rfc.md))
+([Configuration Model RFC](../../projects/bitty/specifications/configuration-model-rfc.md))
 applied to the OQ-041 override rule.
 
 ### Safe mode
@@ -876,7 +876,7 @@ The `CTX-0333` amendment applies `decoration.content_inset` uniformly to every
 surface. A per-surface inset (for example a smaller inset for terminal content
 than for panels) is a design decision raised by `bitty` PR #562 and recorded as
 an open item in the
-[Workspace Compositor Specification](../../specifications/workspace-compositor.md).
+[Workspace Compositor Specification](../../projects/bitty/specifications/workspace-compositor.md).
 It is not part of this RFC's proposed key set until that decision is reviewed.
 
 ## Naming, layering, and reload
@@ -1072,12 +1072,12 @@ this RFC records the contract only.
 
 ## References
 
-- [Configuration Model RFC](../../specifications/configuration-model-rfc.md)
-- [Lua and XDG](../../configuration/lua-and-xdg.md)
+- [Configuration Model RFC](../../projects/bitty/specifications/configuration-model-rfc.md)
+- [Lua and XDG](../../projects/bitty/configuration/lua-and-xdg.md)
 - [Panel Animations and Effects RFC](RFC-0002-panel-animations.md) (OQ-040)
-- [Workspace Compositor Specification](../../specifications/workspace-compositor.md)
+- [Workspace Compositor Specification](../../projects/bitty/specifications/workspace-compositor.md)
 - [Security Overview](../../security/overview.md)
-- [Interfaces: Rich content](../../interfaces/rich-content.md)
+- [Interfaces: Rich content](../../projects/bitty/interfaces/rich-content.md)
 - `bitty` `CTX-0333` / PR #562: unified panel gaps and `content_inset`.
 - `bitty` `CTX-0335`: appearance-knobs request this RFC scopes.
 - `bitty` `CTX-0343`: per-panel appearance overrides, unblocked by the accepted

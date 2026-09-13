@@ -22,7 +22,7 @@ implementing platform tasks deliver them with evidence.
 
 ## Context
 
-The [product vision](../../product/vision.md) accepts Linux, macOS,
+The [product vision](../../projects/bitty/product/vision.md) accepts Linux, macOS,
 Windows, and BSD as target platforms and states that Windows must not be an
 afterthought: the platform boundary must model Unix PTYs versus Windows ConPTY
 explicitly. The same document left support tiers, CI coverage, and fallback
@@ -155,7 +155,7 @@ Acceptance on 2026-08-26 applied these same-change updates:
 
 - [Technology strategy](../../project/technology-strategy.md): the candidate
   tier table is replaced by a link to this ADR as the accepted tier policy.
-- [Product vision](../../product/vision.md): the platform/open-question
+- [Product vision](../../projects/bitty/product/vision.md): the platform/open-question
   wording that referenced undecided tiers is resolved.
 - Future platform implementation tasks cite this ADR for their gate scope.
 

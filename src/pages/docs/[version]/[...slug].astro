@@ -2,26 +2,51 @@
 import { getCollection, render } from "astro:content";
 import { assertValidRevisionPin } from "../../../lib/docsValidation.ts";
 import { getVersions, isValidVersionSegment } from "../../../lib/versions.ts";
+import {
+  buildLegacyAliases,
+  loadMergedRedirects,
+} from "../../../lib/redirects.ts";
 import VersionSelector from "../../../components/VersionSelector.astro";
 
-// Astro glob ids for docs/<path>.md under base src/content/docs:
-//   docs/README.md           -> id docs/readme
-//   docs/decisions/index.md  -> id docs/decisions
-//   docs/specifications/foo.md -> id docs/specifications/foo
-// The id already encodes the version-less route after normalizing lowercase
-// and stripping trailing "/index" (RM-1 / RM-2).
+// Astro glob slugs for docs/<path>.md under base src/content/docs:
+//   docs/README.md           -> slug docs/readme (root index)
+//   docs/decisions/index.md  -> slug docs/decisions
+//   docs/projects/bitty/...  -> slug docs/projects/bitty/...
+// The slug already encodes the version-less route after normalizing lowercase
+// and stripping a trailing "/index" (RM-1 / RM-2). Category-level README files
+// keep an explicit "readme" slug in this corpus.
 export async function getStaticPaths() {
-  function slugFromId(id: string): string | undefined {
+  function slugFromId(id: string): string {
     const withoutDocs = id.startsWith("docs/") ? id.slice("docs/".length) : id;
-    if (withoutDocs.toLowerCase() === "readme") return undefined;
+    if (withoutDocs.toLowerCase() === "readme") return "";
     return withoutDocs;
   }
+
   assertValidRevisionPin();
   const versions = getVersions();
   const docs = await getCollection("docs");
 
   // Only eligible entries (website_publish:true after validation per LD-3)
   const eligible = docs.filter((e) => e.data.website_publish === true);
+
+  const canonical = new Map<string, (typeof eligible)[number]>();
+  for (const entry of eligible) {
+    const slug = slugFromId(entry.id as string);
+    const duplicate = canonical.get(slug);
+    if (duplicate !== undefined) {
+      throw new Error(
+        `Duplicate docs route slug "${slug}": ${duplicate.id} and ${entry.id}`,
+      );
+    }
+    canonical.set(slug, entry);
+  }
+
+  // RD-3: legacy aliases from the merged website + docs-owned redirect manifest.
+  // Every alias 301s to the canonical route of the same version (see below).
+  const aliases = buildLegacyAliases(
+    [...canonical.keys()],
+    await loadMergedRedirects(),
+  );
 
   const versionSegments = [
     "latest",
@@ -31,20 +56,27 @@ export async function getStaticPaths() {
 
   const paths: Array<{
     params: { version: string; slug: string | undefined };
-    props: { entry: (typeof eligible)[number]; version: string };
+    props: {
+      entry: (typeof eligible)[number];
+      version: string;
+      canonicalSlug: string;
+      isLegacy: boolean;
+    };
   }> = [];
 
   for (const version of versionSegments) {
-    const seen = new Set<string>();
-    for (const entry of eligible) {
-      const rawId = entry.id as string;
-      const slug = slugFromId(rawId);
-      const candidate = slug ?? "";
-      if (seen.has(candidate)) continue;
-      seen.add(candidate);
+    for (const [slug, entry] of canonical) {
       paths.push({
-        params: { version, slug },
-        props: { entry, version },
+        params: { version, slug: slug === "" ? undefined : slug },
+        props: { entry, version, canonicalSlug: slug, isLegacy: false },
+      });
+    }
+    for (const [alias, canonicalSlug] of aliases) {
+      const entry = canonical.get(canonicalSlug);
+      if (entry === undefined) continue;
+      paths.push({
+        params: { version, slug: alias },
+        props: { entry, version, canonicalSlug, isLegacy: true },
       });
     }
   }
@@ -52,19 +84,33 @@ export async function getStaticPaths() {
   return paths;
 }
 
-const { entry, version } = Astro.props as {
+const { entry, version, canonicalSlug, isLegacy } = Astro.props as {
   entry: Awaited<ReturnType<typeof getCollection>>[number];
   version: string;
+  canonicalSlug: string;
+  isLegacy: boolean;
 };
+
+if (!isValidVersionSegment(version)) {
+  throw new Response("Not Found", { status: 404 });
+}
+
+// RD-3: an old published route resolves to the canonical route of the same
+// version with a 301; the edge `dist/_redirects` table mirrors this mapping.
+if (isLegacy) {
+  return Astro.redirect(
+    canonicalSlug === ""
+      ? `/docs/${version}/`
+      : `/docs/${version}/${canonicalSlug}/`,
+    301,
+  );
+}
+
 const { Content } = await render(entry);
 const versions = getVersions();
 const versionLabels = new Map(
   versions.versions.map((v) => [v.version, v.label]),
 );
-
-if (!isValidVersionSegment(version)) {
-  throw new Response("Not Found", { status: 404 });
-}
 
 const slugParam = Astro.params.slug ?? "";
 const currentRoute = `/docs/${version}/${slugParam}${slugParam ? "/" : ""}`;

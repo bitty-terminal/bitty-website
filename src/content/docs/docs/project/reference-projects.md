@@ -372,7 +372,7 @@ minus forbidden_delegated_capabilities` an explicit invariant, including
   remote, and ACP adapters, with adapter-specific state translated into a
   bounded event and attribution model?
 
-The linked [AI Architecture](../specifications/ai-architecture.md) is a draft
+The linked [AI Architecture](../projects/bitty/specifications/ai-architecture.md) is a draft
 proposal, not shipped behavior. It is safe to defer these questions there or in
 follow-up RFCs; this register introduces no dependency, provider, protocol,
 execution backend, or product commitment.

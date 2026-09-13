@@ -18,9 +18,9 @@ Accepted on 2026-08-26 by the project initiator, closing open question
 graph below. As of 2026-08-29 (`bitty` `be3bdb4`, 16 crates, soak ~808 tests)
 the `bitty` workspace additionally contains `bitty-package` with lifecycle and
 integrity model accepted
-([Package Lifecycle RFC](../../specifications/package-lifecycle-rfc.md),
+([Package Lifecycle RFC](../../projects/bitty/specifications/package-lifecycle-rfc.md),
 OQ-021, 2026-08-27), `bitty-lua` accepted
-([Lua Runtime RFC](../../specifications/lua-runtime-rfc.md), OQ-009, plus
+([Lua Runtime RFC](../../projects/bitty/specifications/lua-runtime-rfc.md), OQ-009, plus
 ADR-0005/0006/0007 OQ-030/031/032, 2026-08-29), and tail crates (`bitty-rich`
 OQ-008/015/016, `bitty-ipc`/`bitty-agent` OQ-018) `Implemented` (headless
 `Implemented` at `be3bdb4`) ahead of `Verified`; they remain governed by
@@ -34,9 +34,9 @@ See the implementation note after the table.
 [ADR 0001](ADR-0001-repository-bootstrap-baseline.md) accepted an
 implementation-neutral two-package workspace and explicitly deferred the final
 Cargo crate graph and MSRV. The
-[Architecture Overview](../../architecture/overview.md) requires a one-way DAG
+[Architecture Overview](../../projects/bitty/architecture/overview.md) requires a one-way DAG
 in which lower layers know nothing about higher layers, and
-[Core and Plugin Boundaries](../../architecture/core-boundaries.md) fixes the
+[Core and Plugin Boundaries](../../projects/bitty/architecture/core-boundaries.md) fixes the
 normative rule that protocol correctness, Terminal Truth, rendering, input
 encoding, the PTY, and security policy cannot be delegated to Lua or plugins.
 The project needs a concrete crate decomposition that makes those boundaries
@@ -73,7 +73,7 @@ members (`bitty-core` plus fifteen active crates: `vt`, `pty`, `platform`,
 `rich`, `ipc`, `agent`, `runtime`, `app`) as pinned in `bitty/Cargo.toml` and
 `Cargo.lock`. `bitty-package` implements the tail of the candidate build-order
 spine (`Proposed Delivery Sequence`) with lifecycle and integrity model accepted
-([Package Lifecycle RFC](../../specifications/package-lifecycle-rfc.md),
+([Package Lifecycle RFC](../../projects/bitty/specifications/package-lifecycle-rfc.md),
 OQ-021, 2026-08-27), `bitty-lua` (`piccolo` 0.3.3) accepted (OQ-009/030-032,
 2026-08-29), and `bitty-rich`, `bitty-ipc`, `bitty-agent` as `Implemented`
 (headless `Implemented` at `be3bdb4`, soak ~808 tests, `forbid(unsafe_code)`).

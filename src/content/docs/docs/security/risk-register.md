@@ -18,7 +18,7 @@ Status: **Pre-alpha / Engineering Milestones M1-M8** (2026-09-08, `bitty` `29772
 per RS-1..RS-7, `R-004` remains `Open` at `7a4ee41` (audit 2026-08-31), all others
 remain `Open` because evidence is `Implemented` (IPC/rich/resolver hardening,
 experimental `c0aadd2`/`7e3104d`/`a8735d0` at `a8735d0` but not yet `Verified`) per the
-[risk evidence RFC](../specifications/risk-evidence-rfc.md): lifecycle is
+[risk evidence RFC](../projects/bitty/specifications/risk-evidence-rfc.md): lifecycle is
 `Draft -> Experimental Implementation -> Accepted -> Verified -> Compatible -> Release-ready`
 (spec) and `Specified -> Accepted -> Implemented -> Verified -> Compatible -> Release-ready`
 (crate). Experimental code is review evidence, not `Verified`.
@@ -116,8 +116,8 @@ fault-injection review for the fuel step slice. Tooling items
 - Evidence matrix: [evidence-matrix.md](evidence-matrix.md) Phase E draft covers
   R-001..R-022 vs P0-AC-001..034 with implementation, test, CI, adversarial and
   audit columns; no risk moves to `Mitigated` until the per-risk checklist in
-  [risk evidence RFC](../specifications/risk-evidence-rfc.md) RS-1..RS-7 is
-  satisfied, `just check` plus `act -n` are green, and CarryCtx linkage is
-  recorded; `R-005`/`R-006`/`R-007` moved `Open -> Mitigated` at `d4d75e9` per
+  [risk evidence RFC](../projects/bitty/specifications/risk-evidence-rfc.md)
+  RS-1..RS-7 is satisfied, `just check` plus `act -n` are green, and CarryCtx
+  linkage is recorded; `R-005`/`R-006`/`R-007` moved `Open -> Mitigated` at
   PR #144/#145/#146 independent review, `R-004` remains `Open` per 2026-08-31
   audit.

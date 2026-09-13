@@ -344,7 +344,7 @@
     },
     "scrollbar": {
       "assessment": "implemented-unverified",
-      "evidence": "configurable overlay scrollbar (hidden/always/auto, width 1-32 default 8) merged to bitty origin/main at c49ead1 (CTX-0181, closes #281, bitty PR #405) read-only; documented as shipped defaults in docs/configuration/lua-and-xdg.md; Implemented-only, not Verified"
+      "evidence": "configurable overlay scrollbar (hidden/always/auto, width 1-32 default 8) merged to bitty origin/main at c49ead1 (CTX-0181, closes #281, bitty PR #405) read-only; documented as shipped defaults in docs/projects/bitty/configuration/lua-and-xdg.md; Implemented-only, not Verified"
     },
     "ipc": {
       "assessment": "hardening",

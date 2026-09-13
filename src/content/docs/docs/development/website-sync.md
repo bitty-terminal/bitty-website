@@ -12,7 +12,7 @@ sidebar_order: 25
 # Website Sync Contract
 
 This guide translates the accepted
-[Website Delivery RFC](../specifications/website-delivery-rfc.md)
+[Website Delivery RFC](../projects/bitty/specifications/website-delivery-rfc.md)
 and [Website content contract](../project/website-content-contract.md)
 into the developer command surface. It does not invent product code,
 does not authorize shipped behavior, and does not weaken the normative

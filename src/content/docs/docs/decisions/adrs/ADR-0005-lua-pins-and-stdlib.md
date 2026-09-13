@@ -15,17 +15,17 @@ sidebar_order: 35
 
 Accepted on 2026-08-29 by the project initiator, closing
 [OQ-030](../open-questions.md). This ADR defines the accepted vendored Lua 5.4.x, mlua and piccolo 0.3.3 pins, upgrade cadence, vendored verification, restricted stdlib and debug allowlist and unsafe-surface audit gates at the design level; it closes [OQ-030](../open-questions.md). It does not describe implemented behavior, does not authorize shipped, stable, normative, or compatibility-guaranteed behavior, and does not weaken any normative security control. This ADR refines [ADR 0004](ADR-0004-upstream-dependencies.md)
-and the [Lua Runtime RFC](../../specifications/lua-runtime-rfc.md) without
+and the [Lua Runtime RFC](../../projects/bitty/specifications/lua-runtime-rfc.md) without
 contradicting either. No dependency is added to any repository by this ADR;
 `Cargo.lock` pins are added by the implementing task. Frontmatter `status` is
 `accepted` per the repository metadata schema; document status is Accepted. Lifecycle is `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`.
 
 - Deciders: project initiator (DEC-001), security-auditor persona (audit gate
-  per [Lua Runtime RFC](../../specifications/lua-runtime-rfc.md) security review
+  per [Lua Runtime RFC](../../projects/bitty/specifications/lua-runtime-rfc.md) security review
   and R-018/T-14), `bitty-plugin-host` and `bitty-lua` maintainers (CTX-0040).
 - Related: OQ-030 (primary), OQ-009 (closed parent, 2026-08-27 CTX-0047),
   ADR 0004, Lua Runtime RFC Accepted 2026-08-27,
-  [Isolation Resource RFC](../../specifications/isolation-resource-rfc.md)
+  [Isolation Resource RFC](../../projects/bitty/specifications/isolation-resource-rfc.md)
   RC-1 and RC-2, ADR 0003 MSRV 1.85, ADR 0001 toolchain,
   `bitty` CTX-0040 `d67a65b` and `83efbf5` evidence.
 
@@ -210,8 +210,8 @@ Per R-018 and T-14 exit evidence, this ADR was Proposed on 2026-08-27 and is Acc
 
 - [OQ-030](../open-questions.md) row migrated from OQ-009 CTX-0047 2026-08-27
 - [ADR 0004](ADR-0004-upstream-dependencies.md) — Upstream Dependency Set Accepted P0 baseline piccolo watch-list
-- [Lua Runtime RFC](../../specifications/lua-runtime-rfc.md) — Accepted 2026-08-27 sandbox stdlib baseline module search diagnostics Open items
-- [Isolation Resource RFC](../../specifications/isolation-resource-rfc.md) — RC-1 and RC-2, FS-1 through FS-9, attack cases AT-IR-004 through AT-IR-007
+- [Lua Runtime RFC](../../projects/bitty/specifications/lua-runtime-rfc.md) — Accepted 2026-08-27 sandbox stdlib baseline module search diagnostics Open items
+- [Isolation Resource RFC](../../projects/bitty/specifications/isolation-resource-rfc.md) — RC-1 and RC-2, FS-1 through FS-9, attack cases AT-IR-004 through AT-IR-007
 - `bitty/Cargo.toml` `rust-version 1.85` `unsafe_code = "deny"`, `rust-toolchain.toml`, `Cargo.lock` main plus worktree `ctx-0040` with piccolo
 - `bitty/crates/bitty-lua/Cargo.toml` `src/lib.rs` `tests/measurement_lua.rs` RC-1 and RC-2 harness and `bitty/crates/bitty-plugin-host/tests/measurement.rs` queue budgets
 
@@ -225,7 +225,7 @@ The following gates were satisfied per the [open-question register](../open-ques
 4. **Budget harness:** `cargo test -p bitty-lua --test measurement_lua` RC-1 instruction and wall plus RC-2 32 MiB suspend with `VmBudgetSnapshot` counters plus `bitty-plugin-host` queue harness green, headless, deterministic.
 5. **Unsafe audit report** reviewed by security-auditor persona per R-018 and T-14 exit; `cargo geiger`, `cargo vet`, `cargo audit` clean or with recorded waivers.
 6. **Supply-chain gates:** `cargo vet` and `audit`, CodeQL Rust plus actions, `cargo deny` license and ban and source checks, `gitleaks` pre-push — all green.
-7. **Docs sync:** this ADR appears in [decision register](../index.md) and [ADR index](README.md) plus `docs/specifications/lua-runtime-rfc.md` Open items updated plus [open-question register](../open-questions.md) OQ-030 row to Accepted ADR 0005 in the same PR per register close rule.
+7. **Docs sync:** this ADR appears in [decision register](../index.md) and [ADR index](README.md) plus `docs/projects/bitty/specifications/lua-runtime-rfc.md` Open items updated plus [open-question register](../open-questions.md) OQ-030 row to Accepted ADR 0005 in the same PR per register close rule.
 
 ### Evidence needed to move OQ-030 from Open to Accepted
 
@@ -246,12 +246,12 @@ Checklist the commander gated P0 review on. Each maps to a gate above. The follo
 
 <!-- markdownlint-disable MD013 -->
 
-| Role                                  | Reviewer          | Verdict | Evidence / scope                                                                                                                                                                                                                                                                                                     | Date       |
-| ------------------------------------- | ----------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| security-auditor                      | `bitty-security`  | pass    | R-018, R-019, T-14, vendored Lua 5.4.7/5.4.8, `mlua` `vendored`+`lua54`, `piccolo` 0.3.3 `=`, `Cargo.lock` exact pin, unsafe-surface audit `mlua`/`piccolo`/`gc-arena`/`sptr`, `forbid(unsafe_code)` for `bitty-lua`/`bitty-plugin-host`                                                                             | 2026-08-29 |
-| category-owner (architecture)         | `bitty-architect` | pass    | pins PUC Lua 5.4.x/`mlua` 0.10.y or 0.11.y/`piccolo` 0.3.3 `=`, upgrade cadence quarterly+advisory 7/30 days/unmaintained, vendored Tier 1 matrix `x86_64-unknown-linux-gnu`/`apple-darwin`/`pc-windows-msvc`/BSD, headless smoke `bitty-lua`/`bitty-plugin-host`, Tier 1 CI matrix                                  | 2026-08-29 |
-| category-owner (security-and-quality) | `bitty-quality`   | pass    | restricted stdlib `base`/`math`/`string`/`table`/`utf8`/`os.clock`/`debug.traceback` deny `io`/`os.execute`/`package.loadlib`/bytecode, unsafe-surface audit `cargo geiger`/`cargo vet`/`cargo audit`+fuzz hostile chunk truncation, RC-1/RC-2 `Fuel`/`total_memory()` 15+21 tests                                   | 2026-08-29 |
-| docs-curator                          | `bitty-curator`   | pass    | Frontmatter `accepted`, lifecycle `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`, links to [Lua Runtime RFC](../../specifications/lua-runtime-rfc.md) and [Isolation Resource RFC](../../specifications/isolation-resource-rfc.md) and ADR 0004, English-only, decision-register sync | 2026-08-29 |
+| Role                                  | Reviewer          | Verdict | Evidence / scope                                                                                                                                                                                                                                                                                                                                   | Date       |
+| ------------------------------------- | ----------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| security-auditor                      | `bitty-security`  | pass    | R-018, R-019, T-14, vendored Lua 5.4.7/5.4.8, `mlua` `vendored`+`lua54`, `piccolo` 0.3.3 `=`, `Cargo.lock` exact pin, unsafe-surface audit `mlua`/`piccolo`/`gc-arena`/`sptr`, `forbid(unsafe_code)` for `bitty-lua`/`bitty-plugin-host`                                                                                                           | 2026-08-29 |
+| category-owner (architecture)         | `bitty-architect` | pass    | pins PUC Lua 5.4.x/`mlua` 0.10.y or 0.11.y/`piccolo` 0.3.3 `=`, upgrade cadence quarterly+advisory 7/30 days/unmaintained, vendored Tier 1 matrix `x86_64-unknown-linux-gnu`/`apple-darwin`/`pc-windows-msvc`/BSD, headless smoke `bitty-lua`/`bitty-plugin-host`, Tier 1 CI matrix                                                                | 2026-08-29 |
+| category-owner (security-and-quality) | `bitty-quality`   | pass    | restricted stdlib `base`/`math`/`string`/`table`/`utf8`/`os.clock`/`debug.traceback` deny `io`/`os.execute`/`package.loadlib`/bytecode, unsafe-surface audit `cargo geiger`/`cargo vet`/`cargo audit`+fuzz hostile chunk truncation, RC-1/RC-2 `Fuel`/`total_memory()` 15+21 tests                                                                 | 2026-08-29 |
+| docs-curator                          | `bitty-curator`   | pass    | Frontmatter `accepted`, lifecycle `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`, links to [Lua Runtime RFC](../../projects/bitty/specifications/lua-runtime-rfc.md) and [Isolation Resource RFC](../../projects/bitty/specifications/isolation-resource-rfc.md) and ADR 0004, English-only, decision-register sync | 2026-08-29 |
 
 Closes OQ-030: this ADR closes that open question at the design level; the register rows are updated per the open-question register rules. The lifecycle is `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`.
 

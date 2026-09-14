@@ -118,6 +118,15 @@
 
 ## Verification and handoff
 
+- Fresh worktrees start without `node_modules` (gitignored): run
+  `just install` (`bun install --frozen-lockfile`) before any gate. Without
+  local deps, a bare `bunx --bun astro ...` silently provisions a foreign
+  Astro whose tsconfig resolver fails with the misleading
+  `Tsconfig not found astro/tsconfigs/strictest`; that error means missing
+  dependencies, never a dot-path problem. Checkouts under the mandated
+  `.worktrees/` location are supported (verified CTX-0026); `just
+  typecheck`/`build`/`check` fail fast with the remediation when deps are
+  absent.
 - Keep edits inside the active CarryCtx scope and preserve unrelated work.
 - Run formatting, links, metadata, language, accessibility, build, and security
   checks in proportion to the change.

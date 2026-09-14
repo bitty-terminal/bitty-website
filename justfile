@@ -5,6 +5,13 @@ default: check
 install:
     bun install --frozen-lockfile
 
+# Fresh worktrees do not carry node_modules (gitignored). Without local deps,
+# `bunx` silently provisions a foreign astro whose tsconfig resolver fails
+# with a misleading `Tsconfig not found` error, so fail fast with the fix.
+[private]
+ensure-deps:
+    test -x node_modules/.bin/astro || { echo "dependencies missing; run 'just install' first" >&2; exit 1; }
+
 fmt:
     bun run format
 
@@ -33,10 +40,10 @@ commit-lint FILE:
 hooks-install:
     lefthook install
 
-typecheck:
+typecheck: ensure-deps
     bun run typecheck
 
-build:
+build: ensure-deps
     bun run build
 
 dist: build
@@ -48,7 +55,7 @@ wrangler-dry-run: dist
 actionlint:
     actionlint .github/workflows/*.yml
 
-check:
+check: ensure-deps
     bun run check
     actionlint .github/workflows/*.yml
 

@@ -1,0 +1,210 @@
+name: Docs freshness
+
+# Scheduled cross-repo docs freshness monitor (CTX-0019, follow-up referenced
+# in bitty-docs CTX-0150).
+#
+# The deterministic `docs:check` gate (CTX-0017) fails only when the committed
+# mirror diverges from the _pinned_ revision. It cannot see that the pin has
+# fallen behind the `bitty-docs` default branch. This workflow closes that gap
+# as an advisory signal: it compares `src/content/docs-revision.json` against
+# the `bitty-docs` default-branch HEAD once a week and files the drift where
+# humans look. It never blocks releases; `docs:check` remains the blocker.
+#
+# Tracking-issue contract (exactly one issue ever carries the
+# `docs-freshness` label):
+# - Title: `[docs-freshness] bitty-docs pin behind main (<short-head-sha>)`.
+# - Labels: `docs-freshness,area:website,P2`; milestone `v0.1.0`.
+# - Body carries a machine marker
+#   `<!-- docs-freshness:v1 pin=<sha> head=<sha> status=<status> -->` plus a
+#   human summary, a compare link, and the `just docs-sync PIN=<sha>` fix.
+# - Behind (or ahead/diverged): create the issue, or reopen and update the
+#   closed one when the recorded HEAD moved; comment only when the recorded
+#   HEAD changed, so weekly runs do not spam.
+# - Identical: close an open tracking issue as resolved; otherwise do nothing.
+#
+# Triggers:
+# - schedule: weekly, Monday 07:23 UTC (off the hour to avoid scheduler load).
+# - workflow_dispatch: manual run; set `dry_run` to true to print the planned
+#   create/update/comment/close actions without touching the Issues API.
+#
+# Privileges and secrets: `contents: read` (checkout the pin file) plus
+# `issues: write` (create/update/comment/close the one tracking issue). No
+# custom secrets; only the automatic `GITHUB_TOKEN`, never echoed. The
+# `bitty-docs` HEAD resolves over anonymous HTTPS (`git ls-remote`) and the
+# ahead/behind verdict comes from the compare API, so no second checkout.
+
+on:
+  schedule:
+    # Weekly on Monday at 07:23 UTC.
+    - cron: "23 7 * * 1"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Report only; never create, update, comment, or close issues"
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: docs-freshness-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  freshness:
+    name: Check bitty-docs pin freshness
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Compare pin against bitty-docs HEAD
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DRY_RUN_INPUT: ${{ github.event.inputs.dry_run }}
+        run: |
+          set -euo pipefail
+
+          docs_repo="bitty-terminal/bitty-docs"
+          this_repo="bitty-terminal/bitty-website"
+          pin_file="src/content/docs-revision.json"
+          label="docs-freshness"
+
+          dry_run="${DRY_RUN_INPUT:-false}"
+          dry_run="$(printf '%s' "$dry_run" | tr '[:upper:]' '[:lower:]')"
+
+          pin="$(jq -r .revision "$pin_file")"
+          if [ -z "$pin" ] || [ "$pin" = "null" ]; then
+            echo "::error::cannot read revision from $pin_file"
+            exit 1
+          fi
+          echo "website pin: $pin"
+
+          head="$(git ls-remote "https://github.com/${docs_repo}.git" HEAD | cut -f1)"
+          if [ -z "$head" ]; then
+            echo "::error::cannot resolve HEAD of $docs_repo"
+            exit 1
+          fi
+          echo "docs HEAD:   $head"
+
+          compare="$(gh api "repos/${docs_repo}/compare/${pin}...${head}" \
+            --jq '{status: .status, ahead_by: .ahead_by, behind_by: .behind_by}')"
+          status="$(printf '%s' "$compare" | jq -r .status)"
+          ahead_by="$(printf '%s' "$compare" | jq -r .ahead_by)"
+          behind_by="$(printf '%s' "$compare" | jq -r .behind_by)"
+          echo "compare status: $status (head ahead by $ahead_by, behind by $behind_by)"
+
+          short_head="$(printf '%s' "$head" | cut -c1-7)"
+          title="[docs-freshness] bitty-docs pin behind main ($short_head)"
+          compare_url="https://github.com/${docs_repo}/compare/${pin}...${head}"
+
+          marker="<!-- docs-freshness:v1 pin=${pin} head=${head} status=${status} -->"
+          # Compare direction: base=pin, head=docs HEAD. "ahead" means HEAD
+          # moved past the pin (the normal behind case); "behind" means the
+          # pin is not an ancestor of HEAD (rewound history or wrong pin).
+          if [ "$status" = "identical" ]; then
+            summary="The website docs pin \`${pin}\` matches the \`bitty-docs\` default-branch HEAD. Nothing to do."
+          elif [ "$status" = "ahead" ]; then
+            summary="The website docs pin \`${pin}\` is **${ahead_by} commit(s) behind** the \`bitty-docs\` default-branch HEAD \`${head}\`."
+          else
+            summary="The website docs pin \`${pin}\` is **not an ancestor** of the \`bitty-docs\` default-branch HEAD \`${head}\` (compare status **${status}**); human review needed."
+          fi
+          body="Priority: P2 | Area: website | Labels: docs-freshness,area:website,P2 | Milestone: v0.1.0 | RFC: OQ-023 | Task: CTX-0019
+
+          ${summary}
+
+          - Website pin: \`${pin}\` (\`src/content/docs-revision.json\`)
+          - Docs HEAD: \`${head}\`
+          - Compare: ${compare_url}
+
+          To resolve: \`just docs-sync PIN=${head}\` (equivalently \`bun run sync:docs --pin ${head}\`), then \`just docs-check && just check\`, and open the website pull request linked to this issue.
+
+          Advisory only: the deterministic \`docs:check\` staleness gate remains the release blocker.
+
+          $marker"
+
+          # The label must exist before it can be used for lookup.
+          if [ "$dry_run" = "true" ]; then
+            echo "[dry-run] would ensure label '$label' exists"
+          else
+            gh label create "$label" --repo "$this_repo" \
+              --description "Automated bitty-docs pin freshness tracking (single issue)" \
+              --color "fef2c0" 2>/dev/null || true
+          fi
+
+          open_issue="$(gh issue list --repo "$this_repo" --label "$label" \
+            --state open --limit 5 --json number,title,body \
+            --jq 'sort_by(.number) | last // empty')"
+          open_number="$(printf '%s' "$open_issue" | jq -r '.number // empty')"
+          open_body="$(printf '%s' "$open_issue" | jq -r '.body // empty')"
+          recorded_head="$(printf '%s' "$open_body" | grep -o 'head=[0-9a-f]*' | head -1 | cut -d= -f2 || true)"
+
+          if [ "$status" = "identical" ]; then
+            if [ -n "$open_number" ]; then
+              if [ "$dry_run" = "true" ]; then
+                echo "[dry-run] would close #$open_number as resolved"
+              else
+                gh issue close "$open_number" --repo "$this_repo" \
+                  --comment "Website pin \`$pin\` matches the \`bitty-docs\` default-branch HEAD; closing. This issue reopens automatically if the pin falls behind again." \
+                  --reason completed
+                echo "closed #$open_number as resolved"
+              fi
+            else
+              echo "pin is current and no tracking issue is open; nothing to do"
+            fi
+            exit 0
+          fi
+
+          if [ -z "$open_number" ]; then
+            closed_number="$(gh issue list --repo "$this_repo" --label "$label" \
+              --state closed --limit 5 --json number \
+              --jq '[.[].number] | max // empty')"
+            if [ -n "$closed_number" ]; then
+              if [ "$dry_run" = "true" ]; then
+                echo "[dry-run] would reopen #$closed_number with title '$title'"
+              else
+                printf '%s\n' "$body" > "$RUNNER_TEMP/freshness-body.md"
+                gh issue edit "$closed_number" --repo "$this_repo" \
+                  --title "$title" --body-file "$RUNNER_TEMP/freshness-body.md" \
+                  --add-label "area:website,P2" --milestone "v0.1.0"
+                gh issue reopen "$closed_number" --repo "$this_repo" \
+                  --comment "Website pin \`$pin\` drifted from the \`bitty-docs\` default-branch HEAD \`$head\` (compare status: ${status}). See the updated body for the compare link and fix. $compare_url"
+                echo "reopened #$closed_number"
+              fi
+            else
+              if [ "$dry_run" = "true" ]; then
+                echo "[dry-run] would create an issue with title '$title'"
+              else
+                printf '%s\n' "$body" > "$RUNNER_TEMP/freshness-body.md"
+                gh issue create --repo "$this_repo" \
+                  --title "$title" --body-file "$RUNNER_TEMP/freshness-body.md" \
+                  --label "$label,area:website,P2" --milestone "v0.1.0"
+                echo "created tracking issue"
+              fi
+            fi
+            exit 0
+          fi
+
+          if [ "$recorded_head" = "$head" ]; then
+            echo "tracking issue #$open_number already records HEAD $head; nothing to do"
+            exit 0
+          fi
+
+          if [ "$dry_run" = "true" ]; then
+            echo "[dry-run] would update #$open_number to HEAD $head and comment"
+          else
+            printf '%s\n' "$body" > "$RUNNER_TEMP/freshness-body.md"
+            gh issue edit "$open_number" --repo "$this_repo" \
+              --title "$title" --body-file "$RUNNER_TEMP/freshness-body.md" \
+              --add-label "area:website,P2" --milestone "v0.1.0"
+            gh issue comment "$open_number" --repo "$this_repo" \
+              --body "Update: docs HEAD moved \`${recorded_head:-unknown}\` -> \`$head\` (compare status: ${status}). $compare_url"
+            echo "updated #$open_number to HEAD $head"
+          fi

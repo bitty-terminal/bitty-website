@@ -33,7 +33,7 @@ import {
   serializeJson,
   writeFileIfChanged,
 } from "./lib/docs-source.mjs";
-import { validateRouteCollisions } from "./lib/docs-routes.mjs";
+import { validateRouteCollisions } from "../src/lib/docsRoutes.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const paths = repoPaths(ROOT);

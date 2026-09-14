@@ -4,13 +4,13 @@
   "carryctx_version": "0.11.4",
   "schema_version": 18,
   "project_id": "01M0WAMX6XBAQ7A2FSYTA5W76M",
-  "export_id": "01M2FAZ5J2PY1Y11M0CAFBYCX6",
-  "created_at": "2026-09-14T06:51:42.530111132+00:00",
+  "export_id": "01M2FF0H4XD68572SX1EGK6Z6S",
+  "created_at": "2026-09-14T08:02:21.469771106+00:00",
   "parents": [
-    "01M2E78A17WB80AVR36NBW3HJF"
+    "01M2FAZ5J2PY1Y11M0CAFBYCX6"
   ],
   "sequences": {
-    "display_id_CTX": 25,
+    "display_id_CTX": 26,
     "display_id_decision": 4,
     "display_id_handoff": 8,
     "display_id_progress": 70
@@ -20,11 +20,11 @@
     "hostname": "unknown"
   },
   "counts": {
-    "agents": 11,
+    "agents": 12,
     "checkpoint_corrections": 0,
     "checkpoints": 38,
     "decisions": 3,
-    "events": 390,
+    "events": 393,
     "graph_edges": 121,
     "graph_nodes": 70,
     "handoffs": 7,
@@ -33,7 +33,7 @@
     "sequences": 4,
     "sessions": 19,
     "task_dependencies": 3,
-    "tasks": 24,
+    "tasks": 25,
     "team_members": 4,
     "teams": 1,
     "tombstones": 4,

@@ -1,24 +1,42 @@
 /**
- * Route mapping per Website Delivery RFC RM-1 / RM-2 (OQ-023).
+ * Authoritative route mapping per Website Delivery RFC RM-1 / RM-2 / RM-6 (OQ-023).
+ *
+ * This module is the single collision and identity authority (RM-6): it is
+ * imported by the Astro renderer (`src/pages/docs/[version]/[...slug].astro`)
+ * and by the sync/check scripts (`scripts/sync-docs.mjs`,
+ * `scripts/check-docs-sync.mjs`), so all three agree by construction.
  *
  * Source: `docs/<category>/<path>.md`
  * Route:  `/docs/<version>/<category>/<slug>/`
  *
- * - Category is the single segment after `docs/`.
- * - `docs/projects/<project>/<category>/...` keeps the project segment in the
- *   route hierarchy (`/docs/<version>/projects/<project>/<category>/...`), as
- *   accepted by the project partition migration (bitty-docs CTX-0185).
- * - README.md maps to the category (or revision) index.
- * - Extension must be `.md`; only the final segment is slugified
- *   (lowercased, non-alphanumerics -> `-`).
- * - Mapping is case-sensitive and hierarchy-preserving.
- * - Fail-closed on collisions is enforced by validateRouteCollisions().
+ * The mapping reproduces exactly what the Astro glob loader emits for the
+ * same file: every path segment is slugged with `github-slugger` (the same
+ * function the renderer uses), a trailing `index` segment is dropped, and
+ * `docs/README.md` is the revision index:
+ *
+ * - `docs/README.md` -> `/docs/<version>/`
+ * - `docs/<category>/index.md` -> `/docs/<version>/<category>/`
+ * - `docs/<category>/README.md` -> `/docs/<version>/<category>/readme/`
+ *   (explicit `readme` slug, as rendered)
+ * - `docs/<category>/<dir>/README.md` -> `/docs/<version>/<category>/<dir>/readme/`
+ * - `docs/<category>/<dir>/index.md` -> `/docs/<version>/<category>/<dir>/`
+ * - `docs/projects/<project>/...` keeps the project segment in the route
+ *   hierarchy, as accepted by the project partition migration
+ *   (bitty-docs CTX-0185).
+ *
+ * Only `.md` files are routable. Source-relative path is the authoritative
+ * content identity (RM-3). Two distinct eligible sources mapping to the same
+ * public route (compared case-insensitively) fail closed via
+ * validateRouteCollisions() (RM-4); the fix belongs in the owning
+ * documentation repository, never in this mapper.
  */
+
+import { slug as githubSlug } from "github-slugger";
 
 export type VersionedDocsRoute = {
   readonly sourcePath: string; // repo-relative, e.g. docs/specifications/foo/bar.md
   readonly category: string; // e.g. specifications
-  readonly slugPath: string; // e.g. foo/bar  (empty for category index)
+  readonly slugPath: string; // e.g. foo/bar (empty for the revision index)
   readonly routeWithoutVersion: string; // e.g. /docs/specifications/foo/bar/
   readonly versionedRoute: (version: string) => string; // e.g. /docs/0.1.0/specifications/foo/bar/
 };
@@ -55,12 +73,23 @@ const ALLOWED_CATEGORIES = new Set<string>([
 const LEGACY_CATEGORIES = new Set<string>(["interfaces"]);
 
 function slugifySegment(segment: string): string {
-  const lowered = segment.toLowerCase();
-  const slug = lowered.replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  const slug = githubSlug(segment);
   if (slug.length === 0) {
     throw new Error(`Cannot slugify segment "${segment}": collapses to empty`);
   }
   return slug;
+}
+
+function assertCategory(category: string, sourcePath: string): void {
+  const isLegacy = LEGACY_CATEGORIES.has(category);
+  if (
+    (!ALLOWED_CATEGORIES.has(category) && !isLegacy) ||
+    !CATEGORY_PATTERN.test(category)
+  ) {
+    throw new Error(
+      `Unknown or invalid category "${category}" in ${sourcePath}`,
+    );
+  }
 }
 
 /**
@@ -87,22 +116,8 @@ export function sourcePathToRouteIdentity(
     throw new Error(`Invalid source path: ${sourcePath}`);
   }
 
-  const category = parts[0] as string;
-  const isLegacy = LEGACY_CATEGORIES.has(category);
-  if (
-    (!ALLOWED_CATEGORIES.has(category) && !isLegacy) ||
-    !CATEGORY_PATTERN.test(category)
-  ) {
-    throw new Error(
-      `Unknown or invalid category "${category}" in ${sourcePath}`,
-    );
-  }
-
-  const remainder = parts.slice(1);
-  const isReadme = remainder.length === 1 && remainder[0] === "README";
-
-  // docs/README.md -> /docs/<version>/
-  if (sourcePath === "docs/README.md") {
+  // docs/README.md (any case that slugs to `readme`) is the revision index.
+  if (parts.length === 1 && githubSlug(parts[0] as string) === "readme") {
     const routeWithoutVersion = "/docs/";
     return {
       sourcePath,
@@ -114,47 +129,69 @@ export function sourcePathToRouteIdentity(
     };
   }
 
-  if (isReadme) {
-    const routeWithoutVersion = `/docs/${category}/`;
-    return {
-      sourcePath,
-      category,
-      slugPath: "",
-      routeWithoutVersion,
-      versionedRoute: (version: string) =>
-        `/docs/${normalizeVersionSegment(version)}/${category}/`,
-    };
-  }
+  const category = parts[0] as string;
+  assertCategory(category, sourcePath);
 
-  // Normal file: preserve subdirectory hierarchy, slugify only filename stem.
+  const remainder = parts.slice(1);
   if (remainder.length === 0) {
     throw new Error(
       `File without path inside category is not routable: ${sourcePath}`,
     );
   }
 
-  const dirs = remainder.slice(0, -1).map(slugifySegment);
-  const maybeFileStem = remainder[remainder.length - 1];
-  if (
-    maybeFileStem === undefined ||
-    maybeFileStem.length === 0 ||
-    maybeFileStem === "README"
-  ) {
-    throw new Error(`Empty or reserved filename in ${sourcePath}`);
-  }
-  const fileStem: string = maybeFileStem;
-  const slug = slugifySegment(fileStem);
-  const slugPath = [...dirs, slug].join("/");
+  // Slug every segment exactly like the Astro glob loader, then drop a
+  // trailing `index` segment at any depth (nested index handling).
+  const slugged = remainder.map(slugifySegment);
+  const last = slugged[slugged.length - 1] as string;
+  const withoutIndex = last === "index" ? slugged.slice(0, -1) : slugged;
+  const slugPath = withoutIndex.join("/");
 
-  const routeWithoutVersion: string = `/docs/${category}/${slugPath}/`;
+  const routeWithoutVersion =
+    slugPath.length === 0
+      ? `/docs/${category}/`
+      : `/docs/${category}/${slugPath}/`;
   return {
     sourcePath,
     category,
     slugPath,
     routeWithoutVersion,
     versionedRoute: (version: string): string =>
-      `/docs/${normalizeVersionSegment(version)}/${category}/${slugPath}/`,
+      slugPath.length === 0
+        ? `/docs/${normalizeVersionSegment(version)}/${category}/`
+        : `/docs/${normalizeVersionSegment(version)}/${category}/${slugPath}/`,
   };
+}
+
+/**
+ * Map a source-relative docs DIRECTORY to its version-less route directory.
+ *
+ * Used for non-Markdown asset emission and asset-reference rewriting (MV-4):
+ * the asset `docs/<category>/<dir>/<file>` is published at
+ * `/docs/<version>/<category>/<dir>/<file>` with every directory segment
+ * slugged exactly like document routes. No `index` stripping applies to
+ * directories (only document filenames collapse).
+ *
+ * @throws on paths outside `docs/` or with an invalid category
+ */
+export function sourceDirToRouteDir(sourceDir: string): string {
+  if (sourceDir === "docs" || sourceDir === "docs/") {
+    return "/docs/";
+  }
+  if (!sourceDir.startsWith("docs/")) {
+    throw new Error(`Source dir must start with docs/: ${sourceDir}`);
+  }
+  const trimmed =
+    sourceDir.endsWith("/") && sourceDir.length > "docs/".length
+      ? sourceDir.slice(0, -1)
+      : sourceDir;
+  const parts = trimmed.slice("docs/".length).split("/");
+  const category = parts[0];
+  if (category === undefined || category.length === 0) {
+    throw new Error(`Invalid source dir: ${sourceDir}`);
+  }
+  assertCategory(category, sourceDir);
+  const slugged = parts.map(slugifySegment);
+  return `/docs/${slugged.join("/")}/`;
 }
 
 function normalizeVersionSegment(version: string): string {
@@ -174,7 +211,8 @@ function normalizeVersionSegment(version: string): string {
  *
  * Two distinct eligible sources that map to the same public route must fail
  * the build (RM-4). This runs on the set of publishable docs for a single
- * revision; callers should scope by revision.
+ * revision; callers should scope by revision. Comparison is
+ * case-insensitive because the renderer lowercases every segment.
  *
  * @throws if any two sourcePaths collide at the same routeWithoutVersion
  */
@@ -190,12 +228,6 @@ export function validateRouteCollisions(sourcePaths: readonly string[]): void {
         `Route collision: "${existing}" and "${sp}" both map to "${route}" (case-insensitive: "${normalized}")`,
       );
     }
-    if (byRoute.has(route) && byRoute.get(route) !== sp) {
-      throw new Error(
-        `Route collision: duplicate route "${route}" from "${existing}" and "${sp}"`,
-      );
-    }
-    byRoute.set(route, sp);
     byRoute.set(normalized, sp);
   }
 }

@@ -1,25 +1,54 @@
 ---
 import { getCollection, render } from "astro:content";
+import { sep } from "node:path";
 import { assertValidRevisionPin } from "../../../lib/docsValidation.ts";
 import { getVersions, isValidVersionSegment } from "../../../lib/versions.ts";
+import {
+  sourcePathToRouteIdentity,
+  validateRouteCollisions,
+} from "../../../lib/docsRoutes.ts";
 import {
   buildLegacyAliases,
   loadMergedRedirects,
 } from "../../../lib/redirects.ts";
 import VersionSelector from "../../../components/VersionSelector.astro";
 
-// Astro glob slugs for docs/<path>.md under base src/content/docs:
-//   docs/README.md           -> slug docs/readme (root index)
-//   docs/decisions/index.md  -> slug docs/decisions
-//   docs/projects/bitty/...  -> slug docs/projects/bitty/...
-// The slug already encodes the version-less route after normalizing lowercase
-// and stripping a trailing "/index" (RM-1 / RM-2). Category-level README files
-// keep an explicit "readme" slug in this corpus.
+// Canonical slugs come from the single authoritative route mapper
+// (`src/lib/docsRoutes.ts`, RM-6), resolved per entry from its source file
+// path — never from the Astro glob id. Examples:
+//   docs/README.md                -> "" (revision index)
+//   docs/decisions/index.md       -> "decisions"
+//   docs/decisions/README.md      -> "decisions/readme" (explicit slug)
+//   docs/decisions/adrs/README.md -> "decisions/adrs/readme"
+//   docs/projects/bitty/...       -> "projects/bitty/..." (partition kept)
+//
+// NOTE: import.meta.url points at the compiled chunk in dist/.prerender at
+// build time, not at this source file, so the mirror is located by path
+// invariant (<root>/src/content/docs) rather than relative to this module.
 export async function getStaticPaths() {
-  function slugFromId(id: string): string {
-    const withoutDocs = id.startsWith("docs/") ? id.slice("docs/".length) : id;
-    if (withoutDocs.toLowerCase() === "readme") return "";
-    return withoutDocs;
+  function sourcePathFromFilePath(filePath: string, id: string): string {
+    const posix = filePath.split(sep).join("/");
+    const marker = "src/content/docs/";
+    const index = posix.lastIndexOf(marker);
+    if (index === -1) {
+      throw new Error(
+        `Docs entry "${id}" is outside src/content/docs: ${filePath}`,
+      );
+    }
+    return posix.slice(index + marker.length);
+  }
+
+  function slugFromSourceFile(
+    filePath: string | undefined,
+    id: string,
+  ): string {
+    if (filePath === undefined || filePath.length === 0) {
+      throw new Error(`Docs entry "${id}" has no filePath`);
+    }
+    const sourcePath = sourcePathFromFilePath(filePath, id);
+    const identity = sourcePathToRouteIdentity(sourcePath);
+    const withoutDocs = identity.routeWithoutVersion.slice("/docs/".length);
+    return withoutDocs.endsWith("/") ? withoutDocs.slice(0, -1) : withoutDocs;
   }
 
   assertValidRevisionPin();
@@ -29,9 +58,19 @@ export async function getStaticPaths() {
   // Only eligible entries (website_publish:true after validation per LD-3)
   const eligible = docs.filter((e) => e.data.website_publish === true);
 
+  // RM-4: two distinct eligible sources sharing one public route fail the
+  // build here as well as in sync/check (same mapper, same rule).
+  const eligibleSources = eligible.map((e) => {
+    if (e.filePath === undefined || e.filePath.length === 0) {
+      throw new Error(`Docs entry "${e.id}" has no filePath`);
+    }
+    return sourcePathFromFilePath(e.filePath, e.id);
+  });
+  validateRouteCollisions(eligibleSources);
+
   const canonical = new Map<string, (typeof eligible)[number]>();
   for (const entry of eligible) {
-    const slug = slugFromId(entry.id as string);
+    const slug = slugFromSourceFile(entry.filePath, entry.id);
     const duplicate = canonical.get(slug);
     if (duplicate !== undefined) {
       throw new Error(

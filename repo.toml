@@ -1,0 +1,8 @@
+# bitty-website: workspace identity descriptor (kind/lang/role mirror workspace.toml).
+[repo]
+name = "bitty-website"
+kind = "web"
+lang = "ts"
+role = "product site (deferred, late milestone)"
+owner = "TBD"
+docs = "bitty-docs"

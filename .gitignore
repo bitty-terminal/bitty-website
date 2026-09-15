@@ -1,11 +1,9 @@
 .carryctx/config.local.toml
 .worktrees/
-
 .astro/
 .wrangler/
 dist/
 node_modules/
-
 .env
 .env.*
 *.log

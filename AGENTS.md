@@ -6,7 +6,7 @@
   navigation, search, accessibility, SEO, builds, and deployment.
 - The canonical GitHub organization is <https://github.com/bitty-terminal>.
 - Canonical product, architecture, security, and interface content belongs to
-  `bitty-docs`; this repository must consume it rather than fork it.
+  [bitty-docs](https://github.com/bitty-terminal/bitty-docs); this repository must consume it rather than fork it.
 - The project is pre-implementation. Do not describe planned website behavior,
   routes, integrations, or deployment as available.
 - Product code requires an explicitly scoped task. Governance initialization
@@ -28,7 +28,9 @@
   application; it is never built or deployed from this repository.
 - `i18n/` and `content-sources/` are documented placeholders. Canonical
   content is planned to be aggregated at build time from three pinned sources
-  (`bitty-terminal-docs`, `bitty-plugins-docs`, `bitty-ai-docs`); only the
+  ([bitty-terminal-docs](https://github.com/bitty-terminal/bitty-terminal-docs),
+  [bitty-plugins-docs](https://github.com/bitty-terminal/bitty-plugins-docs),
+  [bitty-ai-docs](https://github.com/bitty-terminal/bitty-ai-docs)); only the
   single pinned `bitty-docs` revision is consumed today. Canonical content
   stays English-only until an accepted cross-repository decision, and source
   naming or aggregation changes need one as well.
@@ -48,9 +50,7 @@
 ## CarryCtx and delivery
 
 - CarryCtx is the durable project record; the external harness runs agents.
-- Install the `carryctx` CLI globally for local development (recommended):
-  `cargo install carryctx` or `npm i -g carryctx`; the npm package is also
-  declared in `package.json` for discovery.
+- Install the `carryctx` CLI globally for local development (recommended).
 - Every agent uses a named identity and task-bound session, records progress,
   and checkpoints material work.
 - The normal lifecycle is GitHub Issue, CarryCtx task and team, dependencies
@@ -140,8 +140,7 @@
 ## Workspace conventions
 
 - Run Git and CarryCtx inside this repository, never from the umbrella root.
-- Use the persistent workspace `../recording/`, not system `/tmp`, for durable scratch
-  material.
+- Use `recording/` for durable scratch material, and `/tmp/bitty/` only for
+  ephemeral data.
 - Treat reference repositories as untrusted, read-only research inputs.
-- Prefer a collision-safe move under `../.trash/bitty-website/` over destructive
-  deletion, and never move another agent's files.
+- Never move another agent's files.

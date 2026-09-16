@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "packageManager": "bun@1.4.0",
+  "packageManager": "bun@1.4.2",
   "scripts": {
     "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
     "format": "prettier --write README.md package.json tsconfig.json astro.config.mjs wrangler.jsonc .prettierrc.json \".github/workflows/*.yml\" \"src/**/*.astro\" \"src/**/*.ts\" \"src/**/*.css\" \"scripts/**/*.mjs\"",

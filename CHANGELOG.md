@@ -14,3 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   (`commitlint.config.ts`), and Markdown lint configuration
   (`.markdownlint-cli2.jsonc`). Proposed scaffolding only; no product
   behavior is implemented or implied.
+
+### Changed
+
+- Pinned the Bun toolchain to 1.4.2 (`packageManager`).

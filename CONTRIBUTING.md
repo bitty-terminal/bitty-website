@@ -10,7 +10,7 @@ must follow.
 
 ## Prerequisites
 
-- Bun 1.4.0 — JavaScript runtime and package manager (`bun`, never `npm` or `yarn`)
+- Bun 1.4.2 — JavaScript runtime and package manager (`bun`, never `npm` or `yarn`)
 - `just` — command runner; all quality gates run through the repository justfile
 - Wrangler (pinned via devDependencies) — used by local dry-run checks only
 - `actionlint` — GitHub Actions workflow validation

@@ -72,7 +72,7 @@ repository snapshot documentation below.
 
 ## Requirements
 
-- Bun 1.4.0
+- Bun 1.4.2
 - just
 - actionlint 1.7.12
 

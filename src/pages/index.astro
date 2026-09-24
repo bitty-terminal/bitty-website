@@ -1,5 +1,98 @@
 ---
+/**
+ * Bitty website v1 home page.
+ *
+ * Presentation only: section framing is website-owned copy, while every
+ * linked title, description, and status badge is rendered verbatim from the
+ * pinned canonical frontmatter at build time. If a pinned entry below is
+ * missing or no longer eligible for publication, the build fails closed
+ * instead of rendering a stale link. Text only: no screenshots, no video,
+ * no raster assets.
+ */
+import { getCollection } from "astro:content";
+import { sep } from "node:path";
+import ArchitectureDiagram from "../components/ArchitectureDiagram.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import { sourcePathToRouteIdentity } from "../lib/docsRoutes.ts";
 import "../styles/global.css";
+
+type HomeDoc = {
+  title: string;
+  description: string;
+  status: string;
+  href: string;
+};
+
+// Canonical source paths (relative to src/content/docs) surfaced on the
+// home page. Single pinned bitty-docs revision; no mirror edits.
+const USAGE_SOURCES = [
+  "docs/projects/bitty/user-guide/README.md",
+  "docs/projects/bitty/how-to/README.md",
+  "docs/projects/bitty/tutorials/README.md",
+  "docs/projects/bitty/troubleshooting/README.md",
+  "docs/projects/bitty/examples/README.md",
+];
+
+const CONFIGURATION_SOURCES = [
+  "docs/projects/bitty/configuration/lua-and-xdg.md",
+  "docs/projects/bitty/configuration/themes.md",
+];
+
+const ARCHITECTURE_SOURCES = [
+  "docs/projects/bitty/architecture/overview.md",
+  "docs/projects/bitty/architecture/core-boundaries.md",
+  "docs/projects/bitty/extensibility/plugin-system.md",
+];
+
+const ALSO_SOURCES = [
+  "docs/projects/bitty/product/vision.md",
+  "docs/security/overview.md",
+];
+
+function sourcePathFromFilePath(filePath: string, id: string): string {
+  const posix = filePath.split(sep).join("/");
+  const marker = "src/content/docs/";
+  const index = posix.lastIndexOf(marker);
+  if (index === -1) {
+    throw new Error(`Docs entry "${id}" is outside src/content/docs`);
+  }
+  return posix.slice(index + marker.length);
+}
+
+async function resolveHomeDocs(sources: string[]): Promise<HomeDoc[]> {
+  const docs = await getCollection("docs");
+  return sources.map((sourcePath) => {
+    const matches = docs.filter((entry) => {
+      if (entry.filePath === undefined || entry.filePath.length === 0) {
+        throw new Error(`Docs entry "${entry.id}" has no filePath`);
+      }
+      return sourcePathFromFilePath(entry.filePath, entry.id) === sourcePath;
+    });
+    if (matches.length !== 1) {
+      throw new Error(
+        `Home page expects exactly one docs entry for "${sourcePath}", found ${matches.length}`,
+      );
+    }
+    const entry = matches[0] as (typeof matches)[number];
+    if (entry.data.website_publish !== true) {
+      throw new Error(
+        `Home page entry "${sourcePath}" is not eligible for publication`,
+      );
+    }
+    return {
+      title: entry.data.title,
+      description: entry.data.description,
+      status: entry.data.status,
+      href: sourcePathToRouteIdentity(sourcePath).versionedRoute("latest"),
+    };
+  });
+}
+
+const usageDocs = await resolveHomeDocs(USAGE_SOURCES);
+const configurationDocs = await resolveHomeDocs(CONFIGURATION_SOURCES);
+const architectureDocs = await resolveHomeDocs(ARCHITECTURE_SOURCES);
+const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
 ---
 
 <!doctype html>
@@ -9,24 +102,145 @@ import "../styles/global.css";
     <meta name="viewport" content="width=device-width" />
     <meta
       name="description"
-      content="The pre-implementation website foundation for the Bitty project."
+      content="Bitty is a small terminal project with a warm heart. Read the published usage, configuration, and architecture notes."
     />
-    <title>Bitty — Website foundation</title>
+    <link rel="canonical" href="https://bitty.run/" />
+    <title>Bitty — a small terminal with a warm heart</title>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
-    <main id="main-content">
-      <p class="eyebrow">Website foundation</p>
-      <h1>Bitty</h1>
-      <p class="summary">
-        This static shell establishes the website build and delivery boundary.
-        Product documentation and terminal functionality are not published here
-        yet.
-      </p>
-      <p class="status" role="status">Pre-implementation · No public release</p>
+    <SiteHeader />
+    <main id="main-content" class="home-shell">
+      <section class="home-hero" aria-labelledby="home-title">
+        <span class="hanko" aria-hidden="true">B</span>
+        <p class="eyebrow">Pre-implementation · No public release</p>
+        <h1 id="home-title">A small terminal with a warm heart</h1>
+        <p class="home-lede">
+          Bitty is being designed as a fast, extensible terminal — with Bittie,
+          our mascot, keeping watch. This site collects the published design
+          notes: how to use Bitty, how to configure it, and how it fits
+          together.
+        </p>
+        <ul class="home-hero-actions">
+          <li><a class="button" href="#usage">Start using Bitty</a></li>
+          <li>
+            <a class="button button--ghost" href="/docs/latest/">
+              Browse all docs
+            </a>
+          </li>
+        </ul>
+        <p class="home-status">
+          Bitty is pre-implementation: nothing below is installable yet. Each
+          link carries its document status so draft contracts are never mistaken
+          for stable behavior.
+        </p>
+      </section>
+
+      <ul class="home-sections">
+        <li>
+          <section class="home-card" id="usage" aria-labelledby="usage-title">
+            <h2 id="usage-title">Usage</h2>
+            <p>Learn Bitty one supported task at a time.</p>
+            <ul>
+              {
+                usageDocs.map((doc) => (
+                  <li>
+                    <a class="doc-link" href={doc.href}>
+                      <span class="doc-link-title">{doc.title}</span>
+                      <span class="doc-link-description">
+                        {doc.description}
+                      </span>
+                      <span class="doc-status" data-status={doc.status}>
+                        {doc.status}
+                      </span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </section>
+        </li>
+        <li>
+          <section
+            class="home-card"
+            id="configuration"
+            aria-labelledby="configuration-title"
+          >
+            <h2 id="configuration-title">Configuration</h2>
+            <p>Shape Bitty with Lua and XDG layers.</p>
+            <ul>
+              {
+                configurationDocs.map((doc) => (
+                  <li>
+                    <a class="doc-link" href={doc.href}>
+                      <span class="doc-link-title">{doc.title}</span>
+                      <span class="doc-link-description">
+                        {doc.description}
+                      </span>
+                      <span class="doc-status" data-status={doc.status}>
+                        {doc.status}
+                      </span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </section>
+        </li>
+        <li>
+          <section
+            class="home-card"
+            id="architecture"
+            aria-labelledby="architecture-title"
+          >
+            <h2 id="architecture-title">Architecture</h2>
+            <p>See how the core, plugins, and config fit together.</p>
+            <ul>
+              {
+                architectureDocs.map((doc) => (
+                  <li>
+                    <a class="doc-link" href={doc.href}>
+                      <span class="doc-link-title">{doc.title}</span>
+                      <span class="doc-link-description">
+                        {doc.description}
+                      </span>
+                      <span class="doc-status" data-status={doc.status}>
+                        {doc.status}
+                      </span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+          </section>
+        </li>
+      </ul>
+
+      <figure class="home-diagram" aria-labelledby="diagram-title">
+        <h2 id="diagram-title">How Bitty fits together</h2>
+        <ArchitectureDiagram />
+        <figcaption>
+          Illustration only — the normative boundaries live in the
+          <a href={architectureDocs[0]?.href ?? "/docs/latest/"}>
+            Architecture Overview
+          </a>
+          and its companion contracts.
+        </figcaption>
+      </figure>
+
+      <section class="home-also" aria-labelledby="also-title">
+        <h2 id="also-title">Also worth reading</h2>
+        <ul>
+          {
+            alsoDocs.map((doc) => (
+              <li>
+                <a href={doc.href}>{doc.title}</a> — {doc.description}
+              </li>
+            ))
+          }
+        </ul>
+      </section>
     </main>
-    <footer>
-      <p>Built as a small, accessible, static foundation.</p>
-    </footer>
+    <SiteFooter />
   </body>
 </html>

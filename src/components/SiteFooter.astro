@@ -1,0 +1,21 @@
+---
+/**
+ * Site footer — presentation-only provenance strip.
+ * The docs pin is rendered from src/content/docs-revision.json so the
+ * published corpus stays reproducible without hand-maintained copies.
+ */
+import docsRevision from "../content/docs-revision.json" with { type: "json" };
+
+const shortRevision = docsRevision.revision.slice(0, 7);
+---
+
+<footer class="site-footer">
+  <p>
+    Bitty website v1 · English only · Text only until the 0.1.0 release — no
+    screenshots or videos yet.
+  </p>
+  <p>
+    Canonical documentation is owned by bitty-docs and consumed from the pinned
+    revision <code>{shortRevision}</code>; this site only presents it.
+  </p>
+</footer>

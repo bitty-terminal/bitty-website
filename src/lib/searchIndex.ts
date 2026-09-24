@@ -24,24 +24,86 @@ export const SEARCH_INDEX_FILENAME = "search-index.json";
 
 const LATEST_PREFIX = "docs/latest/";
 
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  "#39": "'",
+};
+
+/**
+ * Decode HTML entities in a single pass. A chained per-entity replace would
+ * double-decode (`&amp;lt;` -> `&lt;` -> `<`); one regex with a lookup
+ * function decodes each entity exactly once.
+ */
 function decodeEntities(value: string): string {
-  return value
-    .replace(/&amp;/gu, "&")
-    .replace(/&lt;/gu, "<")
-    .replace(/&gt;/gu, ">")
-    .replace(/&quot;/gu, '"')
-    .replace(/&#39;/gu, "'")
-    .replace(/&#(\d+);/gu, (_match, digits: string) =>
-      String.fromCodePoint(Number(digits)),
-    )
-    .replace(/&#x([0-9a-f]+);/giu, (_match, digits: string) =>
-      String.fromCodePoint(Number.parseInt(digits, 16)),
-    );
+  return value.replace(
+    /&(amp|lt|gt|quot|#39|#[0-9]+|#[xX][0-9a-fA-F]+);/g,
+    (match, body: string) => {
+      if (!body.startsWith("#")) return NAMED_ENTITIES[body] ?? match;
+      const digits = body.slice(1);
+      const point =
+        digits.startsWith("x") || digits.startsWith("X")
+          ? Number.parseInt(digits.slice(1), 16)
+          : Number(digits);
+      if (!Number.isSafeInteger(point) || point < 0 || point > 0x10ffff) {
+        return match;
+      }
+      return String.fromCodePoint(point);
+    },
+  );
 }
 
 /** Collapse whitespace so prose matches query tokens predictably. */
 function normalizeText(value: string): string {
   return decodeEntities(value).replace(/\s+/gu, " ").trim();
+}
+
+/**
+ * Strip markup to visible text without tag-stripping regular expressions:
+ * script/style blocks (including their bodies) and every other tag are
+ * replaced by a space. A hand-rolled scanner instead of
+ * `/<script>...<\/script>/` removal, which is bypassable and flagged by
+ * static analysis.
+ */
+function stripMarkup(value: string): string {
+  const lower = value.toLowerCase();
+  let out = "";
+  let i = 0;
+  while (i < value.length) {
+    const lt = value.indexOf("<", i);
+    if (lt === -1) {
+      out += value.slice(i);
+      break;
+    }
+    out += `${value.slice(i, lt)} `;
+    const tag = lower.startsWith("<script", lt)
+      ? "script"
+      : lower.startsWith("<style", lt)
+        ? "style"
+        : null;
+    if (tag === null) {
+      const gt = value.indexOf(">", lt + 1);
+      i = gt === -1 ? value.length : gt + 1;
+      continue;
+    }
+    const after = lower[lt + tag.length + 1] ?? "";
+    if (/[a-z]/u.test(after)) {
+      // `<scripts>` / `<styles>` are ordinary tags, not blocks.
+      const gt = value.indexOf(">", lt + 1);
+      i = gt === -1 ? value.length : gt + 1;
+      continue;
+    }
+    const end = lower.indexOf(`</${tag}`, lt + tag.length + 1);
+    if (end === -1) {
+      i = value.length;
+      continue;
+    }
+    const gt = value.indexOf(">", end + tag.length + 2);
+    i = gt === -1 ? value.length : gt + 1;
+  }
+  return out;
 }
 
 /**
@@ -56,10 +118,7 @@ export function extractArticleText(html: string): string {
   if (article === undefined) {
     throw new Error("Search index: page has no <article> element");
   }
-  const withoutScripts = article
-    .replace(/<script\b[\s\S]*?<\/script>/giu, " ")
-    .replace(/<style\b[\s\S]*?<\/style>/giu, " ");
-  return normalizeText(withoutScripts.replace(/<[^>]+>/gu, " "));
+  return normalizeText(stripMarkup(article));
 }
 
 /** First `<h1>` text, the rendered document title. */

@@ -53,6 +53,14 @@ describe("extractArticleText", () => {
       /no <article>/u,
     );
   });
+
+  test("decodes each entity once and drops cased script blocks", () => {
+    expect(
+      extractArticleText(
+        '<article class="prose"><p>&amp;lt; stays literal</p><SCRIPT>var dropped = 1;</SCRIPT></article>',
+      ),
+    ).toBe("&lt; stays literal");
+  });
 });
 
 describe("extractTitle/extractDescription/extractCategory", () => {

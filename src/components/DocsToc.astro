@@ -25,20 +25,18 @@ const items = headings.filter(
 );
 ---
 
-{
-  items.length > 0 && (
-    <nav class="docs-toc" aria-label="On this page">
-      <p class="docs-toc-title">On this page</p>
-      <ul>
-        {items.map((item) => (
-          <li data-depth={item.depth}>
-            <a href={`#${item.slug}`}>{item.text}</a>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  )
-}
+{items.length > 0 && (
+  <nav class="docs-toc" aria-label="On this page">
+    <p class="docs-toc-title">On this page</p>
+    <ul>
+      {items.map((item) => (
+        <li data-depth={item.depth}>
+          <a href={`#${item.slug}`}>{item.text}</a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+)}
 
 <script>
   // Progressive enhancement only: the server-rendered anchor links already

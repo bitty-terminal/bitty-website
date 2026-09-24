@@ -13,6 +13,8 @@ import {
   loadMergedRedirects,
 } from "../../../lib/redirects.ts";
 import VersionSelector from "../../../components/VersionSelector.astro";
+import DocsSidebar from "../../../components/DocsSidebar.astro";
+import DocsToc from "../../../components/DocsToc.astro";
 import SiteFooter from "../../../components/SiteFooter.astro";
 import SiteHeader from "../../../components/SiteHeader.astro";
 
@@ -187,7 +189,7 @@ if (isLegacy) {
   );
 }
 
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 const versions = getVersions();
 const versionLabels = new Map(
   versions.versions.map((v) => [v.version, v.label]),
@@ -238,19 +240,25 @@ const currentRoute = `/docs/${version}/${slugParam}${slugParam ? "/" : ""}`;
       )}
     />
     <main id="main-content" tabindex="-1">
-      <header class="docs-header">
-        <p class="eyebrow">
-          {entry.data.category} · {versionLabels.get(version) ?? version}
-        </p>
-        <h1>{entry.data.title}</h1>
-        <p class="route-meta">
-          {entry.data.category} · {entry.data.document_type} ·{" "}
-          {entry.data.status}
-        </p>
-      </header>
-      <article class="prose">
-        <Content />
-      </article>
+      <div class="docs-layout">
+        <DocsSidebar version={version} currentSlug={canonicalSlug} />
+        <div class="docs-article">
+          <header class="docs-header">
+            <p class="eyebrow">
+              {entry.data.category} · {versionLabels.get(version) ?? version}
+            </p>
+            <h1>{entry.data.title}</h1>
+            <p class="route-meta">
+              {entry.data.category} · {entry.data.document_type} ·{" "}
+              {entry.data.status}
+            </p>
+          </header>
+          <article class="prose">
+            <Content />
+          </article>
+        </div>
+        <DocsToc headings={headings} />
+      </div>
     </main>
     <SiteFooter />
   </body>

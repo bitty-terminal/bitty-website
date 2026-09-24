@@ -1,0 +1,209 @@
+---
+/**
+ * Documentation sidebar navigation (CTX-0039): presentation-only index over
+ * the published corpus.
+ *
+ * Data source: the `docs` content collection filtered to
+ * `website_publish: true` (LD-3), grouped by frontmatter `category` and
+ * ordered by `sidebar_order` (then title). Slugs reuse the authoritative
+ * route mapper (`../lib/docsRoutes.ts`, RM-6); links preserve the current
+ * version segment (`latest`, `stable`, or `x.y.z`), so the sidebar is
+ * version-aware without reimplementing routing.
+ *
+ * Progressive enhancement: category sections are native `<details>` groups
+ * (keyboard reachable, no script), and the whole sidebar collapses into a
+ * `<details>` drawer on narrow viewports — the desktop layout forces it open
+ * in CSS. The current document carries `aria-current="page"`.
+ */
+import { getCollection } from "astro:content";
+import { sep } from "node:path";
+import { sourcePathToRouteIdentity } from "../lib/docsRoutes.ts";
+
+type Props = {
+  /** Raw version route segment, e.g. `latest`, `stable`, or `0.1.0`. */
+  version: string;
+  /** Canonical slug of the rendered page (`""` for the revision index). */
+  currentSlug: string;
+};
+
+const { version, currentSlug } = Astro.props as Props;
+
+function sourcePathFromFilePath(filePath: string, id: string): string {
+  const posix = filePath.split(sep).join("/");
+  const marker = "src/content/docs/";
+  const index = posix.lastIndexOf(marker);
+  if (index === -1) {
+    throw new Error(
+      `Docs entry "${id}" is outside src/content/docs: ${filePath}`,
+    );
+  }
+  return posix.slice(index + marker.length);
+}
+
+function slugFromSourceFile(filePath: string | undefined, id: string): string {
+  if (filePath === undefined || filePath.length === 0) {
+    throw new Error(`Docs entry "${id}" has no filePath`);
+  }
+  const sourcePath = sourcePathFromFilePath(filePath, id);
+  const identity = sourcePathToRouteIdentity(sourcePath);
+  const withoutDocs = identity.routeWithoutVersion.slice("/docs/".length);
+  return withoutDocs.endsWith("/") ? withoutDocs.slice(0, -1) : withoutDocs;
+}
+
+type SidebarItem = {
+  readonly slug: string;
+  readonly title: string;
+  readonly order: number;
+};
+
+type SidebarGroup = {
+  readonly category: string;
+  readonly label: string;
+  readonly items: readonly SidebarItem[];
+  readonly isCurrent: boolean;
+};
+
+function groupLabel(category: string): string {
+  const spaced = category.replace(/-/g, " ");
+  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+}
+
+const eligible = (await getCollection("docs")).filter(
+  (entry) => entry.data.website_publish === true,
+);
+
+const byCategory = new Map<string, SidebarItem[]>();
+for (const entry of eligible) {
+  const slug = slugFromSourceFile(entry.filePath, entry.id);
+  const list = byCategory.get(entry.data.category) ?? [];
+  list.push({
+    slug,
+    title: entry.data.title,
+    order: entry.data.sidebar_order,
+  });
+  byCategory.set(entry.data.category, list);
+}
+
+const groups: SidebarGroup[] = [...byCategory.entries()]
+  .map(([category, items]) => {
+    const sorted = [...items].sort(
+      (left, right) =>
+        left.order - right.order || left.title.localeCompare(right.title),
+    );
+    return {
+      category,
+      label: groupLabel(category),
+      items: sorted,
+      isCurrent: sorted.some((item) => item.slug === currentSlug),
+    };
+  })
+  .sort((left, right) => left.category.localeCompare(right.category));
+
+function hrefFor(slug: string): string {
+  return slug === "" ? `/docs/${version}/` : `/docs/${version}/${slug}/`;
+}
+---
+
+<details class="docs-nav-drawer">
+  <summary>Browse documentation</summary>
+  <nav class="docs-sidebar" aria-label="Documentation">
+    {
+      groups.map((group) => (
+        <details class="docs-nav-group" open={group.isCurrent}>
+          <summary>
+            {group.label}
+            <span class="docs-nav-count" aria-hidden="true">
+              {group.items.length}
+            </span>
+          </summary>
+          <ul>
+            {group.items.map((item) => (
+              <li>
+                <a
+                  href={hrefFor(item.slug)}
+                  aria-current={item.slug === currentSlug ? "page" : undefined}
+                >
+                  {item.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      ))
+    }
+  </nav>
+</details>
+
+<style>
+  .docs-nav-drawer {
+    min-width: 0;
+  }
+
+  .docs-nav-drawer > summary {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: var(--touch-target);
+    cursor: pointer;
+    color: var(--ink);
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
+
+  .docs-sidebar {
+    font-size: var(--text-xs);
+    line-height: 1.5;
+  }
+
+  .docs-nav-group {
+    border-block-start: 1px solid var(--line);
+  }
+
+  .docs-nav-group:last-child {
+    border-block-end: 1px solid var(--line);
+  }
+
+  .docs-nav-group > summary {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    min-block-size: 2rem;
+    align-content: center;
+    padding-block: 0.375rem;
+    cursor: pointer;
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .docs-nav-count {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-weight: 400;
+  }
+
+  .docs-sidebar ul {
+    margin: 0 0 0.5rem;
+    padding: 0;
+    list-style: none;
+  }
+
+  .docs-sidebar li a {
+    display: block;
+    min-block-size: 2rem;
+    align-content: center;
+    padding-block: 0.25rem;
+    padding-inline-start: 0.75rem;
+    border-inline-start: 2px solid transparent;
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .docs-sidebar li a:hover {
+    color: var(--indigo-deep);
+  }
+
+  .docs-sidebar li a[aria-current="page"] {
+    border-inline-start-color: var(--accent);
+    color: var(--ink);
+    font-weight: 700;
+  }
+</style>

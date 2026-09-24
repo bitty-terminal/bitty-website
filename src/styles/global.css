@@ -693,6 +693,9 @@ body > .version-selector {
 }
 
 .prose table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
   border-collapse: collapse;
 }
 
@@ -754,15 +757,13 @@ body > .version-selector {
     overflow-block: auto;
   }
 
-  /* The drawer toggle is a narrow-viewport affordance: on desktop the
-   * navigation is always visible. The `:not([open])` override beats the
-   * user-agent `details` rule by specificity (class vs. type selector). */
+  /* The drawer toggle is a narrow-viewport affordance: the drawer renders
+   * `open` in markup (CTX-0041 — a CSS `display` override cannot open a
+   * closed `<details>` in modern Chrome, which clips `::details-content`),
+   * and an enhancement script collapses it below 50rem. On desktop the
+   * summary toggle is hidden and the open navigation is always visible. */
   .docs-nav-drawer > summary {
     display: none;
-  }
-
-  .docs-nav-drawer:not([open]) > :not(summary) {
-    display: block;
   }
 }
 

@@ -14,6 +14,7 @@ import { sep } from "node:path";
 import ArchitectureDiagram from "../components/ArchitectureDiagram.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
+import TerminalIllustration from "../components/TerminalIllustration.astro";
 import { sourcePathToRouteIdentity } from "../lib/docsRoutes.ts";
 import "../styles/global.css";
 
@@ -102,7 +103,7 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
     <meta name="viewport" content="width=device-width" />
     <meta
       name="description"
-      content="Bitty is a small terminal project with a warm heart. Read the published usage, configuration, and architecture notes."
+      content="Bitty is a small, extensible terminal in pre-implementation. Read the published usage, configuration, and architecture notes."
     />
     <link rel="canonical" href="https://bitty.run/" />
     <link rel="icon" type="image/x-icon" href="/icons/favicon.ico" />
@@ -123,116 +124,149 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
       sizes="180x180"
       href="/icons/apple-touch-icon.png"
     />
-    <title>Bitty — a small terminal with a warm heart</title>
+    <title>Bitty | Small terminal, serious workspace</title>
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
     <SiteHeader />
     <main id="main-content" class="home-shell" tabindex="-1">
       <section class="home-hero" aria-labelledby="home-title">
-        <span class="hanko" aria-hidden="true">B</span>
-        <p class="eyebrow">Pre-implementation · No public release</p>
-        <h1 id="home-title">A small terminal with a warm heart</h1>
-        <p class="home-lede">
-          Bitty is being designed as a fast, extensible terminal — with Bittie,
-          our mascot, keeping watch. This site collects the published design
-          notes: how to use Bitty, how to configure it, and how it fits
-          together.
-        </p>
-        <ul class="home-hero-actions">
-          <li><a class="button" href="#usage">Start using Bitty</a></li>
-          <li>
-            <a class="button button--ghost" href="/docs/latest/">
-              Browse all docs
-            </a>
-          </li>
-        </ul>
-        <p class="home-status">
-          Bitty is pre-implementation: nothing below is installable yet. Each
-          link carries its document status so draft contracts are never mistaken
-          for stable behavior.
-        </p>
+        <div class="home-hero-copy">
+          <p class="eyebrow">Pre-implementation. No public release.</p>
+          <h1 id="home-title">
+            A small terminal for a workspace that grows with you.
+          </h1>
+          <p class="home-lede">
+            Bitty is being designed as a fast, extensible terminal. This site
+            gathers the published design notes for using Bitty, configuring it,
+            and understanding how its parts fit together.
+          </p>
+          <ul class="home-hero-actions">
+            <li><a class="button" href="#usage">Read usage docs</a></li>
+            <li>
+              <a class="button button--ghost" href="/docs/latest/">
+                Browse all docs
+              </a>
+            </li>
+          </ul>
+          <p class="home-status">
+            Bitty is pre-implementation: nothing below is installable yet. Each
+            link carries its document status so draft contracts are never
+            mistaken for stable behavior.
+          </p>
+        </div>
       </section>
 
-      <ul class="home-sections">
-        <li>
-          <section class="home-card" id="usage" aria-labelledby="usage-title">
-            <h2 id="usage-title">Usage</h2>
-            <p>Learn Bitty one supported task at a time.</p>
-            <ul>
-              {
-                usageDocs.map((doc) => (
-                  <li>
-                    <a class="doc-link" href={doc.href}>
-                      <span class="doc-link-title">{doc.title}</span>
-                      <span class="doc-link-description">
-                        {doc.description}
-                      </span>
-                      <span class="doc-status" data-status={doc.status}>
-                        {doc.status}
-                      </span>
-                    </a>
-                  </li>
-                ))
-              }
-            </ul>
-          </section>
-        </li>
-        <li>
-          <section
-            class="home-card"
-            id="configuration"
-            aria-labelledby="configuration-title"
-          >
-            <h2 id="configuration-title">Configuration</h2>
-            <p>Shape Bitty with Lua and XDG layers.</p>
-            <ul>
-              {
-                configurationDocs.map((doc) => (
-                  <li>
-                    <a class="doc-link" href={doc.href}>
-                      <span class="doc-link-title">{doc.title}</span>
-                      <span class="doc-link-description">
-                        {doc.description}
-                      </span>
-                      <span class="doc-status" data-status={doc.status}>
-                        {doc.status}
-                      </span>
-                    </a>
-                  </li>
-                ))
-              }
-            </ul>
-          </section>
-        </li>
-        <li>
-          <section
-            class="home-card"
-            id="architecture"
-            aria-labelledby="architecture-title"
-          >
-            <h2 id="architecture-title">Architecture</h2>
-            <p>See how the core, plugins, and config fit together.</p>
-            <ul>
-              {
-                architectureDocs.map((doc) => (
-                  <li>
-                    <a class="doc-link" href={doc.href}>
-                      <span class="doc-link-title">{doc.title}</span>
-                      <span class="doc-link-description">
-                        {doc.description}
-                      </span>
-                      <span class="doc-status" data-status={doc.status}>
-                        {doc.status}
-                      </span>
-                    </a>
-                  </li>
-                ))
-              }
-            </ul>
-          </section>
-        </li>
-      </ul>
+      <section class="home-stage" aria-labelledby="stage-title">
+        <div>
+          <h2 id="stage-title">Choose a starting point</h2>
+          <ul class="home-section-index">
+            <li>
+              <a href="#usage">
+                <span>Usage</span>
+                <small>Learn one supported task at a time.</small>
+              </a>
+            </li>
+            <li>
+              <a href="#configuration">
+                <span>Configuration</span>
+                <small>Shape Bitty with Lua and XDG layers.</small>
+              </a>
+            </li>
+            <li>
+              <a href="#architecture">
+                <span>Architecture</span>
+                <small
+                  >See how the core, plugins, and config fit together.</small
+                >
+              </a>
+            </li>
+          </ul>
+        </div>
+        <TerminalIllustration />
+      </section>
+
+      <section
+        class="home-documentation"
+        id="usage"
+        aria-labelledby="documentation-title"
+      >
+        <div class="home-documentation-intro">
+          <h2 id="documentation-title">Published documentation</h2>
+          <p>
+            Read the canonical pages in context. Every description and status
+            below is rendered from the pinned documentation source.
+          </p>
+        </div>
+        <dl class="doc-ledger">
+          <div class="doc-ledger-item" id="usage-docs">
+            <dt class="doc-group-name">Usage</dt>
+            <dd>
+              <ul class="doc-links">
+                {
+                  usageDocs.map((doc) => (
+                    <li>
+                      <a class="doc-link" href={doc.href}>
+                        <span class="doc-link-title">{doc.title}</span>
+                        <span class="doc-link-description">
+                          {doc.description}
+                        </span>
+                        <span class="doc-status" data-status={doc.status}>
+                          {doc.status}
+                        </span>
+                      </a>
+                    </li>
+                  ))
+                }
+              </ul>
+            </dd>
+          </div>
+          <div class="doc-ledger-item" id="configuration">
+            <dt class="doc-group-name">Configuration</dt>
+            <dd>
+              <ul class="doc-links">
+                {
+                  configurationDocs.map((doc) => (
+                    <li>
+                      <a class="doc-link" href={doc.href}>
+                        <span class="doc-link-title">{doc.title}</span>
+                        <span class="doc-link-description">
+                          {doc.description}
+                        </span>
+                        <span class="doc-status" data-status={doc.status}>
+                          {doc.status}
+                        </span>
+                      </a>
+                    </li>
+                  ))
+                }
+              </ul>
+            </dd>
+          </div>
+          <div class="doc-ledger-item" id="architecture">
+            <dt class="doc-group-name">Architecture</dt>
+            <dd>
+              <ul class="doc-links">
+                {
+                  architectureDocs.map((doc) => (
+                    <li>
+                      <a class="doc-link" href={doc.href}>
+                        <span class="doc-link-title">{doc.title}</span>
+                        <span class="doc-link-description">
+                          {doc.description}
+                        </span>
+                        <span class="doc-status" data-status={doc.status}>
+                          {doc.status}
+                        </span>
+                      </a>
+                    </li>
+                  ))
+                }
+              </ul>
+            </dd>
+          </div>
+        </dl>
+      </section>
 
       <figure class="home-diagram" aria-labelledby="diagram-title">
         <h2 id="diagram-title">How Bitty fits together</h2>
@@ -240,7 +274,7 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
           <ArchitectureDiagram />
         </div>
         <figcaption>
-          Illustration only — the normative boundaries live in the
+          Illustration only. The normative boundaries live in the
           <a href={architectureDocs[0]?.href ?? "/docs/latest/"}>
             Architecture Overview
           </a>
@@ -254,7 +288,7 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
           {
             alsoDocs.map((doc) => (
               <li>
-                <a href={doc.href}>{doc.title}</a> — {doc.description}
+                <a href={doc.href}>{doc.title}</a>: {doc.description}
               </li>
             ))
           }

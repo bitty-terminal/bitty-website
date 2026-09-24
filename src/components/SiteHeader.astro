@@ -2,14 +2,17 @@
 /**
  * Site header — presentation-only navigation into pinned canonical routes.
  * Link targets are versioned docs routes; no canonical prose is copied here.
+ * The wordmark carries the mascot raster; the word beside it names the brand,
+ * so the image itself is decorative.
  */
+import BittyLogo from "./BittyLogo.astro";
 ---
 
 <header class="site-header">
   <nav aria-label="Primary">
     <a class="brand" href="/" aria-label="Bitty home">
-      <span class="brand-mark" aria-hidden="true">B</span>
-      <span>Bitty</span>
+      <BittyLogo />
+      <span class="brand-word">Bitty</span>
     </a>
     <ul>
       <li><a href="/#usage">Usage</a></li>

@@ -16,6 +16,7 @@ import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import TerminalIllustration from "../components/TerminalIllustration.astro";
 import { sourcePathToRouteIdentity } from "../lib/docsRoutes.ts";
+import { PILLARS } from "../lib/pillars.ts";
 import "../styles/global.css";
 
 type HomeDoc = {
@@ -137,24 +138,49 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
             A small terminal for a workspace that grows with you.
           </h1>
           <p class="home-lede">
-            Bitty is being designed as a fast, extensible terminal. This site
-            gathers the published design notes for using Bitty, configuring it,
-            and understanding how its parts fit together.
+            A Rust terminal is planned with separate PTY, VT, terminal-state,
+            and rendering layers. Bitty aims to make panels and workspaces
+            native concepts, with Lua configuration and plugin capabilities
+            planned as host-enforced boundaries.
           </p>
           <ul class="home-hero-actions">
-            <li><a class="button" href="#usage">Read usage docs</a></li>
+            <li>
+              <a class="button" href="#pillars">See what makes it different</a>
+            </li>
             <li>
               <a class="button button--ghost" href="/docs/latest/">
-                Browse all docs
+                Read the documentation
               </a>
             </li>
           </ul>
           <p class="home-status">
-            Bitty is pre-implementation: nothing below is installable yet. Each
-            link carries its document status so draft contracts are never
+            Bitty is pre-implementation: nothing below is installable yet. Every
+            document carries its own status, so draft contracts are never
             mistaken for stable behavior.
           </p>
         </div>
+      </section>
+
+      <section
+        class="home-pillars"
+        id="pillars"
+        aria-labelledby="pillars-title"
+      >
+        <h2 id="pillars-title">Three ideas, in order</h2>
+        <ol class="pillar-list">
+          {
+            PILLARS.map((pillar) => (
+              <li class="pillar">
+                <h3 class="pillar-name">{pillar.name}</h3>
+                <p class="pillar-claim">{pillar.claim}</p>
+                <p class="pillar-detail">{pillar.detail}</p>
+                <a class="pillar-link" href={pillar.href}>
+                  {pillar.linkText}
+                </a>
+              </li>
+            ))
+          }
+        </ol>
       </section>
 
       <section class="home-stage" aria-labelledby="stage-title">

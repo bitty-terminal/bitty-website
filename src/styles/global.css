@@ -221,8 +221,40 @@ footer,
 }
 
 main {
-  padding-block: clamp(2.5rem, 7vw, 6rem) 5rem;
+  padding-block: clamp(1.5rem, 4vw, 2.5rem) 5rem;
 }
+
+/* Version selector: a slim inline marker, not a full-width panel. The old
+ * card-plus-duplicate-link treatment spent ~120px of vertical space above
+ * every article to say the same thing twice. */
+body > .version-selector {
+  margin-block-end: 0.5rem;
+}
+
+/* Docs article header: the breadcrumb, title, and status line form one block
+ * with a single vertical rhythm instead of three independently spaced rows. */
+.docs-header {
+  display: grid;
+  gap: 0.5rem;
+  margin-block-end: 2.5rem;
+  padding-block-end: 1.5rem;
+  border-block-end: 1px solid var(--line);
+}
+
+.docs-header .eyebrow {
+  margin-block-end: 0;
+}
+
+.docs-header h1 {
+  margin-block-end: 0;
+}
+
+/* The docs body currently repeats the page title as its first heading; that
+ * duplication is tracked separately (the heading plugin registered in
+ * astro.config.mjs never runs in the Astro build — see CTX-0038 notes). Until
+ * it is fixed, do not collapse the first heading's top margin: removing it here
+ * only hid the symptom by pulling the duplicated title up against the header,
+ * which reads as a layout bug rather than a content bug. */
 
 .skip-link {
   position: fixed;
@@ -247,33 +279,41 @@ main {
 }
 
 .home-hero {
-  min-block-size: min(34rem, calc(100svh - 4rem));
+  display: grid;
+  place-items: center;
+  min-block-size: min(30rem, calc(100svh - 4rem));
   padding: clamp(2rem, 6vw, 5rem);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--hero);
   box-shadow: var(--shadow);
+  text-align: center;
 }
 
+/* The centered hero keeps one measure: the lede and the status note share a
+ * column so the block reads as centered text rather than ragged edges. */
 .home-hero-copy {
-  max-width: 60rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 46rem;
+}
+
+.home-hero .eyebrow {
+  margin-block-end: 1.25rem;
+}
+
+.home-hero h1 {
+  max-width: 22ch;
+  margin-block-end: 1.5rem;
 }
 
 .home-lede {
-  max-width: 38rem;
+  max-width: 44ch;
   margin-block-end: 2rem;
   color: var(--ink);
   font-size: var(--text-md);
   line-height: var(--leading-body);
-}
-
-.home-hero-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin: 0 0 1.5rem;
-  padding: 0;
-  list-style: none;
 }
 
 .button {
@@ -313,11 +353,100 @@ main {
   color: var(--indigo-deep);
 }
 
+.home-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin: 0 0 1.75rem;
+  padding: 0;
+  list-style: none;
+}
+
 .home-status {
-  max-width: 44rem;
+  max-width: 48ch;
   margin-block-end: 0;
   font-size: var(--text-xs);
   line-height: var(--leading-body);
+}
+
+/* Concept pillars: an ordered sequence, so the numbering carries information
+ * (Terminal builds on Workspace builds on Platform) rather than decorating. */
+.home-pillars {
+  margin-block: clamp(3rem, 8vw, 6rem) 0;
+}
+
+.home-pillars > h2 {
+  text-align: center;
+}
+
+.pillar-list {
+  display: grid;
+  gap: 1.25rem;
+  margin-block: 2.5rem 0;
+  padding: 0;
+  counter-reset: pillar;
+  list-style: none;
+}
+
+@media (width >= 60rem) {
+  .pillar-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.pillar {
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--shadow);
+  counter-increment: pillar;
+}
+
+.pillar::before {
+  content: counter(pillar);
+  display: block;
+  margin-block-end: 0.75rem;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 700;
+}
+
+.pillar-name {
+  margin-block-end: 0.5rem;
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  line-height: var(--leading-heading);
+  letter-spacing: -0.02em;
+}
+
+.pillar-claim {
+  margin-block-end: 0.75rem;
+  color: var(--ink);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.pillar-detail {
+  flex: 1;
+  margin-block-end: 1.25rem;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: 1.6;
+}
+
+.pillar-link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--touch-target);
+  color: var(--indigo);
+  font-size: var(--text-xs);
+  font-weight: 700;
 }
 
 .home-stage {
@@ -608,15 +737,13 @@ footer.site-footer p {
   text-decoration: none;
 }
 
-.site-header .brand-mark {
-  display: inline-grid;
-  place-items: center;
-  inline-size: 1.85rem;
-  block-size: 1.85rem;
+/* Mascot lockup: the raster is served from the CDN at 4x the rendered box so
+ * it stays crisp on high-DPR displays without a second asset. */
+.brand-logo {
+  inline-size: 2.25rem;
+  block-size: 2.25rem;
   border-radius: var(--radius-sm);
-  background: var(--accent);
-  color: var(--card);
-  font-size: 1rem;
+  object-fit: contain;
 }
 
 .site-header ul {

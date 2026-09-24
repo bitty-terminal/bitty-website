@@ -1,101 +1,129 @@
 ---
 /**
- * Release selector (RS-2 .. RS-4): data-driven navigation control.
+ * Documentation version selector (RS-1 .. RS-5): presentation-only navigation.
  *
- * Data source: src/content/versions.json (RS-1 — single enumeration).
- * Renders links ordered newest-first, marks current version active,
- * and rewrites only the version segment per RS-3 navigation behavior.
+ * Data source: `src/content/versions.json` (RS-1 — single enumeration). Renders
+ * one real link per hosted version in declared order, marks the current version
+ * with `aria-current="page"`, and rewrites only the version segment of the
+ * current route (RS-3), falling back to the target version's index when the
+ * current content identity is absent there. Copies no specification prose
+ * (LD-6).
  *
- * Does not copy specification prose (LD-6).
+ * Why links and not a `<select>`: the rewrite rule lives in exactly one place,
+ * `rewriteVersionInRoute()` in `../lib/versions.ts`. An earlier revision also
+ * shipped a native `<select>` whose client script re-implemented the same
+ * version-rewrite regex in TypeScript, so the routing rule had two
+ * implementations that had to be kept in sync by hand — and the single-version
+ * case rendered a one-option dropdown above a link to the same page, stating
+ * the same thing twice. A link list works without JavaScript, degrades correctly
+ * on keyboard navigation, and scales on its own as versions are added to
+ * `versions.json`; its only script adds the live query and hash after load.
  */
-import { getVersions, rewriteVersionInRoute } from "../lib/versions.ts";
+import { getVersions, versionEntryPresentation } from "../lib/versions.ts";
 
 const versions = getVersions();
 
 type Props = {
   currentRoute: string; // e.g. /docs/0.1.0/specifications/foo/
-  currentVersion: string; // e.g. 0.1.0
+  currentVersion: string; // raw route segment, e.g. latest or 0.1.0
+  targetIdentities: ReadonlyMap<string, ReadonlySet<string>>;
 };
 
-const { currentRoute, currentVersion } = Astro.props as Props;
+const { currentRoute, currentVersion, targetIdentities } = Astro.props as Props;
 
-function targetFor(toVersion: string): string {
-  try {
-    return rewriteVersionInRoute(currentRoute, toVersion);
-  } catch {
-    return `/docs/${toVersion}/`;
-  }
-}
+const entries = versions.versions.map((entry) =>
+  versionEntryPresentation({
+    currentRoute,
+    currentVersion,
+    candidateVersion: entry.version,
+    candidateLabel: entry.label,
+    candidateIsPrerelease: entry.prerelease,
+    targetIdentities,
+  }),
+);
 ---
 
-<nav class="version-selector" aria-label="Documentation version">
-  <label for="version-select">Version</label>
-  <select id="version-select" data-current-route={currentRoute}>
-    {
-      versions.versions.map((v) => (
-        <option value={v.version} selected={v.version === currentVersion}>
-          {v.label}
-          {v.prerelease ? " (prerelease)" : ""}
-        </option>
-      ))
-    }
-  </select>
+<nav class="version-selector" aria-labelledby="version-selector-label">
+  <span class="version-selector-label" id="version-selector-label">
+    Version
+  </span>
   <ul>
     {
-      versions.versions.map((v) => {
-        const href = targetFor(v.version);
-        const isCurrent = v.version === currentVersion;
-        return (
-          <li>
-            <a href={href} aria-current={isCurrent ? "page" : undefined}>
-              {v.label}
-              {v.prerelease ? " (prerelease)" : ""}
-            </a>
-          </li>
-        );
-      })
+      entries.map((entry) => (
+        <li>
+          <a
+            class="version-link"
+            href={entry.href}
+            aria-current={entry.isCurrent ? "page" : undefined}
+          >
+            {entry.label}
+            {entry.suffix}
+          </a>
+        </li>
+      ))
     }
   </ul>
 </nav>
 
 <script>
-  const sel = document.getElementById(
-    "version-select",
-  ) as HTMLSelectElement | null;
-  if (sel) {
-    sel.addEventListener("change", () => {
-      const toVersion = sel.value;
-      const currentRoute = sel.dataset.currentRoute ?? window.location.pathname;
-      const rewritten = currentRoute.replace(
-        /^\/docs\/[^/]+(\/.*)?$/,
-        `/docs/${toVersion}$1`,
-      );
-      window.location.assign(rewritten);
-    });
+  import { appendLocationSuffix } from "../lib/versions.ts";
+
+  // Progressive enhancement only: the server-rendered hrefs already rewrite
+  // the version and check target identity. Add the live query/hash when the
+  // browser exposes them; no routing regex lives in this script.
+  const suffix = `${window.location.search}${window.location.hash}`;
+  if (suffix) {
+    for (const link of document.querySelectorAll<HTMLAnchorElement>(
+      ".version-selector .version-link",
+    )) {
+      const target = new URL(link.href, window.location.href);
+      if (!target.search && !target.hash) {
+        link.href = appendLocationSuffix(
+          target.pathname,
+          window.location.search,
+          window.location.hash,
+        );
+      }
+    }
   }
 </script>
 
 <style>
   .version-selector {
-    border: 1px solid var(--line);
-    border-radius: 0.375rem;
-    padding: 0.75rem;
-    background: var(--card);
-    color: var(--ink);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 0.75rem;
+    margin-block: 0.5rem 0;
+    padding-block: 0.5rem;
+    border-block: 1px solid var(--line);
   }
-  .version-selector select {
-    min-block-size: 2.75rem;
-    max-inline-size: 100%;
-    color: inherit;
+
+  .version-selector-label {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
   }
+
   .version-selector ul {
-    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    margin: 0;
     padding: 0;
-    margin: 0.5rem 0 0;
+    list-style: none;
   }
+
   .version-selector ul a {
     display: inline-flex;
     align-items: center;
-    min-block-size: 2.75rem;
+    min-block-size: var(--touch-target);
+  }
+
+  .version-link[aria-current="page"] {
+    color: var(--ink);
+    font-weight: 700;
   }
 </style>

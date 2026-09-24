@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 
 import docsRevision from "./src/content/docs-revision.json" with { type: "json" };
 import versions from "./src/content/versions.json" with { type: "json" };
+import { CDN_BASE_URL } from "./src/lib/cdn.ts";
 import { docsLinksMdastPlugin } from "./src/lib/docsLinksPlugin.ts";
 import { sourceDirToRouteDir } from "./src/lib/docsRoutes.ts";
 import {
@@ -163,6 +164,14 @@ export default defineConfig({
   output: "static",
   outDir: "./dist",
   redirects: { ...BASE_REDIRECTS },
+  // CDN hook (CDN-3): expose the R2 custom-domain origin to client code.
+  // No built asset points at the CDN yet (bucket is empty until post-0.1.0
+  // media lands); future lanes reference it via `cdnUrl()` in src/lib/cdn.ts.
+  vite: {
+    define: {
+      "import.meta.env.PUBLIC_CDN_BASE_URL": JSON.stringify(CDN_BASE_URL),
+    },
+  },
   markdown: {
     processor: satteri({
       mdastPlugins: [docsLinksMdastPlugin({ mirrorRoot })],

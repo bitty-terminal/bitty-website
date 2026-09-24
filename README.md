@@ -95,7 +95,13 @@ just check
 The aggregate check verifies formatting, Markdown linting, the docs mirror
 staleness gate, TypeScript 7.0.2 with its native compiler, the Astro static
 build, the expected `dist/index.html` output, Wrangler's deployment
-configuration in dry-run mode, and both GitHub Actions workflows.
+configuration in dry-run mode, and both GitHub Actions workflows. The
+`validate:dist` script also checks the emitted cache-header contract.
+
+Cloudflare Workers Static Assets reads `public/_headers` from the build
+output. Content-hashed `/_astro/*` assets use a one-year immutable browser
+cache, while `/icons/*` and the root HTML document retain
+`public, max-age=0, must-revalidate` so content updates are revalidated.
 
 ## Documentation sync
 

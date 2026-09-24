@@ -217,27 +217,31 @@ const currentRoute = `/docs/${version}/${slugParam}${slugParam ? "/" : ""}`;
       sizes="180x180"
       href="/icons/apple-touch-icon.png"
     />
-    {
-      version !== versions.latest && (
-        <link
-          rel="canonical"
-          href={currentRoute.replace(`/docs/${version}/`, `/docs/latest/`)}
-        />
-      )
-    }
+    {version !== versions.latest && (
+      <link
+        rel="canonical"
+        href={currentRoute.replace(`/docs/${version}/`, `/docs/latest/`)}
+      />
+    )}
   </head>
   <body>
-    <a class="skip-link" href="#main-content">Skip to content</a>
+    <a class="skip-link" href="#main-content">
+      Skip to content
+    </a>
     <SiteHeader version={version} />
     <VersionSelector
       currentRoute={currentRoute}
       currentVersion={version}
-      targetIdentities={new Map(
-        Object.entries(targetIdentities).map(([targetVersion, identities]) => [
-          targetVersion,
-          new Set(identities),
-        ]),
-      )}
+      targetIdentities={
+        new Map(
+          Object.entries(targetIdentities).map(
+            ([targetVersion, identities]) => [
+              targetVersion,
+              new Set(identities),
+            ],
+          ),
+        )
+      }
     />
     <main id="main-content" tabindex="-1">
       <div class="docs-layout">

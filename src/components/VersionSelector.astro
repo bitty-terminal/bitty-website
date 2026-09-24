@@ -48,20 +48,18 @@ const entries = versions.versions.map((entry) =>
     Version
   </span>
   <ul>
-    {
-      entries.map((entry) => (
-        <li>
-          <a
-            class="version-link"
-            href={entry.href}
-            aria-current={entry.isCurrent ? "page" : undefined}
-          >
-            {entry.label}
-            {entry.suffix}
-          </a>
-        </li>
-      ))
-    }
+    {entries.map((entry) => (
+      <li>
+        <a
+          class="version-link"
+          href={entry.href}
+          aria-current={entry.isCurrent ? "page" : undefined}
+        >
+          {entry.label}
+          {entry.suffix}
+        </a>
+      </li>
+    ))}
   </ul>
 </nav>
 

@@ -110,30 +110,28 @@ function hrefFor(slug: string): string {
 <details class="docs-nav-drawer" open>
   <summary>Browse documentation</summary>
   <nav class="docs-sidebar" aria-label="Documentation">
-    {
-      groups.map((group) => (
-        <details class="docs-nav-group" open={group.isCurrent}>
-          <summary>
-            {group.label}
-            <span class="docs-nav-count" aria-hidden="true">
-              {group.items.length}
-            </span>
-          </summary>
-          <ul>
-            {group.items.map((item) => (
-              <li>
-                <a
-                  href={hrefFor(item.slug)}
-                  aria-current={item.slug === currentSlug ? "page" : undefined}
-                >
-                  {item.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </details>
-      ))
-    }
+    {groups.map((group) => (
+      <details class="docs-nav-group" open={group.isCurrent}>
+        <summary>
+          {group.label}
+          <span class="docs-nav-count" aria-hidden="true">
+            {group.items.length}
+          </span>
+        </summary>
+        <ul>
+          {group.items.map((item) => (
+            <li>
+              <a
+                href={hrefFor(item.slug)}
+                aria-current={item.slug === currentSlug ? "page" : undefined}
+              >
+                {item.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </details>
+    ))}
   </nav>
 </details>
 

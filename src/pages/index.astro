@@ -128,7 +128,9 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
     <title>Bitty | Small terminal, serious workspace</title>
   </head>
   <body>
-    <a class="skip-link" href="#main-content">Skip to content</a>
+    <a class="skip-link" href="#main-content">
+      Skip to content
+    </a>
     <SiteHeader />
     <main id="main-content" class="home-shell" tabindex="-1">
       <section class="home-hero" aria-labelledby="home-title">
@@ -145,7 +147,9 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
           </p>
           <ul class="home-hero-actions">
             <li>
-              <a class="button" href="#pillars">See what makes it different</a>
+              <a class="button" href="#pillars">
+                See what makes it different
+              </a>
             </li>
             <li>
               <a class="button button--ghost" href="/docs/latest/">
@@ -168,18 +172,16 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
       >
         <h2 id="pillars-title">Three ideas, in order</h2>
         <ol class="pillar-list">
-          {
-            PILLARS.map((pillar) => (
-              <li class="pillar">
-                <h3 class="pillar-name">{pillar.name}</h3>
-                <p class="pillar-claim">{pillar.claim}</p>
-                <p class="pillar-detail">{pillar.detail}</p>
-                <a class="pillar-link" href={pillar.href}>
-                  {pillar.linkText}
-                </a>
-              </li>
-            ))
-          }
+          {PILLARS.map((pillar) => (
+            <li class="pillar">
+              <h3 class="pillar-name">{pillar.name}</h3>
+              <p class="pillar-claim">{pillar.claim}</p>
+              <p class="pillar-detail">{pillar.detail}</p>
+              <a class="pillar-link" href={pillar.href}>
+                {pillar.linkText}
+              </a>
+            </li>
+          ))}
         </ol>
       </section>
 
@@ -202,9 +204,9 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
             <li>
               <a href="#architecture">
                 <span>Architecture</span>
-                <small
-                  >See how the core, plugins, and config fit together.</small
-                >
+                <small>
+                  See how the core, plugins, and config fit together.
+                </small>
               </a>
             </li>
           </ul>
@@ -229,21 +231,19 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
             <dt class="doc-group-name">Usage</dt>
             <dd>
               <ul class="doc-links">
-                {
-                  usageDocs.map((doc) => (
-                    <li>
-                      <a class="doc-link" href={doc.href}>
-                        <span class="doc-link-title">{doc.title}</span>
-                        <span class="doc-link-description">
-                          {doc.description}
-                        </span>
-                        <span class="doc-status" data-status={doc.status}>
-                          {doc.status}
-                        </span>
-                      </a>
-                    </li>
-                  ))
-                }
+                {usageDocs.map((doc) => (
+                  <li>
+                    <a class="doc-link" href={doc.href}>
+                      <span class="doc-link-title">{doc.title}</span>
+                      <span class="doc-link-description">
+                        {doc.description}
+                      </span>
+                      <span class="doc-status" data-status={doc.status}>
+                        {doc.status}
+                      </span>
+                    </a>
+                  </li>
+                ))}
               </ul>
             </dd>
           </div>
@@ -251,21 +251,19 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
             <dt class="doc-group-name">Configuration</dt>
             <dd>
               <ul class="doc-links">
-                {
-                  configurationDocs.map((doc) => (
-                    <li>
-                      <a class="doc-link" href={doc.href}>
-                        <span class="doc-link-title">{doc.title}</span>
-                        <span class="doc-link-description">
-                          {doc.description}
-                        </span>
-                        <span class="doc-status" data-status={doc.status}>
-                          {doc.status}
-                        </span>
-                      </a>
-                    </li>
-                  ))
-                }
+                {configurationDocs.map((doc) => (
+                  <li>
+                    <a class="doc-link" href={doc.href}>
+                      <span class="doc-link-title">{doc.title}</span>
+                      <span class="doc-link-description">
+                        {doc.description}
+                      </span>
+                      <span class="doc-status" data-status={doc.status}>
+                        {doc.status}
+                      </span>
+                    </a>
+                  </li>
+                ))}
               </ul>
             </dd>
           </div>
@@ -273,21 +271,19 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
             <dt class="doc-group-name">Architecture</dt>
             <dd>
               <ul class="doc-links">
-                {
-                  architectureDocs.map((doc) => (
-                    <li>
-                      <a class="doc-link" href={doc.href}>
-                        <span class="doc-link-title">{doc.title}</span>
-                        <span class="doc-link-description">
-                          {doc.description}
-                        </span>
-                        <span class="doc-status" data-status={doc.status}>
-                          {doc.status}
-                        </span>
-                      </a>
-                    </li>
-                  ))
-                }
+                {architectureDocs.map((doc) => (
+                  <li>
+                    <a class="doc-link" href={doc.href}>
+                      <span class="doc-link-title">{doc.title}</span>
+                      <span class="doc-link-description">
+                        {doc.description}
+                      </span>
+                      <span class="doc-status" data-status={doc.status}>
+                        {doc.status}
+                      </span>
+                    </a>
+                  </li>
+                ))}
               </ul>
             </dd>
           </div>
@@ -311,13 +307,11 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
       <section class="home-also" aria-labelledby="also-title">
         <h2 id="also-title">Also worth reading</h2>
         <ul>
-          {
-            alsoDocs.map((doc) => (
-              <li>
-                <a href={doc.href}>{doc.title}</a>: {doc.description}
-              </li>
-            ))
-          }
+          {alsoDocs.map((doc) => (
+            <li>
+              <a href={doc.href}>{doc.title}</a>: {doc.description}
+            </li>
+          ))}
         </ul>
       </section>
     </main>

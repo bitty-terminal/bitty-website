@@ -72,7 +72,10 @@ export async function getStaticPaths() {
   validateRouteCollisions(eligibleSources);
 
   const canonical = new Map<string, (typeof eligible)[number]>();
+  const canonicalRoutes = new Map<string, string>();
   for (const entry of eligible) {
+    const sourcePath = sourcePathFromFilePath(entry.filePath, entry.id);
+    const routeIdentity = sourcePathToRouteIdentity(sourcePath);
     const slug = slugFromSourceFile(entry.filePath, entry.id);
     const duplicate = canonical.get(slug);
     if (duplicate !== undefined) {
@@ -81,6 +84,13 @@ export async function getStaticPaths() {
       );
     }
     canonical.set(slug, entry);
+    // The RS-3 identity is the route suffix after /docs/, matching
+    // routeIdentityFromVersionedPath(). Keep the mapper authoritative for
+    // slugging and strip only this known public prefix.
+    canonicalRoutes.set(
+      slug,
+      routeIdentity.routeWithoutVersion.slice("/docs".length),
+    );
   }
 
   // RD-3: legacy aliases from the merged website + docs-owned redirect manifest.
@@ -103,14 +113,35 @@ export async function getStaticPaths() {
       version: string;
       canonicalSlug: string;
       isLegacy: boolean;
+      targetIdentities: Record<string, string[]>;
     };
   }> = [];
+
+  // RS-3 uses the source-relative path as the version-spanning content
+  // identity. The website currently renders one pinned corpus under every
+  // hosted segment, so a version's eligible set is explicit in versions.json
+  // and is the same set the static paths below expose. Keeping the map in
+  // static-path props makes a future per-version mirror change one data input
+  // rather than a second route-rewrite implementation.
+  //
+  // Fail closed: an unknown target version is absent from this map, so the
+  // selector falls back to its index instead of guessing an identity set.
+  const targetIdentities: Record<string, string[]> = {};
+  for (const hostedVersion of versions.versions) {
+    targetIdentities[hostedVersion.version] = [...canonicalRoutes.values()];
+  }
 
   for (const version of versionSegments) {
     for (const [slug, entry] of canonical) {
       paths.push({
         params: { version, slug: slug === "" ? undefined : slug },
-        props: { entry, version, canonicalSlug: slug, isLegacy: false },
+        props: {
+          entry,
+          version,
+          canonicalSlug: slug,
+          isLegacy: false,
+          targetIdentities,
+        },
       });
     }
     for (const [alias, canonicalSlug] of aliases) {
@@ -118,7 +149,13 @@ export async function getStaticPaths() {
       if (entry === undefined) continue;
       paths.push({
         params: { version, slug: alias },
-        props: { entry, version, canonicalSlug, isLegacy: true },
+        props: {
+          entry,
+          version,
+          canonicalSlug,
+          isLegacy: true,
+          targetIdentities,
+        },
       });
     }
   }
@@ -126,12 +163,14 @@ export async function getStaticPaths() {
   return paths;
 }
 
-const { entry, version, canonicalSlug, isLegacy } = Astro.props as {
-  entry: Awaited<ReturnType<typeof getCollection>>[number];
-  version: string;
-  canonicalSlug: string;
-  isLegacy: boolean;
-};
+const { entry, version, canonicalSlug, isLegacy, targetIdentities } =
+  Astro.props as {
+    entry: Awaited<ReturnType<typeof getCollection>>[number];
+    version: string;
+    canonicalSlug: string;
+    isLegacy: boolean;
+    targetIdentities: Record<string, string[]>;
+  };
 
 if (!isValidVersionSegment(version)) {
   throw new Response("Not Found", { status: 404 });
@@ -188,7 +227,16 @@ const currentRoute = `/docs/${version}/${slugParam}${slugParam ? "/" : ""}`;
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
     <SiteHeader />
-    <VersionSelector currentRoute={currentRoute} currentVersion={version} />
+    <VersionSelector
+      currentRoute={currentRoute}
+      currentVersion={version}
+      targetIdentities={new Map(
+        Object.entries(targetIdentities).map(([targetVersion, identities]) => [
+          targetVersion,
+          new Set(identities),
+        ]),
+      )}
+    />
     <main id="main-content" tabindex="-1">
       <header class="docs-header">
         <p class="eyebrow">

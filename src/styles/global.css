@@ -227,7 +227,7 @@ main {
 /* Version selector: a slim inline marker, not a full-width panel. The old
  * card-plus-duplicate-link treatment spent ~120px of vertical space above
  * every article to say the same thing twice. */
-main > .version-selector {
+body > .version-selector {
   margin-block-end: 0.5rem;
 }
 

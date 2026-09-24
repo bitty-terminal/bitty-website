@@ -6,7 +6,8 @@
  * one real link per hosted version in declared order, marks the current version
  * with `aria-current="page"`, and rewrites only the version segment of the
  * current route (RS-3), falling back to the target version's index when the
- * route cannot be rewritten. Copies no specification prose (LD-6).
+ * current content identity is absent there. Copies no specification prose
+ * (LD-6).
  *
  * Why links and not a `<select>`: the rewrite rule lives in exactly one place,
  * `rewriteVersionInRoute()` in `../lib/versions.ts`. An earlier revision also
@@ -14,35 +15,32 @@
  * version-rewrite regex in TypeScript, so the routing rule had two
  * implementations that had to be kept in sync by hand — and the single-version
  * case rendered a one-option dropdown above a link to the same page, stating
- * the same thing twice. A link list needs no client script, works without
- * JavaScript, degrades correctly on keyboard navigation, and scales on its own
- * as versions are added to `versions.json`.
+ * the same thing twice. A link list works without JavaScript, degrades correctly
+ * on keyboard navigation, and scales on its own as versions are added to
+ * `versions.json`; its only script adds the live query and hash after load.
  */
-import { getVersions, rewriteVersionInRoute } from "../lib/versions.ts";
+import { getVersions, versionEntryPresentation } from "../lib/versions.ts";
 
 const versions = getVersions();
 
 type Props = {
   currentRoute: string; // e.g. /docs/0.1.0/specifications/foo/
-  currentVersion: string; // e.g. 0.1.0
+  currentVersion: string; // raw route segment, e.g. latest or 0.1.0
+  targetIdentities: ReadonlyMap<string, ReadonlySet<string>>;
 };
 
-const { currentRoute, currentVersion } = Astro.props as Props;
+const { currentRoute, currentVersion, targetIdentities } = Astro.props as Props;
 
-function targetFor(toVersion: string): string {
-  try {
-    return rewriteVersionInRoute(currentRoute, toVersion);
-  } catch {
-    return `/docs/${toVersion}/`;
-  }
-}
-
-const entries = versions.versions.map((entry) => ({
-  label: entry.label,
-  suffix: entry.prerelease ? " (prerelease)" : "",
-  href: targetFor(entry.version),
-  isCurrent: entry.version === currentVersion,
-}));
+const entries = versions.versions.map((entry) =>
+  versionEntryPresentation({
+    currentRoute,
+    currentVersion,
+    candidateVersion: entry.version,
+    candidateLabel: entry.label,
+    candidateIsPrerelease: entry.prerelease,
+    targetIdentities,
+  }),
+);
 ---
 
 <nav class="version-selector" aria-labelledby="version-selector-label">
@@ -66,6 +64,29 @@ const entries = versions.versions.map((entry) => ({
     }
   </ul>
 </nav>
+
+<script>
+  import { appendLocationSuffix } from "../lib/versions.ts";
+
+  // Progressive enhancement only: the server-rendered hrefs already rewrite
+  // the version and check target identity. Add the live query/hash when the
+  // browser exposes them; no routing regex lives in this script.
+  const suffix = `${window.location.search}${window.location.hash}`;
+  if (suffix) {
+    for (const link of document.querySelectorAll<HTMLAnchorElement>(
+      ".version-selector .version-link",
+    )) {
+      const target = new URL(link.href, window.location.href);
+      if (!target.search && !target.hash) {
+        link.href = appendLocationSuffix(
+          target.pathname,
+          window.location.search,
+          window.location.hash,
+        );
+      }
+    }
+  }
+</script>
 
 <style>
   .version-selector {

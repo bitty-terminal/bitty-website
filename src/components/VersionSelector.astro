@@ -1,12 +1,22 @@
 ---
 /**
- * Release selector (RS-2 .. RS-4): data-driven navigation control.
+ * Documentation version selector (RS-1 .. RS-5): presentation-only navigation.
  *
- * Data source: src/content/versions.json (RS-1 — single enumeration).
- * Renders links ordered newest-first, marks current version active,
- * and rewrites only the version segment per RS-3 navigation behavior.
+ * Data source: `src/content/versions.json` (RS-1 — single enumeration). Renders
+ * one real link per hosted version in declared order, marks the current version
+ * with `aria-current="page"`, and rewrites only the version segment of the
+ * current route (RS-3), falling back to the target version's index when the
+ * route cannot be rewritten. Copies no specification prose (LD-6).
  *
- * Does not copy specification prose (LD-6).
+ * Why links and not a `<select>`: the rewrite rule lives in exactly one place,
+ * `rewriteVersionInRoute()` in `../lib/versions.ts`. An earlier revision also
+ * shipped a native `<select>` whose client script re-implemented the same
+ * version-rewrite regex in TypeScript, so the routing rule had two
+ * implementations that had to be kept in sync by hand — and the single-version
+ * case rendered a one-option dropdown above a link to the same page, stating
+ * the same thing twice. A link list needs no client script, works without
+ * JavaScript, degrades correctly on keyboard navigation, and scales on its own
+ * as versions are added to `versions.json`.
  */
 import { getVersions, rewriteVersionInRoute } from "../lib/versions.ts";
 
@@ -26,76 +36,73 @@ function targetFor(toVersion: string): string {
     return `/docs/${toVersion}/`;
   }
 }
+
+const entries = versions.versions.map((entry) => ({
+  label: entry.label,
+  suffix: entry.prerelease ? " (prerelease)" : "",
+  href: targetFor(entry.version),
+  isCurrent: entry.version === currentVersion,
+}));
 ---
 
-<nav class="version-selector" aria-label="Documentation version">
-  <label for="version-select">Version</label>
-  <select id="version-select" data-current-route={currentRoute}>
-    {
-      versions.versions.map((v) => (
-        <option value={v.version} selected={v.version === currentVersion}>
-          {v.label}
-          {v.prerelease ? " (prerelease)" : ""}
-        </option>
-      ))
-    }
-  </select>
+<nav class="version-selector" aria-labelledby="version-selector-label">
+  <span class="version-selector-label" id="version-selector-label">
+    Version
+  </span>
   <ul>
     {
-      versions.versions.map((v) => {
-        const href = targetFor(v.version);
-        const isCurrent = v.version === currentVersion;
-        return (
-          <li>
-            <a href={href} aria-current={isCurrent ? "page" : undefined}>
-              {v.label}
-              {v.prerelease ? " (prerelease)" : ""}
-            </a>
-          </li>
-        );
-      })
+      entries.map((entry) => (
+        <li>
+          <a
+            class="version-link"
+            href={entry.href}
+            aria-current={entry.isCurrent ? "page" : undefined}
+          >
+            {entry.label}
+            {entry.suffix}
+          </a>
+        </li>
+      ))
     }
   </ul>
 </nav>
 
-<script>
-  const sel = document.getElementById(
-    "version-select",
-  ) as HTMLSelectElement | null;
-  if (sel) {
-    sel.addEventListener("change", () => {
-      const toVersion = sel.value;
-      const currentRoute = sel.dataset.currentRoute ?? window.location.pathname;
-      const rewritten = currentRoute.replace(
-        /^\/docs\/[^/]+(\/.*)?$/,
-        `/docs/${toVersion}$1`,
-      );
-      window.location.assign(rewritten);
-    });
-  }
-</script>
-
 <style>
   .version-selector {
-    border: 1px solid var(--line);
-    border-radius: 0.375rem;
-    padding: 0.75rem;
-    background: var(--card);
-    color: var(--ink);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 0.75rem;
+    margin-block: 0.5rem 0;
+    padding-block: 0.5rem;
+    border-block: 1px solid var(--line);
   }
-  .version-selector select {
-    min-block-size: 2.75rem;
-    max-inline-size: 100%;
-    color: inherit;
+
+  .version-selector-label {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
   }
+
   .version-selector ul {
-    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    margin: 0;
     padding: 0;
-    margin: 0.5rem 0 0;
+    list-style: none;
   }
+
   .version-selector ul a {
     display: inline-flex;
     align-items: center;
-    min-block-size: 2.75rem;
+    min-block-size: var(--touch-target);
+  }
+
+  .version-link[aria-current="page"] {
+    color: var(--ink);
+    font-weight: 700;
   }
 </style>

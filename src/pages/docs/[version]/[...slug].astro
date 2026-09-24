@@ -190,13 +190,16 @@ const currentRoute = `/docs/${version}/${slugParam}${slugParam ? "/" : ""}`;
     <SiteHeader />
     <VersionSelector currentRoute={currentRoute} currentVersion={version} />
     <main id="main-content" tabindex="-1">
-      <p class="eyebrow">
-        {entry.data.category} · {versionLabels.get(version) ?? version}
-      </p>
-      <h1>{entry.data.title}</h1>
-      <p class="route-meta">
-        {entry.data.category} · {entry.data.document_type} · {entry.data.status}
-      </p>
+      <header class="docs-header">
+        <p class="eyebrow">
+          {entry.data.category} · {versionLabels.get(version) ?? version}
+        </p>
+        <h1>{entry.data.title}</h1>
+        <p class="route-meta">
+          {entry.data.category} · {entry.data.document_type} ·{" "}
+          {entry.data.status}
+        </p>
+      </header>
       <article class="prose">
         <Content />
       </article>

@@ -177,11 +177,33 @@ function auditPage(name, html, { strictHeadings }) {
       fail(`${name}: ${problem}`);
     }
   }
-  const raster = html.match(/<(img|picture|canvas)\b|srcset\s*=/i);
-  if (raster === null) {
-    pass(`${name}: no raster elements (DPR-crisp)`);
+  // Binary assets are served from Cloudflare R2 (see docs/cdn-assets.md), so
+  // the site must stay free of binaries bundled into dist: same-origin
+  // absolute paths and relative paths are built artifacts, and a page that
+  // depends on one of those fails because the payload would be self-hosted.
+  // An absolute cdn.bitty.run URL is the documented distribution channel and
+  // is allowed; the R2 object is the one carrying the multi-size DPR variants,
+  // so the page itself stays text-only.
+  const rasterElements = [
+    ...html.matchAll(/<(img|picture|canvas)\b([^>]*)>/gi),
+  ];
+  const bundledRaster = rasterElements.filter(([, , attrs]) => {
+    const source =
+      /\b(?:src|poster|srcset)\s*=\s*["']([^"']+)/i.exec(attrs)?.[1] ?? "";
+    return !/^https?:\/\/cdn\.bitty\.run\//i.test(source.trim());
+  });
+  const localSrcset =
+    /<(?:img|source)\b[^>]*\bsrcset\s*=\s*["'](?!https?:\/\/cdn\.bitty\.run\/)/i;
+  if (bundledRaster.length === 0 && !localSrcset.test(html)) {
+    pass(`${name}: no bundled raster elements (R2-hosted assets allowed)`);
   } else {
-    fail(`${name}: raster dependence found: ${raster[0]}`);
+    fail(
+      `${name}: bundled raster dependence found: ${
+        bundledRaster[0]?.[0] ??
+        html.match(/<[a-z]+\b[^>]*\bsrcset\s*=/i)?.[0] ??
+        "srcset"
+      }`,
+    );
   }
   if (html.includes('tabindex="-1"')) {
     pass(`${name}: programmatic focus target present`);

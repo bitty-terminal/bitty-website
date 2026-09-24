@@ -13,6 +13,8 @@ import {
   loadMergedRedirects,
 } from "../../../lib/redirects.ts";
 import VersionSelector from "../../../components/VersionSelector.astro";
+import SiteFooter from "../../../components/SiteFooter.astro";
+import SiteHeader from "../../../components/SiteHeader.astro";
 
 // Canonical slugs come from the single authoritative route mapper
 // (`src/lib/docsRoutes.ts`, RM-6), resolved per entry from its source file
@@ -185,8 +187,9 @@ const currentRoute = `/docs/${version}/${slugParam}${slugParam ? "/" : ""}`;
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
+    <SiteHeader />
     <VersionSelector currentRoute={currentRoute} currentVersion={version} />
-    <main id="main-content">
+    <main id="main-content" tabindex="-1">
       <p class="eyebrow">
         {entry.data.category} · {versionLabels.get(version) ?? version}
       </p>
@@ -198,5 +201,6 @@ const currentRoute = `/docs/${version}/${slugParam}${slugParam ? "/" : ""}`;
         <Content />
       </article>
     </main>
+    <SiteFooter />
   </body>
 </html>

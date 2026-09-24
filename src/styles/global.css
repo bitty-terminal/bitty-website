@@ -184,8 +184,14 @@ a:hover {
   transform: translateY(-200%);
 }
 
-.skip-link:focus {
+.skip-link:focus,
+.skip-link:focus-visible {
   transform: translateY(0);
+}
+
+/* Skip-link target: programmatic focus only, never in the tab order. */
+#main-content:focus {
+  outline: none;
 }
 
 /* Home page layout. */
@@ -246,7 +252,10 @@ a:hover {
 }
 
 .button {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 2.75rem;
   padding: 0.7rem 1.25rem;
   border: 2px solid var(--accent);
   border-radius: 999px;
@@ -381,10 +390,21 @@ a:hover {
   box-shadow: var(--shadow);
 }
 
+/* Fragment targets (header nav, hero actions): keep clear of the viewport edge. */
+.home-card[id] {
+  scroll-margin-block-start: 1rem;
+}
+
 .home-diagram svg {
   display: block;
   inline-size: 100%;
+  min-inline-size: 34rem;
   block-size: auto;
+}
+
+/* Narrow viewports scroll the diagram instead of shrinking its text. */
+.diagram-scroll {
+  overflow-x: auto;
 }
 
 .home-diagram figcaption {
@@ -466,6 +486,13 @@ footer.site-footer p {
   list-style: none;
 }
 
+/* Primary nav links meet the 44px minimum touch target. */
+.site-header ul a {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 2.75rem;
+}
+
 @media (prefers-contrast: more) {
   :root {
     --paper: #ffffff;
@@ -522,5 +549,18 @@ footer.site-footer p {
   .home-hero .hanko,
   .site-header .brand-mark {
     color: #241109;
+  }
+}
+
+/* Reduced motion: the theme is static by design; this guard keeps it that
+ * way for future transitions and for user-agent smooth scrolling. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

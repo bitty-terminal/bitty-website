@@ -85,6 +85,13 @@
   --touch-target: 2.75rem;
   --layer-sticky: 1;
 
+  /* Docs navigation (CTX-0039): sidebar / TOC widths, layout gap, and the
+   * anchor offset that keeps linked article headings below sticky chrome. */
+  --docs-sidebar-width: 16rem;
+  --docs-toc-width: 13rem;
+  --docs-layout-gap: 2.5rem;
+  --docs-scroll-margin: 5rem;
+
   /* Keep the gate's concrete 44px floor visible alongside the semantic
    * token, so future token refactors cannot accidentally shrink targets. */
   min-block-size: 2.75rem;
@@ -694,6 +701,69 @@ body > .version-selector {
   padding: 0.5rem 0.75rem;
   border: 1px solid var(--line);
   text-align: start;
+}
+
+/* Docs navigation layout (CTX-0039): left sidebar, article, right TOC.
+ * Single column on narrow viewports (the sidebar becomes a <details>
+ * drawer); sidebar plus article from 50rem; all three columns from 70rem.
+ * Only the docs page template uses this grid — home/index routes are
+ * untouched. */
+.docs-layout {
+  display: grid;
+  gap: var(--docs-layout-gap);
+}
+
+.docs-article {
+  min-width: 0;
+}
+
+/* Anchored article headings stop below sticky chrome instead of hiding
+ * under it when a TOC link is followed. */
+.prose :is(h2, h3)[id] {
+  scroll-margin-top: var(--docs-scroll-margin);
+}
+
+@media (width >= 50rem) {
+  .docs-layout {
+    grid-template-columns: var(--docs-sidebar-width) minmax(0, 1fr);
+    align-items: start;
+  }
+
+  .docs-layout .docs-toc {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (width >= 70rem) {
+  .docs-layout {
+    grid-template-columns: var(--docs-sidebar-width) minmax(0, 1fr) var(
+        --docs-toc-width
+      );
+  }
+
+  .docs-layout .docs-toc {
+    grid-column: auto;
+  }
+
+  /* Desktop keeps the sidebar and TOC in view beside the article. */
+  .docs-layout .docs-sidebar,
+  .docs-layout .docs-toc {
+    position: sticky;
+    top: 1rem;
+    max-block-size: calc(100vh - 2rem);
+    overflow-block: auto;
+  }
+
+  /* The drawer toggle is a narrow-viewport affordance: on desktop the
+   * navigation is always visible. The `:not([open])` override beats the
+   * user-agent `details` rule by specificity (class vs. type selector). */
+  .docs-nav-drawer > summary {
+    display: none;
+  }
+
+  .docs-nav-drawer:not([open]) > :not(summary) {
+    display: block;
+  }
 }
 
 .version-selector {

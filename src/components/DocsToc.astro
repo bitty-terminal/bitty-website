@@ -1,0 +1,129 @@
+---
+/**
+ * Per-article table of contents (CTX-0039): the H2/H3 headings of the
+ * rendered article as plain anchor links.
+ *
+ * Data source: the `headings` returned by Astro's `render(entry)` — the same
+ * pipeline that emits the article's heading ids, so links match by
+ * construction. The list is fully usable with JavaScript disabled; the
+ * inline script only highlights the section in view via
+ * IntersectionObserver and never owns routing or content.
+ */
+type TocHeading = {
+  readonly depth: number;
+  readonly slug: string;
+  readonly text: string;
+};
+
+type Props = {
+  headings: readonly TocHeading[];
+};
+
+const { headings } = Astro.props as Props;
+const items = headings.filter(
+  (heading) => heading.depth === 2 || heading.depth === 3,
+);
+---
+
+{
+  items.length > 0 && (
+    <nav class="docs-toc" aria-label="On this page">
+      <p class="docs-toc-title">On this page</p>
+      <ul>
+        {items.map((item) => (
+          <li data-depth={item.depth}>
+            <a href={`#${item.slug}`}>{item.text}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  )
+}
+
+<script>
+  // Progressive enhancement only: the server-rendered anchor links already
+  // navigate. Highlight the link whose heading is in view; without
+  // IntersectionObserver (or without JS) the TOC stays a plain link list.
+  const toc = document.querySelector(".docs-toc");
+  if (toc && "IntersectionObserver" in window) {
+    const links = new Map<string, HTMLAnchorElement>();
+    for (const anchor of toc.querySelectorAll<HTMLAnchorElement>(
+      'a[href^="#"]',
+    )) {
+      const id = decodeURIComponent(
+        anchor.getAttribute("href")?.slice(1) ?? "",
+      );
+      if (id.length > 0 && !links.has(id)) {
+        links.set(id, anchor);
+      }
+    }
+    if (links.size > 0) {
+      const clear = (): void => {
+        for (const anchor of toc.querySelectorAll('a[aria-current="true"]')) {
+          anchor.removeAttribute("aria-current");
+        }
+      };
+      const observer = new IntersectionObserver(
+        (observed) => {
+          for (const entry of observed) {
+            if (!entry.isIntersecting) continue;
+            const link = links.get(entry.target.id);
+            if (link) {
+              clear();
+              link.setAttribute("aria-current", "true");
+            }
+          }
+        },
+        { rootMargin: "-15% 0px -70% 0px" },
+      );
+      for (const id of links.keys()) {
+        const heading = document.getElementById(id);
+        if (heading) observer.observe(heading);
+      }
+    }
+  }
+</script>
+
+<style>
+  .docs-toc {
+    min-width: 0;
+    font-size: var(--text-xs);
+    line-height: 1.5;
+  }
+
+  .docs-toc-title {
+    margin-block-end: 0.5rem;
+    color: var(--ink);
+    font-weight: 700;
+  }
+
+  .docs-toc ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .docs-toc li[data-depth="3"] a {
+    padding-inline-start: 0.75rem;
+  }
+
+  .docs-toc a {
+    display: block;
+    min-block-size: 2rem;
+    align-content: center;
+    padding-block: 0.25rem;
+    border-inline-start: 2px solid transparent;
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .docs-toc a:hover {
+    color: var(--indigo-deep);
+  }
+
+  .docs-toc a[aria-current="true"] {
+    border-inline-start-color: var(--accent);
+    color: var(--ink);
+    font-weight: 700;
+  }
+</style>

@@ -1,0 +1,145 @@
+---
+/**
+ * Text-only terminal illustration for the home page.
+ *
+ * This is an explicitly labelled composition, not captured product output.
+ * It uses semantic text and CSS only, with no raster image or fabricated
+ * command transcript, and keeps the concept promise separate from release
+ * availability.
+ */
+---
+
+<figure class="terminal-illustration" aria-labelledby="terminal-title">
+  <figcaption class="terminal-titlebar">
+    <span class="terminal-lights" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </span>
+    <span id="terminal-title">bitty / concept</span>
+    <span class="terminal-state">not available yet</span>
+  </figcaption>
+  <div
+    class="terminal-screen"
+    aria-label="Text-only concept of a Bitty terminal workspace"
+  >
+    <p>
+      <span class="terminal-prompt" aria-hidden="true">❯</span>
+      <span>bitty --help</span>
+    </p>
+    <p class="terminal-response">
+      Concept copy only. Read the published documentation for current status.
+    </p>
+    <p class="terminal-muted">
+      # Documentation, configuration, and architecture are published above.
+    </p>
+    <p>
+      <span class="terminal-prompt" aria-hidden="true">❯</span>
+      <span class="terminal-caret" aria-hidden="true"></span>
+    </p>
+  </div>
+</figure>
+
+<style>
+  .terminal-illustration {
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--terminal-bg);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .terminal-titlebar {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+    min-block-size: 2.75rem;
+    padding: 0.65rem 0.85rem;
+    border-block-end: 1px solid var(--terminal-line);
+    background: var(--terminal-panel);
+    color: var(--terminal-muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+
+  .terminal-lights {
+    display: inline-flex;
+    gap: 0.4rem;
+  }
+
+  .terminal-lights span {
+    inline-size: 0.65rem;
+    block-size: 0.65rem;
+    border-radius: 50%;
+    background: var(--terminal-line);
+  }
+
+  .terminal-lights span:first-child {
+    background: var(--terminal-prompt);
+  }
+
+  .terminal-state {
+    color: var(--terminal-ink);
+  }
+
+  .terminal-screen {
+    display: grid;
+    gap: 0.75rem;
+    min-block-size: 16rem;
+    padding: clamp(1.1rem, 3vw, 1.75rem);
+    background:
+      linear-gradient(
+        180deg,
+        oklch(from var(--terminal-panel) l c h / 0.55) 0%,
+        transparent 34%
+      ),
+      var(--terminal-bg);
+    color: var(--terminal-ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    line-height: 1.55;
+  }
+
+  .terminal-screen p {
+    margin: 0;
+  }
+
+  .terminal-prompt {
+    color: var(--terminal-prompt);
+  }
+
+  .terminal-response {
+    max-width: 36ch;
+    padding-inline-start: 1.5rem;
+  }
+
+  .terminal-muted {
+    color: var(--terminal-muted);
+  }
+
+  .terminal-caret {
+    display: inline-block;
+    inline-size: 0.65em;
+    block-size: 1.05em;
+    vertical-align: -0.1em;
+    background: var(--terminal-prompt);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .terminal-caret {
+      animation: terminal-caret 1.4s steps(1) infinite;
+    }
+  }
+
+  @keyframes terminal-caret {
+    0%,
+    48% {
+      opacity: 1;
+    }
+
+    49%,
+    100% {
+      opacity: 0;
+    }
+  }
+</style>

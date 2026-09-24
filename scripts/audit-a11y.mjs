@@ -47,6 +47,15 @@ async function exists(path) {
   }
 }
 
+// Redirect stubs (for example dist/docs/latest/*/readme meta-refresh pages)
+// carry no content landmarks — never audit them as docs samples.
+function isRedirectStub(html) {
+  return (
+    /<meta[^>]*http-equiv\s*=\s*["']?refresh/i.test(html) ||
+    /Redirecting (to|from)/.test(html)
+  );
+}
+
 async function collectDocsSamples(limit) {
   const samples = [];
   const latest = join(dist, "docs", "latest");
@@ -58,6 +67,7 @@ async function collectDocsSamples(limit) {
       return;
     }
     const entries = await readdir(dir, { withFileTypes: true });
+    entries.sort((a, b) => a.name.localeCompare(b.name));
     for (const entry of entries) {
       if (samples.length >= limit) {
         return;
@@ -66,12 +76,17 @@ async function collectDocsSamples(limit) {
       if (entry.isDirectory()) {
         await walk(full);
       } else if (entry.name === "index.html") {
+        const html = await readFile(full, "utf8");
+        if (isRedirectStub(html)) {
+          continue;
+        }
         samples.push(full);
       }
     }
   }
   await walk(latest);
-  return samples;
+  samples.sort();
+  return samples.slice(0, limit);
 }
 
 function checkHeadingOrder(html) {

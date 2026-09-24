@@ -6,6 +6,18 @@
  * so the image itself is decorative.
  */
 import BittyLogo from "./BittyLogo.astro";
+import SiteSearch from "./SiteSearch.astro";
+
+type Props = {
+  /**
+   * Raw version route segment of the rendering page (`latest`, `stable`, or
+   * `x.y.z`). The search box resolves result links against it; pages without
+   * a version context (home) use the `latest` default.
+   */
+  version?: string;
+};
+
+const { version = "latest" } = Astro.props as Props;
 ---
 
 <header class="site-header">
@@ -20,5 +32,6 @@ import BittyLogo from "./BittyLogo.astro";
       <li><a href="/#architecture">Architecture</a></li>
       <li><a href="/docs/latest/">All docs</a></li>
     </ul>
+    <SiteSearch version={version} />
   </nav>
 </header>

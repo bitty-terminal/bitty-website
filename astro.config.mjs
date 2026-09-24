@@ -11,6 +11,10 @@ import { docsLinksMdastPlugin } from "./src/lib/docsLinksPlugin.ts";
 import { docsHeadingsMdastPlugin } from "./src/lib/docsHeadings.ts";
 import { sourceDirToRouteDir } from "./src/lib/docsRoutes.ts";
 import {
+  SEARCH_INDEX_FILENAME,
+  writeSearchIndex,
+} from "./src/lib/searchIndex.ts";
+import {
   BASE_REDIRECTS,
   buildExpandedRedirectTable,
   loadMergedRedirects,
@@ -160,6 +164,25 @@ function docsAssets() {
   };
 }
 
+// Website Delivery search (CTX-0040): the build-time static keyword index.
+// Scrapes the rendered `latest` docs pages (one record per canonical slug)
+// and emits `dist/search-index.json` for the lazily loaded search box. No
+// server, no dependency, no framework lock-in — the same integration pattern
+// as the redirect and asset emitters above.
+function searchIndexArtifacts() {
+  return {
+    name: "bitty-search-index",
+    hooks: {
+      "astro:build:done": async ({ dir, logger }) => {
+        const records = await writeSearchIndex(fileURLToPath(dir));
+        logger.info(
+          `wrote ${SEARCH_INDEX_FILENAME} with ${records.length} record(s)`,
+        );
+      },
+    },
+  };
+}
+
 export default defineConfig({
   site: "https://bitty.run",
   output: "static",
@@ -181,5 +204,5 @@ export default defineConfig({
       ],
     }),
   },
-  integrations: [redirectArtifacts(), docsAssets()],
+  integrations: [redirectArtifacts(), docsAssets(), searchIndexArtifacts()],
 });

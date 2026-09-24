@@ -1,0 +1,174 @@
+---
+/**
+ * Site search box (CTX-0040): keyword search over docs articles.
+ *
+ * Zero-JS default is preserved: the form renders fully static (labelled
+ * input, live-region status, empty result list, noscript fallback), and the
+ * only inline script is a tiny one-shot loader. The search behavior module
+ * (`../lib/siteSearchBox.ts`) plus the scorer it imports are fetched as a
+ * split chunk on first focus or input — never on page load — and the static
+ * index (`/search-index.json`) is fetched lazily with the same trigger.
+ *
+ * Result links resolve the index's canonical slugs against `version`, so the
+ * box works on every hosted segment (`latest`, `stable`, `x.y.z`) without
+ * reimplementing routing: the href rule stays in `../lib/siteSearch.ts`.
+ */
+type Props = {
+  /** Raw version route segment of the rendering page; defaults to latest. */
+  version?: string;
+};
+
+const { version = "latest" } = Astro.props as Props;
+---
+
+<form
+  class="site-search"
+  role="search"
+  aria-label="Site search"
+  data-site-search
+  data-version={version}
+>
+  <label class="site-search-label" for="site-search-input">
+    Search documentation
+  </label>
+  <input
+    id="site-search-input"
+    class="site-search-input"
+    name="q"
+    type="search"
+    role="combobox"
+    aria-autocomplete="list"
+    aria-controls="site-search-results"
+    aria-expanded="false"
+    autocomplete="off"
+    spellcheck="false"
+    placeholder="Search docs"
+    data-search-input
+  />
+  <p
+    id="site-search-status"
+    class="site-search-status"
+    role="status"
+    aria-live="polite"
+    data-search-status
+  >
+  </p>
+  <ul
+    id="site-search-results"
+    class="site-search-results"
+    role="listbox"
+    aria-label="Search results"
+    hidden
+    data-search-results
+  >
+  </ul>
+  <noscript>
+    <p class="site-search-fallback">
+      <a href="/docs/latest/">Browse all documentation</a> instead of searching.
+    </p>
+  </noscript>
+</form>
+
+<script>
+  // One-shot lazy loader: fetch the behavior chunk plus the static index on
+  // first interaction only. Removes its own listeners before importing, so a
+  // second focus can never double-initialize the box.
+  const root = document.querySelector("[data-site-search]");
+  if (root instanceof HTMLElement) {
+    const trigger = (): void => {
+      root.removeEventListener("focusin", trigger);
+      root.removeEventListener("input", trigger);
+      void import("../lib/siteSearchBox.ts").then((module) => {
+        module.initSiteSearch(root);
+      });
+    };
+    root.addEventListener("focusin", trigger);
+    root.addEventListener("input", trigger);
+  }
+</script>
+
+<style>
+  .site-search {
+    position: relative;
+    inline-size: min(100%, 15rem);
+  }
+
+  .site-search-label {
+    position: absolute;
+    overflow: hidden;
+    clip-path: inset(50%);
+    inline-size: 1px;
+    block-size: 1px;
+    white-space: nowrap;
+  }
+
+  .site-search-input {
+    inline-size: 100%;
+    min-block-size: var(--touch-target);
+    padding-inline: 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    color: var(--ink);
+    font-size: var(--text-sm);
+  }
+
+  .site-search-status {
+    margin: 0;
+    min-block-size: 1.25rem;
+    font-size: var(--text-xs);
+    color: var(--muted);
+  }
+
+  .site-search-status:empty {
+    display: none;
+  }
+
+  .site-search-results {
+    position: absolute;
+    inset-inline: 0;
+    inset-block-start: 100%;
+    z-index: var(--layer-sticky);
+    margin: 0.25rem 0 0;
+    padding: 0.25rem;
+    list-style: none;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--card);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .site-search-results[hidden] {
+    display: none;
+  }
+
+  .site-search-results li[role="option"] a {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-sm);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .site-search-results li[role="option"][aria-selected="true"] a,
+  .site-search-results li[role="option"] a:hover {
+    background: var(--accent-soft);
+  }
+
+  .site-search-title {
+    display: block;
+    font-weight: 700;
+  }
+
+  .site-search-meta {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: var(--muted);
+  }
+
+  .site-search-fallback {
+    margin: 0.25rem 0 0;
+    font-size: var(--text-xs);
+  }
+</style>

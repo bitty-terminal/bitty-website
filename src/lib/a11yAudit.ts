@@ -67,7 +67,7 @@ export type RenderedPage = {
 };
 
 /** Relative dist paths rendered outside the site template. */
-const PASSTHROUGH_PATH_SEGMENT = "architecture/interactive/";
+export const PASSTHROUGH_PATH_SEGMENT = "architecture/interactive/";
 
 function elementTag(source: string, tagName: string): string {
   return source

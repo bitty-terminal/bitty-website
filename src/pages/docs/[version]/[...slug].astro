@@ -228,7 +228,7 @@ const currentRoute = `/docs/${version}/${slugParam}${slugParam ? "/" : ""}`;
   </head>
   <body>
     <a class="skip-link" href="#main-content">Skip to content</a>
-    <SiteHeader />
+    <SiteHeader version={version} />
     <VersionSelector
       currentRoute={currentRoute}
       currentVersion={version}

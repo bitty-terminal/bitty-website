@@ -21,19 +21,17 @@
     class="terminal-screen"
     aria-label="Text-only concept of a Bitty terminal workspace"
   >
-    <p>
-      <span class="terminal-prompt" aria-hidden="true">❯</span>
-      <span>bitty --help</span>
-    </p>
+    <p class="terminal-label">Concept workspace</p>
     <p class="terminal-response">
-      Concept copy only. Read the published documentation for current status.
+      A small terminal and an extensible workspace are being designed together.
     </p>
     <p class="terminal-muted">
-      # Documentation, configuration, and architecture are published above.
+      No installable release yet. Published documentation carries current status
+      and scope.
     </p>
-    <p>
-      <span class="terminal-prompt" aria-hidden="true">❯</span>
-      <span class="terminal-caret" aria-hidden="true"></span>
+    <p class="terminal-status">
+      <span>Release status</span>
+      <strong>Pre-implementation</strong>
     </p>
   </div>
 </figure>
@@ -104,42 +102,31 @@
     margin: 0;
   }
 
-  .terminal-prompt {
+  .terminal-label {
     color: var(--terminal-prompt);
+    font-weight: 700;
+    letter-spacing: 0.04em;
   }
 
   .terminal-response {
-    max-width: 36ch;
-    padding-inline-start: 1.5rem;
+    max-width: 42ch;
   }
 
   .terminal-muted {
     color: var(--terminal-muted);
   }
 
-  .terminal-caret {
-    display: inline-block;
-    inline-size: 0.65em;
-    block-size: 1.05em;
-    vertical-align: -0.1em;
-    background: var(--terminal-prompt);
+  .terminal-status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.9rem;
+    padding-block-start: 0.35rem;
+    border-block-start: 1px solid var(--terminal-line);
+    color: var(--terminal-muted);
   }
 
-  @media (prefers-reduced-motion: no-preference) {
-    .terminal-caret {
-      animation: terminal-caret 1.4s steps(1) infinite;
-    }
-  }
-
-  @keyframes terminal-caret {
-    0%,
-    48% {
-      opacity: 1;
-    }
-
-    49%,
-    100% {
-      opacity: 0;
-    }
+  .terminal-status strong {
+    color: var(--terminal-prompt);
+    font-weight: 700;
   }
 </style>

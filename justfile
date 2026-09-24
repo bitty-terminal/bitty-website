@@ -19,8 +19,8 @@ fmt-check:
     bun run format:check
 
 fmt-check-files *FILES:
-    test -x node_modules/.bin/prettier || { echo "dependencies missing; run 'just install' first" >&2; exit 1; }
-    bunx --bun prettier --check --ignore-unknown {{FILES}}
+    command -v prettier >/dev/null || { echo "prettier missing; install it globally" >&2; exit 1; }
+    prettier --check --ignore-unknown {{FILES}}
 
 markdownlint:
     bun run lint:md
@@ -34,8 +34,8 @@ docs-check:
     bun run docs:check
 
 commit-lint FILE:
-    test -x node_modules/.bin/commitlint || { echo "dependencies missing; run 'just install' first" >&2; exit 1; }
-    bunx --bun commitlint < "{{FILE}}"
+    command -v commitlint >/dev/null || { echo "commitlint missing; install it globally" >&2; exit 1; }
+    commitlint < "{{FILE}}"
 
 hooks-install:
     lefthook install

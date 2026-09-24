@@ -14,25 +14,25 @@ guide `docs/development/website-sync.md` (Website Delivery RFC, OQ-023).
 ## Target stack and site map (deferred)
 
 The 2026-09-14 project decision selects Astro plus Astro Starlight for the
-Bitty developer portal at <https://bitty.run>. No part of that migration is
-implemented yet: this repository remains the Astro static shell and pinned
-`bitty-docs` mirror described above, and Starlight adoption, UI/UX,
-internationalization, themes, search, and deployment automation are deferred
-to the 0.1.0 release window. The canonical Website Delivery RFC still lists a
-required Starlight theme as deferred; recording the target here does not
-change that contract, and the presentation decision must be accepted before
-migration work starts.
+Bitty developer portal at <https://bitty.run>. Website v1 ships a CSS-only
+theme on the current Astro shell instead: home page, docs entry points, an
+inline-SVG architecture sketch, and push-to-main Cloudflare auto-deploy.
+Starlight adoption, UI/UX, internationalization, themes beyond this CSS
+layer, and search stay deferred to the 0.1.0 release window. The canonical
+Website Delivery RFC still lists a required Starlight theme as deferred;
+recording the target here does not change that contract, and the
+presentation decision must be accepted before migration work starts.
 
-Target site map (planned; not routed yet):
+Target site map (v1 routes `/` and `/docs/...`; the rest stays planned):
 
-| Route                   | Planned purpose                                                             |
-| ----------------------- | --------------------------------------------------------------------------- |
-| `/`                     | Home: why Bitty, features, install                                          |
-| `/docs/...`             | Getting started, configuration, keybindings, panels, IPC, Lua, architecture |
-| `/api/...`              | Lua, plugin, and IPC reference                                              |
-| `/plugins/`             | Entry point that links or redirects to <https://plugins.bitty.run>          |
-| `/ai/`                  | AI subsystem documentation                                                  |
-| `/blog/`, `/changelog/` | Announcements and release history                                           |
+| Route                   | Planned purpose                                                                          |
+| ----------------------- | ---------------------------------------------------------------------------------------- |
+| `/`                     | Home (v1): usage, configuration, and architecture entry points plus an inline-SVG sketch |
+| `/docs/...`             | Getting started, configuration, keybindings, panels, IPC, Lua, architecture              |
+| `/api/...`              | Lua, plugin, and IPC reference                                                           |
+| `/plugins/`             | Entry point that links or redirects to <https://plugins.bitty.run>                       |
+| `/ai/`                  | AI subsystem documentation                                                               |
+| `/blog/`, `/changelog/` | Announcements and release history                                                        |
 
 The plugin store is a separate Vite application at
 <https://plugins.bitty.run>; it is not built, deployed, or documented from this
@@ -43,8 +43,10 @@ consumed today (see `src/content/docs-revision.json`). The source naming and
 multi-source aggregation require an accepted decision before implementation.
 
 `astro.config.mjs` records the canonical origin as
-`site: "https://bitty.run"`. The domain is registered through Cloudflare;
-verification and any real deployment are still pending. `i18n/` and
+`site: "https://bitty.run"`. Pushes to `main` auto-deploy `dist/` through
+`wrangler` using the organization `CLOUDFLARE_ACCOUNT_ID` and
+`CLOUDFLARE_API_TOKEN` secrets (see `.github/workflows/deploy.yml`); no
+production deploy happens from a pull request. `i18n/` and
 `content-sources/` are documented placeholders for the deferred locale layout
 and source-aggregation plan; they contain guidance only.
 

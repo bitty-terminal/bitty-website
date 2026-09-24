@@ -1,0 +1,131 @@
+---
+/**
+ * Architecture illustration — inline SVG, presentation only.
+ *
+ * This diagram is a navigational sketch, not a normative contract: box names
+ * mirror canonical document titles and every box links to the owning
+ * canonical page. No raster assets, no script, text stays selectable.
+ */
+---
+
+<svg
+  viewBox="0 0 640 400"
+  role="img"
+  aria-labelledby="arch-diagram-title arch-diagram-desc"
+>
+  <title id="arch-diagram-title">Bitty architecture sketch</title>
+  <desc id="arch-diagram-desc">
+    An illustration of four areas: Configuration feeds the Terminal core, the
+    Terminal core talks both ways with the Plugin host, and the Terminal core
+    drives the Interfaces. The normative boundaries are defined in the linked
+    Architecture Overview document.
+  </desc>
+  <defs>
+    <marker
+      id="arch-arrow"
+      viewBox="0 0 10 10"
+      refX="8"
+      refY="5"
+      markerWidth="7"
+      markerHeight="7"
+      orient="auto-start-reverse"
+    >
+      <path d="M 0 1 L 9 5 L 0 9 z" class="arch-arrowhead"></path>
+    </marker>
+  </defs>
+
+  <g class="arch-flow" aria-hidden="true">
+    <line x1="160" y1="112" x2="160" y2="152"></line>
+    <line x1="160" y1="252" x2="160" y2="292"></line>
+    <line x1="272" y1="205" x2="368" y2="205"></line>
+  </g>
+
+  <g class="arch-node">
+    <rect x="60" y="28" width="200" height="84" rx="12"></rect>
+    <text x="160" y="62" class="arch-title" text-anchor="middle">
+      Configuration
+    </text>
+    <text x="160" y="86" class="arch-sub" text-anchor="middle">
+      Lua · XDG layers
+    </text>
+  </g>
+
+  <g class="arch-node arch-node--core">
+    <rect x="60" y="158" width="200" height="94" rx="12"></rect>
+    <text x="160" y="192" class="arch-title" text-anchor="middle">
+      Terminal core
+    </text>
+    <text x="160" y="216" class="arch-sub" text-anchor="middle">
+      PTY · VT · render
+    </text>
+  </g>
+
+  <g class="arch-node">
+    <rect x="380" y="158" width="200" height="94" rx="12"></rect>
+    <text x="480" y="192" class="arch-title" text-anchor="middle">
+      Plugin host
+    </text>
+    <text x="480" y="216" class="arch-sub" text-anchor="middle">
+      Lua · capabilities
+    </text>
+  </g>
+
+  <g class="arch-node">
+    <rect x="60" y="298" width="200" height="74" rx="12"></rect>
+    <text x="160" y="328" class="arch-title" text-anchor="middle">
+      Interfaces
+    </text>
+    <text x="160" y="352" class="arch-sub" text-anchor="middle">
+      CLI · IPC
+    </text>
+  </g>
+
+  <g class="arch-note">
+    <text x="400" y="300" class="arch-sub">Reads config,</text>
+    <text x="400" y="322" class="arch-sub">drives interfaces,</text>
+    <text x="400" y="344" class="arch-sub">hosts plugins.</text>
+  </g>
+</svg>
+
+<style>
+  .arch-node rect {
+    fill: var(--card);
+    stroke: var(--line);
+    stroke-width: 2;
+  }
+
+  .arch-node--core rect {
+    stroke: var(--accent);
+    stroke-width: 3;
+  }
+
+  .arch-title {
+    fill: var(--ink);
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  .arch-sub {
+    fill: var(--muted);
+    font-size: 14px;
+  }
+
+  .arch-note .arch-sub {
+    font-style: italic;
+  }
+
+  .arch-flow line {
+    stroke: var(--indigo);
+    stroke-width: 2;
+    marker-end: url(#arch-arrow);
+  }
+
+  .arch-flow line:nth-child(3) {
+    marker-start: url(#arch-arrow);
+  }
+
+  .arch-arrowhead {
+    fill: var(--indigo);
+    stroke: none;
+  }
+</style>

@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import docsRevision from "./src/content/docs-revision.json" with { type: "json" };
 import versions from "./src/content/versions.json" with { type: "json" };
 import { docsLinksMdastPlugin } from "./src/lib/docsLinksPlugin.ts";
+import { docsHeadingsMdastPlugin } from "./src/lib/docsHeadings.ts";
 import { sourceDirToRouteDir } from "./src/lib/docsRoutes.ts";
 import {
   BASE_REDIRECTS,
@@ -165,7 +166,10 @@ export default defineConfig({
   redirects: { ...BASE_REDIRECTS },
   markdown: {
     processor: satteri({
-      mdastPlugins: [docsLinksMdastPlugin({ mirrorRoot })],
+      mdastPlugins: [
+        docsHeadingsMdastPlugin(),
+        docsLinksMdastPlugin({ mirrorRoot }),
+      ],
     }),
   },
   integrations: [redirectArtifacts(), docsAssets()],

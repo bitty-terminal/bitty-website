@@ -1,16 +1,22 @@
 ---
 /**
- * Documentation sidebar navigation (CTX-0039): presentation-only index over
- * the published corpus.
+ * Documentation sidebar navigation (CTX-0045, website#86): a nested
+ * collapsible tree derived from route paths.
  *
  * Data source: the `docs` content collection filtered to
- * `website_publish: true` (LD-3), grouped by frontmatter `category` and
- * ordered by `sidebar_order` (then title). Slugs reuse the authoritative
- * route mapper (`../lib/docsRoutes.ts`, RM-6); links preserve the current
- * version segment (`latest`, `stable`, or `x.y.z`), so the sidebar is
- * version-aware without reimplementing routing.
+ * `website_publish: true` (LD-3), ordered by `sidebar_order` (then title).
+ * Slugs reuse the authoritative route mapper (`../lib/docsRoutes.ts`,
+ * RM-6); links preserve the current version segment (`latest`, `stable`,
+ * or `x.y.z`), so the sidebar is version-aware without reimplementing
+ * routing. Tree construction and display titles live in
+ * `../lib/docsSidebar.ts` (unit-tested with `bun test src/lib`).
  *
- * Progressive enhancement: category sections are native `<details>` groups
+ * Display titles strip machine prefixes (`ADR NNNN - `, `Finding NNNN - `)
+ * and trailing ` RFC` suffixes AT RENDER TIME ONLY — canonical
+ * frontmatter titles, slugs, links, and pages are unchanged (canonical
+ * renames are a bitty-docs follow-up, not this issue).
+ *
+ * Progressive enhancement: folder nodes are native `<details>` groups
  * (keyboard reachable, no script), and the whole sidebar is a `<details>`
  * drawer that renders `open` — modern Chrome clips `::details-content`
  * regardless of the `display` override, so a CSS-forced desktop open does
@@ -21,6 +27,12 @@
 import { getCollection } from "astro:content";
 import { sep } from "node:path";
 import { sourcePathToRouteIdentity } from "../lib/docsRoutes.ts";
+import {
+  buildSidebarTree,
+  markCurrent,
+  renderSidebarTree,
+  type SidebarEntry,
+} from "../lib/docsSidebar.ts";
 
 type Props = {
   /** Raw version route segment, e.g. `latest`, `stable`, or `0.1.0`. */
@@ -53,86 +65,23 @@ function slugFromSourceFile(filePath: string | undefined, id: string): string {
   return withoutDocs.endsWith("/") ? withoutDocs.slice(0, -1) : withoutDocs;
 }
 
-type SidebarItem = {
-  readonly slug: string;
-  readonly title: string;
-  readonly order: number;
-};
-
-type SidebarGroup = {
-  readonly category: string;
-  readonly label: string;
-  readonly items: readonly SidebarItem[];
-  readonly isCurrent: boolean;
-};
-
-function groupLabel(category: string): string {
-  const spaced = category.replace(/-/g, " ");
-  return spaced.charAt(0).toUpperCase() + spaced.slice(1);
-}
-
 const eligible = (await getCollection("docs")).filter(
   (entry) => entry.data.website_publish === true,
 );
 
-const byCategory = new Map<string, SidebarItem[]>();
-for (const entry of eligible) {
-  const slug = slugFromSourceFile(entry.filePath, entry.id);
-  const list = byCategory.get(entry.data.category) ?? [];
-  list.push({
-    slug,
-    title: entry.data.title,
-    order: entry.data.sidebar_order,
-  });
-  byCategory.set(entry.data.category, list);
-}
+const entries: SidebarEntry[] = eligible.map((entry) => ({
+  slug: slugFromSourceFile(entry.filePath, entry.id),
+  title: entry.data.title,
+  order: entry.data.sidebar_order,
+}));
 
-const groups: SidebarGroup[] = [...byCategory.entries()]
-  .map(([category, items]) => {
-    const sorted = [...items].sort(
-      (left, right) =>
-        left.order - right.order || left.title.localeCompare(right.title),
-    );
-    return {
-      category,
-      label: groupLabel(category),
-      items: sorted,
-      isCurrent: sorted.some((item) => item.slug === currentSlug),
-    };
-  })
-  .sort((left, right) => left.category.localeCompare(right.category));
-
-function hrefFor(slug: string): string {
-  return slug === "" ? `/docs/${version}/` : `/docs/${version}/${slug}/`;
-}
+const tree = markCurrent(buildSidebarTree(entries), currentSlug);
+const treeHtml = renderSidebarTree(tree, version);
 ---
 
 <details class="docs-nav-drawer" open>
   <summary>Browse documentation</summary>
-  <nav class="docs-sidebar" aria-label="Documentation">
-    {groups.map((group) => (
-      <details class="docs-nav-group" open={group.isCurrent}>
-        <summary>
-          {group.label}
-          <span class="docs-nav-count" aria-hidden="true">
-            {group.items.length}
-          </span>
-        </summary>
-        <ul>
-          {group.items.map((item) => (
-            <li>
-              <a
-                href={hrefFor(item.slug)}
-                aria-current={item.slug === currentSlug ? "page" : undefined}
-              >
-                {item.title}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </details>
-    ))}
-  </nav>
+  <nav class="docs-sidebar" aria-label="Documentation" set:html={treeHtml} />
 </details>
 
 <script>
@@ -184,15 +133,20 @@ function hrefFor(slug: string): string {
     line-height: 1.5;
   }
 
-  .docs-nav-group {
-    border-block-start: 1px solid var(--line);
+  .docs-nav-tree,
+  .docs-nav-tree ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
-  .docs-nav-group:last-child {
-    border-block-end: 1px solid var(--line);
+  .docs-nav-tree ul {
+    margin: 0 0 0.5rem;
+    padding-inline-start: 0.75rem;
+    border-inline-start: 1px solid var(--line);
   }
 
-  .docs-nav-group > summary {
+  .docs-nav-sub > summary {
     display: flex;
     align-items: baseline;
     gap: 0.5rem;
@@ -204,16 +158,13 @@ function hrefFor(slug: string): string {
     font-weight: 700;
   }
 
-  .docs-nav-count {
-    color: var(--muted);
-    font-family: var(--font-mono);
-    font-weight: 400;
-  }
-
-  .docs-sidebar ul {
-    margin: 0 0 0.5rem;
-    padding: 0;
-    list-style: none;
+  .docs-nav-folder-label {
+    display: block;
+    min-block-size: 2rem;
+    align-content: center;
+    padding-block: 0.375rem;
+    color: var(--ink);
+    font-weight: 700;
   }
 
   .docs-sidebar li a {

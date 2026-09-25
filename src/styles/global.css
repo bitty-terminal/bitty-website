@@ -86,9 +86,13 @@
   --layer-sticky: 1;
 
   /* Docs navigation (CTX-0039): sidebar / TOC widths, layout gap, and the
-   * anchor offset that keeps linked article headings below sticky chrome. */
+   * anchor offset that keeps linked article headings below sticky chrome.
+   * CTX-0044: the docs shell is wider than the generic content cap so the
+   * center column reads as an article, not a trickle; gutters stay capped
+   * by the `100% - 2rem` floor in the `main.docs-main` rule below. */
   --docs-sidebar-width: 16rem;
   --docs-toc-width: 13rem;
+  --docs-content-width: 88rem;
   --docs-layout-gap: 2.5rem;
   --docs-scroll-margin: 5rem;
 
@@ -662,7 +666,7 @@ body > .version-selector {
 
 .prose {
   max-width: var(--reading-width);
-  font-size: var(--text-sm);
+  font-size: var(--text-md);
   line-height: var(--leading-body);
 }
 
@@ -710,7 +714,16 @@ body > .version-selector {
  * Single column on narrow viewports (the sidebar becomes a <details>
  * drawer); sidebar plus article from 50rem; all three columns from 70rem.
  * Only the docs page template uses this grid — home/index routes are
- * untouched. */
+ * untouched.
+ *
+ * CTX-0044 reading layout: the docs shell is wider than the generic
+ * content cap, the center column takes the leftover track
+ * (`minmax(0, 1fr)`), and the header title wraps inside its own column
+ * (`overflow-wrap`) so it can never bleed into the right TOC. */
+main.docs-main {
+  inline-size: min(100% - 2rem, var(--docs-content-width));
+}
+
 .docs-layout {
   display: grid;
   gap: var(--docs-layout-gap);
@@ -718,6 +731,15 @@ body > .version-selector {
 
 .docs-article {
   min-width: 0;
+}
+
+.docs-header {
+  min-width: 0;
+}
+
+.docs-header h1 {
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
 /* Anchored article headings stop below sticky chrome instead of hiding

@@ -1,9 +1,15 @@
 ---
 /**
- * Site header — presentation-only navigation into pinned canonical routes.
- * Link targets are versioned docs routes; no canonical prose is copied here.
- * The wordmark carries the mascot raster; the word beside it names the brand,
- * so the image itself is decorative.
+ * Site header — ghostty-style three-zone navigation bar.
+ *
+ * Left: the brand lockup (window-mark logo plus the Bitty word). Center:
+ * the docs search box. Right: Docs, GitHub, and Download links. Link targets
+ * are pinned canonical routes or external product URLs; no canonical prose is
+ * copied here. The word beside the logo names the brand, so the image itself
+ * is decorative.
+ *
+ * The Download link points at the GitHub releases page until the dedicated
+ * download page lands (website#83).
  */
 import BittyLogo from "./BittyLogo.astro";
 import SiteSearch from "./SiteSearch.astro";
@@ -18,6 +24,9 @@ type Props = {
 };
 
 const { version = "latest" } = Astro.props as Props;
+
+const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
+const GITHUB_RELEASES_URL = `${GITHUB_REPO_URL}/releases`;
 ---
 
 <header class="site-header">
@@ -26,20 +35,25 @@ const { version = "latest" } = Astro.props as Props;
       <BittyLogo />
       <span class="brand-word">Bitty</span>
     </a>
-    <ul>
+    <div class="header-search">
+      <SiteSearch version={version} />
+    </div>
+    <ul class="header-links">
       <li>
-        <a href="/#usage">Usage</a>
+        <a class="header-link" href="/docs/latest/">
+          Docs
+        </a>
       </li>
       <li>
-        <a href="/#configuration">Configuration</a>
+        <a class="header-github" href={GITHUB_REPO_URL}>
+          GitHub
+        </a>
       </li>
       <li>
-        <a href="/#architecture">Architecture</a>
-      </li>
-      <li>
-        <a href="/docs/latest/">All docs</a>
+        <a class="header-download" href={GITHUB_RELEASES_URL}>
+          Download
+        </a>
       </li>
     </ul>
-    <SiteSearch version={version} />
   </nav>
 </header>

@@ -1,11 +1,11 @@
 ---
 /**
- * Bitty wordmark: the mascot, served from the public CDN.
+ * Bitty wordmark: the window artwork, served from the public CDN.
  *
  * The artwork is source material owned outside this repository
- * (`recording/bitty-mascot/raster`). Published derivatives are
- * content-addressed immutable objects in the R2 bucket `bitty`, referenced
- * through `cdnUrl()` so the Astro `dist/` output stays text-only
+ * (`recording/bitty-mascot/raster/bitty-window.png`). Published derivatives
+ * are content-addressed immutable objects in the R2 bucket `bitty`,
+ * referenced through `cdnUrl()` so the Astro `dist/` output stays text-only
  * (see docs/cdn-assets.md).
  *
  * DPR handling: the mark renders in a 36px box, so a single 512px PNG would
@@ -24,24 +24,24 @@ import { cdnUrl } from "../lib/cdn.ts";
 
 // Content-addressed object names; the hash covers the asset bytes, so changed
 // artwork yields a new key instead of a stale immutable cache hit.
-const MASCOT_64 = "images/bitty-mascot-64-f11de4cc2933.webp";
-const MASCOT_128 = "images/bitty-mascot-128-6b2705ae3c9c.webp";
-const MASCOT_512 = "images/bitty-mascot-512-cb8596eecb67.webp";
+const WINDOW_64 = "images/bitty-window-64-9a595288caf7.webp";
+const WINDOW_128 = "images/bitty-window-128-ee6f059ab732.webp";
+const WINDOW_512 = "images/bitty-window-512-febf42632f69.webp";
 
 const LOGO_BOX_PX = 36;
 ---
 
 <img
   class="brand-logo"
-  src={cdnUrl(MASCOT_128)}
+  src={cdnUrl(WINDOW_128)}
   alt=""
   aria-hidden="true"
   decoding="async"
   fetchpriority="high"
   width={LOGO_BOX_PX}
   height={LOGO_BOX_PX}
-  srcset={`${cdnUrl(MASCOT_64)} 64w, ${cdnUrl(MASCOT_128)} 128w, ${cdnUrl(
-    MASCOT_512,
+  srcset={`${cdnUrl(WINDOW_64)} 64w, ${cdnUrl(WINDOW_128)} 128w, ${cdnUrl(
+    WINDOW_512,
   )} 512w`}
   sizes={`${LOGO_BOX_PX}px`}
 />

@@ -703,6 +703,15 @@ body > .version-selector {
   border-collapse: collapse;
 }
 
+/* Prose images stay inside the reading column (CTX-0046): canonical
+ * markdown may carry an explicit width attribute (the architecture
+ * overview embeds a 1100px diagram), so the container wins and the image
+ * scales down instead of pushing a horizontal scrollbar onto the page. */
+.prose img {
+  max-width: 100%;
+  height: auto;
+}
+
 .prose th,
 .prose td {
   padding: 0.5rem 0.75rem;

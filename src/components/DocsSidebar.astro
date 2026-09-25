@@ -20,9 +20,10 @@
  * (keyboard reachable, no script), and the whole sidebar is a `<details>`
  * drawer that renders `open` — modern Chrome clips `::details-content`
  * regardless of the `display` override, so a CSS-forced desktop open does
- * not work. A tiny script closes the drawer on narrow viewports only;
- * without JS it stays open everywhere (usable, never empty). The current
- * document carries `aria-current="page"`.
+ * not work. A tiny inline script (CTX-0047) collapses the drawer on
+ * narrow viewports during parse, before first paint; without JS it stays
+ * open everywhere (usable, never empty). The current document carries
+ * `aria-current="page"`.
  */
 import { getCollection } from "astro:content";
 import { sep } from "node:path";
@@ -84,11 +85,13 @@ const treeHtml = renderSidebarTree(tree, version);
   <nav class="docs-sidebar" aria-label="Documentation" set:html={treeHtml} />
 </details>
 
-<script>
-  // CTX-0041: collapse the drawer on narrow viewports only. The drawer
-  // renders `open` so desktop (and no-JS) never shows an empty sidebar;
-  // this enhancement restores the collapsed drawer below the 50rem layout
-  // breakpoint. Scoped to this component instance.
+<script is:inline>
+  // CTX-0047: collapse the drawer on narrow viewports BEFORE first paint.
+  // The drawer renders `open` so desktop (and no-JS) never shows an empty
+  // sidebar; removing `open` from a deferred module script made the article
+  // jump by the tree height after paint (Lighthouse CLS 0.202 on docs
+  // pages), so this runs inline, during parse, and keeps the breakpoint
+  // listener for later resizes. Scoped to this component instance.
   const drawer = document.querySelector("details.docs-nav-drawer");
   const narrow = window.matchMedia("(max-width: 49.9375rem)");
   const syncDrawer = () => {

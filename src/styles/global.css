@@ -203,7 +203,6 @@ a:hover {
   border-radius: var(--radius-sm);
 }
 
-.route-meta,
 .eyebrow,
 .home-status,
 .home-section-summary,
@@ -211,10 +210,6 @@ a:hover {
 .home-diagram figcaption,
 footer.site-footer {
   color: var(--muted);
-}
-
-.route-meta {
-  font-size: var(--text-xs);
 }
 
 .eyebrow {

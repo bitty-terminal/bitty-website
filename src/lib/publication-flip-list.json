@@ -1,5 +1,5 @@
 {
-  "policy_version": "2026-09-27.2",
+  "policy_version": "2026-09-27.3",
   "note": "Paths that request publication (website_publish: true) but are demoted by the publication policy at the pinned revision. This is the docs-side frontmatter flip list: bitty-docs sets website_publish: false (or removes the field) on each path, and the entry is deleted here in the same coordinated change. Shrink-only.",
   "entries": [
     {
@@ -51,6 +51,18 @@
       "reason": "Decision register corpus (ADRs, RFCs, open questions) \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "path": "docs/decisions/adrs/ADR-0009-plugin-api-v1-lua-surface.md",
+      "audience": "plugin-author",
+      "document_type": "specification",
+      "reason": "decision record under docs/decisions/: governance corpus, never published, so its website_publish: true must flip (found by the #103 review: the plugin-author specification exception had published it)"
+    },
+    {
+      "path": "docs/decisions/adrs/ADR-0010-plugin-host-runtime-acceptance.md",
+      "audience": "plugin-author",
+      "document_type": "specification",
+      "reason": "decision record under docs/decisions/: governance corpus, never published, so its website_publish: true must flip (found by the #103 review)"
+    },
+    {
       "path": "docs/decisions/adrs/ADR-0011-repository-metadata-baseline.md",
       "audience": "contributor",
       "document_type": "specification",
@@ -93,15 +105,15 @@
       "reason": "Decision register corpus (ADRs, RFCs, open questions) \u2014 governance, stays canonical in bitty-docs"
     },
     {
-      "path": "docs/development/documentation-workflow.md",
-      "audience": "contributor",
-      "document_type": "policy",
-      "reason": "Development process page \u2014 engineering governance corpus"
-    },
-    {
       "path": "docs/development/README.md",
       "audience": "contributor",
       "document_type": "index",
+      "reason": "Development process page \u2014 engineering governance corpus"
+    },
+    {
+      "path": "docs/development/documentation-workflow.md",
+      "audience": "contributor",
+      "document_type": "policy",
       "reason": "Development process page \u2014 engineering governance corpus"
     },
     {
@@ -133,6 +145,12 @@
       "audience": "contributor",
       "document_type": "explanation",
       "reason": "Project governance / state page \u2014 engineering governance corpus"
+    },
+    {
+      "path": "docs/projects/bitty/specifications/README.md",
+      "audience": "contributor",
+      "document_type": "index",
+      "reason": "Section index of the specifications governance corpus (audience contributor) \u2014 the index leaves with the corpus"
     },
     {
       "path": "docs/projects/bitty/specifications/ai-architecture.md",
@@ -217,12 +235,6 @@
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Engineering specification (audience contributor, document_type specification) \u2014 governance corpus page, not reader-facing"
-    },
-    {
-      "path": "docs/projects/bitty/specifications/README.md",
-      "audience": "contributor",
-      "document_type": "index",
-      "reason": "Section index of the specifications governance corpus (audience contributor) \u2014 the index leaves with the corpus"
     },
     {
       "path": "docs/projects/bitty/specifications/rich-presentation-rfc.md",

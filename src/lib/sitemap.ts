@@ -8,6 +8,11 @@
  * so they cannot appear here, and redirect stubs (legacy aliases) are skipped
  * because a canonical sitemap lists destinations, not redirects.
  *
+ * The sitemap and the search index are deliberately asymmetric about the
+ * mirrored interactive app (`docs/<version>/projects/bitty/architecture/
+ * interactive/`): the build emits it as a real page, so it is listed here,
+ * while `./searchIndex.ts` skips it. Review of #103 (D5) recorded the choice.
+ *
  * Two artifacts per build:
  * - `dist/sitemap.xml` — the global sitemap. It lists the home page plus the
  *   canonical (`latest`) routes only, so one document has one canonical URL.

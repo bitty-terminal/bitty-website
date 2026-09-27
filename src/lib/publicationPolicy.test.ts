@@ -34,7 +34,9 @@ import {
   decidePublication,
   evaluatePublicationPolicy,
   flipListEntries,
+  isForbiddenAllowListEntry,
   isForbiddenAllowListPath,
+  isForbiddenPublicationPath,
   isPublished,
   meetsEligibilityRule,
   TYPE_AUDIENCE_EXCEPTIONS,
@@ -65,7 +67,76 @@ const EXPECTED_ALLOW_LIST_PATHS: readonly string[] = [
 ];
 
 /** Demoted pages still awaiting the docs-side frontmatter flip (#98 owns it). */
-const EXPECTED_FLIP_LIST_COUNT = 50;
+const EXPECTED_FLIP_LIST_COUNT = 52;
+
+/**
+ * The governance-path rule outranks the eligibility rule (review of #103, P1):
+ * before it ran on allow-list entries only, so a plugin-author specification
+ * under docs/decisions/ was published by rule while the same path was rejected
+ * as an allow-list entry.
+ */
+test("a governance corpus path is never published, even when the rule would publish it", () => {
+  expect(
+    decidePublication(
+      metadata({
+        sourcePath: "docs/decisions/adrs/ADR-0009-plugin-api-v1-lua-surface.md",
+        audience: "plugin-author",
+        document_type: "specification",
+        website_publish: true,
+      }),
+    ).kind,
+  ).toBe("demote");
+  // A forbidden path that is already recorded as pending the docs-side flip is
+  // demoted like any other demotion; a forbidden path nobody recorded fails
+  // closed instead of being silently dropped.
+  expect(
+    decidePublication(
+      metadata({
+        sourcePath: "docs/security/threat-model.md",
+        audience: "plugin-author",
+        document_type: "specification",
+        website_publish: true,
+      }),
+    ).kind,
+  ).toBe("demote");
+  expect(
+    decidePublication(
+      metadata({
+        sourcePath: "docs/security/zz-new-governance-page.md",
+        audience: "plugin-author",
+        document_type: "specification",
+        website_publish: true,
+      }),
+    ).kind,
+  ).toBe("violation");
+});
+
+test("a security or provenance page cannot reach the site through the allow-list", () => {
+  for (const path of [
+    "docs/security/threat-model.md",
+    "docs/security/overview.md",
+    "docs/security/p0-acceptance-criteria.md",
+    "docs/security/risk-register.md",
+    "docs/provenance/README.md",
+  ]) {
+    expect({ path, forbidden: isForbiddenPublicationPath(path) }).toEqual({
+      path,
+      forbidden: true,
+    });
+  }
+  expect(
+    isForbiddenAllowListEntry({
+      path: "docs/projects/bitty/anything.md",
+      document_type: "policy",
+    }),
+  ).toBe(true);
+  expect(
+    isForbiddenAllowListEntry({
+      path: "docs/projects/bitty/anything.md",
+      document_type: "specification",
+    }),
+  ).toBe(false);
+});
 
 /**
  * The type exclusion has exactly one audience exception (owner decision on

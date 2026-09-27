@@ -41,7 +41,7 @@ import allowListData from "./publication-allow-list.json" with { type: "json" };
 import flipListData from "./publication-flip-list.json" with { type: "json" };
 
 /** Policy revision, bumped whenever the rule, the data files, or a bound moves. */
-export const PUBLICATION_POLICY_VERSION = "2026-09-27.2";
+export const PUBLICATION_POLICY_VERSION = "2026-09-27.3";
 
 /** Date the owner decision behind this policy was recorded. */
 export const PUBLICATION_POLICY_DATE = "2026-09-27";
@@ -105,26 +105,32 @@ export const CONTRACT_DOCUMENT_TYPES: readonly string[] = [
 export const IMPLEMENTED_STATUSES: readonly string[] = ["stable"];
 
 /**
- * Governance corpora that may never be allow-listed (website#97 names these as
- * leaving the site, and the task that owns this policy repeats them as a hard
- * limit). Enforced here and pinned by the policy test.
+ * Governance corpora that are never published (website#97 names these as leaving
+ * the site) and may never be allow-listed.
+ *
+ * The check runs on EVERY publish decision — the eligibility rule, including
+ * `TYPE_AUDIENCE_EXCEPTIONS`, and the allow-list are both subordinate to it —
+ * so no door into the published set bypasses it. An earlier revision applied it
+ * only to allow-list entries, which let two decision records through by rule.
  */
-export const FORBIDDEN_ALLOW_LIST_PREFIXES: readonly string[] = [
+export const FORBIDDEN_PUBLICATION_PREFIXES: readonly string[] = [
   "docs/decisions/", // decision register: ADRs, RFCs, open questions
+  "docs/development/", // development process pages
   "docs/findings/", // findings corpus
   "docs/handoff/", // handoff corpus
+  "docs/project/", // project state and project governance pages
+  "docs/provenance/", // sources and provenance ledgers
   "docs/reviews/", // review corpus
-  "docs/sources/", // sources / provenance ledgers
-  "docs/security/risk-register.md",
-  "docs/security/evidence-matrix.md",
-  "docs/project/project-state.json",
+  "docs/security/", // risk register, evidence matrix, threat model, P0 criteria
+  "docs/sources/", // sources and provenance ledgers
 ];
 
-/** Development process pages and project governance pages, by prefix. */
-export const FORBIDDEN_ALLOW_LIST_ALSO: readonly string[] = [
-  "docs/development/",
-  "docs/project/",
-];
+/** Kept for the existing call sites and tests; the same list. */
+export const FORBIDDEN_ALLOW_LIST_PREFIXES: readonly string[] =
+  FORBIDDEN_PUBLICATION_PREFIXES;
+
+/** Folded into {@link FORBIDDEN_PUBLICATION_PREFIXES}; kept exported. */
+export const FORBIDDEN_ALLOW_LIST_ALSO: readonly string[] = [];
 
 /** A `docs/...md` source path plus the frontmatter fields the policy reads. */
 export type PublicationMetadata = {
@@ -210,17 +216,42 @@ export function flipListEntryFor(
 }
 
 /**
- * `true` when a governance corpus that may never be allow-listed.
+ * `true` when the path belongs to a governance corpus that is never published
+ * and may never be allow-listed.
  *
- * @throws never — the caller decides; {@link assertPublicationPolicy} fails
- *   closed, and the policy test pins the named corpora.
+ * Consulted by {@link decidePublication} for every publish decision and by
+ * {@link evaluatePublicationPolicy} for allow-list entries.
  */
-export function isForbiddenAllowListPath(sourcePath: string): boolean {
-  return [...FORBIDDEN_ALLOW_LIST_PREFIXES, ...FORBIDDEN_ALLOW_LIST_ALSO].some(
-    (forbidden) =>
-      forbidden.endsWith("/")
-        ? sourcePath.startsWith(forbidden)
-        : sourcePath === forbidden,
+export function isForbiddenPublicationPath(sourcePath: string): boolean {
+  return FORBIDDEN_PUBLICATION_PREFIXES.some((forbidden) =>
+    forbidden.endsWith("/")
+      ? sourcePath.startsWith(forbidden)
+      : sourcePath === forbidden,
+  );
+}
+
+/** Earlier name of {@link isForbiddenPublicationPath}; kept for call sites. */
+export const isForbiddenAllowListPath = isForbiddenPublicationPath;
+
+/** Document types that are governance corpora and may never enter the allow-list. */
+export const GOVERNANCE_DOCUMENT_TYPES: readonly string[] = [
+  "policy",
+  "register",
+  "research",
+];
+
+/**
+ * `true` when an allow-list entry would smuggle in a governance page: a
+ * governance path ({@link isForbiddenPublicationPath}) or a governance
+ * document type.
+ */
+export function isForbiddenAllowListEntry(entry: {
+  readonly path: string;
+  readonly document_type: string;
+}): boolean {
+  return (
+    isForbiddenPublicationPath(entry.path) ||
+    GOVERNANCE_DOCUMENT_TYPES.includes(entry.document_type)
   );
 }
 
@@ -248,6 +279,21 @@ export function decidePublication(
       kind: "exclude",
       sourcePath,
       reason: "frontmatter does not request publication",
+    };
+  }
+  if (isForbiddenPublicationPath(sourcePath)) {
+    const pendingFlip = FLIP_BY_PATH.get(sourcePath);
+    if (pendingFlip !== undefined) {
+      return {
+        kind: "demote",
+        sourcePath,
+        reason: `governance corpus path is never published: ${pendingFlip.reason}`,
+      };
+    }
+    return {
+      kind: "violation",
+      sourcePath,
+      reason: `governance corpus path must not request publication (publication policy ${PUBLICATION_POLICY_VERSION}, ${PUBLICATION_POLICY_ISSUE})`,
     };
   }
   if (meetsEligibilityRule(meta)) {
@@ -395,7 +441,7 @@ export function evaluatePublicationPolicy(
         detail: `${entry.path} is both allow-listed and demoted`,
       });
     }
-    if (isForbiddenAllowListPath(entry.path)) {
+    if (isForbiddenAllowListEntry(entry)) {
       problems.push({
         kind: "forbidden-allow-list",
         detail: `${entry.path} is a governance corpus path (${PUBLICATION_POLICY_ISSUE}) and may never be allow-listed`,

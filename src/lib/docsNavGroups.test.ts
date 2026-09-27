@@ -168,4 +168,21 @@ describe("consumed topic trees map to a group (#98)", () => {
       groupForRoute("projects/plugins/runtime/plugin-host-runtime-rfc"),
     ).toBe("concepts");
   });
+
+  test("the AI topics resolve to the reviewed groups", () => {
+    // `interfaces` was already owned by Extending before T7, so the AI
+    // `interfaces/` tree needs no new entry — it must simply resolve there.
+    for (const topic of [
+      "agent",
+      "context",
+      "integration",
+      "persistence",
+      "providers",
+    ]) {
+      expect(groupForRoute(`projects/bitty-ai/${topic}/page`)).toBe("concepts");
+    }
+    expect(groupForRoute("projects/bitty-ai/interfaces/page")).toBe(
+      "extending",
+    );
+  });
 });

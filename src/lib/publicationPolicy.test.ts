@@ -104,7 +104,8 @@ const EXPECTED_FLIP_LIST_COUNT = 46;
  * Shrink-only pin of the withhold list (bitty-website#98): declared-but-
  * ineligible pages, exact path set. Adding or removing an entry fails this
  * test until the expectation below is updated in the same reviewed change.
- * All 14 are `bitty-terminal-docs` pages owned by `bitty-core`.
+ * 14 are `bitty-terminal-docs` pages owned by `bitty-core`; 8 are
+ * `bitty-plugins-docs` pages owned by `bitty-plugins` (T6 onboarding).
  */
 const EXPECTED_WITHHOLD_PATHS: readonly string[] = [
   "docs/projects/bitty/configuration/README.md",
@@ -121,8 +122,16 @@ const EXPECTED_WITHHOLD_PATHS: readonly string[] = [
   "docs/projects/bitty/specifications/ui-convergence-roadmap.md",
   "docs/projects/bitty/specifications/ui-ux-invariant-set-candidate.md",
   "docs/projects/bitty/specifications/unified-mod-contract-candidate.md",
+  "docs/projects/plugins/packaging/README.md",
+  "docs/projects/plugins/packaging/package-followup-rfc.md",
+  "docs/projects/plugins/packaging/package-lifecycle-rfc.md",
+  "docs/projects/plugins/runtime/README.md",
+  "docs/projects/plugins/runtime/isolation-resource-rfc.md",
+  "docs/projects/plugins/runtime/lua-runtime-rfc.md",
+  "docs/projects/plugins/specifications/README.md",
+  "docs/projects/plugins/specifications/manifest-capability-authority.md",
 ];
-const EXPECTED_WITHHOLD_COUNT = 14;
+const EXPECTED_WITHHOLD_COUNT = 22;
 
 /**
  * The governance-path rule outranks the eligibility rule (review of #103, P1):
@@ -509,11 +518,13 @@ describe("pinned corpus", () => {
       (sum, pin) => sum + pin.published.min,
       0,
     );
-    // 3 (bitty-docs) + 18 (bitty-terminal-docs) = 21 after the T5 onboarding;
-    // the 7 routes that move to the not-yet-landed plugin source are 301s, so
-    // they are not published, and T6 raises this to 44.
+    // 3 (bitty-docs) + 18 (bitty-terminal-docs) + 26 (bitty-plugins-docs) = 47
+    // after the T6 onboarding. The plan's "44" counts only the three pinned
+    // project corpora and omits the 3 governance pages the reduced bitty-docs
+    // source still owns (the revision index, the roadmap index, and its
+    // remaining published page); the measured aggregate is 47.
     expect(report.published.length).toBe(expected);
-    expect(report.published.length).toBe(21);
+    expect(report.published.length).toBe(47);
   });
 
   test("the flip list is unique and matches the demoted set", async () => {
@@ -631,10 +642,19 @@ describe("withhold list (bitty-website#98)", () => {
     for (const route of withheldRoutes) {
       expect(corpus.publishedRoutes).not.toContain(route);
     }
+    // Every entry names the corpus that owns the fix.
     for (const entry of listed) {
-      expect(entry.owner).toBe("bitty-core");
-      expect(entry.source).toBe("bitty-terminal-docs");
+      if (entry.source === "bitty-terminal-docs") {
+        expect(entry.owner).toBe("bitty-core");
+      } else if (entry.source === "bitty-plugins-docs") {
+        expect(entry.owner).toBe("bitty-plugins");
+      } else {
+        throw new Error(`unexpected withhold source "${entry.source}"`);
+      }
     }
+    expect(
+      listed.filter((entry) => entry.source === "bitty-plugins-docs").length,
+    ).toBe(8);
   });
 
   test("a withhold entry may not also be allow-listed or demoted", () => {

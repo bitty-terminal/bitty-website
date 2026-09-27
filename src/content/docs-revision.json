@@ -21,6 +21,22 @@
       ]
     },
     {
+      "id": "bitty-plugins-docs",
+      "source": "github.com/bitty-terminal/bitty-plugins-docs",
+      "revision": "dcb7b84069b5b67d72d238dd646cc446d1ece384",
+      "synced_at": "2026-09-28T00:00:00.000Z",
+      "mounts": [
+        {
+          "from": ".",
+          "to": "projects/plugins"
+        }
+      ],
+      "published": {
+        "min": 26,
+        "max": 26
+      }
+    },
+    {
       "id": "bitty-terminal-docs",
       "source": "github.com/bitty-terminal/bitty-terminal-docs",
       "revision": "d60262cce06b97e70a04b77760c9621d05e5b3d5",

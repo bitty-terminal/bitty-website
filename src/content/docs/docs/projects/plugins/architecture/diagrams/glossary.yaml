@@ -1,0 +1,597 @@
+# Architecture glossary — single source for plugin-side diagrams
+# Plugin-ecosystem node and edge inventory for architecture/diagrams/*.mmd and *.svg
+# Mirrors the terminal-docs glossary.yaml-driven model at small scale.
+# Every node traces to an accepted or draft RFC in this corpus or to the
+# candidate plugin-contract direction; no invented nodes.
+# Visual rules: rect=module/store, rounded=capability/state, dashed=boundary/unaccepted, solid=call/depends, dashed-edge=event/async
+# Levels: L0 overview, L1 subsystem, L2 flow
+schema_version: 1
+updated: "2026-09-19"
+provenance: CTX-0032
+description: Canonical node and edge inventory for plugin-side architecture diagrams
+sources:
+  - specifications/plugin-contract-direction.md (draft, candidate direction)
+  - specifications/plugin-platform-rfc.md (accepted, OQ-011/OQ-012/OQ-013)
+  - packaging/package-lifecycle-rfc.md (accepted, OQ-021)
+  - packaging/package-followup-rfc.md (accepted, OQ-022/OQ-026..OQ-029)
+  - runtime/plugin-host-runtime-rfc.md (accepted, OQ-033/OQ-034/OQ-035)
+  - runtime/lua-runtime-rfc.md (accepted, OQ-009)
+  - sdk/plugin-api-v1-lua-surface-rfc.md (accepted, ADR 0009)
+  - runtime/isolation-resource-rfc.md (accepted, OQ-014)
+  - packaging/plugin-reuse-and-providers.md (draft, post-1.0)
+  - architecture/plugin-ecosystem-model.md (draft, candidate direction)
+  - architecture/ui-extensibility-architecture.md (draft, candidate review)
+  - product/bundled-plugin-split-decision.md (accepted, OQ-053)
+  - product/official-plugin-onboarding.md (normative policy)
+  - extensibility/plugin-system.md (draft, accepted direction where marked)
+  - extensibility/package-management.md (draft, candidate contracts)
+
+visual_rules:
+  rect: "module / store — Mermaid rectangle"
+  rounded: "capability / lifecycle state — Mermaid stadium"
+  boundary: "trust boundary / sandbox — Mermaid subgraph"
+  candidate: "unaccepted content — Mermaid dashed stroke"
+  solid_edge: "call / depends — Mermaid solid arrow"
+  dashed_edge: "event / async — Mermaid dashed arrow"
+
+levels:
+  L0: overview — plugin-side system context and trust boundaries
+  L1: subsystem — registry, lifecycle, SDK/template, Panel boundary
+  L2: flow — lifecycle transitions and registry verification order
+
+nodes:
+  # --- L0 overview (plugin-side context) ---
+  - id: plugin
+    label: Plugin
+    kind: capability
+    shape: rounded
+    level: L0
+    status: accepted
+    description: Third-party or first-party plugin instance, one VM per identity and generation
+    source: specifications/plugin-platform-rfc.md
+  - id: host
+    label: Extension Host
+    kind: module
+    shape: rect
+    level: L0
+    status: accepted
+    description: Only component that executes plugin code and mediates privileged work
+    source: specifications/plugin-platform-rfc.md
+  - id: terminal-truth
+    label: Terminal Truth
+    kind: domain
+    shape: rect
+    level: L0
+    status: accepted
+    description: Core-owned grid, cursor, modes, scrollback; plugins alter presentation only
+    source: extensibility/plugin-system.md
+  - id: registry
+    label: Registry
+    kind: module
+    shape: rect
+    level: L0
+    status: accepted
+    description: Attestation and index service, not a trusted execution authority
+    source: packaging/package-followup-rfc.md
+  - id: sdk-template
+    label: SDK and Template
+    kind: module
+    shape: rect
+    level: L0
+    status: accepted
+    description: bitty-plugin-sdk plus bitty-plugin-template scaffolding, typing, lint, conformance
+    source: product/bundled-plugin-split-decision.md
+  - id: panel-boundary
+    label: Panel Boundary
+    kind: domain
+    shape: rounded
+    level: L0
+    status: draft
+    description: Generic container and Event Bus accepted; plugin-facing registration and mount open
+    source: architecture/ui-extensibility-architecture.md
+
+  # --- Registry (L1) ---
+  - id: official-entry
+    label: Official Entry
+    kind: data
+    shape: rounded
+    level: L1
+    status: accepted
+    description: registry/official entry plus pinned plugins submodule; official true derived from folder
+    source: product/official-plugin-onboarding.md
+  - id: community-entry
+    label: Community Entry
+    kind: data
+    shape: rounded
+    level: L1
+    status: accepted
+    description: registry/community metadata only; never cloned or pinned, official false default
+    source: product/official-plugin-onboarding.md
+  - id: index-snapshot
+    label: Index Snapshot
+    kind: data
+    shape: rounded
+    level: L1
+    status: accepted
+    description: Signed versioned index mapping package ID to version records
+    source: packaging/package-followup-rfc.md
+  - id: client-verify
+    label: Client Verify
+    kind: module
+    shape: rect
+    level: L1
+    status: accepted
+    description: Client validates signatures and freshness, then re-validates H-A, H-B, capability diff
+    source: packaging/package-followup-rfc.md
+  - id: key-directory
+    label: Key Directory
+    kind: module
+    shape: rect
+    level: L1
+    status: accepted
+    description: Enrollment, rotation, revocation, signed freshness for signed releases
+    source: packaging/package-followup-rfc.md
+  - id: source-classes
+    label: Source Classes
+    kind: data
+    shape: rounded
+    level: L1
+    status: accepted
+    description: Bundled, registry, git, local-path with per-class provenance records
+    source: packaging/package-followup-rfc.md
+  - id: resolver
+    label: Resolver
+    kind: module
+    shape: rect
+    level: L1
+    status: accepted
+    description: Deterministic resolver, closed constraint grammar, one version per ID
+    source: packaging/package-followup-rfc.md
+  - id: lockfile
+    label: Lockfile
+    kind: data
+    shape: rounded
+    level: L1
+    status: accepted
+    description: Exact reproducible resolution with H-A, H-B, Merkle H-C digests
+    source: packaging/package-lifecycle-rfc.md
+
+  # --- Lifecycle (L1/L2) ---
+  - id: manifest
+    label: bitty-plugin.toml
+    kind: capability
+    shape: rounded
+    level: L1
+    status: accepted
+    description: Validated manifest with id, version, compat, capabilities, lazy triggers
+    source: specifications/plugin-platform-rfc.md
+  - id: discovered
+    label: Discovered
+    kind: data
+    shape: rounded
+    level: L2
+    status: accepted
+    description: Source declares ID and version, nothing trusted
+    source: packaging/package-lifecycle-rfc.md
+  - id: fetched
+    label: Fetched
+    kind: data
+    shape: rounded
+    level: L2
+    status: accepted
+    description: Bytes in quarantine, framing and budget enforced
+    source: packaging/package-lifecycle-rfc.md
+  - id: verified
+    label: Verified
+    kind: data
+    shape: rounded
+    level: L2
+    status: accepted
+    description: Full integrity chain H-A plus H-B plus capability diff passed
+    source: packaging/package-lifecycle-rfc.md
+  - id: staged
+    label: Staged
+    kind: data
+    shape: rounded
+    level: L2
+    status: accepted
+    description: Verified generation in store, not yet active
+    source: packaging/package-lifecycle-rfc.md
+  - id: activated
+    label: Activated
+    kind: data
+    shape: rounded
+    level: L2
+    status: accepted
+    description: Atomic switch makes staged generation active
+    source: packaging/package-lifecycle-rfc.md
+  - id: retained
+    label: Retained
+    kind: data
+    shape: rounded
+    level: L2
+    status: accepted
+    description: Superseded generations bounded for rollback
+    source: packaging/package-lifecycle-rfc.md
+  - id: integrity-chain
+    label: Integrity Chain
+    kind: capability
+    shape: rounded
+    level: L2
+    status: accepted
+    description: Fetch framing, artifact checksum, manifest validation, hash binding, capability diff
+    source: packaging/package-lifecycle-rfc.md
+  - id: publisher-trust
+    label: Publisher Trust
+    kind: capability
+    shape: rounded
+    level: L2
+    status: accepted
+    description: V-A lock pinning, V-B TOFU, V-C signed releases
+    source: packaging/package-lifecycle-rfc.md
+  - id: lifecycle-states
+    label: Declared to Disposed
+    kind: capability
+    shape: rounded
+    level: L2
+    status: accepted
+    description: Declared, Resolved, Registered, Activated, Suspended, Disposed with generation N+1 reload
+    source: specifications/plugin-platform-rfc.md
+  - id: capability-grant
+    label: Capability Grant
+    kind: capability
+    shape: rounded
+    level: L1
+    status: accepted
+    description: Per manifest-hash grant record binding plugin ID to authorized capabilities
+    source: specifications/plugin-platform-rfc.md
+  - id: plugin-vm
+    label: Lua VM
+    kind: sandbox
+    shape: boundary
+    level: L1
+    status: accepted
+    description: Per-plugin isolated Lua VM with restricted stdlib and Fuel budgets
+    source: runtime/lua-runtime-rfc.md
+  - id: generation
+    label: Generation
+    kind: capability
+    shape: rounded
+    level: L2
+    status: accepted
+    description: Monotonic instance counter per plugin ID owning tasks, timers, queues
+    source: specifications/plugin-platform-rfc.md
+  - id: event-pipeline
+    label: Event Pipeline
+    kind: capability
+    shape: rounded
+    level: L1
+    status: accepted
+    description: Observation, interception, lifecycle classes with DropOldest default
+    source: specifications/plugin-platform-rfc.md
+  - id: store-state
+    label: Plugin Store
+    kind: data
+    shape: rounded
+    level: L1
+    status: accepted
+    description: Quota-bounded key-value state scoped by plugin ID, survives generation disposal
+    source: runtime/plugin-host-runtime-rfc.md
+  - id: safe-mode
+    label: bitty safe
+    kind: capability
+    shape: rounded
+    level: L1
+    status: accepted
+    description: Loads no third-party plugin, independent of package state
+    source: specifications/plugin-platform-rfc.md
+
+  # --- SDK and template (L1) ---
+  - id: template
+    label: Plugin Template
+    kind: module
+    shape: rect
+    level: L1
+    status: accepted
+    description: Minimal runnable scaffold with manifest, init.lua, template CI
+    source: product/bundled-plugin-split-decision.md
+  - id: lua-defs
+    label: LuaLS Definitions
+    kind: module
+    shape: rect
+    level: L1
+    status: accepted
+    description: Generated Lua type definitions for the accepted API surface
+    source: product/bundled-plugin-split-decision.md
+  - id: manifest-lint
+    label: Manifest Lint
+    kind: module
+    shape: rect
+    level: L1
+    status: accepted
+    description: Manifest schema validation plus bitty-plugin-lint capability review
+    source: product/bundled-plugin-split-decision.md
+  - id: mock-host
+    label: Mock Host
+    kind: module
+    shape: rect
+    level: L1
+    status: accepted
+    description: SDK mock host with conformance fixtures for experimental consumers
+    source: product/bundled-plugin-split-decision.md
+
+  # --- Panel-provider boundary (L1) ---
+  - id: panel-container
+    label: Panel Container
+    kind: domain
+    shape: rect
+    level: L1
+    status: accepted
+    description: Generic workspace-managed application container with accepted Event Bus
+    source: product/bundled-plugin-split-decision.md
+  - id: panel-provider
+    label: Panel Provider
+    kind: capability
+    shape: rounded
+    level: L1
+    status: draft
+    description: Plugin registration and mount surface behind RFC-OQ-2, RFC-OQ-3, RFC-OQ-5
+    source: architecture/ui-extensibility-architecture.md
+  - id: declarative-slots
+    label: Declarative Slots
+    kind: capability
+    shape: rounded
+    level: L1
+    status: accepted
+    description: v1 bitty.ui.mount and update into closed semantic slots
+    source: sdk/plugin-api-v1-lua-surface-rfc.md
+  - id: presentation-modes
+    label: Presentation Modes
+    kind: capability
+    shape: rounded
+    level: L1
+    status: draft
+    description: Tiled, floating, overlay, fullscreen and further modes as runtime properties
+    source: architecture/plugin-ecosystem-model.md
+
+  # --- Plugin-contract direction (draft) ---
+  - id: service-registry
+    label: Service Registry
+    kind: capability
+    shape: rounded
+    level: L1
+    status: accepted
+    description: Versioned host-mediated inter-plugin services
+    source: specifications/plugin-platform-rfc.md
+  - id: provider-ecology
+    label: Provider Ecology
+    kind: capability
+    shape: rounded
+    level: L1
+    status: draft
+    description: Post-1.0 Picker, Status, Context providers over the host Service Protocol
+    source: packaging/plugin-reuse-and-providers.md
+  - id: lua-is-glue
+    label: Lua Is Glue
+    kind: capability
+    shape: rounded
+    level: L1
+    status: draft
+    description: Pure Lua, then system CLI, then peer service, then post-1.0 native helper
+    source: packaging/plugin-reuse-and-providers.md
+  - id: self-contained-artifact
+    label: Self-Contained Artifact
+    kind: data
+    shape: rounded
+    level: L1
+    status: draft
+    description: Manifest, Lua sources, vendored pure-Lua deps, assets with deps pre-resolved
+    source: specifications/plugin-contract-direction.md
+
+edges:
+  # --- L0 context ---
+  - from: plugin
+    to: host
+    kind: executes-in
+    style: solid
+    level: L0
+    description: Host is the only component that executes plugin code
+  - from: host
+    to: terminal-truth
+    kind: observes
+    style: dashed
+    level: L0
+    description: Observation only; plugins alter presentation, never terminal truth
+  - from: registry
+    to: host
+    kind: supplies
+    style: solid
+    level: L0
+    description: Verified generations feed the host; registry never executes code
+  - from: sdk-template
+    to: plugin
+    kind: scaffolds
+    style: solid
+    level: L0
+    description: Template, defs, lint, mock host produce reviewable plugins
+  - from: panel-boundary
+    to: host
+    kind: bounds
+    style: dashed
+    level: L0
+    description: Accepted container with draft provider surface
+
+  # --- Registry flow ---
+  - from: official-entry
+    to: index-snapshot
+    kind: publishes
+    style: solid
+    level: L1
+  - from: community-entry
+    to: index-snapshot
+    kind: publishes
+    style: solid
+    level: L1
+  - from: index-snapshot
+    to: client-verify
+    kind: verify
+    style: solid
+    level: L1
+    description: Signature, freshness, then H-A, H-B, capability diff
+  - from: key-directory
+    to: client-verify
+    kind: anchors
+    style: solid
+    level: L1
+    description: Enrollment, rotation, revocation, snapshot timestamp
+  - from: source-classes
+    to: discovered
+    kind: declares
+    style: solid
+    level: L1
+  - from: resolver
+    to: lockfile
+    kind: resolves
+    style: solid
+    level: L1
+  - from: lockfile
+    to: integrity-chain
+    kind: binds
+    style: solid
+    level: L2
+    description: H-A, H-B, Merkle H-C digests
+
+  # --- Lifecycle flow ---
+  - from: manifest
+    to: capability-grant
+    kind: requests
+    style: solid
+    level: L1
+  - from: capability-grant
+    to: plugin-vm
+    kind: authorizes
+    style: solid
+    level: L1
+  - from: discovered
+    to: fetched
+    kind: lifecycle
+    style: solid
+    level: L2
+  - from: fetched
+    to: verified
+    kind: lifecycle
+    style: solid
+    level: L2
+  - from: verified
+    to: staged
+    kind: lifecycle
+    style: solid
+    level: L2
+  - from: staged
+    to: activated
+    kind: lifecycle
+    style: solid
+    level: L2
+  - from: activated
+    to: retained
+    kind: lifecycle
+    style: solid
+    level: L2
+  - from: integrity-chain
+    to: verified
+    kind: gates
+    style: solid
+    level: L2
+  - from: publisher-trust
+    to: verified
+    kind: gates
+    style: solid
+    level: L2
+  - from: lifecycle-states
+    to: generation
+    kind: owns
+    style: solid
+    level: L2
+  - from: generation
+    to: plugin-vm
+    kind: scopes
+    style: solid
+    level: L2
+  - from: plugin-vm
+    to: event-pipeline
+    kind: subscribes
+    style: dashed
+    level: L1
+  - from: plugin-vm
+    to: store-state
+    kind: persists
+    style: solid
+    level: L1
+  - from: safe-mode
+    to: plugin-vm
+    kind: excludes
+    style: dashed
+    level: L1
+    description: Safe startup skips third-party plugins
+
+  # --- SDK and template path ---
+  - from: template
+    to: manifest
+    kind: scaffolds
+    style: solid
+    level: L1
+  - from: lua-defs
+    to: plugin-vm
+    kind: types
+    style: solid
+    level: L1
+  - from: manifest-lint
+    to: manifest
+    kind: validates
+    style: solid
+    level: L1
+  - from: mock-host
+    to: plugin-vm
+    kind: conforms
+    style: dashed
+    level: L1
+    description: Experimental conformance evidence only
+
+  # --- Panel-provider boundary ---
+  - from: panel-container
+    to: panel-provider
+    kind: gates
+    style: dashed
+    level: L1
+    description: Container accepted; provider registration and mount open
+  - from: panel-provider
+    to: presentation-modes
+    kind: presents
+    style: dashed
+    level: L1
+  - from: declarative-slots
+    to: panel-container
+    kind: composes
+    style: solid
+    level: L1
+    description: v1 slot content only, no panel lifecycle
+
+  # --- Candidate direction (draft edges) ---
+  - from: service-registry
+    to: provider-ecology
+    kind: extends
+    style: dashed
+    level: L1
+    description: Draft post-1.0 conventions over the accepted Service Protocol
+  - from: lua-is-glue
+    to: service-registry
+    kind: prefers
+    style: dashed
+    level: L1
+    description: Peer service before native helper
+  - from: self-contained-artifact
+    to: staged
+    kind: ships
+    style: dashed
+    level: L1
+    description: Pre-resolved vendored artifact favors offline install

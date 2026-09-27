@@ -1,23 +1,29 @@
 ---
 title: Reference Project Register
-description: Records reproducible local snapshots and research questions for terminal and extensibility reference projects.
+description: Self-contained, non-normative register of upstream reference revisions, observations, and research questions.
 category: project
 audience: contributor
 document_type: research
 status: draft
-website_publish: false
+website_publish: true
 sidebar_order: 90
 ---
 
 # Reference Project Register
 
+> **Scope:** This is a self-contained, non-normative research register. It names
+> upstream projects, revisions, URLs, and observations; it does not depend on
+> workspace checkouts, research archives, or local paths. Promote only
+> revision-qualified conclusions into the owning RFC, ADR, or other canonical
+> page.
+
 ## Purpose and boundaries
 
-Reference repositories live under `recording/references/` in the local workspace.
+Reference projects are identified by upstream project name and pinned commit.
 They support architecture research, protocol comparison, learning performance
 methods, and the design of future differential tests.
 
-These clones are **reproducible research snapshots**, not:
+These reference revisions are **non-normative observations**, not:
 
 - Bitty dependency pins;
 - accepted technology choices;
@@ -25,25 +31,25 @@ These clones are **reproducible research snapshots**, not:
 - commitments to begin a fork;
 - Bitty compatibility guarantees for the reference projects.
 
-Technical conclusions must enter a research note, RFC, or ADR with the observed
+Technical conclusions must enter an RFC or ADR with the observed upstream
 commit recorded. “Another project does it this way” cannot replace Bitty's own
 constraints and validation.
 
-## Current snapshots
+## Current reference revisions
 
-| Project      | Local directory                     | Commit                                     | Registration date | Primary research topics                                                                                                                           |
-| ------------ | ----------------------------------- | ------------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Ghostty      | `recording/references/ghostty`      | `8867c37c55b578b9eb4cfaba41cb9023e557176d` | 2026-08-25        | Core/frontend boundaries, VT, fonts, rendering, protocols, security, and Agent documentation                                                      |
-| Neovim       | `recording/references/neovim`       | `a1de07418b89f1b30f9ca088306b2c1615f928c3` | 2026-08-25        | Command/Event/API, Lua configuration and plugins, UI protocol, and ecosystem boundaries                                                           |
-| kitty        | `recording/references/kitty`        | `087b8c35c455e1fa21a727916efdaf59ebdd0168` | 2026-08-25        | GPU performance, glyph cache, Kitty Graphics/keyboard, and protocol limits                                                                        |
-| WezTerm      | `recording/references/wezterm`      | `f93d90350075d3e42566e0557ca36e82ffdcbec1` | 2026-08-25        | Rust/Lua, terminal/mux/GUI layers, cross-platform support, image protocols, and software rendering                                                |
-| Hermes Agent | `recording/references/hermes-agent` | `dce2ecb8a9428aedf69e959bd15d7a9fa15eae01` | 2026-08-30        | Agent core, progressive skills, memory/context lifecycle, delegation, capability boundaries, execution environments, toolsets, approvals, and ACP |
+| Project      | Commit                                     | Registration date | Primary research topics                                                                                                                           |
+| ------------ | ------------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Ghostty      | `8867c37c55b578b9eb4cfaba41cb9023e557176d` | 2026-08-25        | Core/frontend boundaries, VT, fonts, rendering, protocols, security, and Agent documentation                                                      |
+| Neovim       | `a1de07418b89f1b30f9ca088306b2c1615f928c3` | 2026-08-25        | Command/Event/API, Lua configuration and plugins, UI protocol, and ecosystem boundaries                                                           |
+| kitty        | `087b8c35c455e1fa21a727916efdaf59ebdd0168` | 2026-08-25        | GPU performance, glyph cache, Kitty Graphics/keyboard, and protocol limits                                                                        |
+| WezTerm      | `f93d90350075d3e42566e0557ca36e82ffdcbec1` | 2026-08-25        | Rust/Lua, terminal/mux/GUI layers, cross-platform support, image protocols, and software rendering                                                |
+| Hermes Agent | `dce2ecb8a9428aedf69e959bd15d7a9fa15eae01` | 2026-08-30        | Agent core, progressive skills, memory/context lifecycle, delegation, capability boundaries, execution environments, toolsets, approvals, and ACP |
 
-The `2026-08-25` registration date applies only to the original four snapshots;
-registration metadata is recorded per entry above. The clones have shallow
-history, and each commit provides an exact reference for current observations.
-Updating a clone requires updating this table or pinning the old commit in the
-relevant research document.
+The `2026-08-25` registration date applies only to the original four revisions;
+registration metadata is recorded per entry above. Each pinned commit provides an
+exact reference for the observations recorded here. Updating a reference requires
+updating this table or pinning the prior commit in the relevant canonical
+document.
 
 ## Research questions
 
@@ -91,20 +97,19 @@ relevant research document.
 
 ## Panel and workspace prior-art leads
 
-This section records **non-normative research leads** from the second research
-snapshot, `recording/research/chatgpt-2026-08-30-2.md`, and the not-yet-merged Panel
-Extensibility Vision draft. An observation from a pinned local snapshot must
-name its project, commit, exact file or symbol, and observation. An unpinned
-entry is an external URL observation and research lead; it must name the
-official URL and must not be presented as snapshot-backed evidence. The
-research snapshot is untrusted external input and is not normative evidence.
-The primary-source URLs below are review leads, not dependency or product
-commitments. They are prompts for source-level research and future RFC or ADR
-work.
+This section records **non-normative research leads** from the Panel
+Extensibility Vision draft and external comparisons. An observation from a
+pinned upstream revision must name its project, commit, exact file or symbol,
+and observation. An unpinned entry is an external URL observation and research
+lead; it must name the official URL and must not be presented as
+revision-backed evidence. The external material is untrusted input and is not
+normative evidence. The primary-source URLs below are review leads, not
+dependency or product commitments. They are prompts for source-level research
+and future RFC or ADR work.
 
 ### Zellij
 
-**External URL observation and research lead; no local commit pin.** The
+**External URL observation and research lead; no pinned commit.** The
 official [Zellij plugins](https://zellij.dev/documentation/plugins.html) and
 [plugin and pipe](https://zellij.dev/documentation/zellij-plugin-and-pipe.html)
 documentation describe a WASM plugin pane as a first-class workspace
@@ -115,7 +120,7 @@ This is the sharpest external prior art lead for the proposition that
 Its character-cell TUI boundary is distinct from Bitty's candidate internal
 Panel compositor and GPU UI runtime.
 
-These are external URL observations, not claims from a pinned snapshot.
+These are external URL observations, not claims from a pinned upstream revision.
 
 Research questions:
 
@@ -127,14 +132,15 @@ Research questions:
 
 ### kitty
 
-The existing snapshot is pinned at `087b8c35c455e1fa21a727916efdaf59ebdd0168`.
-Snapshot-backed observation: in `recording/references/kitty/kitty/remote_control.py`,
-`remote_control_allowed`, `PasswordAuthorizer.is_cmd_allowed`, and `SocketIO`
-show password/pattern authorization and socket transport for remote commands;
-in `recording/references/kitty/kittens/panel/main.py`, `actual_main` calls
-`boss.add_os_panel` and creates a tab containing the requested command. These
-observations support research into CLI-to-instance control and a panel surface
-that hosts a terminal program. The official [remote control](https://sw.kovidgoyal.net/kitty/remote-control/),
+The referenced upstream revision is pinned at
+`087b8c35c455e1fa21a727916efdaf59ebdd0168`. Pinned-revision observation: in
+`kitty/kitty/remote_control.py`, `remote_control_allowed`,
+`PasswordAuthorizer.is_cmd_allowed`, and `SocketIO` show password/pattern
+authorization and socket transport for remote commands; in
+`kitty/kittens/panel/main.py`, `actual_main` calls `boss.add_os_panel` and
+creates a tab containing the requested command. These observations support
+research into CLI-to-instance control and a panel surface that hosts a terminal
+program. The official [remote control](https://sw.kovidgoyal.net/kitty/remote-control/),
 [panel](https://sw.kovidgoyal.net/kitty/kittens/panel/), and [desktop UI](https://sw.kovidgoyal.net/kitty/kittens/desktop-ui/)
 documentation are separate review leads for behavior not established by these
 source references. kitty's desktop panel is therefore a research comparison,
@@ -151,13 +157,12 @@ Research questions:
 
 ### WezTerm
 
-The existing snapshot is pinned at
-`f93d90350075d3e42566e0557ca36e82ffdcbec1`. Snapshot-backed observation: in
-`recording/references/wezterm/mux/src/pane.rs`, the `Pane` trait represents a view on
-a terminal; in `recording/references/wezterm/mux/src/domain.rs`, the `Domain` trait
-spawns panes and assigns them to tabs; and in `recording/references/wezterm/mux/src/lib.rs`,
-`Mux` owns multiplexer state. In
-`recording/references/wezterm/lua-api-crates/plugin/src/lib.rs`, `RepoSpec::parse`,
+The referenced upstream revision is pinned at
+`f93d90350075d3e42566e0557ca36e82ffdcbec1`. Pinned-revision observation: in
+`wezterm/mux/src/pane.rs`, the `Pane` trait represents a view on a terminal;
+in `wezterm/mux/src/domain.rs`, the `Domain` trait spawns panes and assigns
+them to tabs; and in `wezterm/mux/src/lib.rs`, `Mux` owns multiplexer state.
+In `wezterm/lua-api-crates/plugin/src/lib.rs`, `RepoSpec::parse`,
 `RepoSpec::check_out`, and `RepoSpec::update` show plugins represented by
 repositories checked out under a plugin data directory. These observations are
 research leads for programmable workspace, IPC, remote-domain, and plugin
@@ -178,7 +183,7 @@ Research questions:
 
 ### tmux
 
-**External URL observation and research lead; no local commit pin.** The
+**External URL observation and research lead; no pinned commit.** The
 official [tmux control mode](https://github.com/tmux/tmux/wiki/Control-Mode)
 documentation describes tmux's server, session, window, pane, and client
 hierarchy as prior art for a long-lived workspace service. Control
@@ -186,7 +191,7 @@ mode (`tmux -C` and `tmux -CC`) demonstrates RPC combined with asynchronous
 events: command responses and notifications share a text protocol without
 making panes generic application surfaces.
 
-This is an external URL observation, not a claim from a pinned snapshot.
+This is an external URL observation, not claims from a pinned upstream revision.
 
 Research questions:
 
@@ -199,7 +204,7 @@ Research questions:
 
 ### Emacs
 
-**External URL observation and research lead; no local commit pin.** The
+**External URL observation and research lead; no pinned commit.** The
 official [GNU Emacs Shell manual](https://www.gnu.org/software/emacs/manual/html_node/emacs/Shell.html)
 supports reviewing Emacs as conceptual prior art for an
 application platform built from Buffer, Window, Frame, Command, Event, and
@@ -207,7 +212,7 @@ Lisp primitives. A Window can display terminal, shell, file-manager, browser,
 mail, or editor content. The analogy is useful for Panel content and extension
 composition, but it is not evidence for a particular Bitty runtime or API.
 
-This is an external URL observation, not a claim from a pinned snapshot.
+This is an external URL observation, not claims from a pinned upstream revision.
 
 Research questions:
 
@@ -220,7 +225,7 @@ Research questions:
 
 ### Warp
 
-**External URL observation and research lead; no local commit pin.** The
+**External URL observation and research lead; no pinned commit.** The
 official [Warp documentation](https://docs.warp.dev/) presents Warp as prior art
 for a built-in IDE
 direction: terminal, agent, file tree, editor, LSP, and code-review surfaces
@@ -228,7 +233,7 @@ are integrated into one product. It is not evidence of a generic plugin UI
 platform. The useful comparison is therefore product positioning and built-in
 application scope, not an extensibility contract.
 
-This is an external URL observation, not a claim from a pinned snapshot.
+This is an external URL observation, not claims from a pinned upstream revision.
 
 Research questions:
 
@@ -241,7 +246,7 @@ Research questions:
 
 ### iTerm2
 
-**External URL observation and research lead; no local commit pin.** The
+**External URL observation and research lead; no pinned commit.** The
 official [iTerm2 documentation](https://iterm2.com/documentation.html) and
 [tmux integration](https://iterm2.com/3.3/documentation-tmux-integration.html)
 describe iTerm2 as combining terminal features with
@@ -251,7 +256,7 @@ application and automation surfaces, rather than a generic third-party Panel
 platform. Its tmux integration is also a useful cross-product example of
 control-mode RPC and event behavior.
 
-These are external URL observations, not claims from a pinned snapshot.
+These are external URL observations, not claims from a pinned upstream revision.
 
 Research questions:
 
@@ -358,7 +363,7 @@ minus forbidden_delegated_capabilities` an explicit invariant, including
   approval identity in context-local session/turn/tool-call state and freezes
   YOLO mode at import time; `tools/write_approval.py` stages writes when
   approval is required. The README describes agent-curated memory and skill
-  creation, but the research note recommends proposal and review gates for
+  creation, but the captured direction recommends proposal and review gates for
   `memory.write`, `skill.write`, and instruction changes. Research question:
   should Bitty permit observation and proposal by default while requiring
   separate, auditable consent for durable memory, skills, instructions,
@@ -372,7 +377,7 @@ minus forbidden_delegated_capabilities` an explicit invariant, including
   remote, and ACP adapters, with adapter-specific state translated into a
   bounded event and attribution model?
 
-The linked [AI Architecture](../projects/bitty/specifications/ai-architecture.md) is a draft
+The linked [AI Architecture](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/architecture/ai-architecture.md) is a draft
 proposal, not shipped behavior. It is safe to defer these questions there or in
 follow-up RFCs; this register introduces no dependency, provider, protocol,
 execution backend, or product commitment.
@@ -380,7 +385,7 @@ execution backend, or product commitment.
 ## Mainstream harness research leads
 
 The following are official, unpinned, non-normative leads for comparative
-research. They are not local snapshots, compatibility targets, or Bitty
+research. They are not pinned upstream revisions, compatibility targets, or Bitty
 dependencies. Re-check each upstream project before relying on a behavior.
 
 | Harness      | Official research lead                            | Questions to investigate                                                                                            |
@@ -395,28 +400,27 @@ dependencies. Re-check each upstream project before relying on a behavior.
 | Cline        | <https://docs.cline.bot/features/checkpoints>     | Path-scoped rules, shadow Git checkpoints, and independent workspace/task rollback                                  |
 
 Warp is retained only as an external, unpinned research lead:
-<https://docs.warp.dev/>. There is no local `recording/references/warp` directory in
-this workspace, so no Warp revision is recorded or inferred. Its observations
-must not be treated as reproducible local evidence until a separately scoped
-snapshot is reviewed and pinned.
+<https://docs.warp.dev/>. No Warp revision is recorded or inferred, and its
+observations must not be treated as reproducible evidence until a separately
+scoped upstream revision is reviewed and pinned.
 
 ## Usage rules
 
 - Prefer `rg` and `ctxctl outline/symbol/read/deps` for narrow research.
   Never dump an entire file or repository into Agent context.
-- Pinned-snapshot research notes must include the project name, commit, exact
+- Pinned-revision provenance notes must include the project name, commit, exact
   file or symbol, and observation, not merely a second-hand conclusion.
   Unpinned leads must instead be explicitly marked as external URL observations
-  and research leads, include the official URL, and must not imply local file or
-  symbol evidence; both forms must remain reproducible by recording their
+  and research leads, include the official URL, and must not imply file or
+  symbol evidence from the pinned upstream revision; both forms must remain reproducible by recording their
   source.
 - Check the license before copying code. Research does not automatically
   authorize copying.
 - A component that appears reusable upstream still requires the wrapper, fork,
   and exit-condition evaluation defined in the
   [Technology and Dependency Strategy](technology-strategy.md).
-- Do not modify a reference clone. Put experimental patches in a separate
-  worktree or an explicit experiment directory under the project `recording/`.
+- Do not modify reference material. Put experimental patches in a separate
+  worktree or experiment directory outside this register.
 
 ## Future candidates
 
@@ -444,7 +448,7 @@ security requirements, or current implementation status.
 
 ## External leads and comparison notes
 
-These official URL-backed leads are not local snapshots and do not establish a
+These official URL-backed leads are not pinned upstream revisions and do not establish a
 pinned revision. The observations are research leads from the 2026-08-30
 discussion and external product surfaces; direct source inspection is required
 before they become technical conclusions.
@@ -492,7 +496,7 @@ before they become technical conclusions.
   where one process hosts multiple windows.
 - [Ghostty](https://ghostty.org/) is a lead for native platform integration,
   modern protocols, and [libghostty embedding](https://ghostty.org/docs). The
-  existing local snapshot remains the only pinned Ghostty evidence here.
+  pinned upstream revision remains the only pinned Ghostty evidence here.
 - [GNOME Terminal](https://gitlab.gnome.org/GNOME/gnome-terminal) and
   [Konsole](https://konsole.kde.org/) are leads for mature desktop baselines,
   including profiles, tabs, splits, and desktop integration.
@@ -501,9 +505,9 @@ before they become technical conclusions.
   Windows/WSL integration.
 - [kitty](https://sw.kovidgoyal.net/kitty/) is a lead for layouts, graphics and
   keyboard protocols, kittens, and [remote control](https://sw.kovidgoyal.net/kitty/remote-control/).
-  Its existing local snapshot remains the only pinned kitty evidence here.
+  Its pinned upstream revision remains the only pinned kitty evidence here.
 - [WezTerm](https://wezterm.org/) is a lead for Lua configuration, mux objects,
-  domains, and remote or headless operation. Its existing local snapshot remains
+  domains, and remote or headless operation. Its pinned upstream revision remains
   the only pinned WezTerm evidence here.
 - [iTerm2](https://iterm2.com/) is a lead for shell integration, semantic
   command/session context, automation, and optional [web browser sessions](https://iterm2.com/documentation-web.html)
@@ -513,8 +517,8 @@ before they become technical conclusions.
   rich rendering and non-text surfaces, not default terminal compatibility.
 - [Warp](https://github.com/warpdotdev/warp) and [official documentation](https://docs.warp.dev/)
   are leads for an agentic development environment, agent sessions,
-  terminal/editor workflows, and automation. No local Warp snapshot exists in
-  `recording/references/`; these are external leads only, not pinned evidence.
+  terminal/editor workflows, and automation. No Warp revision is recorded; these
+  are external leads only, not pinned evidence.
 
 ### Bitty comparison boundary
 

@@ -11,8 +11,9 @@ sidebar_order: 31
 
 # Threat Model
 
-Status: pre-implementation security contract. Controls are requirements, not
-claims about shipped behavior.
+Status: pre-alpha security contract. Controls are requirements; mechanism
+evidence exists in the `bitty` workspace but nothing is `Verified`, and no
+statement here claims shipped, stable, or supported behavior.
 
 ## Scope
 
@@ -72,12 +73,105 @@ must not be precluded by P0 APIs.
 The origin `Unknown` uses the restrictive policy. Detection that a shell is
 remote is advisory only and must never be the sole security boundary.
 
-A candidate trust-level model for plugin, helper, and tool boundaries — level 0
-Core, 1 bundled Lua, 2 third-party Lua, 3 native sidecar, 4 external
-tools/MCP/network — is registered as
-[OQ-085](../decisions/open-questions.md). It records allowed capability domains
-per level and does not change any current boundary, policy, or P0 gate until it
-is accepted.
+The trust levels, secret tiers, credential references, agent roles, and
+panel lease below are accepted requirements, defined in full under
+[Adopted trust and authorization models](#adopted-trust-and-authorization-models).
+They narrow authority only and change no current boundary, policy, or P0
+gate except by narrowing it.
+
+## Adopted trust and authorization models
+
+Status: accepted by owner ruling 2026-09-23; see [OQ-085, OQ-055, OQ-054,
+OQ-057, and OQ-083](../decisions/open-questions.md). These models are
+normative requirements on future enforcement points. Mechanisms exist in
+the `bitty` workspace but nothing here is `Verified`, and no statement
+claims shipped, stable, or supported behavior. Every model below narrows
+authority only: none grants it, each check fails closed, and diagnostics
+name levels, families, roles, or holders only — never values, prompts, or
+payloads.
+
+### Trust levels and capability-domain admission (OQ-085, SEC-21)
+
+Plugin, helper, and tool boundaries sit at one of five trust levels —
+0 Core, 1 bundled Lua, 2 third-party Lua, 3 native sidecar, 4 external
+tools/MCP/network — where a lower number is more trusted. Ordering is
+structural only and never grants authority. Each level admits a fixed set
+of capability domains:
+
+| Level | Boundary          | Admitted domains                                                                                             |
+| ----- | ----------------- | ------------------------------------------------------------------------------------------------------------ |
+| L0    | Core              | filesystem, network, process, clipboard, environment, credentials, terminal input, terminal output, IPC, GPU |
+| L1    | Bundled Lua       | filesystem, network, process, clipboard, environment, terminal input, terminal output, IPC                   |
+| L2    | Third-party Lua   | filesystem, clipboard, environment, terminal output, IPC                                                     |
+| L3    | Native sidecar    | filesystem, terminal output, IPC                                                                             |
+| L4    | External tool/MCP | none by default — acts only through an explicit per-invocation grant                                         |
+
+Admission is enforced at the effective-authorization boundary before the
+grant intersection: a capability family mapped to a domain the level does
+not admit is denied fail-closed. Families the matrix does not cover pass
+through to their grants, so the matrix never invents authority the
+accepted capability grammar does not already name. Unknown levels or
+domains deny rather than default. Native sidecars here are out-of-process
+helpers; native in-process plugins stay rejected through P0 and P1.
+
+### Secret-storage tiers (OQ-055, SEC-22)
+
+Secrets live in exactly one of four tiers, with policy that only tightens
+as sensitivity rises. Every tier requires consent, an audit entry, and
+redaction everywhere:
+
+| Tier          | Store                                                               | Consent          | Audit | Redact | Extra                       |
+| ------------- | ------------------------------------------------------------------- | ---------------- | ----- | ------ | --------------------------- |
+| `host-env`    | Host-consumed environment                                           | Allowlisted read | Yes   | Yes    | Baseline per ADR-0006       |
+| `config-file` | `$XDG_CONFIG_HOME/bitty/secrets.env`, mode `0600`                   | Explicit grant   | Yes   | Yes    | —                           |
+| `os-keyring`  | OS keyring                                                          | Explicit grant   | Yes   | Yes    | Backend undecided           |
+| `command-ref` | External command reference, naming only, never executed by the gate | Explicit grant   | Yes   | Yes    | Subprocess-output isolation |
+
+The tier gate is enforced at secret resolution with names-only audit on
+denial. Keyring backend choice, command execution and output handling,
+and rotation stay open.
+
+### Credential references (OQ-054, SEC-23)
+
+Provider credentials are named by at most one of `api_key_env` (one
+environment variable) or `api_key_cmd` (one program plus arguments,
+naming only — the gate never reads the environment and never executes).
+Both set is a conflict that denies fail-closed; neither set resolves to
+no credential. References carry names, never values, so there is nothing
+to redact. A project layer may only narrow credentials — keep the
+identical reference or remove it — never widen them by changing the
+source, renaming the variable or program, or adding a reference where the
+base has none. The provider schema and config surface stay open.
+
+### Role contract for multi-agent work (OQ-057, SEC-25)
+
+Agents act under one of four roles — Commander, Implementer, Tester,
+Reviewer — checked at four enforcement points: context read, tool call,
+delegation, and sandboxed execution. Authority narrows down the table:
+
+| Role        | May act at                                               | Sandbox restrictions                                               |
+| ----------- | -------------------------------------------------------- | ------------------------------------------------------------------ |
+| Commander   | Context read, tool call, delegation, sandboxed execution | None beyond grants                                                 |
+| Implementer | Context read, tool call, sandboxed execution             | No network; sealed environment                                     |
+| Tester      | Context read, sandboxed execution                        | No filesystem write, network, or child process; sealed environment |
+| Reviewer    | Context read only                                        | No filesystem write, network, or child process; sealed environment |
+
+The role gate runs before the grant intersection: a role acting outside
+its mapped points denies fail-closed. Roles never grant authority,
+prompts never confer capability, and delegation only narrows through the
+accepted intersection. Shell-write closure through the execution sandbox
+stays open.
+
+### Panel lease write hook (OQ-083, SEC-26)
+
+A panel is a workstation with a stable id, a human-readable
+title/description, a lease state of `Idle` or `Occupied(holder)`, and
+acquire/release/handoff events. Panel write surfaces gate on the lease:
+only the current occupant may write; acquiring an occupied panel fails,
+and releasing or handing off requires the current holder. The lease is a
+UX metaphor, never the agent ontology, and presentation stays
+non-authoritative: the lease records who may drive a panel, never what is
+true. The bounded lease term, clock, and bus routing stay open.
 
 ## Principal data flows and controls
 
@@ -178,9 +272,9 @@ creates user-only files.
 
 A candidate defense model for agent-driven interactive input is registered as
 [OQ-086](../decisions/open-questions.md) and specified in the
-[IPC and Agent RFC](../projects/bitty/specifications/ipc-agent-rfc.md#candidate-sensitive-input-interlock-and-interaction-policy-oq-086)
+[IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md#candidate-sensitive-input-interlock-and-interaction-policy-oq-086)
 candidate sensitive-input interlock; the command-side audit is specified by the
-[AI Architecture](../projects/bitty/specifications/ai-architecture.md) candidate command risk
+[AI Architecture](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/architecture/ai-architecture.md) candidate command risk
 classification ([OQ-087](../decisions/open-questions.md)). It composes with
 the normative rules above and does not replace them:
 

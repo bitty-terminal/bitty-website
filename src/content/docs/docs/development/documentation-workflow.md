@@ -11,9 +11,10 @@ sidebar_order: 20
 
 # Documentation workflow
 
-This policy defines how `bitty-docs` remains the English-language source of
-truth for maintained Bitty documentation. It applies before implementation and
-continues once product repositories ship code.
+This policy defines the English-language authoring, ownership, routing, and
+synchronization model for maintained Bitty documentation. It governs the
+shared governance corpus in `bitty-docs` and its submodule-mounted project
+documentation repositories, which follow the same workflow.
 
 ## Language policy
 
@@ -24,20 +25,44 @@ translated URL routing, and synchronization between languages are deferred.
 They require a future cross-repository decision before any localized tree is
 created.
 
+## Docs self-containment
+
+Canonical documentation is self-contained: a reader must be able to use every
+document with the workspace research archive absent. A canonical document must
+not cite the research repository or its contents in any form, including:
+
+- research record numbers or titles;
+- `summary/`, `origin/`, or `.md.completed` paths and their URLs;
+- record-to-document coverage or provenance ledgers;
+- `recording/research/NNN` companion references.
+
+Record-to-document mappings, coverage ledgers, and research-archive provenance
+belong in the research repository itself, never in a canonical document. The
+generic provenance workflow in this policy remains valid: it defines how an
+observation becomes a decision or an open question and does not cite a specific
+record. External, non-archive sources may still be named by their own URL when
+they are the actual evidence.
+
+This rule applies to every canonical corpus, including `bitty-docs` and its
+project documentation submodules. A review that finds a research-repository
+reference, record number, coverage ledger, or provenance mapping in a canonical
+document returns `NEEDS-FIX`.
+
 ## Repository layout and routing
 
 Documentation is partitioned into shared cross-project governance and
-per-project content. The partition was approved on 2026-09-13 ("full partition
-plus shared top level") and routes documents as follows.
+project-owned content. Shared governance stays in this repository; each project
+documentation repository is mounted at the `bitty-docs` repository root as a Git
+submodule.
 
-Shared governance stays in the existing top-level directories:
+Shared governance stays in the top-level directories:
 
 | Directory      | Owns                                                                  |
 | -------------- | --------------------------------------------------------------------- |
 | `decisions/`   | ADRs and the single global open-question register.                    |
 | `security/`    | Normative security corpus, threat model, risk register, and evidence. |
 | `development/` | Contributor policy, workflow, toolchain, and repository baseline.     |
-| `sources/`     | Historical conversation and research provenance records.              |
+| `sources/`     | Historical conversation provenance records.                           |
 | `findings/`    | Durable reviewed findings and evidence.                               |
 | `reviews/`     | Review records and dispositions.                                      |
 | `handoff/`     | Cross-session handoff records.                                        |
@@ -45,48 +70,93 @@ Shared governance stays in the existing top-level directories:
 | `roadmap/`     | Evidence-based sequencing shared across projects.                     |
 | `releases/`    | Release notes backed by published artifacts.                          |
 
-Per-project content lives under `docs/projects/<project>/`:
-
-| Project     | Scope                                                                             |
-| ----------- | --------------------------------------------------------------------------------- |
-| `bitty/`    | Terminal platform: core, VT, PTY, UI, configuration, plugin host, IPC, packaging. |
-| `bitty-ai/` | Independent AI-core project: runtime, providers, and context.                     |
-| `plugins/`  | Per-plugin documentation for first-party and featured plugin candidates.          |
-
 `docs/project/` (singular) remains shared project-state and technology
-governance; `docs/projects/` (plural) is the per-project documentation
-partition.
+governance. `docs/projects/README.md` routes to the submodule mounts.
+
+Project content lives in three independent documentation repositories:
+
+| Submodule         | Repository            | Scope                                                                                                      |
+| ----------------- | --------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `bitty-terminal/` | `bitty-terminal-docs` | Terminal platform: architecture, specifications, interfaces, product, user guide, and the terminal corpus. |
+| `bitty-ai/`       | `bitty-ai-docs`       | Independent AI core: AI architecture, IPC/Agent contract, Browser and Agent panel pre-study.               |
+| `bitty-plugins/`  | `bitty-plugins-docs`  | Plugin platform, SDK, lifecycle, package, isolation, and per-plugin pages (standard page set below).       |
+
+Each submodule pins the owning repository's merged `main` revision. Project
+content is mounted into the owning code repository at `<code-repo>/docs`, which
+consumes the same content at the pinned revision.
 
 Routing rules:
 
-1. New project-specific documents go under `docs/projects/<project>/`.
+1. New project-specific documents go to the owning project documentation
+   repository, not to `bitty-docs`.
 2. Cross-project contracts, registers, policies, and the security corpus stay
-   in the shared top-level directories; a project tree links to them instead
-   of copying them.
+   in the shared top-level directories; a project repository links to them
+   instead of copying them.
 3. Open-question and ADR/RFC numbering stay global; the single
    [open-question register](../decisions/open-questions.md) owns every OQ.
-4. Each plugin gets `docs/projects/plugins/<plugin>/` with the standard page
-   set defined below.
+4. Each plugin uses the standard page set defined below under
+   `docs/plugins/<plugin>/` in `bitty-plugins-docs`.
 
-### Migration plan
+### Submodule pointer updates
 
-Phase 1 added the partition, index pages, and skeletons only; no existing file
-moved. Phase 2 (CTX-0185) migrated the existing terminal-platform documents
-(`architecture/`, `specifications/`, `configuration/`, `product/`,
-`interfaces/`, `user-guide/`, `tutorials/`, `how-to/`, `reference/`,
-`examples/`, `extensibility/`, `requirements/`, `troubleshooting/`,
-`migrations/`) into `docs/projects/bitty/` with `git mv`, rewriting relative
-and absolute links and preserving each document's `website_publish` flag plus
-the deprecation and redirect policy in this document. It also updated
-path-sensitive consumers (navigation indexes, the project-state snapshot and
-its canonical summary checks) and kept `just check` green. Phase 3 lands
-`bitty-ai/` and per-plugin content as their owning repositories produce it.
+1. Land and merge the content change in the owning project documentation
+   repository.
+2. In a scoped `bitty-docs` task, check out the merged revision inside the
+   submodule and verify the recorded gitlink matches the merged `main`.
+3. Re-run `just check` and open a reviewable pull request that bumps only the
+   intended pointer(s); never bump a pointer as a side effect of an unrelated
+   change. `.gitmodules` is committed at the repository root.
+4. CI checks out submodules recursively; the local gates also pass when they
+   are absent, so submodule-owned checks (project state summary and SVG
+   validation) skip unmaterialized files instead of failing.
+
+What each pin means is defined once in
+[submodule pin semantics](../project/repository-map.md#submodule-pin-semantics):
+docs-repo `main` is the latest canonical docs, the code-repo `docs/` mount is
+the docs matching that implementation, and the aggregator mount is the
+governance-reviewed snapshot. Pins are reproducibility anchors and are
+expected to differ; never force them equal.
+
+`just docs-status` prints each position with behind-counts
+(`git rev-list --count <pin>..<main>`) and `--fetch` refreshes the local
+upstream refs first; the helper is diagnostic, the pins remain the normative
+anchors.
+
+### Cross-repository link validation
+
+Absolute `github.com/bitty-terminal/*` `blob`/`tree` links in the shared
+corpus point into the sibling documentation repositories, so the
+repository-local link gate does not see them. `just docs-check-cross-repo`
+resolves every such link in repository-owned Markdown against the owning
+sibling's current `main` and fails with each dead target and occurrence:
+
+- local workspace checkouts are consulted first, then materialized submodules,
+  and the GitHub API last (`gh api repos/.../contents/<path>`);
+- `--offline` forbids the network and reports targets it cannot resolve as
+  skipped instead of passing them silently; `just check` runs the offline mode;
+- `--fetch` refreshes a local sibling's `origin/<ref>` before resolving;
+- `--include-submodules` extends the scan to the three project-docs working
+  trees for reports (their content is owned and gated by their own
+  repositories, so the default gate scans only repository-owned Markdown).
+
+A moved document in a sibling repository must therefore update its incoming
+absolute links in the same change or the gate fails; a dead link is a defect,
+not a redirect that CI can ignore.
+
+### Migration outcome
+
+Phase 1 added the local partition, index pages, and skeletons. Phase 2
+(CTX-0185) migrated the terminal-platform documents into `docs/projects/bitty/`.
+Phase 3 split all three project partitions into their own repositories and
+CTX-0188 removed the local copies from `bitty-docs`, retargeted shared-corpus
+references to absolute URLs in the owning repository, and replaced the local
+trees with root submodules pinned to each repository's merged `main`.
 
 ## Per-plugin documentation page set
 
-Each documented plugin gets `docs/projects/plugins/<plugin>/` following the
-standard page set. The set separates candidate intent, accepted contracts, and
-evidence so no page implies shipped behavior it cannot support.
+Each documented plugin gets `docs/plugins/<plugin>/` in `bitty-plugins-docs`
+following the standard page set. The set separates candidate intent, accepted
+contracts, and evidence so no page implies shipped behavior it cannot support.
 
 | Page          | Typical `document_type`   | Purpose                                                              |
 | ------------- | ------------------------- | -------------------------------------------------------------------- |
@@ -98,7 +168,7 @@ evidence so no page implies shipped behavior it cannot support.
 Rules:
 
 - Start from the template at
-  [`../projects/plugins/TEMPLATE.md`](../projects/plugins/TEMPLATE.md).
+  [`docs/plugins/TEMPLATE.md`](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/docs/plugins/TEMPLATE.md).
 - Cross-project contracts and registers stay in the shared directories; a
   plugin page links to them instead of restating them.
 - Use only the allowed metadata values; "candidate" and "planned" are prose,
@@ -108,22 +178,78 @@ Rules:
 
 ## Document types and authority
 
-| Type                    | Purpose                                                                         | Authority rule                                                    |
-| ----------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| Guide                   | Helps a reader complete a supported task.                                       | Must cite verified behavior for the documented release.           |
-| Reference               | Enumerates stable commands, fields, APIs, protocols, errors, and compatibility. | Must match the owning implementation and version.                 |
-| Specification           | Defines a proposed or accepted technical contract.                              | Status and unresolved details must be explicit.                   |
-| Policy or contract      | Defines normative project, security, or cross-repository obligations.           | Changes require the named owners and affected reviewers.          |
-| Overview or explanation | Provides orientation and rationale.                                             | Links to authoritative specifications instead of redefining them. |
-| Register                | Tracks decisions, questions, risks, or evidence.                                | Entries close only with cited reviewable evidence.                |
-| Research                | Preserves provenance and observations.                                          | Never becomes a decision or implementation claim by implication.  |
-| Index                   | Routes readers to canonical documents.                                          | Must stay complete and avoid duplicate normative prose.           |
+| Type                    | Purpose                                                                         | Authority rule                                                                                                                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Guide                   | Helps a reader complete a supported task.                                       | Shipped-factual guides must cite the documented release with a version qualifier (see user-doc maturity tiers below); compatibility or verified-security claims still require `Verified` evidence. |
+| Reference               | Enumerates stable commands, fields, APIs, protocols, errors, and compatibility. | Must match the owning implementation and version.                                                                                                                                                  |
+| Specification           | Defines a proposed or accepted technical contract.                              | Status and unresolved details must be explicit.                                                                                                                                                    |
+| Policy or contract      | Defines normative project, security, or cross-repository obligations.           | Changes require the named owners and affected reviewers.                                                                                                                                           |
+| Overview or explanation | Provides orientation and rationale.                                             | Links to authoritative specifications instead of redefining them.                                                                                                                                  |
+| Register                | Tracks decisions, questions, risks, or evidence.                                | Entries close only with cited reviewable evidence.                                                                                                                                                 |
+| Research                | Preserves provenance and observations.                                          | Never becomes a decision or implementation claim by implication.                                                                                                                                   |
+| Index                   | Routes readers to canonical documents.                                          | Must stay complete and avoid duplicate normative prose.                                                                                                                                            |
 
 The maintained topic document is the source of truth. Historical conversations
 and external references are provenance. Product repositories are the source of
 implementation evidence. No website content consumer exists yet. A future
 `bitty-website` integration must present pinned canonical content without owning
 or duplicating specifications.
+
+## User-doc maturity tiers
+
+User documentation distinguishes three claims (DIR-015). The old blanket rule
+that installation and getting-started pages wait for `Verified` was over-strict
+against shipped reality (`bitty` documents AUR recipes, GitHub Releases,
+`bitty init`, and `bitty doctor` as shipped):
+
+- Shipped-factual docs describe behavior that ships in a named release. They
+  are allowed before `Verified` when every page carries an explicit version
+  qualifier such as "Available in `v0.0.21`, pre-alpha, API and behavior may
+  change".
+- Compatibility guarantees promise stable behavior across releases. They
+  require `Verified` plus the semver and compatibility matrix, and remain
+  deferred.
+- Verified security claims assert audited trust boundaries or closed risks.
+  They require security-auditor and P0-AC evidence per the risk evidence RFC,
+  and remain deferred.
+
+A version qualifier never upgrades a shipped-factual page into a
+compatibility or security claim.
+
+## Open-question admission
+
+The [open-question register](../decisions/open-questions.md) is the single
+global owner of OQ identifiers; numbering is global and monotonic, and an
+identifier is never renumbered, reused, or assigned to reserve a topic. A new
+canonical OQ is admissible only when at least one condition holds:
+
+- It blocks the current [roadmap](../roadmap/now-next-later.md) milestone: the
+  milestone cannot reach its exit criteria until the question is answered.
+- Implementation evidence or risk forces it: observed behavior, tests, audits,
+  or an open risk entry shows the corpus cannot define required behavior
+  without the answer.
+
+Opening an admissible OQ records these fields in the register entry:
+
+- the milestone gate it blocks, or the evidence or risk item that forces it;
+- a blocking link (Issue, CarryCtx task, risk ID, or failing evidence);
+- the owning team or role responsible for the answer;
+- the next review point (date or milestone event) at which it is re-checked.
+
+Not admissible: pure future ideas, speculative feature expansions, and
+explorations that no current milestone or evidence forces. Those stay in a
+non-canonical provenance record until they satisfy an admission condition.
+
+Promotion path: a provenance observation becomes a proposed OQ that cites the
+forcing evidence and carries the fields above, then is admitted onto the
+register through a reviewed change. A parked idea does not reserve an OQ
+identifier.
+
+Review and deprecation: re-check each OQ at its recorded review point. Close an
+OQ when a decision exists, citing the reviewed evidence. Mark it `Deprecated`
+when it no longer blocks a milestone or an evidence or risk item and no decision
+is pending, with the review rationale and a link to the provenance record that
+now carries it; its identifier remains allocated and is never reused.
 
 ## Required metadata
 
@@ -229,16 +355,18 @@ after repository initialization and must not become the normal delivery path.
 ## Deprecation and versioning
 
 A deprecated document or public path names its replacement, affected versions,
-transition period, and removal condition. `bitty-docs` owns canonical content
-identity and redirect requirements; a future `bitty-website` integration must
-own routing implementation. Deletion without a reviewed replacement/redirect
-decision is not allowed for published material.
+transition period, and removal condition. Each documentation repository owns
+the canonical content identity and redirect requirements for the content it
+owns; a future `bitty-website` integration must own routing implementation.
+Deletion without a reviewed replacement/redirect decision is not allowed for
+published material.
 
 Once releases exist, reference and user guidance must state or derive the
 supported product version. Any future website build that publishes canonical
-documentation must consume an immutable pinned `bitty-docs` revision so the
-published build can be reproduced. The strategy for simultaneously hosted
-historical versions remains an open cross-repository decision.
+documentation must consume immutable pinned revisions of the aggregator and its
+project documentation submodules so the published build can be reproduced. The
+strategy for simultaneously hosted historical versions remains an open
+cross-repository decision.
 
 ## Project state snapshot
 
@@ -246,13 +374,46 @@ historical versions remains an open cross-repository decision.
 state snapshot that prevents fact drift between `bitty` and `bitty-docs`.
 
 It defines exactly one synchronized implementation revision (`bitty`
-`7a4ee41` at `2026-08-31`, baseline `de134ec`, previous `be3bdb4`),
-maturity and release status (`Pre-alpha / M1 Hardening` at `2026-08-29`, 32
-OQs Accepted, 16 crates), per-risk state and evidence revision and audit
-references (all `Open` at M1 Hardening; `R-004` remains `Open` at `7a4ee41`
-with residual platform, UX, and `8192`-byte bound-scope limits per `bitty`
-`docs/security/audits/clipboard-2026-09.md` CTX-0097), and explicit sync
-provenance (`CTX-0113` / Issue 120, previous `CTX-0112` / Issue 122).
+`c6db24d` at `2026-09-27`, baseline `de134ec`, previous `679f12f`), maturity
+and release status (`Pre-alpha / Engineering Milestones M1-M8`, 54 OQs
+`Accepted` and 46 `Open` in the synchronized docs register, 21 crates, release
+`v0.0.21` at `7da6d6f` dated 2026-09-24), per-risk state and evidence revision and audit
+references (`R-004` remains `Open` at `7a4ee41` with residual platform, UX, and
+`8192`-byte bound-scope limits per `bitty`
+`docs/security/audits/clipboard-2026-09.md` CTX-0097; `R-005`/`R-006`/`R-007`
+`Mitigated` at `d4d75e9`), and explicit sync provenance (`CTX-0244`, previous
+`CTX-0233`). The release and post-release security evidence are
+`Implemented`-only until the matrix and independent review gates are recorded.
+
+Mechanical fields (synchronized revision, snapshot date, crate count, latest
+release tag/commit/date, and the provenance chain) are regenerated
+deterministically from a local `bitty` checkout:
+
+```sh
+git -C ../bitty fetch origin   # read a current origin/main
+just state-refresh             # write mechanical fields; review curated prose
+just state-refresh-check       # no-op verification; exit 1 when stale
+```
+
+The generator (`.github/scripts/refresh-state.mjs`) reads only git metadata,
+never fetches, and preserves every curated field: engineering milestones,
+subsystem assessments, risk state, `latest_release.summary`, and notes.
+Refresh curated prose in the same CarryCtx task and record provenance with
+`just state-refresh --task CTX-XXXX --by <agent>`. The repository path
+defaults to `$BITTY_REPO`, then `$BITTY_WORKSPACE/bitty`, then `../bitty`. A
+scheduled [state freshness workflow](../../.github/workflows/state-refresh.yml)
+(also `workflow_dispatch`) runs `state-refresh-check` against the public
+implementation repository and derives its URL from the snapshot; a red run
+signals that a refresh task must land. It has no pull-request trigger and is
+not a required check.
+
+The canonical summaries in the pinned project-docs submodule (for example
+`bitty-terminal/product/release-ladder.md`) belong to the submodule repository
+and move only with a separate submodule pin bump. `check-state.mjs` therefore
+accepts a pinned summary that sits exactly one refresh behind the snapshot
+(its referenced revision equals `implementation.previous_short`), reports the
+lag as a note, and still enforces the maturity and `R-004` invariants; a pin
+older than one refresh remains a failure.
 
 Ownership is `docs-curator` plus `security-auditor`. Updates require a
 CarryCtx task with independent review, CI green (`just check` includes
@@ -260,13 +421,14 @@ CarryCtx task with independent review, CI green (`just check` includes
 provenance record. The snapshot records state; it must not auto-accept risks
 or replace CarryCtx and security-auditor review. Risk state transitions still
 require the per-risk RS-1..RS-7 checklist and auditor sign-off per the
-[risk evidence RFC](../projects/bitty/specifications/risk-evidence-rfc.md).
+[risk evidence RFC](https://github.com/bitty-terminal/bitty-terminal-docs/blob/main/specifications/risk-evidence-rfc.md).
 
 Canonical human-readable summaries in `README.md`, `TODO.md`,
 `docs/README.md`, `docs/security/risk-register.md`,
-`docs/security/evidence-matrix.md`, and `docs/projects/bitty/product/release-ladder.md` are
-derived from the snapshot and validated deterministically by
-`bun .github/scripts/check-state.mjs` (also `just state` and CI). Divergence
-is a defect. Test counts remain in audit and implementation evidence and are
-not duplicated in the snapshot unless generated via an authoritative command
-such as `cargo test`.
+`docs/security/evidence-matrix.md`, and the submodule-mounted
+`bitty-terminal/product/release-ladder.md` are derived from the snapshot and
+validated deterministically by `bun .github/scripts/check-state.mjs` (also
+`just state` and CI). Divergence is a defect; the submodule summary is checked
+when the submodule is materialized and skipped otherwise. Test counts remain in
+audit and implementation evidence and are not duplicated in the snapshot unless
+generated via an authoritative command such as `cargo test`.

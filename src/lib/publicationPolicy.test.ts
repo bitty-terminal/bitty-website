@@ -96,9 +96,12 @@ const EXPECTED_ALLOW_LIST_TERMINAL_PATHS: readonly string[] = [
  * Demoted pages still awaiting the docs-side frontmatter flip (#98 owns it):
  * 52 before the `bitty-terminal-docs` onboarding, of which 17 are now owned by
  * that source (path-identical) and 6 were dropped because their page does not
- * exist in the aggregated corpus at the pinned revisions.
+ * exist in the aggregated corpus at the pinned revisions. T8 added 15: the
+ * advanced `bitty-docs` pin (bitty-docs#374) makes 9 new pages and 6 existing
+ * ones request publication on a governance path, and the #97 rule resolves
+ * those as demotions, not withhold entries.
  */
-const EXPECTED_FLIP_LIST_COUNT = 46;
+const EXPECTED_FLIP_LIST_COUNT = 61;
 
 /**
  * Shrink-only pin of the withhold list (bitty-website#98): declared-but-

@@ -14,6 +14,10 @@ sidebar_order: 10
 Bitty has no committed release roadmap yet. The current [docs-first TODO](../../TODO.md)
 tracks foundation work; it is not a promise of product dates or release scope.
 
+| Document                                | Purpose                                                                                                        |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| [Now / Next / Later](now-next-later.md) | Draft planning horizon for verified hardening, candidate plugin/IPC sequencing, and the terminal gap register. |
+
 ## Admission criteria
 
 A roadmap item links accepted requirements, dependencies, owner, success

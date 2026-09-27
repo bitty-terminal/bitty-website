@@ -1,31 +1,38 @@
 ---
 title: Website content contract
-description: Normative boundary between canonical Bitty documentation and website presentation
+description: Normative ownership and validation boundary between bitty-docs and bitty-website
 category: project
 audience: contributor
-document_type: contract
-status: normative
-website_publish: false
-sidebar_order: 50
+document_type: specification
+status: accepted
+website_publish: true
+sidebar_order: 20
 ---
 
 # Website content contract
 
 This contract defines how the independent `bitty-website` repository consumes
-canonical documentation from `bitty-docs`. It defines content ownership and
-validation, not a website theme, deployment platform, or synchronization
-implementation.
+canonical documentation from the Bitty documentation corpus: the shared
+governance corpus in `bitty-docs` and the project documentation repositories
+mounted there as submodules. It defines content ownership and validation, not
+a website theme, deployment platform, or synchronization implementation.
 
 ## Ownership boundary
 
 `bitty-docs` owns:
 
-- canonical documentation prose, metadata, source paths, and internal links;
+- the shared governance prose, metadata, source paths, and internal links;
 - the metadata schema and English-only language policy;
 - document status, publication eligibility, content identity, deprecation, and
-  redirect requirements;
+  redirect requirements for shared governance documents;
 - reviewed changes to architecture, security, reference, user, developer, and
-  governance contracts.
+  governance contracts;
+- the root submodule pointers that record the consumed project documentation
+  revision.
+
+Each project documentation repository (`bitty-terminal-docs`, `bitty-ai-docs`,
+`bitty-plugins-docs`) owns its project prose, metadata, source paths, internal
+links, and move or deprecation decisions under the same workflow.
 
 `bitty-website` owns:
 
@@ -41,15 +48,17 @@ the source document.
 
 ## Pinned input
 
-Every website build that publishes canonical docs must identify an immutable
-`bitty-docs` revision, such as a full commit SHA or immutable release tag. It
-must not publish from an unpinned moving branch. The pinned revision is recorded
-in website build or release evidence so the published corpus is reproducible.
+Every website build that publishes canonical docs must identify immutable
+revisions for `bitty-docs` and for each consumed project documentation
+submodule (the aggregator's recorded gitlinks), such as full commit SHAs or
+immutable release tags. It must not publish from an unpinned moving branch.
+The pinned revisions are recorded in website build or release evidence so the
+published corpus is reproducible.
 
-Only files under `docs/` with `website_publish: true` are eligible for
-publication. A consumer must parse and validate all required frontmatter before
-filtering or rendering; malformed metadata, CJK content, unresolved local links,
-or an unknown enum fails closed.
+Only documents with `website_publish: true` are eligible for publication. A
+consumer must parse and validate all required frontmatter before filtering or
+rendering; malformed metadata, CJK content, unresolved local links, or an
+unknown enum fails closed.
 
 The [Astro content collections guide](https://docs.astro.build/en/guides/content-collections/)
 documents that collections can load Markdown with a shared schema for
@@ -64,8 +73,9 @@ mechanism in `bitty-website`.
 
 - A source-relative documentation path is the default content identity. Any
   public-route mapping must be deterministic and reviewed in both repositories.
-- `bitty-docs` owns internal link targets and the decision that a published
-  content identity moves or is deprecated.
+- Each documentation repository owns its internal link targets and the decision
+  that a published content identity moves or is deprecated; `bitty-docs` owns
+  the submodule pointer record for project content.
 - `bitty-website` owns router configuration and redirect implementation.
 - A move of published content declares the old identity, new identity,
   replacement guidance, and redirect requirement in the docs pull request.
@@ -77,10 +87,12 @@ mechanism in `bitty-website`.
 
 Changes that affect both repositories use linked GitHub Issues or pull requests:
 
-1. The `bitty-docs` change updates content, metadata, links, and redirect
-   requirements and passes repository checks.
-2. The `bitty-website` change references the exact docs revision it consumes
-   and implements presentation or routing changes.
+1. The owning documentation repository updates content, metadata, and links
+   and passes its repository checks; a project content change is then recorded
+   by bumping the submodule pointer in `bitty-docs`.
+2. The `bitty-website` change references the exact `bitty-docs` revision and
+   submodule revisions it consumes and implements presentation or routing
+   changes.
 3. Each pull request links the other and names ordering constraints.
 4. Independent review and CI pass in both repositories before publication.
 5. The website revision pin is advanced only to a reviewed docs revision.
@@ -88,6 +100,35 @@ Changes that affect both repositories use linked GitHub Issues or pull requests:
 A content change is not done when the website would publish stale or duplicated
 contracts. A website integration is not done when it bypasses the metadata,
 language, link, revision-pin, or publication gates.
+
+## Content policy and deferred surfaces
+
+The website is docs-first: canonical documentation is the first and currently
+only committed website content, and every published page is sourced from this
+corpus — the shared governance documents in `bitty-docs` and the pinned
+project documentation submodules — through the revision pin and synchronization
+pipeline accepted in the
+[Website Delivery RFC](https://github.com/bitty-terminal/bitty-terminal-docs/blob/main/specifications/website-delivery-rfc.md).
+Content is never authored in `bitty-website`, and a website page must not
+become a second source of truth for canonical documentation. Website work is
+currently deprioritized.
+
+The following page classes are deferred and are not website content today;
+each requires a scoped task and its owning decision artifact before any
+content is written:
+
+- plugin marketplace and plugin registry browsing surfaces;
+- a plugin catalog of discovery, listing, or comparison pages for plugins;
+- a theme gallery or theme marketplace;
+- landing or marketing pages outside presentation of canonical documentation.
+
+The deferral follows recorded sequencing rather than creating a new decision.
+The [roadmap](../roadmap/now-next-later.md#later-4-post-v10-deferred-horizon)
+carries the plugin registry and marketplace surface and the theme marketplace
+as Later-4 candidates, and the
+[Proposed Delivery Sequence](https://github.com/bitty-terminal/bitty-terminal-docs/blob/main/product/proposed-delivery-sequence.md)
+records the plugin store or marketplace distribution surface and the theme
+marketplace in its candidate early-deferral list.
 
 ## Deferred decisions
 

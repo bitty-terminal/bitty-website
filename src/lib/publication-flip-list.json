@@ -1,7 +1,14 @@
 {
-  "policy_version": "2026-09-28.6",
-  "note": "Paths that request publication (website_publish: true) but are demoted by the publication policy at the pinned revisions. This is the docs-side frontmatter flip list: the entry's `source` corpus sets website_publish: false (or removes the field) on its path, and the entry is deleted here in the same coordinated change. Shrink-only.",
+  "policy_version": "2026-09-28.7",
+  "note": "Paths that request publication (website_publish: true) but are demoted by the publication policy at the pinned revisions. This is the docs-side frontmatter flip list: the entry's `source` corpus sets website_publish: false (or removes the field) on its path, and the entry is deleted here in the same coordinated change. Shrink-only. T8 (bitty-website#98) added the 15 bitty-docs governance pages that the advanced pin makes request publication (bitty-docs#374 enables website_publish on referenced governance docs): 9 are pages the revision adds and 6 had their frontmatter flipped. All 15 are demotions, not withhold entries: the #97 rule resolves a forbidden governance path that requests publication as demote (recorded here, ships a 301) or violation (fails the build), never as withhold. None of the 15 had a served route before, so each demotion adds a 301 for a route that previously served nothing; withholding them instead would mean changing the rule's precedence, which is out of this change's scope. The fix belongs to bitty-docs: drop website_publish: true from these pages.",
   "entries": [
+    {
+      "source": "bitty-docs",
+      "path": "docs/decisions/README.md",
+      "audience": "maintainer",
+      "document_type": "index",
+      "reason": "Decision register corpus (ADRs, RFCs, open questions) - governance, stays canonical in bitty-docs. The advanced pin declares website_publish: true on this page (bitty-docs#374 flipped it on for referenced docs), so it is demoted here and ships a 301 until the docs-side flip lands."
+    },
     {
       "source": "bitty-docs",
       "path": "docs/decisions/adrs/ADR-0001-repository-bootstrap-baseline.md",
@@ -81,6 +88,20 @@
     },
     {
       "source": "bitty-docs",
+      "path": "docs/decisions/adrs/ADR-0012-phodopus-runtime.md",
+      "audience": "contributor",
+      "document_type": "specification",
+      "reason": "Decision record under docs/decisions/: governance corpus, never published. The advanced pin declares website_publish: true (bitty-docs#374), so the page is demoted here and ships a 301 until the docs-side flip lands."
+    },
+    {
+      "source": "bitty-docs",
+      "path": "docs/decisions/adrs/ADR-0013-core-ontology-identity.md",
+      "audience": "contributor",
+      "document_type": "specification",
+      "reason": "Decision record under docs/decisions/: governance corpus, never published. The advanced pin declares website_publish: true (bitty-docs#374), so the page is demoted here and ships a 301 until the docs-side flip lands."
+    },
+    {
+      "source": "bitty-docs",
       "path": "docs/decisions/adrs/README.md",
       "audience": "maintainer",
       "document_type": "index",
@@ -130,10 +151,45 @@
     },
     {
       "source": "bitty-docs",
+      "path": "docs/development/agent-authority-boundary.md",
+      "audience": "contributor",
+      "document_type": "policy",
+      "reason": "Development process page - engineering governance corpus. The advanced pin declares website_publish: true (bitty-docs#374), so the page is demoted here and ships a 301 until the docs-side flip lands."
+    },
+    {
+      "source": "bitty-docs",
       "path": "docs/development/documentation-workflow.md",
       "audience": "contributor",
       "document_type": "policy",
       "reason": "Development process page \u2014 engineering governance corpus"
+    },
+    {
+      "source": "bitty-docs",
+      "path": "docs/development/execution-host-boundary.md",
+      "audience": "contributor",
+      "document_type": "policy",
+      "reason": "Development process page - engineering governance corpus. The advanced pin declares website_publish: true (bitty-docs#374), so the page is demoted here and ships a 301 until the docs-side flip lands."
+    },
+    {
+      "source": "bitty-docs",
+      "path": "docs/development/platform-compatibility.md",
+      "audience": "contributor",
+      "document_type": "policy",
+      "reason": "Development process page - engineering governance corpus. The advanced pin declares website_publish: true (bitty-docs#374), so the page is demoted here and ships a 301 until the docs-side flip lands."
+    },
+    {
+      "source": "bitty-docs",
+      "path": "docs/development/plugin-contract-and-manager-boundary.md",
+      "audience": "contributor",
+      "document_type": "policy",
+      "reason": "Development process page - engineering governance corpus. The advanced pin declares website_publish: true (bitty-docs#374), so the page is demoted here and ships a 301 until the docs-side flip lands."
+    },
+    {
+      "source": "bitty-docs",
+      "path": "docs/development/remote-infrastructure-boundary.md",
+      "audience": "contributor",
+      "document_type": "policy",
+      "reason": "Development process page - engineering governance corpus. The advanced pin declares website_publish: true (bitty-docs#374), so the page is demoted here and ships a 301 until the docs-side flip lands."
     },
     {
       "source": "bitty-docs",
@@ -151,6 +207,13 @@
     },
     {
       "source": "bitty-docs",
+      "path": "docs/development/testing-infrastructure.md",
+      "audience": "contributor",
+      "document_type": "policy",
+      "reason": "Development process page - engineering governance corpus. The advanced pin declares website_publish: true (bitty-docs#374), so the page is demoted here and ships a 301 until the docs-side flip lands."
+    },
+    {
+      "source": "bitty-docs",
       "path": "docs/development/toolchain-policy.md",
       "audience": "contributor",
       "document_type": "specification",
@@ -165,10 +228,52 @@
     },
     {
       "source": "bitty-docs",
+      "path": "docs/findings/FIND-0001-astro-typescript-7-check-compatibility.md",
+      "audience": "contributor",
+      "document_type": "reference",
+      "reason": "Findings corpus page - engineering governance corpus. The advanced pin declares website_publish: true (bitty-docs#374), so the page is demoted here and ships a 301 until the docs-side flip lands."
+    },
+    {
+      "source": "bitty-docs",
+      "path": "docs/findings/FIND-0002-comprehensive-code-review-ledger.md",
+      "audience": "contributor",
+      "document_type": "reference",
+      "reason": "Findings corpus page - engineering governance corpus. The advanced pin declares website_publish: true (bitty-docs#374), so the page is demoted here and ships a 301 until the docs-side flip lands."
+    },
+    {
+      "source": "bitty-docs",
+      "path": "docs/findings/README.md",
+      "audience": "contributor",
+      "document_type": "index",
+      "reason": "Findings corpus page - engineering governance corpus. The advanced pin declares website_publish: true (bitty-docs#374), so the page is demoted here and ships a 301 until the docs-side flip lands."
+    },
+    {
+      "source": "bitty-docs",
+      "path": "docs/project/reference-projects.md",
+      "audience": "contributor",
+      "document_type": "research",
+      "reason": "Project governance page - engineering governance corpus. The advanced pin declares website_publish: true (bitty-docs#374), so the page is demoted here and ships a 301 until the docs-side flip lands."
+    },
+    {
+      "source": "bitty-docs",
+      "path": "docs/project/repository-map.md",
+      "audience": "contributor",
+      "document_type": "reference",
+      "reason": "Project governance page - engineering governance corpus. The advanced pin declares website_publish: true (bitty-docs#374), so the page is demoted here and ships a 301 until the docs-side flip lands."
+    },
+    {
+      "source": "bitty-docs",
       "path": "docs/project/technology-strategy.md",
       "audience": "contributor",
       "document_type": "explanation",
       "reason": "Project governance / state page \u2014 engineering governance corpus"
+    },
+    {
+      "source": "bitty-docs",
+      "path": "docs/project/website-content-contract.md",
+      "audience": "contributor",
+      "document_type": "specification",
+      "reason": "Project governance page - engineering governance corpus. The advanced pin declares website_publish: true (bitty-docs#374), so the page is demoted here and ships a 301 until the docs-side flip lands."
     },
     {
       "source": "bitty-terminal-docs",

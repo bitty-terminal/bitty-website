@@ -12,7 +12,7 @@ sidebar_order: 25
 # Website Sync Contract
 
 This guide translates the accepted
-[Website Delivery RFC](../projects/bitty/specifications/website-delivery-rfc.md)
+[Website Delivery RFC](https://github.com/bitty-terminal/bitty-terminal-docs/blob/main/specifications/website-delivery-rfc.md)
 and [Website content contract](../project/website-content-contract.md)
 into the developer command surface. It does not invent product code,
 does not authorize shipped behavior, and does not weaken the normative
@@ -20,13 +20,24 @@ English-only, metadata, or link gates.
 
 The pipeline is owned by `bitty-website` under CarryCtx `CTX-0017` and
 consumes the pinned revision. This guide records the developer command
-surface and the operator procedure; the canonical prose remains in this
-repository and is never hand-copied into the website.
+surface and the operator procedure; the canonical prose remains in the Bitty
+documentation corpus (shared governance in this repository, project content in
+the project documentation repositories) and is never hand-copied into the
+website.
+
+> **Repository split (2026-09-14).** Shared governance prose remains in this
+> repository; project content moved to `bitty-terminal-docs`, `bitty-ai-docs`,
+> and `bitty-plugins-docs`, mounted here as root submodules pinned to their
+> merged `main`. The pinned-revision consumption described below must
+> additionally resolve the aggregator's recorded submodule pointers; that
+> loader update is a follow-up and this guide does not claim it is
+> implemented.
 
 ## Source of truth
 
-`bitty-docs` owns canonical prose, metadata, source paths, and internal
-links. `bitty-website` is a static presentation shell. It must not fork,
+The owning repository owns canonical prose: `bitty-docs` for shared governance
+and metadata, and the project documentation repositories for project content.
+`bitty-website` is a static presentation shell. It must not fork,
 copy-paste, or silently rewrite a specification. Any file outside
 `bitty-website/src/content/docs/` that is a verbatim copy of a docs body
 is a non-duplication violation (LD-6) and must be removed in favor of the
@@ -165,9 +176,9 @@ route:  /docs/<version>/<category>/<slug>/
   otherwise preserved case-sensitively (RM-1).
 - Source-relative path is the authoritative content identity (RM-3).
 - If two distinct eligible sources would map to the same public route,
-  validation rejects the build. The fix belongs in `bitty-docs` by
-  renaming the source and declaring a redirect, not by patching the
-  mapper (RM-4).
+  validation rejects the build. The fix belongs in the owning documentation
+  repository by renaming the source and declaring a redirect, not by patching
+  the mapper (RM-4).
 
 The function lives in exactly one module,
 `bitty-website/src/lib/docsRoutes.ts` (RM-6), with collision fixtures
@@ -255,8 +266,9 @@ remains configuration only.
 
 ## Operator: refreshing documentation into the website
 
-The canonical corpus stays in `bitty-docs`; the website is a pinned,
-generated mirror. To publish a docs change:
+The canonical corpus stays in the Bitty documentation repositories
+(aggregated by `bitty-docs`); the website is a pinned, generated mirror. To
+publish a docs change:
 
 1. Merge the `bitty-docs` change (content, metadata, links, and
    `docs/project/redirects.json` when a published identity moves) after

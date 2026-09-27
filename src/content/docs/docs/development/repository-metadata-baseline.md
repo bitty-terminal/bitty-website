@@ -32,19 +32,23 @@ of an owning task, and must never "tidy" a **Tier C** file.
 
 ## Repository classes
 
-| Class         | Repositories                                                         | Primary ecosystem | CodeQL in CI                   |
-| ------------- | -------------------------------------------------------------------- | ----------------- | ------------------------------ |
-| code-core     | `bitty-terminal/bitty`                                               | Rust + Bun        | rust, actions                  |
-| code-plugin   | `activity`, `bitty-mcp`, `bitty-plugin-sdk`, `bitty-plugin-template` | Bun/TypeScript    | javascript-typescript, actions |
-| code-devtools | `bitty-devtools`                                                     | Rust + Bun        | javascript-typescript, actions |
-| docs          | `bitty-docs`                                                         | Bun/Markdown      | none (docs-only; excluded)     |
-| website       | `bitty-website`                                                      | Bun/Astro         | javascript-typescript, actions |
-| tap-bitty     | `bitty-terminal/homebrew-tap`, `bitty-terminal/scoop-bucket`         | package metadata  | none                           |
-| tap-xuepoo    | `Xuepoo/homebrew-tap`, `Xuepoo/scoop-bucket`                         | package metadata  | none                           |
-| cc-core       | `Xuepoo/carryctx`                                                    | Rust + Bun        | rust, actions                  |
-| cc-docs       | `Xuepoo/carryctx-docs`                                               | Markdown          | none (no `.github/` yet)       |
-| cc-website    | `Xuepoo/carryctx-website`                                            | Bun/Astro         | javascript-typescript, actions |
-| cc-skills     | `Xuepoo/carryctx-skills`                                             | Python + Markdown | python, actions                |
+| Class         | Repositories                                                               | Primary ecosystem | CodeQL in CI                   |
+| ------------- | -------------------------------------------------------------------------- | ----------------- | ------------------------------ |
+| code-core     | `bitty-terminal/bitty`, `bitty-terminal/bitty-ai`                          | Rust + Bun        | rust, actions                  |
+| code-plugin   | `activity`, `bitty-plugins`, `bitty-plugin-sdk`, `bitty-plugin-template`   | Bun/TypeScript    | javascript-typescript, actions |
+| code-devtools | `bitty-devtools`                                                           | Rust + Bun        | javascript-typescript, actions |
+| docs          | `bitty-docs`, `bitty-terminal-docs`, `bitty-ai-docs`, `bitty-plugins-docs` | Bun/Markdown      | none (docs-only; excluded)     |
+| website       | `bitty-website`                                                            | Bun/Astro         | javascript-typescript, actions |
+| tap-bitty     | `bitty-terminal/homebrew-tap`, `bitty-terminal/scoop-bucket`               | package metadata  | none                           |
+| tap-xuepoo    | `Xuepoo/homebrew-tap`, `Xuepoo/scoop-bucket`                               | package metadata  | none                           |
+| cc-core       | `Xuepoo/carryctx`                                                          | Rust + Bun        | rust, actions                  |
+| cc-docs       | `Xuepoo/carryctx-docs`                                                     | Markdown          | none (no `.github/` yet)       |
+| cc-website    | `Xuepoo/carryctx-website`                                                  | Bun/Astro         | javascript-typescript, actions |
+| cc-skills     | `Xuepoo/carryctx-skills`                                                   | Python + Markdown | python, actions                |
+
+`bitty-mcp` was archived on 2026-09-14 and is no longer a live repository; its
+former class, contexts, and follow-up below are retained as historical
+evidence of the 2026-09-12 audit.
 
 `bitty-docs` is deliberately excluded from CodeQL. It has a Markdown/CI-only
 surface; the core `bitty` repository carries the primary CodeQL corpus.
@@ -56,14 +60,20 @@ comparison, not a visual diff.
 
 | File                                    | Canonical source              | Applies to                        | Notes                                                                                                                                                                                     |
 | --------------------------------------- | ----------------------------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `.github/workflows/snapshot-source.yml` | `bitty-terminal/bitty`        | all 8 Bitty-family repositories   | Currently already identical (blob `234859ca75`) in `bitty`, `bitty-docs`, `bitty-website`, `bitty-devtools`, `activity`, `bitty-mcp`, `bitty-plugin-sdk`, `bitty-plugin-template`.        |
+| `.github/workflows/snapshot-source.yml` | `bitty-terminal/bitty`        | all Bitty-family repositories     | Currently already identical (blob `234859ca75`) in `bitty`, `bitty-docs`, `bitty-website`, `bitty-devtools`, `activity`, `bitty-mcp`, `bitty-plugin-sdk`, `bitty-plugin-template`.        |
 | `.github/workflows/codeql.yml`          | `bitty-terminal/bitty`        | every repo with a CodeQL language | One job `analyze` named `Analyze (${{ matrix.language }})`; matrix = primary language + `actions`, each `build-mode: none`; weekly schedule; `contents: read` + `security-events: write`. |
 | `.github/codeql/codeql-config.yml`      | `bitty-terminal/bitty`        | every repo with `codeql.yml`      | `queries: security-and-quality`; `paths-ignore` for `target` and `node_modules`.                                                                                                          |
 | `.editorconfig`                         | `bitty-website/.editorconfig` | all repositories                  | UTF-8, LF, 2-space, final newline, trim trailing whitespace; `[*.md] trim_trailing_whitespace = false`; `[justfile] indent_size = 4`.                                                     |
-| `commitlint.config.ts`                  | `bitty-terminal/bitty`        | all 8 Bitty-family repositories   | The CTX-aware parser (`[CTX-XXXX]` prefix accepted). Identical across the Bitty family today; `Xuepoo/carryctx` must adopt it.                                                            |
+| `commitlint.config.ts`                  | `bitty-terminal/bitty`        | all Bitty-family repositories     | The CTX-aware parser (`[CTX-XXXX]` prefix accepted). Identical across the Bitty family today; `Xuepoo/carryctx` must adopt it.                                                            |
 
 `bitty-docs` is an explicit exception for `codeql.yml`/`codeql-config.yml`
 (removed under `CTX-0105`).
+
+> **Audit vintage (2026-09-12).** The byte-identity evidence above predates the
+> 2026-09-14 `bitty-mcp` archival and the `bitty-ai`, `bitty-plugins`,
+> `bitty-terminal-docs`, `bitty-ai-docs`, and `bitty-plugins-docs`
+> repositories; Tier A adoption for those repositories is pending an owning
+> task.
 
 ## Tier B - shared body with a per-repository parameter block
 
@@ -128,7 +138,11 @@ stale label. Consequences:
 checks. Branch protection exists but no required checks on
 `bitty-terminal/homebrew-tap`, `bitty-terminal/scoop-bucket`, and
 `Xuepoo/carryctx-docs`. The two `Xuepoo` taps are unprotected. No repository
-requires pull-request review, and `strict` is `false` everywhere.
+requires pull-request review, and `strict` is `false` everywhere. The audit
+predates the 2026-09-14 `bitty-mcp` archival and does not cover `bitty-ai`,
+`bitty-plugins`, or the three project documentation repositories
+(`bitty-terminal-docs`, `bitty-ai-docs`, and `bitty-plugins-docs` are not yet
+protected).
 
 | Repository                    | Required contexts (verbatim)                                                                                                                                                                                  | Drift to resolve                                                                                            |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
@@ -137,7 +151,7 @@ requires pull-request review, and `strict` is `false` everywhere.
 | `bitty-website`               | `Website quality`, `Analyze (actions)`, `Analyze (javascript-typescript)`, `CodeQL`                                                                                                                           | None.                                                                                                       |
 | `bitty-devtools`              | `Lint GitHub Actions workflows`, `Quality gates`, `Analyze (javascript-typescript, actions)`, `CodeQL`                                                                                                        | Split the combined CodeQL job into one job per language; rename context to `Analyze (<language>)`.          |
 | `activity`                    | `Quality gates`, `Lint GitHub Actions workflows`, `Analyze (actions)`, `Analyze (javascript-typescript)`, `CodeQL`                                                                                            | None.                                                                                                       |
-| `bitty-mcp`                   | `Lint GitHub Actions workflows`, `Quality gates`, `CodeQL Analyze (actions)`, `CodeQL Analyze (javascript-typescript)`, `CodeQL`                                                                              | Rename the CodeQL job to `Analyze (${{ matrix.language }})`; context becomes `Analyze (<language>)`.        |
+| `bitty-mcp`                   | `Lint GitHub Actions workflows`, `Quality gates`, `CodeQL Analyze (actions)`, `CodeQL Analyze (javascript-typescript)`, `CodeQL`                                                                              | Historical: archived 2026-09-14; the CodeQL rename no longer applies.                                       |
 | `bitty-plugin-sdk`            | `Actionlint`, `Quality gates`, `Analyze (actions)`, `Analyze (javascript-typescript)`, `CodeQL`                                                                                                               | Rename the lint job to `Lint GitHub Actions workflows`.                                                     |
 | `bitty-plugin-template`       | `Lint GitHub Actions workflows`, `Quality gates`, `Analyze (actions)`, `Analyze (javascript-typescript)`, `CodeQL`                                                                                            | None.                                                                                                       |
 | `Xuepoo/carryctx`             | `Quality`, `Test`, `Actionlint`, `Analyze (rust)`                                                                                                                                                             | Rename `Actionlint` to `Lint GitHub Actions workflows`; add `Analyze (actions)` once CodeQL covers actions. |
@@ -190,7 +204,7 @@ Known CarryCtx-family unpinned actions (subject to the pinning task):
 ### Rust channel anti-pattern
 
 `rust-toolchain.toml` must pin an explicit channel (for example
-`channel = "1.97.1"`). `channel = "stable"` (currently used by
+`channel = "1.98.1"`). `channel = "stable"` (currently used by
 `Xuepoo/carryctx`) is prohibited: it makes builds non-reproducible and lets the
 toolchain drift without a reviewed change. Do not let a CI
 `setup-rust-toolchain` action override the file; the file is the single source
@@ -222,7 +236,8 @@ of truth for the channel.
   `strict: false` everywhere, a stale required context can persist unnoticed
   until a pull request is blocked.
 - **The expected renames are exactly:** `bitty-mcp`
-  `CodeQL Analyze (...) -> Analyze (...)`;
+  `CodeQL Analyze (...) -> Analyze (...)` (withdrawn: `bitty-mcp` was archived
+  on 2026-09-14);
   `bitty-devtools` combined `Analyze (javascript-typescript, actions)` -> two
   per-language jobs; `bitty-plugin-sdk` `Actionlint -> Lint GitHub Actions
 workflows`; `Xuepoo/carryctx` `Actionlint -> Lint GitHub Actions workflows`.
@@ -261,7 +276,8 @@ are recorded here as text:
   names only if it renames a job.
 - `bitty-plugin-sdk`: rename `Actionlint` and update branch protection.
 - `bitty-devtools`, `bitty-mcp`: split/normalize the CodeQL context and update
-  branch protection atomically.
+  branch protection atomically (`bitty-mcp` was archived on 2026-09-14; its
+  follow-up is withdrawn).
 - `Xuepoo/carryctx` family: SHA-pin actions, pin the Rust channel, adopt the
   CTX-aware `commitlint.config.ts`, and give `carryctx-docs` a `.github/`
   baseline.
@@ -275,7 +291,7 @@ are recorded here as text:
   queue.
 - [ADR 0011 - Repository Metadata and GitHub Baseline](../decisions/adrs/ADR-0011-repository-metadata-baseline.md)
 - [ADR 0001 - Repository Bootstrap Baseline](../decisions/adrs/ADR-0001-repository-bootstrap-baseline.md)
-- [Governance RFC](../projects/bitty/specifications/governance-rfc.md) - OQ-024 license,
+- [Governance RFC](https://github.com/bitty-terminal/bitty-terminal-docs/blob/main/specifications/governance-rfc.md) - OQ-024 license,
   branch protection, ownership, and release train.
 - [Toolchain and Tooling Policy](toolchain-policy.md) - pinned local tools and
   canonical gate commands.

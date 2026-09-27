@@ -209,36 +209,50 @@ async function main() {
         assertFileParity({ pin, entry, expected, mirrorSlice });
 
         // #98 §3.4: the source's published count must stay in its reviewed
-        // band, with the added/removed routes printed when it moves.
-        const routes = [...(publishedRoutesBySource.get(pin.id) ?? [])].sort();
-        const manifestRoutes = new Set(entry.published_routes);
-        const added = routes.filter((route) => !manifestRoutes.has(route));
-        const removed = entry.published_routes.filter(
-          (route) => !routes.includes(route),
-        );
-        // #98 §3.3: no published route may disappear without a published
-        // redirect target, compared on route identity (not count) over the
-        // AGGREGATE published set (T5): a route re-homed to another source
-        // keeps its URL and is not a loss; a real loss is attributed to the
-        // source that used to publish it. The per-source band is checked here.
-        assertSourcePublishedBand(pin, routes.length, { added, removed });
+        // band, with the added/removed routes printed when it moves. The
+        // comparison is on route identity (not count) over the AGGREGATE
+        // published set (T5): a route re-homed to another source keeps its URL
+        // and is not a loss; a real loss is attributed to the source that used
+        // to publish it. Both gates need the published set, so a failed policy
+        // (corpus === null) skips them — reporting them against an empty set
+        // would invent out-of-band losses that contradict the real failure.
+        // The skip is printed below instead of passing silently.
+        if (corpus !== null) {
+          const routes = [
+            ...(publishedRoutesBySource.get(pin.id) ?? []),
+          ].sort();
+          const manifestRoutes = new Set(entry.published_routes);
+          const added = routes.filter((route) => !manifestRoutes.has(route));
+          const removed = entry.published_routes.filter(
+            (route) => !routes.includes(route),
+          );
+          assertSourcePublishedBand(pin, routes.length, { added, removed });
+        }
       } catch (error) {
         failures.push({ source: pin.id, message: error.message });
       }
     }
 
     // #98 §3.3 / T5: the published-route regression gate, over the aggregate
-    // published set of every source.
-    try {
-      assertNoPublishedRouteLossBySource(
-        new Map(
-          manifest.sources.map((entry) => [entry.id, entry.published_routes]),
-        ),
-        [...publishedRoutesBySource.values()],
-        redirectEntries,
+    // published set of every source. Skipped when the policy already failed:
+    // with no published set there is nothing to compare, and reporting the
+    // whole corpus as lost would bury the real failure (the skip is printed).
+    if (corpus !== null) {
+      try {
+        assertNoPublishedRouteLossBySource(
+          new Map(
+            manifest.sources.map((entry) => [entry.id, entry.published_routes]),
+          ),
+          [...publishedRoutesBySource.values()],
+          redirectEntries,
+        );
+      } catch (error) {
+        failures.push({ source: "<route-loss>", message: error.message });
+      }
+    } else {
+      console.log(
+        "publication policy failed; the per-source published bands and the published-route loss gate were NOT evaluated",
       );
-    } catch (error) {
-      failures.push({ source: "<route-loss>", message: error.message });
     }
 
     // Collect every failing source and report them together.

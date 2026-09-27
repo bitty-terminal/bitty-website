@@ -267,14 +267,59 @@ describe("renderRedirectEvidence (deployed provenance key set, #98)", () => {
 });
 
 /**
- * Routes whose page left the pinned `bitty-docs` revision before the corpus
- * that owns it landed (#98 T5). Each was a 301 demotion, so removing the entry
- * would turn a working redirect into a 404 — the defect class this list exists
- * to catch. Shrink-only: an entry leaves this list only in the commit that
- * lands the owning corpus and publishes the page, at which point it points at
- * the exact target.
+ * Routes that answered a redirect before the T5 multi-source change and must
+ * keep answering one (#98 §5: no URL 404s).
+ *
+ * Two groups; every route is demoted in the aggregated corpus, so each has a
+ * single correct interim target — `/docs/`, the nearest published ancestor:
+ *
+ *   - the 34 flat CTX-0185 aliases (`docs/specifications/*.md`,
+ *     `docs/extensibility/*.md`) that the two container wildcards used to
+ *     carry. Retargeting those containers to `/docs/` removes their wildcard,
+ *     so without a per-route entry 34 routes x 3 hosted versions turn from 301
+ *     into 404 — the same class of loss as the entries above, one level down;
+ *   - the routes carved out of the pinned bitty-docs revision whose owning
+ *     corpus has not landed yet.
+ *
+ * Shrink-only: an entry leaves this list when the owning corpus lands and
+ * publishes the page (then the entry names the exact target, or is dropped
+ * when the page publishes at its old URL again).
  */
-const CARVED_OUT_DEMOTED_ROUTES = [
+const INTERIM_CONTINUITY_ROUTES = [
+  "/docs/extensibility/package-management/",
+  "/docs/extensibility/plugin-system/",
+  "/docs/specifications/ai-architecture/",
+  "/docs/specifications/browser-agent-pre-study/",
+  "/docs/specifications/cli-contract-rfc/",
+  "/docs/specifications/compatibility-milestone-rfc/",
+  "/docs/specifications/configuration-model-rfc/",
+  "/docs/specifications/default-distribution-rfc/",
+  "/docs/specifications/devtools-rfc/",
+  "/docs/specifications/governance-rfc/",
+  "/docs/specifications/input-pointer-rfc/",
+  "/docs/specifications/ipc-agent-rfc/",
+  "/docs/specifications/isolation-resource-rfc/",
+  "/docs/specifications/lua-runtime-rfc/",
+  "/docs/specifications/package-followup-rfc/",
+  "/docs/specifications/package-lifecycle-rfc/",
+  "/docs/specifications/panel-runtime-pre-study/",
+  "/docs/specifications/performance-budget-rfc/",
+  "/docs/specifications/plugin-api-v1-lua-surface-rfc/",
+  "/docs/specifications/plugin-host-runtime-rfc/",
+  "/docs/specifications/plugin-platform-rfc/",
+  "/docs/specifications/plugin-reuse-and-providers/",
+  "/docs/specifications/rich-presentation-rfc/",
+  "/docs/specifications/risk-evidence-rfc/",
+  "/docs/specifications/semantic-terminal-rfc/",
+  "/docs/specifications/status-system/",
+  "/docs/specifications/terminal-feature-gap-analysis/",
+  "/docs/specifications/terminal-registry-view-lifecycle-rfc/",
+  "/docs/specifications/terminal-state-rfc/",
+  "/docs/specifications/text-rendering-rfc/",
+  "/docs/specifications/ui-compositor-gap-analysis/",
+  "/docs/specifications/ui-extensibility-architecture/",
+  "/docs/specifications/website-delivery-rfc/",
+  "/docs/specifications/workspace-compositor/",
   "/docs/projects/bitty/specifications/ai-architecture/",
   "/docs/projects/bitty/specifications/ipc-agent-rfc/",
   "/docs/projects/bitty/specifications/isolation-resource-rfc/",
@@ -283,13 +328,13 @@ const CARVED_OUT_DEMOTED_ROUTES = [
   "/docs/projects/bitty/specifications/package-lifecycle-rfc/",
 ] as const;
 
-describe("interim redirect continuity for carved-out demoted routes (#98)", () => {
+describe("interim redirect continuity for moved routes (#98)", () => {
   const entries = JSON.parse(
     readFileSync(join(import.meta.dir, "..", "redirects.json"), "utf8"),
   ) as readonly RedirectEntry[];
 
-  test("each carved-out demoted route still answers 301 to a published ancestor", () => {
-    for (const old of CARVED_OUT_DEMOTED_ROUTES) {
+  test("every moved route still answers 301 to a published ancestor", () => {
+    for (const old of INTERIM_CONTINUITY_ROUTES) {
       const entry = entries.find((candidate) => candidate.old === old);
       expect(entry, `no redirect entry for ${old}`).toBeDefined();
       expect(entry?.status).toBe(301);

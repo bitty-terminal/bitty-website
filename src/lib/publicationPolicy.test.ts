@@ -207,9 +207,18 @@ function metadata(
   };
 }
 
+/**
+ * Page count a synthetic corpus uses when it must satisfy the coarse
+ * aggregate sanity bound (#98 OQ-2 re-based the global band; this is a test
+ * fixture size, not a policy target).
+ */
+const BAND_SATISFYING_PAGE_COUNT = 25;
+
 /** A corpus of eligible pages big enough to satisfy the published band. */
-function eligibleCorpus(): PublicationMetadata[] {
-  return Array.from({ length: PUBLISHED_PAGE_MIN }, (_unused, index) =>
+function eligibleCorpus(
+  count: number = BAND_SATISFYING_PAGE_COUNT,
+): PublicationMetadata[] {
+  return Array.from({ length: count }, (_unused, index) =>
     metadata({
       sourcePath: `docs/projects/bitty/user-guide/page-${index}.md`,
       status: "accepted",
@@ -389,12 +398,27 @@ describe("fail closed", () => {
   });
 
   test("a corpus that leaves the published band aborts the policy", () => {
-    const report = evaluatePublicationPolicy(
-      eligibleCorpus().slice(0, PUBLISHED_PAGE_MIN - 1),
-    );
-    expect(report.problems.map((problem) => problem.kind)).toContain(
+    const below = evaluatePublicationPolicy([]);
+    expect(below.problems.map((problem) => problem.kind)).toContain(
       "published-band",
     );
+    const above = evaluatePublicationPolicy(
+      eligibleCorpus(PUBLISHED_PAGE_MAX + 1),
+    );
+    expect(above.problems.map((problem) => problem.kind)).toContain(
+      "published-band",
+    );
+  });
+
+  test("the global band is a coarse sanity bound, not the pre-#98 target", () => {
+    // #98 §3.4 / OQ-2 retired the single-source 25-35 target: the operative,
+    // attributable gate is the per-source `published.min/max` band in the pin
+    // entry. The coarse bound must still admit the migration's smallest
+    // legitimate aggregate (21 published after onboarding
+    // `bitty-terminal-docs`) and its end state (44 once the plugin source
+    // lands), so a shrink or a re-tightening here is a reviewed change.
+    expect(PUBLISHED_PAGE_MIN).toBeLessThanOrEqual(21);
+    expect(PUBLISHED_PAGE_MAX).toBeGreaterThanOrEqual(44);
   });
 
   test("a stale allow-list entry aborts the policy", () => {

@@ -93,12 +93,21 @@ export const TYPE_AUDIENCE_EXCEPTIONS: readonly {
 ];
 
 /**
- * Target size of the published set (website#97: "target 25-35 pages"). The
- * build and the gate fail outside this band so the set cannot drift silently
- * when the pin advances.
+ * Coarse sanity bound on the AGGREGATE published set (#98 §3.4, owner
+ * decision OQ-2).
+ *
+ * The pre-#98 `25-35` band was a single-source target and it cannot hold once
+ * the site aggregates more than one corpus: onboarding `bitty-terminal-docs`
+ * alone re-homes 7 published routes to a source that has not landed yet, so
+ * the aggregate legitimately reads 21 (bitty-website#98 T5), and it reaches 44
+ * once the plugin source lands (T6). The band is therefore re-based to a
+ * coarse "the site is neither empty nor a corpus dump" bound; the reviewed,
+ * attributable gate is the per-source `published.min`/`published.max` band in
+ * `src/content/docs-revision.json` (checked by `assertSourcePublishedBand` in
+ * `./docsPins.ts`), not this number.
  */
-export const PUBLISHED_PAGE_MIN = 25;
-export const PUBLISHED_PAGE_MAX = 35;
+export const PUBLISHED_PAGE_MIN = 1;
+export const PUBLISHED_PAGE_MAX = 200;
 
 /**
  * Document types that state a contract, and the statuses that mean the

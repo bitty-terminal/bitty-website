@@ -20,6 +20,7 @@ import {
   collectRenderedPages,
   findBrokenInternalLinks,
   findDisallowedAssetReferences,
+  normalizedText,
   pageAriaCurrentCount,
   repeatsPageTitle,
   sidebarListDepth,
@@ -304,5 +305,18 @@ describe("a11y docs shell audit", () => {
     expect(auditDocsShell(bare).map((defect) => defect.kind)).toContain(
       "breadcrumb",
     );
+  });
+
+  // Invariant for the comparison text (CTX-0050): the tag removal is a
+  // fixed-point loop, because CodeQL's js/incomplete-multi-character-sanitization
+  // (high) fires on the single-pass form and that alert fails the required
+  // CodeQL check. There is no `<`-shaped residue left, and re-applying the
+  // removal changes nothing.
+  test("removes nested angle brackets to a fixed point", () => {
+    const nested = "<<script>alert(1)<</script>";
+    expect(normalizedText(nested)).toBe("alert(1)");
+    expect(normalizedText(nested)).not.toContain("<");
+    expect(normalizedText(normalizedText(nested))).toBe(normalizedText(nested));
+    expect(normalizedText("<h2>  Status </h2>")).toBe("Status");
   });
 });

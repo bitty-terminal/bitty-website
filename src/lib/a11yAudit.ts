@@ -335,12 +335,35 @@ const SIDEBAR_PATTERN =
   /<nav\b[^>]*class="[^"]*docs-sidebar[^"]*"[^>]*>([\s\S]*?)<\/nav>/iu;
 const ARIA_CURRENT_PAGE_PATTERN = /<[a-z][^>]*\saria-current="page"/giu;
 
+/**
+ * Plain text of a markup fragment, for comparing two fragments.
+ *
+ * The tag removal runs to a fixed point. CodeQL's
+ * `js/incomplete-multi-character-sanitization` (high) fires on the single-pass
+ * form because re-sanitizing its own output could in principle leave a tag
+ * behind, and that alert fails the required CodeQL check on this repository.
+ * Measured before changing it: over every string of length <= 8 drawn from
+ * `a`, `<`, `>` (9841 inputs) the single pass and the fixed-point loop produce
+ * identical output, so this is the analyzer's prescribed form rather than a
+ * demonstrated fix for an exploitable input; the value is only ever compared
+ * as text and never inserted into a document. Keeping the loop makes the
+ * convergence explicit and keeps the gate green.
+ */
 function textContent(source: string): string {
-  return source
-    .replace(/<[^>]*>/gu, "")
-    .replace(/\s+/gu, " ")
-    .trim();
+  let current = source;
+  let previous = "";
+  while (current !== previous) {
+    previous = current;
+    current = current.replace(/<[^>]*>/gu, "");
+  }
+  return current.replace(/\s+/gu, " ").trim();
 }
+
+/**
+ * Exported for the audit's own tests: the tag-removal loop above must be
+ * provable against nested angle brackets, not only against well-formed markup.
+ */
+export const normalizedText = textContent;
 
 /** Deepest `<ul>` nesting inside the sidebar navigation. */
 export function sidebarListDepth(html: string): number {

@@ -36,6 +36,7 @@ import { spawnSync } from "node:child_process";
 import {
   DocsPinsError,
   SOURCE_SLUG,
+  assertPinFormat as assertAuthorityPinFormat,
   mirrorPathFor,
   parseDocsPinSet,
   selectConsumedPaths,
@@ -93,22 +94,18 @@ export function parseSyncArgs(argv) {
   };
 }
 
-/** {@link assertPinFormat} from the schema authority, as a SyncError. */
+/**
+ * {@link assertPinFormat} from the schema authority, as a SyncError.
+ *
+ * Delegates to the authority's string-level check. It must never round-trip a
+ * synthetic pin set through `parseDocsPinSet` again: that tied pin syntax to
+ * the whole pin-set rules, so tightening one of them (revision-index
+ * ownership) rejected every valid revision and silently disabled the only
+ * supported way to advance a pin (`docs-sync --pin`, #98 review).
+ */
 export function assertPinFormat(revision) {
   try {
-    parseDocsPinSet({
-      schema: 2,
-      sources: [
-        {
-          id: "pin-format",
-          source: "github.com/example/example",
-          revision,
-          synced_at: new Date(0).toISOString(),
-          mounts: [{ from: ".", to: "" }],
-          published: { min: 0, max: 0 },
-        },
-      ],
-    });
+    assertAuthorityPinFormat(revision);
   } catch (error) {
     throw toSyncError(error);
   }

@@ -18,7 +18,8 @@
     "check": "bun run format:check && bun run lint:md && bun run test && bun run docs:check && bun run typecheck && bun run build && bun run validate:dist && bun run audit:a11y && bun run wrangler:dry-run",
     "deploy": "WRANGLER_SEND_METRICS=false wrangler deploy",
     "sync:docs": "bun scripts/sync-docs.mjs",
-    "docs:check": "bun scripts/check-docs-sync.mjs"
+    "docs:check": "bun scripts/check-docs-sync.mjs",
+    "report:route-moves": "bun scripts/report-route-moves.mjs"
   },
   "devDependencies": {
     "@astrojs/markdown-satteri": "0.4.1",

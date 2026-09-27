@@ -1,11 +1,16 @@
 #!/usr/bin/env bun
 /**
- * Website Delivery RFC SY-4 — docs:check (staleness gate)
+ * Website Delivery RFC SY-4 — docs:check (staleness gate, bitty-website#98)
  *
- * Materializes the pinned bitty-docs revision in an isolated clone, runs the
+ * Materializes each pinned source revision in its own isolated clone, runs the
  * canonical parity gates, and fails closed when the committed mirror or its
- * provenance manifest diverges from that revision. Also rejects a malformed,
- * short, or floating pin. Hand edits inside src/content/docs/ are caught here.
+ * provenance manifest diverges from any pin. Also rejects a malformed, short,
+ * or floating pin, the pre-#98 flat pin shape, mount overlap, a mirror file
+ * outside every mount, and a source whose published count leaves its reviewed
+ * band. Hand edits inside src/content/docs/ are caught here.
+ *
+ * Every failing source is collected and reported together, so a reviewer who
+ * fixes one source cannot believe the rest of the corpora are clean.
  */
 
 import { readFile } from "node:fs/promises";
@@ -15,25 +20,33 @@ import { fileURLToPath } from "node:url";
 import {
   SyncError,
   cleanupSnapshot,
+  collectConsumedFiles,
   diffHashMaps,
-  docsOnly,
+  hashMapOf,
   hashTree,
   materializeSnapshot,
   readPinFile,
   repoPaths,
-  runParityGates,
+  runParityGatesDetailed,
 } from "./lib/docs-source.mjs";
-import { validateRouteCollisions } from "../src/lib/docsRoutes.ts";
+import {
+  assertMirrorUnderMounts,
+  assertNoSourceFailures,
+  assertPublishedUnderMounts,
+  assertSourcePublishedBand,
+  parseDocsManifest,
+  sourceIdForMirrorPath,
+} from "../src/lib/docsPins.ts";
+import { assertNoPublishedRouteLoss } from "../src/lib/docsAggregation.ts";
+import { loadMergedRedirects } from "../src/lib/redirects.ts";
+import {
+  sourcePathToRouteIdentity,
+  validateRouteCollisions,
+} from "../src/lib/docsRoutes.ts";
 import { loadPublicationCorpus } from "../src/lib/publicationCorpus.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const paths = repoPaths(ROOT);
-
-function fail(message, details = []) {
-  console.error(`error: ${message}`);
-  for (const line of details) console.error(`  - ${line}`);
-  process.exit(1);
-}
 
 async function readCommittedManifest() {
   let raw;
@@ -41,7 +54,7 @@ async function readCommittedManifest() {
     raw = await readFile(paths.manifestFile, "utf8");
   } catch {
     throw new SyncError(
-      `missing provenance manifest ${paths.manifestFile}; run \`just docs-sync PIN=<sha>\``,
+      `missing provenance manifest ${paths.manifestFile}; run \`just docs-sync\``,
     );
   }
   let parsed;
@@ -50,113 +63,197 @@ async function readCommittedManifest() {
   } catch (error) {
     throw new SyncError(`malformed provenance manifest: ${error.message}`);
   }
-  const keys = Object.keys(parsed).sort().join(",");
-  if (keys !== "files,revision,source") {
-    throw new SyncError(
-      `provenance manifest must have exactly { files, revision, source }; found {${keys}}`,
+  return parseDocsManifest(parsed);
+}
+
+/** Byte-for-byte comparison of one source against the mirror and manifest. */
+function assertFileParity({ pin, entry, expected, mirrorSlice }) {
+  const manifestDiff = diffHashMaps(expected, entry.files);
+  const mirrorDiff = diffHashMaps(expected, mirrorSlice);
+  const problems = [];
+  if (manifestDiff.missing.length)
+    problems.push(`manifest missing ${manifestDiff.missing.length} file(s)`);
+  if (manifestDiff.extra.length)
+    problems.push(
+      `manifest lists ${manifestDiff.extra.length} unknown file(s)`,
     );
-  }
-  return parsed;
+  if (manifestDiff.changed.length)
+    problems.push(
+      `manifest hash mismatch for ${manifestDiff.changed.length} file(s)`,
+    );
+  if (mirrorDiff.missing.length)
+    problems.push(`mirror missing ${mirrorDiff.missing.length} file(s)`);
+  if (mirrorDiff.extra.length)
+    problems.push(
+      `mirror has ${mirrorDiff.extra.length} file(s) not at the pin`,
+    );
+  if (mirrorDiff.changed.length)
+    problems.push(
+      `mirror content differs from the pin for ${mirrorDiff.changed.length} file(s)`,
+    );
+  if (problems.length === 0) return;
+  const detail = [];
+  for (const key of manifestDiff.missing.slice(0, 10))
+    detail.push(`manifest missing: ${key}`);
+  for (const key of manifestDiff.extra.slice(0, 10))
+    detail.push(`manifest unknown: ${key}`);
+  for (const key of manifestDiff.changed.slice(0, 10))
+    detail.push(`manifest hash differs: ${key}`);
+  for (const key of mirrorDiff.missing.slice(0, 10))
+    detail.push(`mirror missing: ${key}`);
+  for (const key of mirrorDiff.extra.slice(0, 10))
+    detail.push(`mirror extra (hand-added?): ${key}`);
+  for (const key of mirrorDiff.changed.slice(0, 10))
+    detail.push(`mirror edited (hand-edit?): ${key}`);
+  throw new SyncError(
+    `docs mirror is stale vs pinned ${pin.revision} (${problems.join("; ")})\n    ${detail.join("\n    ")}`,
+  );
 }
 
 async function main() {
-  const pin = await readPinFile(ROOT);
-  const committed = await readCommittedManifest();
+  const pins = await readPinFile(ROOT);
+  const manifest = await readCommittedManifest();
+  const redirectEntries = await loadMergedRedirects(ROOT);
+  const entryById = new Map(manifest.sources.map((entry) => [entry.id, entry]));
+  const failures = [];
 
-  if (committed.source !== pin.source) {
-    fail(
-      `manifest source "${committed.source}" does not match pin source "${pin.source}"`,
-    );
+  // The publication policy is the gate's first fail-closed check: the mirror
+  // must only publish reader-facing pages, and the published count in the
+  // summary is exactly the set the build publishes (website#97).
+  let corpus = null;
+  try {
+    corpus = await loadPublicationCorpus(paths.mirrorRoot);
+    validateRouteCollisions(corpus.publishedSources);
+    // #98 §3.2: a published page must lie under a declared mount.
+    assertPublishedUnderMounts(corpus.publishedSources, pins);
+  } catch (error) {
+    failures.push({ source: "<policy>", message: error.message });
   }
 
-  let snapshot = null;
+  const mirrorFiles = await hashTree(paths.mirrorRoot);
+  // #98 §3.1.5: no mirror file may exist outside every declared mount. This is
+  // the authority's fail-closed wrapper (one path, no ad-hoc reimplementation
+  // of the predicate), collected like every other source failure so a reviewer
+  // still sees the whole picture in one run.
   try {
-    snapshot = await materializeSnapshot({
-      root: ROOT,
-      pinValue: pin.revision,
-      source: pin.source,
-    });
-    if (snapshot.sha !== pin.revision) {
-      fail(
-        `pin revision ${pin.revision} resolved to ${snapshot.sha}; re-run \`just docs-sync PIN=${pin.revision}\``,
-      );
+    assertMirrorUnderMounts(Object.keys(mirrorFiles), pins);
+  } catch (error) {
+    failures.push({ source: "<mirror>", message: error.message });
+  }
+
+  const publishedRoutesBySource = new Map();
+  if (corpus !== null) {
+    for (const sourcePath of corpus.publishedSources) {
+      const id = sourceIdForMirrorPath(sourcePath, pins);
+      if (id === null) continue;
+      const routes = publishedRoutesBySource.get(id) ?? [];
+      routes.push(sourcePathToRouteIdentity(sourcePath).routeWithoutVersion);
+      publishedRoutesBySource.set(id, routes);
     }
-    runParityGates(snapshot.dir);
+  }
 
-    // The publication policy is the gate's first fail-closed check: the
-    // mirror must only publish reader-facing pages, and the count below is
-    // exactly the set the build publishes (website#97, closing website#102
-    // D2/D6). Runs on the committed mirror, before the staleness report, so a
-    // governance page on the site is never masked by mirror diff noise.
-    const corpus = await loadPublicationCorpus(paths.mirrorRoot);
-    validateRouteCollisions(corpus.publishedSources);
+  const snapshots = [];
+  try {
+    for (const pin of pins.sources) {
+      try {
+        const entry = entryById.get(pin.id);
+        if (entry === undefined) {
+          throw new SyncError(
+            "provenance manifest has no entry for this source; run `just docs-sync`",
+          );
+        }
+        // The manifest must record the same repository the pin names: a rename
+        // or a copy-paste between sources would otherwise pass every
+        // revision/hash comparison for the wrong provenance.
+        if (entry.source !== pin.source) {
+          throw new SyncError(
+            `manifest source "${entry.source}" does not match the pinned source "${pin.source}"; run \`just docs-sync\``,
+          );
+        }
+        const snapshot = await materializeSnapshot({
+          root: ROOT,
+          pinValue: pin.revision,
+          source: pin.source,
+          id: pin.id,
+        });
+        snapshots.push(snapshot);
+        if (snapshot.sha !== pin.revision) {
+          throw new SyncError(
+            `pin revision ${pin.revision} resolved to ${snapshot.sha}; re-run \`just docs-sync\``,
+          );
+        }
+        const parity = runParityGatesDetailed(snapshot.dir);
+        const failedParity = Object.entries(parity.results).filter(
+          ([, result]) => result !== "pass",
+        );
+        if (failedParity.length > 0) {
+          throw new SyncError(
+            `parity gate(s) failed: ${failedParity
+              .map(([mode]) => mode)
+              .join(", ")}`,
+          );
+        }
+        if (entry.revision !== snapshot.sha) {
+          throw new SyncError(
+            `manifest revision ${entry.revision} is stale vs pinned ${snapshot.sha}`,
+          );
+        }
+        const files = await collectConsumedFiles(snapshot.dir, pin);
+        const expected = hashMapOf(files);
+        const mirrorSlice = Object.fromEntries(
+          Object.entries(mirrorFiles).filter(
+            ([mirrorPath]) =>
+              sourceIdForMirrorPath(mirrorPath, pins) === pin.id,
+          ),
+        );
+        assertFileParity({ pin, entry, expected, mirrorSlice });
 
-    const expectedFiles = docsOnly(await hashTree(snapshot.dir));
-    const mirrorFiles = await hashTree(paths.mirrorRoot);
-
-    if (committed.revision !== snapshot.sha) {
-      fail(
-        `manifest revision ${committed.revision} is stale vs pinned ${snapshot.sha}`,
-      );
+        // #98 §3.4: the source's published count must stay in its reviewed
+        // band, with the added/removed routes printed when it moves.
+        const routes = [...(publishedRoutesBySource.get(pin.id) ?? [])].sort();
+        const manifestRoutes = new Set(entry.published_routes);
+        const added = routes.filter((route) => !manifestRoutes.has(route));
+        const removed = entry.published_routes.filter(
+          (route) => !routes.includes(route),
+        );
+        // #98 §3.3: no published route may disappear without a published
+        // redirect target, compared on route identity (not count).
+        assertNoPublishedRouteLoss(
+          entry.published_routes,
+          routes,
+          redirectEntries,
+        );
+        assertSourcePublishedBand(pin, routes.length, { added, removed });
+      } catch (error) {
+        failures.push({ source: pin.id, message: error.message });
+      }
     }
 
-    const manifestDiff = diffHashMaps(expectedFiles, committed.files);
-    const mirrorDiff = diffHashMaps(expectedFiles, mirrorFiles);
-    const problems = [];
-    if (manifestDiff.missing.length)
-      problems.push(`manifest missing ${manifestDiff.missing.length} file(s)`);
-    if (manifestDiff.extra.length)
-      problems.push(
-        `manifest lists ${manifestDiff.extra.length} unknown file(s)`,
-      );
-    if (manifestDiff.changed.length)
-      problems.push(
-        `manifest hash mismatch for ${manifestDiff.changed.length} file(s)`,
-      );
-    if (mirrorDiff.missing.length)
-      problems.push(`mirror missing ${mirrorDiff.missing.length} file(s)`);
-    if (mirrorDiff.extra.length)
-      problems.push(
-        `mirror has ${mirrorDiff.extra.length} file(s) not at the pin`,
-      );
-    if (mirrorDiff.changed.length)
-      problems.push(
-        `mirror content differs from the pin for ${mirrorDiff.changed.length} file(s)`,
-      );
+    // Collect every failing source and report them together.
+    assertNoSourceFailures(failures);
 
-    if (problems.length > 0) {
-      const detail = [];
-      for (const key of manifestDiff.missing.slice(0, 10))
-        detail.push(`manifest missing: ${key}`);
-      for (const key of manifestDiff.extra.slice(0, 10))
-        detail.push(`manifest unknown: ${key}`);
-      for (const key of manifestDiff.changed.slice(0, 10))
-        detail.push(`manifest hash differs: ${key}`);
-      for (const key of mirrorDiff.missing.slice(0, 10))
-        detail.push(`mirror missing: ${key}`);
-      for (const key of mirrorDiff.extra.slice(0, 10))
-        detail.push(`mirror extra (hand-added?): ${key}`);
-      for (const key of mirrorDiff.changed.slice(0, 10))
-        detail.push(`mirror edited (hand-edit?): ${key}`);
-      fail(
-        `docs mirror is stale vs pinned ${snapshot.sha} (${problems.join("; ")})`,
-        detail,
-      );
-    }
-
+    const label =
+      pins.sources.length === 1
+        ? pins.sources[0].revision
+        : pins.sources.map((pin) => `${pin.id}@${pin.revision}`).join(", ");
     console.log(
-      `docs mirror current at ${snapshot.sha} (${Object.keys(expectedFiles).length} files, ${corpus.report.published.length} publishable, ${corpus.redirects.length} excluded page(s) redirect, parity green)`,
+      `docs mirror current at ${label} (${Object.keys(mirrorFiles).length} files, ${corpus.report.published.length} publishable, ${corpus.redirects.length} excluded page(s) redirect, parity green)`,
     );
+    for (const entry of manifest.sources) {
+      console.log(
+        `  ${entry.id}: ${entry.counts.published} published, ${entry.counts.demoted} demoted, ${entry.counts.withheld} withheld`,
+      );
+    }
   } finally {
-    if (snapshot) await cleanupSnapshot(snapshot.dir);
+    for (const snapshot of snapshots) await cleanupSnapshot(snapshot.dir);
   }
 }
 
 main().catch((error) => {
-  const message =
-    error instanceof SyncError
-      ? error.message
-      : (error?.stack ?? String(error));
-  console.error(`error: ${message}`);
+  if (error && typeof error.message === "string") {
+    console.error(`error: ${error.message}`);
+  } else {
+    console.error(`error: ${String(error)}`);
+  }
   process.exit(1);
 });

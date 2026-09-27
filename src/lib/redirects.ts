@@ -30,6 +30,12 @@ export type RedirectEntry = {
   readonly status: 301 | 302;
   readonly reason: string;
   readonly effective_version: string;
+  /**
+   * `false` when the redirect describes a leaf page with no descendants: the
+   * emitter then writes the exact rule only. Defaults to `true` (a subtree
+   * move needs the wildcard form). bitty-website#98 §5.
+   */
+  readonly descendants?: boolean;
 };
 
 export type ExpandedRedirectRule = {
@@ -39,6 +45,7 @@ export type ExpandedRedirectRule = {
   readonly reason: string;
   readonly effective_version: string;
   readonly version: string;
+  readonly descendants?: boolean;
 };
 
 /** Website-only navigation redirects that are not part of the docs manifest. */
@@ -91,12 +98,20 @@ function validateEntries(
         `${origin}: effective_version must be a concrete semver: ${JSON.stringify(raw)}`,
       );
     }
+    if (raw.descendants !== undefined && typeof raw.descendants !== "boolean") {
+      throw new Error(
+        `${origin}: redirect descendants must be a boolean when present: ${JSON.stringify(raw)}`,
+      );
+    }
     entries.push({
       old: raw.old,
       new: raw.new,
       status: raw.status,
       reason: raw.reason,
       effective_version: raw.effective_version,
+      ...(raw.descendants === undefined
+        ? {}
+        : { descendants: raw.descendants }),
     });
   }
   return entries;
@@ -140,10 +155,12 @@ export function mergeRedirectEntries(
       const existing = byOld.get(entry.old);
       if (
         existing !== undefined &&
-        (existing.new !== entry.new || existing.status !== entry.status)
+        (existing.new !== entry.new ||
+          existing.status !== entry.status ||
+          (existing.descendants ?? true) !== (entry.descendants ?? true))
       ) {
         throw new Error(
-          `Conflicting redirect targets for ${entry.old}: ${existing.new} (${existing.status}) vs ${entry.new} (${entry.status})`,
+          `Conflicting redirect targets for ${entry.old}: ${existing.new} (${existing.status}, descendants ${existing.descendants ?? true}) vs ${entry.new} (${entry.status}, descendants ${entry.descendants ?? true})`,
         );
       }
       byOld.set(entry.old, entry);
@@ -205,6 +222,9 @@ export function buildPublicationRedirectEntries(
       status: 301 as const,
       reason: PUBLICATION_REDIRECT_REASON,
       effective_version: effectiveVersion,
+      // A demoted page is a leaf: the exact rule is the whole rule, so the
+      // emitter must not spend one of Cloudflare's 100 dynamic slots on it.
+      descendants: false,
     };
   });
 }
@@ -327,6 +347,9 @@ export function buildExpandedRedirectTable(
         reason: entry.reason,
         effective_version: entry.effective_version,
         version,
+        ...(entry.descendants === undefined
+          ? {}
+          : { descendants: entry.descendants }),
       });
     }
   }
@@ -450,9 +473,12 @@ export function renderEdgeRedirects(
     // 2,000 static rules per file, 2,100 in total. A publication demotion
     // targets a leaf page that has no descendants, so the exact rule above is
     // the whole rule; emitting the wildcard form as well spent 156 of the 100
-    // dynamic slots and made the production deploy fail (code 100324). Legacy
-    // subtree moves keep the wildcard form because they carry descendants.
+    // dynamic slots and made the production deploy fail (code 100324). The
+    // same applies to any entry explicitly marked `descendants: false` (leaf
+    // route moves, #98 §5); subtree moves keep the wildcard form because they
+    // carry descendants.
     if (rule.reason === PUBLICATION_REDIRECT_REASON) continue;
+    if (rule.descendants === false) continue;
     lines.push(`${rule.from}* ${rule.to}:splat ${rule.status}`);
   }
   const ruleLines = lines.filter((line) => !line.startsWith("#"));
@@ -483,13 +509,14 @@ export function renderEdgeRedirects(
 export function renderRedirectEvidence(
   table: readonly ExpandedRedirectRule[],
   meta: {
-    readonly docsRevision: string;
+    /** One entry per consumed source (bitty-website#98): id → resolved SHA. */
+    readonly docsRevisions: Readonly<Record<string, string>>;
     readonly hostedVersions: readonly string[];
   },
 ): string {
   const payload = {
     source: "bitty-website",
-    docs_revision: meta.docsRevision,
+    docs_revisions: { ...meta.docsRevisions },
     hosted_versions: [...meta.hostedVersions],
     redirects: table.map((rule) => ({
       from: rule.from,

@@ -1,12 +1,16 @@
 #!/usr/bin/env bun
 /**
- * Shared helpers for the pinned bitty-docs source boundary.
+ * Shared helpers for the pinned documentation sources (bitty-website#98).
  *
- * Website Delivery RFC SY-2/SY-3/SY-4 (OQ-023):
- *  - one committed pin file is the only consumed-corpus identifier;
- *  - the pinned revision is materialized in an isolated temporary clone and
- *    the shared bitty-docs checkout is never mutated;
- *  - canonical parity gates run on the pinned snapshot, not on a working tree;
+ * Website Delivery RFC SY-2/SY-3/SY-4 plus the multi-source aggregation model:
+ *  - `src/content/docs-revision.json` (schema 2) is the only consumed-corpus
+ *    identifier, one entry per source;
+ *  - every source's pinned revision is materialized in its own isolated
+ *    temporary clone and the shared checkouts are never mutated;
+ *  - the canonical parity gates run on each pinned snapshot, not on a working
+ *    tree;
+ *  - the consumed-file selector and the mount→mirror-path mapping come from
+ *    the single authority `../../src/lib/docsPins.ts`;
  *  - the mirror and its provenance manifest are compared byte-for-byte.
  *
  * Only the scripts in this repository import this module. It has no network
@@ -29,18 +33,17 @@ import { tmpdir } from "node:os";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { spawnSync } from "node:child_process";
 
-export const SHA40 = /^[0-9a-f]{40}$/;
-export const FLOATING_BRANCHES = new Set([
-  "main",
-  "master",
-  "develop",
-  "dev",
-  "latest",
-  "next",
-]);
-const TAG_LIKE = /^v?\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
-const SOURCE_SLUG = /^[A-Za-z0-9.-]+\/[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/;
-const PARITY_MODES = ["metadata", "language", "links", "hygiene"];
+import {
+  DocsPinsError,
+  SOURCE_SLUG,
+  assertPinFormat as assertAuthorityPinFormat,
+  mirrorPathFor,
+  parseDocsPinSet,
+  selectConsumedPaths,
+} from "../../src/lib/docsPins.ts";
+
+/** Canonical parity gate modes every corpus ships. */
+export const PARITY_MODES = ["metadata", "language", "links", "hygiene"];
 
 export class SyncError extends Error {}
 
@@ -53,50 +56,62 @@ export function repoPaths(root) {
   };
 }
 
-/** Parse `--pin <value>` from argv, rejecting a missing or duplicate value. */
-export function parsePinArg(argv) {
-  let pin = "";
+/** Normalize a docs-pins error into the scripts' error type. */
+function toSyncError(error) {
+  if (error instanceof DocsPinsError) return new SyncError(error.message);
+  return error;
+}
+
+/**
+ * Parse `--pin <sha|tag>` and `--source <id>` from argv, rejecting an unknown
+ * or duplicated argument. Both are optional: with no `--pin` the run
+ * re-materializes every source at its committed pin (the idempotence gate).
+ */
+export function parseSyncArgs(argv) {
+  let pin = null;
+  let source = null;
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
-    if (arg === "--pin") {
+    if (arg === "--pin" || arg === "--source") {
       if (i + 1 >= argv.length) {
-        throw new SyncError("--pin requires a value");
+        throw new SyncError(`${arg} requires a value`);
       }
-      pin = argv[i + 1];
+      const value = argv[i + 1];
+      if (arg === "--pin") pin = value;
+      else source = value;
       i++;
     } else if (arg.startsWith("--pin=")) {
       pin = arg.slice("--pin=".length);
+    } else if (arg.startsWith("--source=")) {
+      source = arg.slice("--source=".length);
     } else {
       throw new SyncError(`unknown argument: ${arg}`);
     }
   }
-  if (!pin) {
-    throw new SyncError(
-      "usage: bun run sync:docs --pin <40-char-sha|immutable-tag>",
-    );
-  }
-  return pin.trim();
+  return {
+    pin: pin === null ? null : pin.trim(),
+    source: source === null ? null : source.trim(),
+  };
 }
 
-/** Validate the pin syntax. Throws SyncError on floating, short, or malformed pins. */
-export function assertPinFormat(pin) {
-  if (FLOATING_BRANCHES.has(pin)) {
-    throw new SyncError(`pin must not be a floating branch: "${pin}" (SY-3)`);
-  }
-  if (SHA40.test(pin)) return;
-  if (/^[0-9a-f]{4,39}$/.test(pin) || /^[0-9a-fA-F]{40}$/.test(pin)) {
-    throw new SyncError(
-      `pin must be a full lowercase 40-char SHA, not a short or mixed-case SHA: "${pin}" (SY-2)`,
-    );
-  }
-  if (!TAG_LIKE.test(pin)) {
-    throw new SyncError(
-      `pin "${pin}" is not a 40-char SHA or an immutable tag (SY-3)`,
-    );
+/**
+ * {@link assertPinFormat} from the schema authority, as a SyncError.
+ *
+ * Delegates to the authority's string-level check. It must never round-trip a
+ * synthetic pin set through `parseDocsPinSet` again: that tied pin syntax to
+ * the whole pin-set rules, so tightening one of them (revision-index
+ * ownership) rejected every valid revision and silently disabled the only
+ * supported way to advance a pin (`docs-sync --pin`, #98 review).
+ */
+export function assertPinFormat(revision) {
+  try {
+    assertAuthorityPinFormat(revision);
+  } catch (error) {
+    throw toSyncError(error);
   }
 }
 
-/** Read and shape-check the committed pin file. */
+/** Read and validate the committed pin file (schema 2 only). */
 export async function readPinFile(root) {
   const { pinFile } = repoPaths(root);
   if (!existsSync(pinFile)) {
@@ -108,27 +123,72 @@ export async function readPinFile(root) {
   } catch (error) {
     throw new SyncError(`malformed pin file: ${error.message}`);
   }
-  const allowed = new Set(["revision", "source", "synced_at"]);
-  for (const key of Object.keys(raw)) {
-    if (!allowed.has(key)) {
-      throw new SyncError(`pin file has unknown key "${key}" (SY-1)`);
-    }
+  try {
+    return parseDocsPinSet(raw);
+  } catch (error) {
+    throw toSyncError(error);
   }
-  for (const key of allowed) {
-    if (typeof raw[key] !== "string" || raw[key].length === 0) {
-      throw new SyncError(`pin file field "${key}" must be a non-empty string`);
-    }
+}
+
+/**
+ * Read the raw pin file without schema validation.
+ *
+ * Used only by `sync-docs.mjs` so it can detect the pre-#98 flat shape and
+ * migrate it (the migration is a `just docs-sync` run); every other reader
+ * goes through {@link readPinFile}, which rejects the legacy shape with the
+ * migration message.
+ */
+export async function readRawPinFile(root) {
+  const { pinFile } = repoPaths(root);
+  if (!existsSync(pinFile)) return null;
+  try {
+    return JSON.parse(await readFile(pinFile, "utf8"));
+  } catch (error) {
+    throw new SyncError(`malformed pin file: ${error.message}`);
   }
-  assertPinFormat(raw.revision);
-  if (!SOURCE_SLUG.test(raw.source)) {
-    throw new SyncError(`pin file source is malformed: "${raw.source}"`);
+}
+
+/**
+ * Read the raw provenance manifest without schema validation. Used by the
+ * regression gate in `sync-docs.mjs` to read the committed baseline; `null`
+ * when the file is absent or the legacy shape.
+ */
+export async function readRawManifest(root) {
+  const { manifestFile } = repoPaths(root);
+  if (!existsSync(manifestFile)) return null;
+  try {
+    return JSON.parse(await readFile(manifestFile, "utf8"));
+  } catch (error) {
+    throw new SyncError(`malformed provenance manifest: ${error.message}`);
   }
-  if (Number.isNaN(Date.parse(raw.synced_at))) {
-    throw new SyncError(
-      `pin file synced_at must be ISO-8601: "${raw.synced_at}"`,
-    );
-  }
-  return raw;
+}
+
+/**
+ * Migrate the legacy flat pin to schema 2 in memory: one `bitty-docs` source
+ * whose mount (`docs` → ``) reproduces every current mirror path unchanged.
+ * `publishedBand` is the observed per-source band (reviewed when committed).
+ *
+ * The caller re-validates the result through `parseDocsPinSet` before use, so
+ * the migration cannot hand a hand-built shape to the rest of the pipeline
+ * unnoticed.
+ */
+export function migrateLegacyPin(raw, publishedBand) {
+  const id = repoNameForSource(raw.source)
+    .replace(/[^a-z0-9-]/gi, "-")
+    .toLowerCase();
+  return {
+    schema: 2,
+    sources: [
+      {
+        id,
+        source: raw.source,
+        revision: raw.revision,
+        synced_at: raw.synced_at,
+        mounts: [{ from: "docs", to: "" }],
+        published: publishedBand,
+      },
+    ],
+  };
 }
 
 /** Derive an HTTPS clone URL from the pin's `source` slug, or an env override. */
@@ -139,6 +199,12 @@ export function remoteUrlForSource(source) {
     throw new SyncError(`cannot derive a remote from source "${source}"`);
   }
   return `https://${source}.git`;
+}
+
+/** Last path segment of a `github.com/org/repo` slug (the checkout name). */
+export function repoNameForSource(source) {
+  const parts = String(source).split("/");
+  return parts[parts.length - 1] ?? "";
 }
 
 function git(cwd, args, { allowFailure = false } = {}) {
@@ -155,22 +221,22 @@ function git(cwd, args, { allowFailure = false } = {}) {
   return result;
 }
 
-/** Candidate local bitty-docs checkouts, in preference order. */
-export function findLocalDocsRepo(root) {
-  const candidates = [
-    process.env.BITTY_DOCS_REPO_PATH,
-    process.env.BITTY_WORKSPACE
-      ? join(process.env.BITTY_WORKSPACE, "bitty-docs")
-      : null,
-    ...ancestorDirs(root).map((dir) => join(dir, "bitty-docs")),
-  ].filter(Boolean);
+/** Candidate local checkouts of one source, in preference order. */
+export function findLocalRepo(root, source) {
+  const repoName = repoNameForSource(source);
+  if (repoName.length === 0) return null;
+  const candidates = [];
+  // The explicit override only ever applies to the original bitty-docs pin,
+  // so it cannot silently redirect a project corpus checkout.
+  if (repoName === "bitty-docs" && process.env.BITTY_DOCS_REPO_PATH) {
+    candidates.push(process.env.BITTY_DOCS_REPO_PATH);
+  }
+  if (process.env.BITTY_WORKSPACE) {
+    candidates.push(join(process.env.BITTY_WORKSPACE, repoName));
+  }
+  for (const dir of ancestorDirs(root)) candidates.push(join(dir, repoName));
   for (const candidate of candidates) {
-    if (
-      existsSync(join(candidate, ".git")) &&
-      existsSync(join(candidate, "docs"))
-    ) {
-      return candidate;
-    }
+    if (existsSync(join(candidate, ".git"))) return candidate;
   }
   return null;
 }
@@ -185,20 +251,6 @@ function ancestorDirs(start) {
     current = parent;
   }
   return dirs;
-}
-
-/** Derive the `github.com/org/repo` source slug from a local checkout. */
-export function deriveSourceFromLocal(root) {
-  const local = findLocalDocsRepo(root);
-  if (!local) return null;
-  const result = git(local, ["remote", "get-url", "origin"], {
-    allowFailure: true,
-  });
-  if (result.status !== 0) return null;
-  const url = result.stdout.trim();
-  const match = /github\.com[/:]([^/]+)\/([^/]+?)(?:\.git)?$/.exec(url);
-  if (!match) return null;
-  return `github.com/${match[1]}/${match[2]}`;
 }
 
 async function cloneInto(source, dest) {
@@ -220,30 +272,32 @@ async function resolveSha(dir, pinValue) {
   });
   if (result.status !== 0) return null;
   const sha = result.stdout.trim();
-  return SHA40.test(sha) ? sha : null;
+  return /^[0-9a-f]{40}$/.test(sha) ? sha : null;
 }
 
 /**
  * Materialize `pinValue` in an isolated clone and return the resolved SHA.
  *
- * Prefers a local bitty-docs checkout so the clone reads existing objects and
- * never touches the shared working tree; falls back to the derived remote when
- * the local checkout does not contain the pin. The caller owns `dir` and must
- * remove it with `cleanupSnapshot`.
+ * Prefers a local checkout of the source (repo name derived from the slug) so
+ * the clone reads existing objects and never touches a shared working tree;
+ * falls back to the derived remote when the local checkout does not contain
+ * the pin. The caller owns `dir` and must remove it with `cleanupSnapshot`.
  */
-export async function materializeSnapshot({ root, pinValue, source }) {
-  const local = findLocalDocsRepo(root);
+export async function materializeSnapshot({ root, pinValue, source, id }) {
+  const local = findLocalRepo(root, source);
   if (!local && !source) {
     throw new SyncError(
-      "cannot locate a bitty-docs checkout and no source is known; set BITTY_DOCS_REPO_PATH or BITTY_DOCS_REMOTE",
+      "cannot locate a local checkout and no source slug is known; set BITTY_DOCS_REPO_PATH or BITTY_DOCS_REMOTE",
     );
   }
-  const sources = [local, source ? remoteUrlForSource(source) : null].filter(
+  const candidates = [local, source ? remoteUrlForSource(source) : null].filter(
     Boolean,
   );
-  const dir = await mkdtemp(join(tmpdir(), "bitty-docs-snapshot-"));
+  const dir = await mkdtemp(
+    join(tmpdir(), `bitty-docs-snapshot-${id ?? "source"}-`),
+  );
   let lastError = null;
-  for (const candidate of sources) {
+  for (const candidate of candidates) {
     try {
       await rm(dir, { recursive: true, force: true });
       await cloneInto(candidate, dir);
@@ -272,9 +326,14 @@ export async function cleanupSnapshot(dir) {
   if (dir) await rm(dir, { recursive: true, force: true });
 }
 
-/** Run the canonical four bitty-docs gates on the pinned snapshot. */
-export function runParityGates(snapshotDir) {
+/**
+ * Run the canonical four parity gates on one pinned snapshot. Returns a
+ * per-mode result so the manifest can record evidence instead of a bare pass.
+ */
+export function runParityGatesDetailed(snapshotDir) {
   const script = join(snapshotDir, ".github", "scripts", "check-docs.mjs");
+  const results = {};
+  const outputs = {};
   if (!existsSync(script)) {
     throw new SyncError(
       `pinned snapshot is missing .github/scripts/check-docs.mjs; cannot run parity gates`,
@@ -286,12 +345,32 @@ export function runParityGates(snapshotDir) {
       encoding: "utf8",
       maxBuffer: 64 * 1024 * 1024,
     });
-    if (result.status !== 0) {
-      const detail = `${result.stdout ?? ""}${result.stderr ?? ""}`.trim();
-      throw new SyncError(
-        `bitty-docs parity gate "${mode}" failed on the pinned snapshot:\n${detail}`,
-      );
-    }
+    results[mode] = result.status === 0 ? "pass" : "fail";
+    outputs[mode] = `${result.stdout ?? ""}${result.stderr ?? ""}`.trim();
+  }
+  return { results, outputs };
+}
+
+/** Per-mode parity results as the manifest records them. */
+export function parityReport(detailed) {
+  const report = {};
+  for (const mode of PARITY_MODES) report[mode] = detailed.results[mode];
+  return report;
+}
+
+/** Run the parity gates and fail closed, naming every failed mode. */
+export function runParityGates(snapshotDir) {
+  const detailed = runParityGatesDetailed(snapshotDir);
+  const failed = PARITY_MODES.filter(
+    (mode) => detailed.results[mode] !== "pass",
+  );
+  if (failed.length > 0) {
+    const detail = failed
+      .map((mode) => `"${mode}":\n${detailed.outputs[mode]}`)
+      .join("\n\n");
+    throw new SyncError(
+      `parity gate(s) failed on the pinned snapshot: ${failed.join(", ")}\n${detail}`,
+    );
   }
 }
 
@@ -311,32 +390,95 @@ async function walkFiles(baseDir, relDir = "") {
   return out;
 }
 
+/** SHA-256 of one file. */
+export async function sha256File(file) {
+  return createHash("sha256")
+    .update(await readFile(file))
+    .digest("hex");
+}
+
 /** SHA-256 of every regular file under `dir`, keyed by POSIX-relative path. */
 export async function hashTree(dir) {
   const files = await walkFiles(dir);
   const hashes = {};
   for (const rel of files.sort()) {
-    const bytes = await readFile(join(dir, rel));
-    hashes[rel] = createHash("sha256").update(bytes).digest("hex");
+    hashes[rel] = await sha256File(join(dir, rel));
   }
   return hashes;
 }
 
 /**
- * Publication eligibility is NOT defined here.
+ * The consumed files of one pinned snapshot, resolved through the pin's mounts.
  *
- * The published set — and therefore the `N publishable` count the sync/check
- * pipeline prints — comes from the one policy module
- * (`src/lib/publicationCorpus.ts` over `src/lib/publicationPolicy.ts`,
- * website#97). This module keeps only the pinned-source boundary (pin file,
- * isolated snapshot, parity gates, mirror + manifest hashing).
+ * The selector itself lives in `../../src/lib/docsPins.ts` (the single
+ * authority); this function only walks the snapshot, asks the selector, and
+ * maps each consumed source path to its mirror path and content hash.
+ *
+ * @returns sorted `{ mirrorPath, sourceRelPath, absPath, hash }` records
  */
-
-/** Only the `docs/...` entries of a whole-tree hash map. */
-export function docsOnly(hashes) {
-  return Object.fromEntries(
-    Object.entries(hashes).filter(([key]) => key.startsWith("docs/")),
+export async function collectConsumedFiles(snapshotDir, pin) {
+  const all = await walkFiles(snapshotDir);
+  const files = [];
+  for (const mount of pin.mounts) {
+    const selected = selectConsumedPaths(all, mount, {
+      ...(pin.include === undefined ? {} : { include: pin.include }),
+      ...(pin.exclude === undefined ? {} : { exclude: pin.exclude }),
+    });
+    for (const sourceRelPath of selected) {
+      const mirrorPath = mirrorPathFor(sourceRelPath, mount);
+      if (mirrorPath === null) continue;
+      const absPath = join(snapshotDir, ...sourceRelPath.split("/"));
+      files.push({
+        mirrorPath,
+        sourceRelPath,
+        absPath,
+        hash: await sha256File(absPath),
+      });
+    }
+  }
+  // Code-unit order (not localeCompare) so the manifest hash map has the same
+  // key order as a plain sorted tree walk; the mirror bytes and the manifest
+  // stay byte-identical across the pre-#98 and schema-2 pipelines.
+  return files.sort((left, right) =>
+    left.mirrorPath < right.mirrorPath
+      ? -1
+      : left.mirrorPath > right.mirrorPath
+        ? 1
+        : 0,
   );
+}
+
+/** `{ mirrorPath: sha256 }` of a consumed-file list, in path order. */
+export function hashMapOf(files) {
+  const hashes = {};
+  for (const file of files) hashes[file.mirrorPath] = file.hash;
+  return hashes;
+}
+
+/** Copy a materialized tree (containing `docs/`) over the mirror root. */
+export async function replaceMirror(sourceRoot, mirrorRoot) {
+  await rm(mirrorRoot, { recursive: true, force: true });
+  await mkdir(mirrorRoot, { recursive: true });
+  await cp(join(sourceRoot, "docs"), join(mirrorRoot, "docs"), {
+    recursive: true,
+    preserveTimestamps: false,
+  });
+}
+
+/**
+ * Write the consumed files of every source into a fresh staging directory,
+ * deterministically. The caller loads the publication corpus from the staging
+ * directory and runs the regression gates before anything touches the
+ * committed mirror.
+ */
+export async function stageMirror(stagingDir, files) {
+  await rm(stagingDir, { recursive: true, force: true });
+  await mkdir(stagingDir, { recursive: true });
+  for (const file of files) {
+    const dest = join(stagingDir, ...file.mirrorPath.split("/"));
+    await mkdir(resolve(dest, ".."), { recursive: true });
+    await cp(file.absPath, dest);
+  }
 }
 
 /** Sorted list of key differences between two hash maps. */
@@ -377,16 +519,6 @@ export async function writeFileIfChanged(file, content) {
   return true;
 }
 
-/** Replace the mirrored docs tree with the pinned snapshot's `docs/` tree. */
-export async function replaceMirror(snapshotDir, mirrorRoot) {
-  await rm(mirrorRoot, { recursive: true, force: true });
-  await mkdir(mirrorRoot, { recursive: true });
-  await cp(join(snapshotDir, "docs"), join(mirrorRoot, "docs"), {
-    recursive: true,
-    preserveTimestamps: false,
-  });
-}
-
 /** Current ISO-8601 UTC timestamp. */
 export function nowIso() {
   return new Date().toISOString();
@@ -396,3 +528,13 @@ export function isInside(parent, child) {
   const rel = relative(parent, child);
   return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel));
 }
+
+/**
+ * Publication eligibility is NOT defined here.
+ *
+ * The published set — and therefore the `N publishable` count the sync/check
+ * pipeline prints — comes from the one policy module
+ * (`src/lib/publicationCorpus.ts` over `src/lib/publicationPolicy.ts`,
+ * website#97). This module keeps only the pinned-source boundary (pin file,
+ * isolated snapshots, parity gates, selector, mirror + manifest hashing).
+ */

@@ -7,6 +7,10 @@ import { fileURLToPath } from "node:url";
 import docsRevision from "./src/content/docs-revision.json" with { type: "json" };
 import versions from "./src/content/versions.json" with { type: "json" };
 import { CDN_BASE_URL } from "./src/lib/cdn.ts";
+import {
+  assertPublishedUnderMounts,
+  parseDocsPinSet,
+} from "./src/lib/docsPins.ts";
 import { docsLinksMdastPlugin } from "./src/lib/docsLinksPlugin.ts";
 import { docsHeadingsMdastPlugin } from "./src/lib/docsHeadings.ts";
 import { loadPublicationCorpus } from "./src/lib/publicationCorpus.ts";
@@ -65,6 +69,11 @@ async function writeRedirectArtifacts(outDir) {
   // instead of a 404. The plan comes from the policy, never from a second
   // eligibility rule here.
   const corpus = await loadPublicationCorpus(mirrorRoot);
+  // Multi-source aggregation (bitty-website#98 §3.2): a published page must
+  // lie under a declared mount, so a mirror file without provenance cannot be
+  // published, and the evidence below carries every source's revision.
+  const pins = parseDocsPinSet(docsRevision);
+  assertPublishedUnderMounts(corpus.publishedSources, pins);
   const publicationEntries = buildPublicationRedirectEntries(
     corpus.redirects,
     // An exclusion applies to every hosted segment, so the entries take
@@ -88,7 +97,9 @@ async function writeRedirectArtifacts(outDir) {
   await writeFile(
     join(outDir, "redirects.json"),
     renderRedirectEvidence(table, {
-      docsRevision: docsRevision.revision,
+      docsRevisions: Object.fromEntries(
+        pins.sources.map((source) => [source.id, source.revision]),
+      ),
       hostedVersions: hostedVersionSegments,
     }),
     "utf8",

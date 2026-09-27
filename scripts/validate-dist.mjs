@@ -3,7 +3,16 @@ import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { flipListEntries } from "../src/lib/publicationPolicy.ts";
-import { PUBLICATION_REDIRECT_REASON } from "../src/lib/redirects.ts";
+import { loadPublicationCorpus } from "../src/lib/publicationCorpus.ts";
+import {
+  assertPublishedUnderMounts,
+  parseDocsPinSet,
+} from "../src/lib/docsPins.ts";
+import {
+  CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT,
+  CLOUDFLARE_TOTAL_REDIRECT_LIMIT,
+  PUBLICATION_REDIRECT_REASON,
+} from "../src/lib/redirects.ts";
 import { sitemapRoutes } from "../src/lib/sitemap.ts";
 
 const dist = new URL("../dist/", import.meta.url);
@@ -193,6 +202,85 @@ for (const rule of policyRules) {
   if (!edgeRedirects.includes(`${rule.from} ${rule.to} 301`)) {
     throw new Error(
       `dist/_redirects is missing the publication rule "${rule.from} ${rule.to} 301"`,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Multi-source aggregation gates (bitty-website#98 §3.2 / task T4). The
+// deployed artifacts must prove that the declared mounts cover every published
+// page, that the redirect evidence names every pinned revision, and that the
+// edge rules stay inside Cloudflare's rule budget with leaf moves emitted
+// exact-only (no dynamic wildcard).
+// ---------------------------------------------------------------------------
+const pinSet = parseDocsPinSet(
+  JSON.parse(
+    await readFile(
+      new URL("../src/content/docs-revision.json", import.meta.url),
+      "utf8",
+    ),
+  ),
+);
+// Mounts must be disjoint so every mirror path resolves to exactly one source;
+// parseDocsPinSet enforces that. Assert published-page provenance explicitly.
+assertPublishedUnderMounts(
+  (
+    await loadPublicationCorpus(
+      fileURLToPath(new URL("../src/content/docs", import.meta.url)),
+    )
+  ).publishedSources,
+  pinSet,
+);
+
+const docsRevisions = evidence.docs_revisions;
+if (
+  docsRevisions === null ||
+  typeof docsRevisions !== "object" ||
+  Array.isArray(docsRevisions)
+) {
+  throw new Error(
+    "dist/redirects.json must carry docs_revisions (one entry per pinned source)",
+  );
+}
+for (const source of pinSet.sources) {
+  if (docsRevisions[source.id] !== source.revision) {
+    throw new Error(
+      `dist/redirects.json docs_revisions["${source.id}"] must be ${source.revision}, received ${docsRevisions[source.id] ?? "missing"}`,
+    );
+  }
+}
+// Every pinned source must be present AND nothing else: stale evidence for a
+// removed source would otherwise keep validating after its pin is gone.
+const pinnedIds = new Set(pinSet.sources.map((source) => source.id));
+for (const id of Object.keys(docsRevisions)) {
+  if (!pinnedIds.has(id)) {
+    throw new Error(
+      `dist/redirects.json docs_revisions holds unknown source "${id}"; expected exactly the pinned source(s) ${[...pinnedIds].join(", ")}`,
+    );
+  }
+}
+
+const edgeRuleLines = edgeRedirects
+  .split(/\r?\n/u)
+  .filter((line) => line.length > 0 && !line.startsWith("#"));
+const dynamicEdgeRules = edgeRuleLines.filter((line) => {
+  const pattern = line.split(/\s+/u)[0] ?? "";
+  return pattern.includes("*") || /:[a-zA-Z]/u.test(pattern);
+});
+if (dynamicEdgeRules.length > CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT) {
+  throw new Error(
+    `dist/_redirects has ${dynamicEdgeRules.length} dynamic rules, over Cloudflare's ${CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT}-dynamic-rule limit`,
+  );
+}
+if (edgeRuleLines.length > CLOUDFLARE_TOTAL_REDIRECT_LIMIT) {
+  throw new Error(
+    `dist/_redirects has ${edgeRuleLines.length} rules, over Cloudflare's ${CLOUDFLARE_TOTAL_REDIRECT_LIMIT}-rule limit`,
+  );
+}
+for (const rule of policyRules) {
+  if (dynamicEdgeRules.some((line) => line.startsWith(`${rule.from}*`))) {
+    throw new Error(
+      `publication redirect ${rule.from} must be exact-only; dist/_redirects has a dynamic wildcard rule for it`,
     );
   }
 }

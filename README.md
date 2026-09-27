@@ -113,7 +113,7 @@ per-file provenance (source path, SHA-256, revision).
 Advance the mirror to a merged, reviewed `bitty-docs` commit:
 
 ```sh
-just docs-sync PIN=<merged-docs-sha>   # or: bun run sync:docs --pin <sha>
+just docs-sync --source bitty-docs --pin <merged-docs-sha>   # or: bun run sync:docs --source bitty-docs --pin <sha>
 just docs-check                        # fail-closed staleness gate
 ```
 

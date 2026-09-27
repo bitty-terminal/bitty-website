@@ -14,9 +14,12 @@ import {
   CLOUDFLARE_STATIC_REDIRECT_LIMIT,
   CLOUDFLARE_TOTAL_REDIRECT_LIMIT,
   PUBLICATION_REDIRECT_REASON,
+  buildExpandedRedirectTable,
   buildPublicationRedirectEntries,
   lowestVersion,
   renderEdgeRedirects,
+  renderRedirectEvidence,
+  type RedirectEntry,
 } from "./redirects.ts";
 
 describe("nearestPublishedAncestor", () => {
@@ -74,6 +77,7 @@ describe("buildPublicationRedirectEntries", () => {
         status: 301,
         reason: PUBLICATION_REDIRECT_REASON,
         effective_version: "0.1.0",
+        descendants: false,
       },
     ]);
   });
@@ -184,5 +188,78 @@ describe("renderEdgeRedirects (Cloudflare _redirects budget)", () => {
     expect(() => renderEdgeRedirects(rules, {})).toThrow(
       /limit of 100 \(deployment code 100324\)/,
     );
+  });
+
+  test("leaf moves marked descendants:false do not consume the dynamic budget (#98)", () => {
+    const versions = ["latest", "stable", "0.1.0"];
+    // The 14 legacy subtree moves keep the wildcard form: 14 x 3 = 42 dynamic.
+    const legacy: RedirectEntry[] = Array.from({ length: 14 }, (_, i) => ({
+      old: `/docs/tree-${i}/`,
+      new: `/docs/projects/bitty/tree-${i}/`,
+      status: 301,
+      reason: "bitty-docs partition migration (legacy subtree move)",
+      effective_version: "0.1.0",
+    }));
+    // 19 moved leaf pages marked exact-only; a naive emitter would add 19 x 3
+    // = 57 dynamic rules on top and reach 99 of Cloudflare's 100 slots.
+    const leaves: RedirectEntry[] = Array.from({ length: 19 }, (_, i) => ({
+      old: `/docs/old-leaf-${i}/`,
+      new: `/docs/projects/plugins/specifications/leaf-${i}/`,
+      status: 301,
+      reason: "route move (#98)",
+      effective_version: "0.1.0",
+      descendants: false,
+    }));
+    const dynamicLines = (entries: readonly RedirectEntry[]) =>
+      renderEdgeRedirects(buildExpandedRedirectTable(entries, versions), {})
+        .split("\n")
+        .filter((line) => line.length > 0 && !line.startsWith("#"))
+        .filter((line) => {
+          const pattern = line.split(/\s+/)[0] ?? "";
+          return pattern.includes("*") || /:[a-zA-Z]/.test(pattern);
+        });
+
+    const withFlag = dynamicLines([...legacy, ...leaves]);
+    expect(withFlag).toHaveLength(42);
+    expect(withFlag.length).toBeLessThanOrEqual(
+      CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT,
+    );
+
+    const naive = dynamicLines([
+      ...legacy,
+      ...leaves.map((entry): RedirectEntry => ({
+        old: entry.old,
+        new: entry.new,
+        status: entry.status,
+        reason: entry.reason,
+        effective_version: entry.effective_version,
+      })),
+    ]);
+    expect(naive).toHaveLength(99);
+    expect(naive.length).toBeGreaterThan(withFlag.length);
+  });
+});
+
+describe("renderRedirectEvidence (deployed provenance key set, #98)", () => {
+  const revisions = {
+    "bitty-docs": "9891949ca20b245375ece9a9015d0f42458fd2b1",
+  };
+
+  test("carries docs_revisions (the pinned-source map) and no scalar docs_revision", () => {
+    const payload = JSON.parse(
+      renderRedirectEvidence([], {
+        docsRevisions: revisions,
+        hostedVersions: ["latest", "stable", "0.1.0"],
+      }),
+    );
+    // The deployed-artifact schema change of #98: one entry per pinned source.
+    expect(Object.keys(payload).sort()).toEqual([
+      "docs_revisions",
+      "hosted_versions",
+      "redirects",
+      "source",
+    ]);
+    expect(payload.docs_revisions).toEqual(revisions);
+    expect("docs_revision" in payload).toBe(false);
   });
 });

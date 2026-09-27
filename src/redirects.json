@@ -208,7 +208,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/extensibility/package-management/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -216,7 +216,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/extensibility/plugin-system/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -224,7 +224,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/ai-architecture/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -232,7 +232,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/browser-agent-pre-study/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -240,7 +240,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/cli-contract-rfc/ is demoted in the pinned aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -248,7 +248,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/compatibility-milestone-rfc/ is demoted in the pinned aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -256,7 +256,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/configuration-model-rfc/ is demoted in the pinned aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -264,7 +264,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/default-distribution-rfc/ is demoted in the pinned aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -272,7 +272,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/devtools-rfc/ is demoted in the pinned aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -280,7 +280,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/governance-rfc/ is demoted in the pinned aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -288,7 +288,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/input-pointer-rfc/ is demoted in the pinned aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -296,7 +296,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/ipc-agent-rfc/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -304,7 +304,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/isolation-resource-rfc/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -312,7 +312,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/lua-runtime-rfc/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -320,7 +320,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/package-followup-rfc/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -328,7 +328,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/package-lifecycle-rfc/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -336,7 +336,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/panel-runtime-pre-study/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -344,7 +344,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/performance-budget-rfc/ is demoted in the pinned aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -352,7 +352,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/plugin-api-v1-lua-surface-rfc/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -360,7 +360,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/plugin-host-runtime-rfc/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -368,7 +368,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/plugin-platform-rfc/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -376,7 +376,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/plugin-reuse-and-providers/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -384,7 +384,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/readme/ is demoted in the pinned aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -392,7 +392,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/rich-presentation-rfc/ is demoted in the pinned aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -400,7 +400,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/risk-evidence-rfc/ is demoted in the pinned aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -408,7 +408,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/semantic-terminal-rfc/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -416,7 +416,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/status-system/ is demoted in the pinned aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -424,7 +424,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/terminal-feature-gap-analysis/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -432,7 +432,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/terminal-registry-view-lifecycle-rfc/ is demoted in the pinned aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -440,7 +440,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/terminal-state-rfc/ is demoted in the pinned aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -448,7 +448,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/text-rendering-rfc/ is demoted in the pinned aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -456,7 +456,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/ui-compositor-gap-analysis/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -464,7 +464,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/ui-extensibility-architecture/ is not in the pinned aggregated corpus yet (its owning corpus has not landed), so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -472,7 +472,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/website-delivery-rfc/ is demoted in the pinned aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   },
   {
@@ -480,7 +480,7 @@
     "new": "/docs/",
     "status": 301,
     "descendants": false,
-    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its post-migration page /docs/projects/bitty/specifications/workspace-compositor/ is demoted in the pinned aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
     "effective_version": "0.1.0"
   }
 ]

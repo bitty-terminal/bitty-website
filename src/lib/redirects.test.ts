@@ -270,10 +270,12 @@ describe("renderRedirectEvidence (deployed provenance key set, #98)", () => {
  * Routes that answered a redirect before the T5 multi-source change and must
  * keep answering one (#98 §5: no URL 404s).
  *
- * Two groups. In the aggregated corpus every route here is either demoted (a
- * policy 301 of its own) or absent because its page is withheld; in both cases
- * it is a leaf whose single correct interim target is `/docs/`, the nearest
- * published ancestor.
+ * Two groups. In the pinned aggregated corpus every route here is either
+ * demoted (its post-migration page ships a policy 301 of its own) or absent
+ * because the source that owns the page has not landed yet; in both cases the
+ * route is a leaf whose single correct interim target is `/docs/`, the nearest
+ * published ancestor. The 14 pages of `publication-withhold-list.json` are not
+ * here: they are withheld precisely because they never had a route.
  *
  *   - the 35 flat CTX-0185 aliases: `docs/specifications/*.md`
  *     (33 files, the section index `readme` included) and

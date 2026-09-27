@@ -1,15 +1,17 @@
 # Bitty Website
 
 This repository contains the static website for the Bitty project. It renders
-the marketing shell plus the canonical `bitty-docs` documents whose frontmatter
-sets `website_publish: true`, consumed from one pinned revision. It does not
+the marketing shell plus the canonical documents whose frontmatter sets
+`website_publish: true`, consumed from four pinned source revisions. It does not
 publish product features, search, analytics, localized content, or an
 unversioned routing contract.
 
-Canonical technical documentation remains owned by `bitty-docs`; this
-repository only mirrors and presents it. The authoritative mechanism,
-route mapping, and operator contract live in the canonical `bitty-docs`
-guide `docs/development/website-sync.md` (Website Delivery RFC, OQ-023).
+Canonical technical documentation remains owned by its corpus: `bitty-docs`
+(governance content and the revision index), `bitty-terminal-docs`,
+`bitty-plugins-docs`, and `bitty-ai-docs`; this repository only mirrors and
+presents them. The authoritative mechanism, route mapping, and operator
+contract live in the canonical `bitty-docs` guide
+`docs/development/website-sync.md` (Website Delivery RFC, OQ-023).
 
 ## Target stack and site map (deferred)
 
@@ -36,19 +38,21 @@ Target site map (v1 routes `/` and `/docs/...`; the rest stays planned):
 
 The plugin store is a separate Vite application at
 <https://plugins.bitty.run>; it is not built, deployed, or documented from this
-repository. Canonical content is planned to be aggregated at build time from
-three pinned sources — `bitty-terminal-docs`, `bitty-plugins-docs`, and
-`bitty-ai-docs` — while only the single pinned `bitty-docs` revision is
-consumed today (see `src/content/docs-revision.json`). The source naming and
-multi-source aggregation require an accepted decision before implementation.
+repository. Canonical content is aggregated at build time from four pinned
+sources — `bitty-docs`, `bitty-terminal-docs`, `bitty-plugins-docs`, and
+`bitty-ai-docs` — each mounted under its own route prefix; see
+`content-sources/README.md` and `src/content/docs-revision.json`. `/api/`,
+`/ai/`, and the remaining planned routes above are still deferred: aggregation
+keeps every corpus under `/docs/<version>/...`.
 
 `astro.config.mjs` records the canonical origin as
 `site: "https://bitty.run"`. Pushes to `main` auto-deploy `dist/` through
 `wrangler` using the organization `CLOUDFLARE_ACCOUNT_ID` and
 `CLOUDFLARE_API_TOKEN` secrets (see `.github/workflows/deploy.yml`); no
-production deploy happens from a pull request. `i18n/` and
-`content-sources/` are documented placeholders for the deferred locale layout
-and source-aggregation plan; they contain guidance only.
+production deploy happens from a pull request. `i18n/` remains a documented
+placeholder for the deferred locale layout;
+`content-sources/` documents the implemented source-aggregation layout and
+holds no fetched content (the mirror is generated).
 
 ## See the project workflow (CarryCtx)
 
@@ -96,7 +100,8 @@ The aggregate check verifies formatting, Markdown linting, the docs mirror
 staleness gate, TypeScript 7.0.2 with its native compiler, the Astro static
 build, the expected `dist/index.html` output, Wrangler's deployment
 configuration in dry-run mode, and both GitHub Actions workflows. The
-`validate:dist` script also checks the emitted cache-header contract.
+`validate:dist` script also checks the emitted cache-header contract and the
+generated `dist/docs-provenance.json` corpus record.
 
 Cloudflare Workers Static Assets reads `public/_headers` from the build
 output. Content-hashed `/_astro/*` assets use a one-year immutable browser
@@ -106,21 +111,26 @@ cache, while `/icons/*` and the root HTML document retain
 ## Documentation sync
 
 Never edit `src/content/docs/` by hand: it is a generated, read-only mirror of
-the pinned `bitty-docs` revision. The single pin lives in
-`src/content/docs-revision.json`; `src/content/docs-manifest.json` records the
-per-file provenance (source path, SHA-256, revision).
+the four pinned corpus revisions. The pins live in
+`src/content/docs-revision.json` (schema 2, one entry per source with its mount
+and published band); `src/content/docs-manifest.json` records the per-source
+parity results, counts, per-file provenance (source path, SHA-256, revision),
+and the routes each source publishes. `content-sources/README.md` describes the
+model and every gate.
 
-Advance the mirror to a merged, reviewed `bitty-docs` commit:
+Advance one source to a merged, reviewed commit, or re-materialize every source
+at its committed pin:
 
 ```sh
-just docs-sync --source bitty-docs --pin <merged-docs-sha>   # or: bun run sync:docs --source bitty-docs --pin <sha>
-just docs-check                        # fail-closed staleness gate
+just docs-sync                                    # re-materialize all four sources (idempotent)
+just docs-sync --source bitty-docs --pin <sha>    # advance exactly one source
+just docs-check                                   # fail-closed staleness gate
 ```
 
 `just check` runs `docs:check`, so CI fails when the mirror or manifest drifts
-from the pinned revision or was hand-edited. Canonical documentation is the
+from a pinned source or was hand-edited. Canonical documentation is the
 source and must be recorded continuously: a docs change is not complete until
-the website pin advances in the same delivery window. See the canonical
+the owning corpus's pin advances in the same delivery window. See the canonical
 operator note for the full procedure.
 
 Git hooks managed by lefthook enforce Conventional Commits messages and

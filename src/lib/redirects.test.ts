@@ -274,26 +274,25 @@ describe("renderRedirectEvidence (deployed provenance key set, #98)", () => {
  * demoted (its post-migration page ships a policy 301 of its own) or absent
  * because the source that owns the page has not landed yet; in both cases the
  * route is a leaf whose single correct interim target is `/docs/`, the nearest
- * published ancestor. The 14 pages of `publication-withhold-list.json` are not
+ * published ancestor. The 22 pages of `publication-withhold-list.json` are not
  * here: they are withheld precisely because they never had a route.
  *
- *   - the 35 flat CTX-0185 aliases: `docs/specifications/*.md`
- *     (33 files, the section index `readme` included) and
- *     `docs/extensibility/*.md` (2 files) as of the revision before that
- *     migration. The two containers these live under were retargeted to
- *     `/docs/`, which drops their wildcard, so without a per-route entry
- *     35 routes x 3 hosted versions turn from 301 into 404 — the same
- *     class of loss as the entries above, one level down;
+ *   - the 28 remaining flat CTX-0185 aliases: `docs/specifications/*.md`
+ *     (the section index `readme` included) and `docs/extensibility/*.md`
+ *     (2 files) as of the revision before that migration, minus the 7 aliases
+ *     the T6 `bitty-plugins-docs` onboarding retargeted (`RETARGETED_ROUTES`).
+ *     The two containers these live under were retargeted to `/docs/`, which
+ *     drops their wildcard, so without a per-route entry 28 routes x 3 hosted
+ *     versions turn from 301 into 404 — the same class of loss as the entries
+ *     above, one level down;
  *   - the 6 routes carved out of the pinned bitty-docs revision
  *     whose owning corpus has not landed yet.
  *
  * Shrink-only: an entry leaves this list when the owning corpus lands and
- * publishes the page (then the entry names the exact target, or is dropped
- * when the page publishes at its old URL again).
+ * publishes the page (then the entry moves to `RETARGETED_ROUTES` with the
+ * exact target, or is dropped when the page publishes at its old URL again).
  */
 const INTERIM_CONTINUITY_ROUTES = [
-  "/docs/extensibility/package-management/",
-  "/docs/extensibility/plugin-system/",
   "/docs/specifications/ai-architecture/",
   "/docs/specifications/browser-agent-pre-study/",
   "/docs/specifications/cli-contract-rfc/",
@@ -310,10 +309,6 @@ const INTERIM_CONTINUITY_ROUTES = [
   "/docs/specifications/package-lifecycle-rfc/",
   "/docs/specifications/panel-runtime-pre-study/",
   "/docs/specifications/performance-budget-rfc/",
-  "/docs/specifications/plugin-api-v1-lua-surface-rfc/",
-  "/docs/specifications/plugin-host-runtime-rfc/",
-  "/docs/specifications/plugin-platform-rfc/",
-  "/docs/specifications/plugin-reuse-and-providers/",
   "/docs/specifications/readme/",
   "/docs/specifications/rich-presentation-rfc/",
   "/docs/specifications/risk-evidence-rfc/",
@@ -324,7 +319,6 @@ const INTERIM_CONTINUITY_ROUTES = [
   "/docs/specifications/terminal-state-rfc/",
   "/docs/specifications/text-rendering-rfc/",
   "/docs/specifications/ui-compositor-gap-analysis/",
-  "/docs/specifications/ui-extensibility-architecture/",
   "/docs/specifications/website-delivery-rfc/",
   "/docs/specifications/workspace-compositor/",
   "/docs/projects/bitty/specifications/ai-architecture/",
@@ -335,10 +329,77 @@ const INTERIM_CONTINUITY_ROUTES = [
   "/docs/projects/bitty/specifications/package-lifecycle-rfc/",
 ] as const;
 
-/** The flat group is exactly the pre-migration tree: 33 specifications files
- * (README.md included) + 2 extensibility files. Pinned as arithmetic so
- * dropping one route has to be argued here, not just in the list above. */
-const FLAT_ALIAS_ROUTES = 35;
+/**
+ * Routes that turned from an interim `/docs/` 301 into an exact 301 at the T6
+ * `bitty-plugins-docs` onboarding (#98). 7 flat CTX-0185 aliases plus the 7
+ * routes that answered a redirect from the pinned `projects/bitty/...` path
+ * after T5 carved the tree out. Both groups now name the exact published
+ * `projects/plugins/...` page; the target is a leaf page, so each entry stays
+ * exact-only (`descendants: false`).
+ */
+const RETARGETED_ROUTES: readonly (readonly [string, string])[] = [
+  [
+    "/docs/extensibility/package-management/",
+    "/docs/projects/plugins/extensibility/package-management/",
+  ],
+  [
+    "/docs/extensibility/plugin-system/",
+    "/docs/projects/plugins/extensibility/plugin-system/",
+  ],
+  [
+    "/docs/specifications/plugin-api-v1-lua-surface-rfc/",
+    "/docs/projects/plugins/sdk/plugin-api-v1-lua-surface-rfc/",
+  ],
+  [
+    "/docs/specifications/plugin-host-runtime-rfc/",
+    "/docs/projects/plugins/runtime/plugin-host-runtime-rfc/",
+  ],
+  [
+    "/docs/specifications/plugin-platform-rfc/",
+    "/docs/projects/plugins/specifications/plugin-platform-rfc/",
+  ],
+  [
+    "/docs/specifications/plugin-reuse-and-providers/",
+    "/docs/projects/plugins/packaging/plugin-reuse-and-providers/",
+  ],
+  [
+    "/docs/specifications/ui-extensibility-architecture/",
+    "/docs/projects/plugins/architecture/ui-extensibility-architecture/",
+  ],
+  [
+    "/docs/projects/bitty/extensibility/package-management/",
+    "/docs/projects/plugins/extensibility/package-management/",
+  ],
+  [
+    "/docs/projects/bitty/extensibility/plugin-system/",
+    "/docs/projects/plugins/extensibility/plugin-system/",
+  ],
+  [
+    "/docs/projects/bitty/specifications/plugin-api-v1-lua-surface-rfc/",
+    "/docs/projects/plugins/sdk/plugin-api-v1-lua-surface-rfc/",
+  ],
+  [
+    "/docs/projects/bitty/specifications/plugin-host-runtime-rfc/",
+    "/docs/projects/plugins/runtime/plugin-host-runtime-rfc/",
+  ],
+  [
+    "/docs/projects/bitty/specifications/plugin-platform-rfc/",
+    "/docs/projects/plugins/specifications/plugin-platform-rfc/",
+  ],
+  [
+    "/docs/projects/bitty/specifications/plugin-reuse-and-providers/",
+    "/docs/projects/plugins/packaging/plugin-reuse-and-providers/",
+  ],
+  [
+    "/docs/projects/bitty/specifications/ui-extensibility-architecture/",
+    "/docs/projects/plugins/architecture/ui-extensibility-architecture/",
+  ],
+] as const;
+
+/** The flat group is the pre-migration tree minus the 7 aliases T6 retargeted:
+ * 28 specifications/extensibility files. Pinned as arithmetic so dropping one
+ * route has to be argued here, not just in the list above. */
+const FLAT_ALIAS_ROUTES = 28;
 const CARVED_OUT_ROUTES = 6;
 
 describe("interim redirect continuity for moved routes (#98)", () => {
@@ -359,6 +420,21 @@ describe("interim redirect continuity for moved routes (#98)", () => {
       expect(entry?.status).toBe(301);
       expect(entry?.new).toBe("/docs/");
       expect(entry?.descendants).toBe(false);
+    }
+  });
+
+  test("every retargeted route answers 301 to its exact published page", () => {
+    for (const [old, target] of RETARGETED_ROUTES) {
+      const entry = entries.find((candidate) => candidate.old === old);
+      expect(entry, `no redirect entry for ${old}`).toBeDefined();
+      expect(entry?.status).toBe(301);
+      expect(entry?.new).toBe(target);
+      expect(entry?.descendants).toBe(false);
+      // The new target is no other entry's source: no 301 chain.
+      expect(entries.some((candidate) => candidate.old === target)).toBe(false);
+      // The reason names the exact target, not the interim ancestor.
+      expect(entry?.reason).toContain(target);
+      expect(entry?.reason).not.toContain("interim target /docs/");
     }
   });
 });

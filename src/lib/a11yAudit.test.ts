@@ -15,6 +15,8 @@ import { join } from "node:path";
 import {
   BUNDLED_VECTOR_EXTENSIONS,
   RASTER_EXTENSIONS,
+  RECORDED_ASSET_EXCEPTION_DOC,
+  assetPolicyFindings,
   auditDocsShell,
   classifyAssetReference,
   collectRenderedPages,
@@ -158,6 +160,31 @@ describe("a11y asset policy", () => {
       } finally {
         await rm(root, { recursive: true, force: true });
       }
+    });
+
+    test("warns once, naming the recorded exception, on a passthrough page", () => {
+      const findings = assetPolicyFindings(
+        "page:docs/latest/architecture/interactive/index.html",
+        '<img src="assets/bitty-icon.png">',
+        true,
+      );
+      expect(findings).toHaveLength(1);
+      expect(findings[0]?.severity).toBe("warn");
+      expect(findings[0]?.detail).toContain(RECORDED_ASSET_EXCEPTION_DOC);
+    });
+
+    test("fails the same bundled raster markup on a non-passthrough page", () => {
+      const findings = assetPolicyFindings(
+        "page:docs/latest/guide/index.html",
+        '<img src="assets/bitty-icon.png">',
+        false,
+      );
+      expect(findings).toHaveLength(1);
+      expect(findings[0]?.severity).toBe("fail");
+      expect(findings[0]?.detail).not.toContain(RECORDED_ASSET_EXCEPTION_DOC);
+      expect(
+        findDisallowedAssetReferences('<img src="assets/bitty-icon.png">'),
+      ).toHaveLength(1);
     });
 
     test("reports media element names instead of a bare bracket", () => {

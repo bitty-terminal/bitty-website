@@ -18,10 +18,10 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  assetPolicyFindings,
   auditDocsShell,
   collectRenderedPages,
   findBrokenInternalLinks,
-  findDisallowedAssetReferences,
   sidebarListDepth,
 } from "../src/lib/a11yAudit.ts";
 
@@ -125,8 +125,8 @@ function auditPage(name, html, { strictHeadings, passthrough }) {
     // Upstream standalone app mirrored verbatim (architecture/interactive/):
     // it owns its own chrome and a11y, so site-template checks (skip link,
     // footer landmark, programmatic focus target) do not apply. Asset policy
-    // still applies but warn-only — the PNG sources live upstream and are
-    // tracked there, and the mirror must not be hand-edited.
+    // still applies but warn-only — the mirror must not be hand-edited and the
+    // references are recorded as an accepted exception in docs/cdn-assets.md.
     pass(`${name}: passthrough: site-chrome checks not applicable`);
   } else {
     if (
@@ -185,19 +185,18 @@ function auditPage(name, html, { strictHeadings, passthrough }) {
   // docs/cdn-assets.md), so the built site must stay text-only apart from the
   // policy-approved bundled SVG vector formats. The classifier inspects every
   // URL-bearing attribute and every srcset candidate, rather than trusting the
-  // first value found on an element.
-  const assetProblems = findDisallowedAssetReferences(html);
-  if (assetProblems.length === 0) {
+  // first value found on an element. Passthrough mirrors keep their bundled
+  // raster references warn-only against the accepted exception recorded in
+  // docs/cdn-assets.md; every other page fails.
+  const assetFindings = assetPolicyFindings(name, html, passthrough);
+  if (assetFindings.length === 0) {
     pass(`${name}: no bundled raster elements (R2-hosted assets allowed)`);
   } else {
-    for (const problem of assetProblems) {
-      const detail = `${name}: bundled raster dependence found in ${problem.element}[${problem.attribute}]: ${problem.value}`;
-      // Passthrough sources live upstream; the mirror must not be
-      // hand-edited, so these stay warn-only and tracked upstream.
-      if (passthrough) {
-        warn(`${detail} (upstream passthrough, tracked in bitty-docs#373)`);
+    for (const finding of assetFindings) {
+      if (finding.severity === "warn") {
+        warn(finding.detail);
       } else {
-        fail(detail);
+        fail(finding.detail);
       }
     }
   }

@@ -69,6 +69,44 @@ export type RenderedPage = {
 /** Relative dist paths rendered outside the site template. */
 export const PASSTHROUGH_PATH_SEGMENT = "architecture/interactive/";
 
+/**
+ * Policy record for the accepted bundled-raster exception on the interactive
+ * architecture passthrough page. The audit cites this document (see its
+ * "Recorded exceptions" section) instead of an open tracking issue: the page
+ * is generated upstream and the mirror must not be hand-edited, so the
+ * references stay warn-only rather than failing the build.
+ */
+export const RECORDED_ASSET_EXCEPTION_DOC = "docs/cdn-assets.md";
+
+/** Severity the audit assigns to one disallowed asset reference. */
+export type AssetPolicyFinding = {
+  readonly severity: "warn" | "fail";
+  readonly detail: string;
+};
+
+/**
+ * Severity and message for every disallowed asset reference on one page.
+ *
+ * Passthrough mirrors keep their bundled raster references warn-only and cite
+ * the recorded exception in `docs/cdn-assets.md`; every other page fails, so
+ * the same markup elsewhere still stops the build.
+ */
+export function assetPolicyFindings(
+  pageName: string,
+  html: string,
+  passthrough: boolean,
+): readonly AssetPolicyFinding[] {
+  return findDisallowedAssetReferences(html).map((problem) => {
+    const detail = `${pageName}: bundled raster dependence found in ${problem.element}[${problem.attribute}]: ${problem.value}`;
+    return {
+      severity: passthrough ? "warn" : "fail",
+      detail: passthrough
+        ? `${detail} (accepted exception recorded in ${RECORDED_ASSET_EXCEPTION_DOC})`
+        : detail,
+    };
+  });
+}
+
 function elementTag(source: string, tagName: string): string {
   return source
     .slice(0, source.indexOf(tagName) + tagName.length)

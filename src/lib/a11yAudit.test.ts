@@ -8,13 +8,17 @@
  */
 
 import { describe, expect, test } from "bun:test";
+import { existsSync, readFileSync } from "node:fs";
 import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import {
   BUNDLED_VECTOR_EXTENSIONS,
+  PASSTHROUGH_PATH_SEGMENT,
   RASTER_EXTENSIONS,
+  RECORDED_ASSET_EXCEPTION_DOC,
+  assetPolicyFindings,
   auditDocsShell,
   classifyAssetReference,
   collectRenderedPages,
@@ -158,6 +162,44 @@ describe("a11y asset policy", () => {
       } finally {
         await rm(root, { recursive: true, force: true });
       }
+    });
+
+    test("warns once, naming the recorded exception, on a passthrough page", () => {
+      const findings = assetPolicyFindings(
+        "page:docs/latest/architecture/interactive/index.html",
+        '<img src="assets/bitty-icon.png">',
+        true,
+      );
+      expect(findings).toHaveLength(1);
+      expect(findings[0]?.severity).toBe("warn");
+      expect(findings[0]?.detail).toContain(RECORDED_ASSET_EXCEPTION_DOC);
+    });
+
+    test("fails the same bundled raster markup on a non-passthrough page", () => {
+      const findings = assetPolicyFindings(
+        "page:docs/latest/guide/index.html",
+        '<img src="assets/bitty-icon.png">',
+        false,
+      );
+      expect(findings).toHaveLength(1);
+      expect(findings[0]?.severity).toBe("fail");
+      expect(findings[0]?.detail).not.toContain(RECORDED_ASSET_EXCEPTION_DOC);
+      expect(
+        findDisallowedAssetReferences('<img src="assets/bitty-icon.png">'),
+      ).toHaveLength(1);
+    });
+
+    test("cites a record that exists and records this exception", () => {
+      const record = join(
+        import.meta.dir,
+        "..",
+        "..",
+        RECORDED_ASSET_EXCEPTION_DOC,
+      );
+      expect(existsSync(record)).toBe(true);
+      const text = readFileSync(record, "utf8");
+      expect(text).toContain("## Recorded exceptions");
+      expect(text).toContain(PASSTHROUGH_PATH_SEGMENT);
     });
 
     test("reports media element names instead of a bare bracket", () => {

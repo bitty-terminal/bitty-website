@@ -1,0 +1,459 @@
+# Architecture glossary — single source for nodes and edges (AI side, small scale)
+# Source of truth for architecture/diagrams/d2/*.d2 exports in architecture/diagrams/final/*.svg
+# Visual rules: rect=module/spec, rounded=object/capability, dashed=boundary/proposal, solid=call/depends, dotted event/async
+# Levels: L0 overview, L1 subsystem, L2 flow
+# Status model: accepted = IPC and Agent RFC contract; draft = R-series/spec dispositions;
+# candidate = companion candidate-design input (not accepted, not implemented);
+# implemented = bitty-ai runtime/slice evidence at a pinned revision (see README)
+schema_version: 1
+updated: "2026-09-18"
+synchronized_revision: "1b970ab"
+synchronized_short: "1b970ab"
+provenance: CTX-0077
+description: Canonical node and edge inventory for bitty-ai architecture diagrams
+
+visual_rules:
+  rect: "module / spec section — D2 rectangle"
+  rounded: "object / capability — D2 rectangle with border-radius"
+  boundary: "trust boundary / candidate scope — D2 container with stroke-dash"
+  solid_edge: "call / depends / compiles — D2 solid arrow"
+  dashed_edge: "event / async / candidate direction — D2 dashed arrow"
+
+levels:
+  L0: overview — six-object split, graph split, compile pipeline
+  L1: subsystem — agent graph, mailbox, task DAG, compiler stages
+  L2: flow — context compile pass order and review evidence
+
+statuses:
+  accepted: "accepted by the IPC and Agent RFC; overrides candidate sketches"
+  draft: "draft R-series or specification disposition; not accepted, not shipped"
+  candidate: "companion candidate-design input; vocabulary only, no contract"
+  implemented: "observed in bitty-ai at the pinned revision; skeleton or prototype"
+
+nodes:
+  # --- L0 overview: six-object split (candidate direction, inequalities only) ---
+  - id: agent
+    label: Agent
+    kind: object
+    shape: rounded
+    level: L0
+    status: candidate
+    description: Thinking actor, mobile across panels; distinct from Panel and Task
+    trace: specifications/event-sourced-agent-workspace-candidate.md#six-object-split-and-founding-inequalities
+  - id: panel
+    label: Panel
+    kind: object
+    shape: rounded
+    level: L0
+    status: candidate
+    description: Execution environment, may sit agentless; host-owned lifecycle
+    trace: specifications/event-sourced-agent-workspace-candidate.md#six-object-split-and-founding-inequalities
+  - id: event-log
+    label: Event Log
+    kind: object
+    shape: rounded
+    level: L0
+    status: candidate
+    description: Immutable fact record until GC; never rewritten by squash or merge
+    trace: specifications/event-sourced-agent-workspace-candidate.md#merge-rebase-and-diff-semantics
+  - id: context-view
+    label: Context
+    kind: object
+    shape: rounded
+    level: L0
+    status: candidate
+    description: Recompilable LLM view compiled from facts; distinct from History
+    trace: specifications/event-sourced-agent-workspace-candidate.md#core-principle
+  - id: task
+    label: Task
+    kind: object
+    shape: rounded
+    level: L0
+    status: candidate
+    description: Goal and state, may span agents; distinct from Agent
+    trace: specifications/event-sourced-agent-workspace-candidate.md#task-as-issue-and-reason-as-commit-message
+  - id: artifact
+    label: Artifact
+    kind: object
+    shape: rounded
+    level: L0
+    status: candidate
+    description: Content-addressed output referenced, not copied, by context
+    trace: specifications/event-sourced-agent-workspace-candidate.md#six-object-split-and-founding-inequalities
+
+  # --- L0/L1 graphs: Agent Graph vs Task DAG ---
+  - id: agent-graph
+    label: Agent Graph
+    kind: topology
+    shape: rect
+    level: L0
+    status: candidate
+    description: Collaboration and communication topology; uniform agents, dynamic roles, may be cyclic
+    trace: specifications/event-sourced-agent-workspace-candidate.md#agent-graph-versus-task-dependency-graph
+  - id: task-dag
+    label: Task DAG
+    kind: topology
+    shape: rect
+    level: L0
+    status: candidate
+    description: Goal-ordering topology; stays acyclic to avoid deadlocks
+    trace: specifications/event-sourced-agent-workspace-candidate.md#agent-graph-versus-task-dependency-graph
+  - id: agent-role
+    label: Agent Role
+    kind: capability
+    shape: rounded
+    level: L1
+    status: candidate
+    description: Per-task configuration (leader, worker, reviewer); never an agent class
+    trace: specifications/wheel-scope-and-framework-candidate.md
+  - id: product-task
+    label: Product Task
+    kind: domain
+    shape: rect
+    level: L1
+    status: draft
+    description: Sole lifecycle authority for product task transitions; CarryCtx is backend-or-handoff only
+    trace: architecture/task-lifecycle-r5.md#decision
+
+  # --- L1 mailbox and context share ---
+  - id: mailbox
+    label: Mailbox
+    kind: capability
+    shape: rounded
+    level: L1
+    status: draft
+    description: Actor-model per-agent inbox; three outcomes stay distinct (accepted, delivered, processed)
+    trace: agent/agent-coordination.md#messages-ipc-and-recovery
+  - id: context-bundle
+    label: Context Bundle
+    kind: data
+    shape: rounded
+    level: L1
+    status: candidate
+    description: Lazy first-class share unit; summary first, decisions and checkpoints expand on demand
+    trace: specifications/event-sourced-agent-workspace-candidate.md#mailbox-ipc-and-first-class-context-share
+  - id: ipc-channel
+    label: IPC Channel
+    kind: domain
+    shape: rect
+    level: L1
+    status: accepted
+    description: Local-user IPC transport with authenticated scopes; read-only default for agents
+    trace: specifications/ipc-agent-rfc.md#purpose-and-scope
+  - id: agent-message
+    label: AgentMessage
+    kind: data
+    shape: rounded
+    level: L1
+    status: accepted
+    description: Bounded agent message with owned AgentId and untrusted-observation labeling
+    trace: specifications/ipc-agent-rfc.md#purpose-and-scope
+
+  # --- L1/L2 context compile: journal to view ---
+  - id: session-journal
+    label: Session Journal
+    kind: data
+    shape: rounded
+    level: L1
+    status: draft
+    description: Authorized redacted retained fact records; session is fact
+    trace: context/context-management.md#core-invariant-session-versus-context
+  - id: context-compiler
+    label: Context Compiler
+    kind: module
+    shape: rect
+    level: L1
+    status: candidate
+    description: Per-turn compiled-view builder over append-until-compact; correctness over cache hit
+    trace: specifications/quality-and-context-compiler-candidate.md
+  - id: cold-world
+    label: Cold
+    kind: data
+    shape: rounded
+    level: L2
+    status: candidate
+    description: Durable universe of retained records under consent and retention policy
+    trace: specifications/quality-and-context-compiler-candidate.md
+  - id: warm-world
+    label: Warm
+    kind: data
+    shape: rounded
+    level: L2
+    status: candidate
+    description: Eligible working set admitted toward the turn under budget and authority checks
+    trace: specifications/quality-and-context-compiler-candidate.md
+  - id: hot-view
+    label: Hot
+    kind: data
+    shape: rounded
+    level: L2
+    status: candidate
+    description: Materialized budgeted prompt view the model sees this turn
+    trace: specifications/quality-and-context-compiler-candidate.md
+  - id: stable-prefix
+    label: Stable Prefix
+    kind: data
+    shape: rounded
+    level: L2
+    status: draft
+    description: Stable-before-dynamic assembly order for prefix-cache reuse
+    trace: context/prefix-cache-context-design.md#stable-prefix-layering
+  - id: context-gc
+    label: Context GC
+    kind: module
+    shape: rect
+    level: L2
+    status: candidate
+    description: Rooted reclamation of versioned context objects with a grace policy; distinct from compaction
+    trace: specifications/event-sourced-agent-workspace-candidate.md#context-gc-versus-structural-compaction
+  - id: structural-compaction
+    label: Structural Compaction
+    kind: module
+    shape: rect
+    level: L2
+    status: draft
+    description: Boundary-changing compact that records metadata without deleting retained history
+    trace: context/prefix-cache-context-design.md#the-eight-design-invariants
+
+  # --- Implemented anchors (bitty-ai evidence at pinned revision) ---
+  - id: runtime-agent
+    label: bitty-ai-runtime Agent
+    kind: crate-module
+    shape: rect
+    level: L1
+    status: implemented
+    description: Deterministic single-agent turn loop; single agent only, no teams or delegation
+    trace: bitty-ai crates/bitty-ai-runtime/src/agent.rs at pinned revision (see README)
+  - id: runtime-context
+    label: bitty-ai-runtime Context
+    kind: crate-module
+    shape: rect
+    level: L1
+    status: implemented
+    description: Bounded L0 plus L1 assembly only; L2 lives as a fake-verified prototype
+    trace: bitty-ai crates/bitty-ai-runtime/src/context.rs at pinned revision (see README)
+  - id: runtime-session
+    label: bitty-ai-runtime Session
+    kind: crate-module
+    shape: rect
+    level: L1
+    status: implemented
+    description: Single-agent identity hierarchy and inspect-tier lifecycle
+    trace: bitty-ai crates/bitty-ai-runtime/src/session.rs at pinned revision (see README)
+  - id: runtime-toolbus
+    label: bitty-ai-runtime ToolBus
+    kind: crate-module
+    shape: rect
+    level: L1
+    status: implemented
+    description: Capability-checked dispatch with fail-closed hooks; runtime never executes tools
+    trace: bitty-ai crates/bitty-ai-runtime/src/tool.rs at pinned revision (see README)
+  - id: runtime-bridge
+    label: bitty-ai-runtime Bridge
+    kind: crate-module
+    shape: rect
+    level: L1
+    status: implemented
+    description: Protocol identity mapping plus deny-by-default consent seam; no accepted security claim
+    trace: bitty-ai crates/bitty-ai-runtime/src/bridge.rs at pinned revision (see README)
+  - id: runtime-prompt
+    label: bitty-ai-runtime Prompt
+    kind: crate-module
+    shape: rect
+    level: L2
+    status: implemented
+    description: Five-layer narrowing-only assembly; prompt text never grants capability
+    trace: bitty-ai crates/bitty-ai-runtime/src/prompt.rs at pinned revision (see README)
+  - id: slice-journal
+    label: bitty-ai-slice Journal
+    kind: crate-module
+    shape: rect
+    level: L2
+    status: implemented
+    description: Experimental single-writer journal prototype; evidence only, decides nothing
+    trace: bitty-ai crates/bitty-ai-slice/src/journal_prototype.rs at pinned revision (see README)
+
+edges:
+  # --- Founding inequalities (candidate rules, dashed) ---
+  - from: agent
+    to: panel
+    kind: distinct
+    style: dashed
+    level: L0
+    description: Agent is not Panel
+  - from: panel
+    to: context-view
+    kind: distinct
+    style: dashed
+    level: L0
+    description: Panel is not Context
+  - from: context-view
+    to: event-log
+    kind: distinct
+    style: dashed
+    level: L0
+    description: Context is not History; the view recompiles without touching the log
+  - from: task
+    to: agent
+    kind: distinct
+    style: dashed
+    level: L0
+    description: Task is not Agent; a task survives agent turnover
+
+  # --- Graph split ---
+  - from: agent-graph
+    to: agent
+    kind: organizes
+    style: dashed
+    level: L0
+    description: Communication topology over agents
+  - from: task-dag
+    to: task
+    kind: orders
+    style: dashed
+    level: L0
+    description: Acyclic goal ordering over tasks
+  - from: task-dag
+    to: product-task
+    kind: refines
+    style: dashed
+    level: L1
+    description: Candidate DAG discipline toward the draft single-authority Task model
+  - from: agent-role
+    to: agent-graph
+    kind: configures
+    style: dashed
+    level: L1
+    description: Roles configure agents; no agent classes
+
+  # --- Mailbox and share ---
+  - from: agent-graph
+    to: mailbox
+    kind: communicates
+    style: dashed
+    level: L1
+    description: Agents collaborate over mailbox IPC
+  - from: mailbox
+    to: context-bundle
+    kind: carries
+    style: dashed
+    level: L1
+    description: Messages carry a context base plus refs, not bare sentences
+  - from: mailbox
+    to: ipc-channel
+    kind: rides
+    style: solid
+    level: L1
+    description: Accepted local-user transport and scope gate underneath
+  - from: agent-message
+    to: mailbox
+    kind: conforms
+    style: solid
+    level: L1
+    description: Accepted bounded message vocabulary for mailbox content
+
+  # --- Context compile pipeline ---
+  - from: session-journal
+    to: context-compiler
+    kind: feeds
+    style: solid
+    level: L1
+    description: Authorized retained facts feed the compiler
+  - from: event-log
+    to: session-journal
+    kind: informs
+    style: dashed
+    level: L1
+    description: Candidate immutable log informs the draft journal shape; no schema adopted
+  - from: cold-world
+    to: warm-world
+    kind: admits
+    style: dashed
+    level: L2
+    description: Admission toward the turn under budget and authority checks
+  - from: warm-world
+    to: hot-view
+    kind: materializes
+    style: dashed
+    level: L2
+    description: Budgeted materialized view for this turn
+  - from: stable-prefix
+    to: hot-view
+    kind: orders
+    style: solid
+    level: L2
+    description: Stable-before-dynamic ordering inside the view
+  - from: context-compiler
+    to: hot-view
+    kind: compiles
+    style: dashed
+    level: L2
+    description: Per-turn compile produces the Hot view
+  - from: artifact
+    to: context-bundle
+    kind: referenced-by
+    style: dashed
+    level: L1
+    description: Share by reference, not by copy
+  - from: artifact
+    to: hot-view
+    kind: externalized
+    style: dashed
+    level: L2
+    description: Large bodies externalize to artifact references
+  - from: context-gc
+    to: warm-world
+    kind: reclaims
+    style: dashed
+    level: L2
+    description: Rooted reclamation with a grace policy
+  - from: structural-compaction
+    to: hot-view
+    kind: re-bounds
+    style: solid
+    level: L2
+    description: Boundary change with metadata; retained history untouched
+
+  # --- Implemented anchors mirror the draft pipeline at small scale ---
+  - from: runtime-session
+    to: session-journal
+    kind: mirrors
+    style: solid
+    level: L1
+    description: Implemented session scope mirrors the draft journal scope
+  - from: runtime-context
+    to: context-compiler
+    kind: mirrors
+    style: solid
+    level: L1
+    description: Implemented L0 plus L1 mirrors the candidate compiler at small scale
+  - from: runtime-agent
+    to: agent
+    kind: mirrors
+    style: solid
+    level: L1
+    description: Implemented single agent mirrors the candidate Agent object
+  - from: runtime-toolbus
+    to: mailbox
+    kind: constrains
+    style: solid
+    level: L1
+    description: Fail-closed dispatch constrains what mailbox outcomes may authorize
+  - from: runtime-bridge
+    to: ipc-channel
+    kind: bridges
+    style: solid
+    level: L1
+    description: Protocol-to-instance seam in front of the accepted transport
+  - from: runtime-prompt
+    to: stable-prefix
+    kind: implements
+    style: solid
+    level: L2
+    description: Implemented five-layer order follows the stable-first direction
+  - from: slice-journal
+    to: event-log
+    kind: evidences
+    style: solid
+    level: L2
+    description: Prototype append-ordered journal evidences the immutable-log direction

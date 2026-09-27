@@ -1,5 +1,5 @@
 {
-  "policy_version": "2026-09-28.5",
+  "policy_version": "2026-09-28.6",
   "note": "Declared-but-ineligible pages (bitty-website#98): each page sets website_publish: true but is not reader-facing under the unchanged #97 rule, is not allow-listed, and is not a demotion (a flip-list entry ships a 301 because the page was published once; a withheld page never had a route, so it ships none). Shrink-only: the fix belongs to the owning corpus (owner), which must flip website_publish, change the audience/document_type, or move the page; the entry is deleted here in the same coordinated change. A declared page that is ineligible, not allow-listed and not withheld keeps failing the build.",
   "entries": [
     {
@@ -177,6 +177,94 @@
       "document_type": "specification",
       "owner": "bitty-plugins",
       "reason": "`specification` is a governance document type that is not published for `contributor` (only the `plugin-author` audience exception publishes specifications). bitty-plugins owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-ai-docs",
+      "path": "docs/projects/bitty-ai/agent/README.md",
+      "audience": "mixed",
+      "document_type": "index",
+      "owner": "bitty-ai",
+      "reason": "topic-tree index; `mixed` is not a reader-facing audience under the unchanged #97 rule and `index` is eligible only for `user`. bitty-ai owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-ai-docs",
+      "path": "docs/projects/bitty-ai/architecture/ai-architecture.md",
+      "audience": "contributor",
+      "document_type": "specification",
+      "owner": "bitty-ai",
+      "reason": "`specification` is a governance document type that is not published for `contributor` (only the `plugin-author` audience exception publishes specifications). bitty-ai owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-ai-docs",
+      "path": "docs/projects/bitty-ai/context/README.md",
+      "audience": "mixed",
+      "document_type": "index",
+      "owner": "bitty-ai",
+      "reason": "topic-tree index; `mixed` is not a reader-facing audience under the unchanged #97 rule and `index` is eligible only for `user`. bitty-ai owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-ai-docs",
+      "path": "docs/projects/bitty-ai/integration/README.md",
+      "audience": "mixed",
+      "document_type": "index",
+      "owner": "bitty-ai",
+      "reason": "topic-tree index; `mixed` is not a reader-facing audience under the unchanged #97 rule and `index` is eligible only for `user`. bitty-ai owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-ai-docs",
+      "path": "docs/projects/bitty-ai/interfaces/README.md",
+      "audience": "mixed",
+      "document_type": "index",
+      "owner": "bitty-ai",
+      "reason": "topic-tree index; `mixed` is not a reader-facing audience under the unchanged #97 rule and `index` is eligible only for `user`. bitty-ai owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-ai-docs",
+      "path": "docs/projects/bitty-ai/persistence/README.md",
+      "audience": "mixed",
+      "document_type": "index",
+      "owner": "bitty-ai",
+      "reason": "topic-tree index; `mixed` is not a reader-facing audience under the unchanged #97 rule and `index` is eligible only for `user`. bitty-ai owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-ai-docs",
+      "path": "docs/projects/bitty-ai/product/README.md",
+      "audience": "mixed",
+      "document_type": "index",
+      "owner": "bitty-ai",
+      "reason": "topic-tree index; `mixed` is not a reader-facing audience under the unchanged #97 rule and `index` is eligible only for `user`. bitty-ai owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-ai-docs",
+      "path": "docs/projects/bitty-ai/product/ai-vertical-slice-pressure-test.md",
+      "audience": "contributor",
+      "document_type": "specification",
+      "owner": "bitty-ai",
+      "reason": "`specification` is a governance document type that is not published for `contributor` (only the `plugin-author` audience exception publishes specifications). bitty-ai owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-ai-docs",
+      "path": "docs/projects/bitty-ai/providers/README.md",
+      "audience": "mixed",
+      "document_type": "index",
+      "owner": "bitty-ai",
+      "reason": "topic-tree index; `mixed` is not a reader-facing audience under the unchanged #97 rule and `index` is eligible only for `user`. bitty-ai owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-ai-docs",
+      "path": "docs/projects/bitty-ai/specifications/README.md",
+      "audience": "mixed",
+      "document_type": "index",
+      "owner": "bitty-ai",
+      "reason": "topic-tree index; `mixed` is not a reader-facing audience under the unchanged #97 rule and `index` is eligible only for `user`. bitty-ai owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-ai-docs",
+      "path": "docs/projects/bitty-ai/specifications/ipc-agent-rfc.md",
+      "audience": "security-reviewer",
+      "document_type": "specification",
+      "owner": "bitty-ai",
+      "reason": "`specification` is a governance document type that is not published for `security-reviewer` (only the `plugin-author` audience exception publishes specifications), and security corpora stay off the public site. bitty-ai owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
     }
   ]
 }

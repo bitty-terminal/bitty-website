@@ -1,5 +1,5 @@
 {
-  "policy_version": "2026-09-28.5",
+  "policy_version": "2026-09-28.6",
   "note": "Publication allow-list (website#97). Shrink-only: every entry needs an explicit reviewed change. Governance corpora may never be added; see src/lib/publicationPolicy.ts. 2026-09-27.2: plugin-author `specification` pages left this list because the rule now treats the audience's own specification type as reader-facing (owner decision on #97).",
   "entries": [
     {

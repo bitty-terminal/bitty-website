@@ -1,0 +1,75 @@
+# architecture/diagrams/d2/02-context-compile.d2 — L1/L2 context compile: Cold/Warm/Hot, GC vs compaction
+# Source of truth: ../glossary.yaml (CTX-0077)
+# Statuses: solid = accepted/draft/implemented; dashed = candidate discussion input
+
+direction: right
+
+sources: {
+  label: "Facts (draft journal + candidate log)"
+  style.stroke-dash: 3
+  style.fill: "#faf5ff"
+  journal: {
+    label: "Session Journal\nauthorized, redacted, retained"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  log: {
+    label: "Event Log\nimmutable (candidate)"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+compiler: {
+  label: "Context Compiler (candidate)"
+  style.stroke-dash: 4
+  style.fill: "#eff6ff"
+  cold: {
+    label: "Cold\nretained universe"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  warm: {
+    label: "Warm\neligible working set"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  hot: {
+    label: "Hot\nbudgeted prompt view"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+discipline: {
+  label: "GC vs compaction"
+  style.stroke-dash: 3
+  style.fill: "#ecfdf5"
+  gc: {
+    label: "Context GC\nrooted + grace (candidate)"
+  }
+  compact: {
+    label: "Structural Compaction\nre-bounds, keeps history (draft)"
+  }
+  prefix: {
+    label: "Stable Prefix\nstable-first order (draft)"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+sources.log -> sources.journal: "informs (candidate)" {
+  style.stroke-dash: 3
+}
+sources.journal -> compiler.cold: "feeds"
+compiler.cold -> compiler.warm: "admits under budget + authority (candidate)" {
+  style.stroke-dash: 3
+}
+compiler.warm -> compiler.hot: "materializes this turn (candidate)" {
+  style.stroke-dash: 3
+}
+discipline.gc -> compiler.warm: "reclaims unreachable (candidate)" {
+  style.stroke-dash: 3
+}
+discipline.compact -> compiler.hot: "re-bounds with metadata"
+discipline.prefix -> compiler.hot: "orders stable first"

@@ -146,6 +146,24 @@ describe("consumed topic trees map to a group (#98)", () => {
     expect(names).toContain("runtime");
   });
 
+  test("the mirror declares every AI topic tree T7 onboarded", () => {
+    const aiTopics = topics
+      .filter((entry) => entry.project === "bitty-ai")
+      .map((entry) => entry.topic);
+    // Same vacuity guard as above, for the AI mount: all six plan-named trees
+    // must actually be consumed by the corpus, not assumed.
+    for (const topic of [
+      "agent",
+      "context",
+      "integration",
+      "interfaces",
+      "persistence",
+      "providers",
+    ]) {
+      expect(aiTopics).toContain(topic);
+    }
+  });
+
   test("every consumed topic tree is owned by a group, never the container fallback", () => {
     for (const { project, topic } of topics) {
       const route = `projects/${project}/${topic}/page`;

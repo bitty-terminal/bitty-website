@@ -2,6 +2,22 @@
   "schema": 2,
   "sources": [
     {
+      "id": "bitty-ai-docs",
+      "source": "github.com/bitty-terminal/bitty-ai-docs",
+      "revision": "5c3c97d1b989a02c68f298aa3cbe74b953dcff6a",
+      "synced_at": "2026-09-27T21:05:00.000Z",
+      "mounts": [
+        {
+          "from": ".",
+          "to": "projects/bitty-ai"
+        }
+      ],
+      "published": {
+        "min": 0,
+        "max": 0
+      }
+    },
+    {
       "id": "bitty-docs",
       "source": "github.com/bitty-terminal/bitty-docs",
       "revision": "9891949ca20b245375ece9a9015d0f42458fd2b1",

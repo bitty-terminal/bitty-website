@@ -93,8 +93,10 @@ jobs:
 
           # Read every pinned source (schema 2). A bare `jq -r .revision` on the
           # schema-2 object yields the literal string "null", which then slipped
-          # past the guard; a missing file, a non-array/empty `sources`, or a
-          # source without a non-empty id/source/revision now fails the job.
+          # past the guard, and the pre-#98 scalar `revision` no longer exists
+          # at all. A missing file, a non-array/empty `sources`, or any source
+          # without a non-empty id/source/revision fails the job and names every
+          # offending source, so freshness tracking can never stop silently.
           if [ ! -f "$pin_file" ]; then
             echo "::error::$pin_file is missing"
             exit 1
@@ -103,12 +105,22 @@ jobs:
               .schema == 2
               and (.sources | type == "array")
               and (.sources | length > 0)
-              and ([.sources[] | (.id | type == "string")
-                              and (.source | type == "string")
-                              and (.revision | type == "string")
-                              and (.revision | length > 0)] | all)
             ' "$pin_file" >/dev/null; then
-            echo "::error::$pin_file must be a schema-2 pin whose sources each carry a non-empty id, source, and revision"
+            echo "::error::$pin_file must be a schema-2 pin with a non-empty sources[] array (the pre-#98 scalar revision is retired)"
+            exit 1
+          fi
+          bad_sources="$(jq -r '
+              .sources[]
+              | select((.id | type) != "string" or (.id | length) == 0
+                       or (.source | type) != "string" or (.source | length) == 0
+                       or (.revision | type) != "string"
+                       or (.revision | length) == 0)
+              | (.id // "(entry without an id)")
+            ' "$pin_file")"
+          if [ -n "$bad_sources" ]; then
+            while IFS= read -r bad_source; do
+              echo "::error::source \"$bad_source\" in $pin_file has no usable revision (each schema-2 sources[] entry needs a non-empty id, source, and revision string; a scalar read returns null)"
+            done <<<"$bad_sources"
             exit 1
           fi
           source_rows="$(jq -r '.sources[] | [.id, .source, .revision] | @tsv' "$pin_file")"

@@ -483,13 +483,14 @@ export function renderEdgeRedirects(
 export function renderRedirectEvidence(
   table: readonly ExpandedRedirectRule[],
   meta: {
-    readonly docsRevision: string;
+    /** One entry per consumed source (bitty-website#98): id → resolved SHA. */
+    readonly docsRevisions: Readonly<Record<string, string>>;
     readonly hostedVersions: readonly string[];
   },
 ): string {
   const payload = {
     source: "bitty-website",
-    docs_revision: meta.docsRevision,
+    docs_revisions: { ...meta.docsRevisions },
     hosted_versions: [...meta.hostedVersions],
     redirects: table.map((rule) => ({
       from: rule.from,

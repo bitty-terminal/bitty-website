@@ -1,11 +1,12 @@
 #!/usr/bin/env bun
 /**
- * Website Delivery RFC SY-4 — docs:check (staleness gate)
+ * Website Delivery RFC SY-4 — docs:check (staleness gate, bitty-website#98)
  *
- * Materializes the pinned bitty-docs revision in an isolated clone, runs the
+ * Materializes each pinned source revision in an isolated clone, runs the
  * canonical parity gates, and fails closed when the committed mirror or its
- * provenance manifest diverges from that revision. Also rejects a malformed,
- * short, or floating pin. Hand edits inside src/content/docs/ are caught here.
+ * provenance manifest diverges from any pin. Also rejects a malformed, short,
+ * or floating pin and the pre-#98 flat pin shape. Hand edits inside
+ * src/content/docs/ are caught here.
  */
 
 import { readFile } from "node:fs/promises";
@@ -21,8 +22,12 @@ import {
   materializeSnapshot,
   readPinFile,
   repoPaths,
-  runParityGates,
+  runParityGatesDetailed,
 } from "./lib/docs-source.mjs";
+import {
+  assertPublishedUnderMounts,
+  parseDocsManifest,
+} from "../src/lib/docsPins.ts";
 import { validateRouteCollisions } from "../src/lib/docsRoutes.ts";
 import { loadPublicationCorpus } from "../src/lib/publicationCorpus.ts";
 
@@ -41,7 +46,7 @@ async function readCommittedManifest() {
     raw = await readFile(paths.manifestFile, "utf8");
   } catch {
     throw new SyncError(
-      `missing provenance manifest ${paths.manifestFile}; run \`just docs-sync PIN=<sha>\``,
+      `missing provenance manifest ${paths.manifestFile}; run \`just docs-sync\``,
     );
   }
   let parsed;
@@ -50,23 +55,22 @@ async function readCommittedManifest() {
   } catch (error) {
     throw new SyncError(`malformed provenance manifest: ${error.message}`);
   }
-  const keys = Object.keys(parsed).sort().join(",");
-  if (keys !== "files,revision,source") {
-    throw new SyncError(
-      `provenance manifest must have exactly { files, revision, source }; found {${keys}}`,
-    );
-  }
-  return parsed;
+  return parseDocsManifest(parsed);
 }
 
 async function main() {
-  const pin = await readPinFile(ROOT);
-  const committed = await readCommittedManifest();
+  const pins = await readPinFile(ROOT);
+  const manifest = await readCommittedManifest();
 
-  if (committed.source !== pin.source) {
+  if (pins.sources.length !== 1) {
     fail(
-      `manifest source "${committed.source}" does not match pin source "${pin.source}"`,
+      `${paths.pinFile} pins ${pins.sources.length} source(s); the per-source gate loop for N sources lands with the next step of bitty-website#98`,
     );
+  }
+  const pin = pins.sources[0];
+  const entry = manifest.sources[0];
+  if (entry.id !== pin.id) {
+    fail(`manifest source "${entry.id}" does not match pin source "${pin.id}"`);
   }
 
   let snapshot = null;
@@ -75,13 +79,22 @@ async function main() {
       root: ROOT,
       pinValue: pin.revision,
       source: pin.source,
+      id: pin.id,
     });
     if (snapshot.sha !== pin.revision) {
       fail(
-        `pin revision ${pin.revision} resolved to ${snapshot.sha}; re-run \`just docs-sync PIN=${pin.revision}\``,
+        `pin revision ${pin.revision} resolved to ${snapshot.sha}; re-run \`just docs-sync\``,
       );
     }
-    runParityGates(snapshot.dir);
+    const parity = runParityGatesDetailed(snapshot.dir);
+    const failedParity = Object.entries(parity.results).filter(
+      ([, result]) => result !== "pass",
+    );
+    if (failedParity.length > 0) {
+      fail(
+        `${pin.id}: parity gate(s) failed: ${failedParity.map(([mode]) => mode).join(", ")}`,
+      );
+    }
 
     // The publication policy is the gate's first fail-closed check: the
     // mirror must only publish reader-facing pages, and the count below is
@@ -90,17 +103,19 @@ async function main() {
     // governance page on the site is never masked by mirror diff noise.
     const corpus = await loadPublicationCorpus(paths.mirrorRoot);
     validateRouteCollisions(corpus.publishedSources);
+    // #98 §3.2: a published page must lie under a declared mount.
+    assertPublishedUnderMounts(corpus.publishedSources, pins);
 
     const expectedFiles = docsOnly(await hashTree(snapshot.dir));
     const mirrorFiles = await hashTree(paths.mirrorRoot);
 
-    if (committed.revision !== snapshot.sha) {
+    if (entry.revision !== snapshot.sha) {
       fail(
-        `manifest revision ${committed.revision} is stale vs pinned ${snapshot.sha}`,
+        `manifest revision ${entry.revision} is stale vs pinned ${snapshot.sha}`,
       );
     }
 
-    const manifestDiff = diffHashMaps(expectedFiles, committed.files);
+    const manifestDiff = diffHashMaps(expectedFiles, entry.files);
     const mirrorDiff = diffHashMaps(expectedFiles, mirrorFiles);
     const problems = [];
     if (manifestDiff.missing.length)
@@ -139,13 +154,16 @@ async function main() {
       for (const key of mirrorDiff.changed.slice(0, 10))
         detail.push(`mirror edited (hand-edit?): ${key}`);
       fail(
-        `docs mirror is stale vs pinned ${snapshot.sha} (${problems.join("; ")})`,
+        `${pin.id}: docs mirror is stale vs pinned ${snapshot.sha} (${problems.join("; ")})`,
         detail,
       );
     }
 
     console.log(
       `docs mirror current at ${snapshot.sha} (${Object.keys(expectedFiles).length} files, ${corpus.report.published.length} publishable, ${corpus.redirects.length} excluded page(s) redirect, parity green)`,
+    );
+    console.log(
+      `  ${pin.id}: ${entry.counts.published} published, ${entry.counts.demoted} demoted, ${entry.counts.withheld} withheld (mounts ${pin.mounts.map((mount) => `${mount.from || "."}->${mount.to || "/"}`).join(", ")})`,
     );
   } finally {
     if (snapshot) await cleanupSnapshot(snapshot.dir);
@@ -156,7 +174,7 @@ main().catch((error) => {
   const message =
     error instanceof SyncError
       ? error.message
-      : (error?.stack ?? String(error));
+      : (error?.message ?? error?.stack ?? String(error));
   console.error(`error: ${message}`);
   process.exit(1);
 });

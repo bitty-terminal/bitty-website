@@ -25,9 +25,11 @@ fmt-check-files *FILES:
 markdownlint:
     bun run lint:md
 
-# Advance the pinned bitty-docs mirror and regenerate the provenance manifest (SY-2).
-docs-sync PIN:
-    bun run sync:docs --pin {{PIN}}
+# Re-materialize every pinned source at its committed revision (idempotent:
+# the second run is a byte-for-byte no-op), or advance one source with
+# `just docs-sync --source <id> --pin <sha|tag>` (SY-2, bitty-website#98).
+docs-sync *args:
+    bun run sync:docs {{args}}
 
 # Fail closed when the committed mirror is stale vs the pinned revision (SY-4).
 docs-check:

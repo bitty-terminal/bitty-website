@@ -11,77 +11,29 @@
 
 import docsRevision from "../content/docs-revision.json" with { type: "json" };
 import versionsJson from "../content/versions.json" with { type: "json" };
+import { parseDocsPinSet, type DocsPinSet } from "./docsPins.ts";
 
-const SHA40 = /^[0-9a-f]{40}$/;
 const ALIAS_SET = new Set(["latest", "stable"]);
 const CJK_RE =
   /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Bopomofo}\u3000-\u303f]/u;
 
-export type DocsRevisionShape = {
-  readonly revision: string;
-  readonly source: string;
-  readonly synced_at: string;
-};
-
-export function assertValidRevisionPin(): DocsRevisionShape {
-  const raw = docsRevision as unknown as Record<string, unknown>;
-  if (
-    typeof raw.revision !== "string" ||
-    typeof raw.source !== "string" ||
-    typeof raw.synced_at !== "string"
-  ) {
+/**
+ * Validate `src/content/docs-revision.json` at build time (SY-2/SY-3/SY-4).
+ *
+ * The schema and mount validation live in the single authority
+ * (`./docsPins.ts`, bitty-website#98), so the schema the sync wrote and the
+ * schema the build accepts cannot drift. Returns the parsed pin set so callers
+ * can read the per-source entries; the legacy flat shape is rejected there
+ * with the migration message.
+ */
+export function assertValidRevisionPin(): DocsPinSet {
+  try {
+    return parseDocsPinSet(docsRevision);
+  } catch (error) {
     throw new Error(
-      "src/content/docs-revision.json must contain { revision, source, synced_at } as strings",
+      `${(error as Error).message} (src/content/docs-revision.json)`,
     );
   }
-  const extra = Object.keys(raw).filter(
-    (k) => !["revision", "source", "synced_at"].includes(k),
-  );
-  if (extra.length > 0) {
-    throw new Error(
-      `src/content/docs-revision.json has unknown keys: ${extra.join(", ")}`,
-    );
-  }
-
-  const rev: string = raw.revision;
-  // Accept either full SHA or immutable release tag (e.g. v0.1.0 / 0.1.0). Reject floating branches.
-  const isSha = SHA40.test(rev);
-  const isTag =
-    /^v?\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/.test(rev);
-  const isFloatingBranch = /^(main|master|develop|dev|latest|next)$/.test(rev);
-
-  if (isFloatingBranch) {
-    throw new Error(
-      `Pinned revision must not be a floating branch: "${rev}" (SY-3)`,
-    );
-  }
-  if (rev.length !== 40 && !isTag) {
-    // Short SHA (e.g. 7 chars) or branch-like name — fail closed per SY-3/SY-2
-    if (/^[0-9a-f]{4,39}$/.test(rev)) {
-      throw new Error(
-        `Pinned revision must be a full 40-char SHA or a tag, not a short SHA: "${rev}"`,
-      );
-    }
-    if (!isSha && !isTag) {
-      throw new Error(
-        `Pinned revision "${rev}" is not a 40-char SHA or immutable tag (SY-3)`,
-      );
-    }
-  }
-  if (rev.length === 40 && !isSha) {
-    throw new Error(
-      `Pinned revision "${rev}" looks like a SHA but is not lowercase hex`,
-    );
-  }
-
-  // Freshness: synced_at must be ISO-8601 UTC
-  if (Number.isNaN(Date.parse(raw.synced_at))) {
-    throw new Error(
-      `src/content/docs-revision.json synced_at must be ISO-8601 UTC: "${raw.synced_at}"`,
-    );
-  }
-
-  return raw as DocsRevisionShape;
 }
 
 export function assertNoCjk(body: string, file: string): void {

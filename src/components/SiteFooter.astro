@@ -5,8 +5,10 @@
  * published corpus stays reproducible without hand-maintained copies.
  */
 import docsRevision from "../content/docs-revision.json" with { type: "json" };
+import { parseDocsPinSet, revisionIndexOwner } from "../lib/docsPins.ts";
 
-const shortRevision = docsRevision.revision.slice(0, 7);
+const owner = revisionIndexOwner(parseDocsPinSet(docsRevision));
+const shortRevision = owner.revision.slice(0, 7);
 ---
 
 <footer class="site-footer">
@@ -15,7 +17,7 @@ const shortRevision = docsRevision.revision.slice(0, 7);
     screenshots or videos yet.
   </p>
   <p>
-    Canonical documentation is owned by bitty-docs and consumed from the pinned
+    Canonical documentation is owned by {owner.id} and consumed from the pinned
     revision <code>{shortRevision}</code>; this site only presents it.
   </p>
 </footer>

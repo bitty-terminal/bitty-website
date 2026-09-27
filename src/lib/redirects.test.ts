@@ -7,6 +7,8 @@
  */
 
 import { describe, expect, test } from "bun:test";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 import { nearestPublishedAncestor } from "./docsRoutes.ts";
 import {
@@ -261,5 +263,38 @@ describe("renderRedirectEvidence (deployed provenance key set, #98)", () => {
     ]);
     expect(payload.docs_revisions).toEqual(revisions);
     expect("docs_revision" in payload).toBe(false);
+  });
+});
+
+/**
+ * Routes whose page left the pinned `bitty-docs` revision before the corpus
+ * that owns it landed (#98 T5). Each was a 301 demotion, so removing the entry
+ * would turn a working redirect into a 404 — the defect class this list exists
+ * to catch. Shrink-only: an entry leaves this list only in the commit that
+ * lands the owning corpus and publishes the page, at which point it points at
+ * the exact target.
+ */
+const CARVED_OUT_DEMOTED_ROUTES = [
+  "/docs/projects/bitty/specifications/ai-architecture/",
+  "/docs/projects/bitty/specifications/ipc-agent-rfc/",
+  "/docs/projects/bitty/specifications/isolation-resource-rfc/",
+  "/docs/projects/bitty/specifications/lua-runtime-rfc/",
+  "/docs/projects/bitty/specifications/package-followup-rfc/",
+  "/docs/projects/bitty/specifications/package-lifecycle-rfc/",
+] as const;
+
+describe("interim redirect continuity for carved-out demoted routes (#98)", () => {
+  const entries = JSON.parse(
+    readFileSync(join(import.meta.dir, "..", "redirects.json"), "utf8"),
+  ) as readonly RedirectEntry[];
+
+  test("each carved-out demoted route still answers 301 to a published ancestor", () => {
+    for (const old of CARVED_OUT_DEMOTED_ROUTES) {
+      const entry = entries.find((candidate) => candidate.old === old);
+      expect(entry, `no redirect entry for ${old}`).toBeDefined();
+      expect(entry?.status).toBe(301);
+      expect(entry?.new).toBe("/docs/");
+      expect(entry?.descendants).toBe(false);
+    }
   });
 });

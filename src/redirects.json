@@ -73,6 +73,54 @@
     "effective_version": "0.1.0"
   },
   {
+    "old": "/docs/projects/bitty/specifications/ai-architecture/",
+    "new": "/docs/",
+    "status": 301,
+    "descendants": false,
+    "reason": "bitty-website#98 multi-source move: /docs/projects/bitty/specifications/ai-architecture/ left the pinned bitty-docs revision (the page is consumed from another corpus, bitty-ai-docs or bitty-plugins-docs) and it was a 301 demotion before, so /docs/ (nearest published ancestor) keeps answering 301 instead of turning the route into a 404; the commit that lands the owning corpus rewrites this to the exact target or removes the entry",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/projects/bitty/specifications/ipc-agent-rfc/",
+    "new": "/docs/",
+    "status": 301,
+    "descendants": false,
+    "reason": "bitty-website#98 multi-source move: /docs/projects/bitty/specifications/ipc-agent-rfc/ left the pinned bitty-docs revision (the page is consumed from another corpus, bitty-ai-docs or bitty-plugins-docs) and it was a 301 demotion before, so /docs/ (nearest published ancestor) keeps answering 301 instead of turning the route into a 404; the commit that lands the owning corpus rewrites this to the exact target or removes the entry",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/projects/bitty/specifications/isolation-resource-rfc/",
+    "new": "/docs/",
+    "status": 301,
+    "descendants": false,
+    "reason": "bitty-website#98 multi-source move: /docs/projects/bitty/specifications/isolation-resource-rfc/ left the pinned bitty-docs revision (the page is consumed from another corpus, bitty-ai-docs or bitty-plugins-docs) and it was a 301 demotion before, so /docs/ (nearest published ancestor) keeps answering 301 instead of turning the route into a 404; the commit that lands the owning corpus rewrites this to the exact target or removes the entry",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/projects/bitty/specifications/lua-runtime-rfc/",
+    "new": "/docs/",
+    "status": 301,
+    "descendants": false,
+    "reason": "bitty-website#98 multi-source move: /docs/projects/bitty/specifications/lua-runtime-rfc/ left the pinned bitty-docs revision (the page is consumed from another corpus, bitty-ai-docs or bitty-plugins-docs) and it was a 301 demotion before, so /docs/ (nearest published ancestor) keeps answering 301 instead of turning the route into a 404; the commit that lands the owning corpus rewrites this to the exact target or removes the entry",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/projects/bitty/specifications/package-followup-rfc/",
+    "new": "/docs/",
+    "status": 301,
+    "descendants": false,
+    "reason": "bitty-website#98 multi-source move: /docs/projects/bitty/specifications/package-followup-rfc/ left the pinned bitty-docs revision (the page is consumed from another corpus, bitty-ai-docs or bitty-plugins-docs) and it was a 301 demotion before, so /docs/ (nearest published ancestor) keeps answering 301 instead of turning the route into a 404; the commit that lands the owning corpus rewrites this to the exact target or removes the entry",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/projects/bitty/specifications/package-lifecycle-rfc/",
+    "new": "/docs/",
+    "status": 301,
+    "descendants": false,
+    "reason": "bitty-website#98 multi-source move: /docs/projects/bitty/specifications/package-lifecycle-rfc/ left the pinned bitty-docs revision (the page is consumed from another corpus, bitty-ai-docs or bitty-plugins-docs) and it was a 301 demotion before, so /docs/ (nearest published ancestor) keeps answering 301 instead of turning the route into a 404; the commit that lands the owning corpus rewrites this to the exact target or removes the entry",
+    "effective_version": "0.1.0"
+  },
+  {
     "old": "/docs/projects/bitty/specifications/plugin-api-v1-lua-surface-rfc/",
     "new": "/docs/",
     "status": 301,

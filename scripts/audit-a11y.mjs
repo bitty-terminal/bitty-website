@@ -18,9 +18,11 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  auditDocsShell,
   collectRenderedPages,
   findBrokenInternalLinks,
   findDisallowedAssetReferences,
+  sidebarListDepth,
 } from "../src/lib/a11yAudit.ts";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -246,6 +248,21 @@ if (!(await exists(dist))) {
       strictHeadings: page.path === join(dist, "index.html"),
       passthrough: page.passthrough,
     });
+    // CTX-0050 docs shell: the one-h1 rule above cannot see a duplicated
+    // title, an extra aria-current, or a deeper-than-two-layer sidebar, so
+    // the shell contract is asserted separately on every rendered docs page.
+    if (!page.passthrough && page.relativePath.startsWith("docs/")) {
+      const defects = auditDocsShell(html);
+      if (defects.length === 0) {
+        pass(
+          `${name}: docs shell (single title, one aria-current, ${sidebarListDepth(html)}-layer sidebar, breadcrumb)`,
+        );
+      } else {
+        for (const defect of defects) {
+          fail(`${name}: docs shell: ${defect.detail}`);
+        }
+      }
+    }
     if (!page.passthrough) {
       // Site-internal doc links must resolve to a rendered page. Redirect
       // stubs count as shipped routes. Upstream passthrough apps own their

@@ -1,18 +1,38 @@
 /**
- * Sidebar tree model (W3 / website#86): nested collapsible tree plus
- * human-readable display titles, computed at render time only.
+ * Docs navigation model (CTX-0050, website#96): two-layer reader-intent
+ * sidebar, breadcrumb trail, and previous/next pager.
  *
- * Canonical data (frontmatter titles, slugs, links, pages) is never
- * mutated here — `displayTitle()` returns a derived string and the tree
- * carries both `slug` (canonical, used for links and `aria-current`) and
- * `title` (canonical) plus the derived `label` for rendering.
+ * Canonical data (frontmatter titles, slugs, links, pages) is never mutated
+ * here — `displayTitle()` returns a derived string and every entry carries
+ * both `slug` (canonical, used for links and `aria-current`) and `title`
+ * (canonical) plus the derived label used for rendering.
+ *
+ * Sidebar shape: at most two list levels. The six reader-intent groups of
+ * `./docsNavGroups.ts` are the only top level (`<ul class="docs-nav-tree">`
+ * -> group `<summary>` + one `<ul>` of pages). Route depth never adds a third
+ * level: a route that is both a section landing page and a container
+ * (`decisions`, `projects/bitty/specifications`) is one ordinary entry
+ * labelled with its real page title — the previous fixed "Contents"
+ * disclosure is gone.
  *
  * Title rules (render-time only):
  * - `ADR 0003 - Core Workspace Topology` -> `Core Workspace Topology`
  * - `Finding 0001 - Astro … Compatibility` -> `Astro … Compatibility`
  * - `Appearance Configuration RFC` -> `Appearance Configuration`
  * - anything else passes through byte-identical.
+ *
+ * Reading order (groups in manifest order, entries by `sidebar_order` then
+ * label) is computed once by `flattenNavEntries`, so the sidebar and the
+ * pager cannot disagree about what "next" means.
  */
+
+import {
+  NAV_GROUPS,
+  groupForRoute,
+  navGroupLabel,
+  routeSegments,
+  type NavGroupId,
+} from "./docsNavGroups.ts";
 
 export type SidebarEntry = {
   readonly slug: string;
@@ -20,20 +40,29 @@ export type SidebarEntry = {
   readonly order: number;
 };
 
-export type SidebarNode = {
-  /** Route path segments below `/docs/<version>/`, e.g. `["decisions","adrs"]`. */
-  readonly segments: readonly string[];
-  /** Canonical slug of the page at exactly this path, or `null` for a pure folder. */
-  readonly page: SidebarEntry | null;
-  /** Child folders, sorted by label. */
-  readonly children: readonly SidebarNode[];
-  /** Flattened order key: smallest page order in the subtree. */
-  readonly order: number;
-  /** `true` when the current page is this node or a descendant. */
+/** One rendered top-level group: its label and its (flat) page entries. */
+export type DocsNavGroup = {
+  readonly id: NavGroupId;
+  readonly label: string;
+  readonly entries: readonly SidebarEntry[];
+  /** `true` when the rendered page is one of this group's entries. */
   readonly isCurrent: boolean;
-  /** `true` when this node is exactly the current page. */
-  readonly isSelf: boolean;
 };
+
+/** Breadcrumb step. `href === null` renders as plain text (no dead links). */
+export type BreadcrumbItem = {
+  readonly label: string;
+  readonly href: string | null;
+};
+
+/** Previous/next pager targets in sidebar reading order. */
+export type NavPager = {
+  readonly previous: SidebarEntry | null;
+  readonly next: SidebarEntry | null;
+};
+
+/** First breadcrumb step: the version's documentation index. */
+export const DOCS_ROOT_LABEL = "Docs";
 
 /** Strip a leading machine code (`ADR 0003 - `, `FINDING 0001 - `) at render time. */
 function stripLeadingCodePrefix(title: string): string | null {
@@ -61,121 +90,134 @@ export function displayTitle(title: string): string {
   return stripTrailingRfcSuffix(stripped) ?? stripped;
 }
 
-type MutableNode = {
-  segments: string[];
-  page: SidebarEntry | null;
-  children: Map<string, MutableNode>;
-};
-
-function segmentLabel(segment: string): string {
+/** Human label for one path segment (`user-guide` -> `User guide`). */
+export function segmentLabel(segment: string): string {
   const spaced = segment.replace(/-/g, " ");
   return spaced.charAt(0).toUpperCase() + spaced.slice(1);
 }
 
 /**
- * Build a nested tree from flat route slugs. The revision index (`""`)
- * is excluded by the caller convention — entries with an empty slug are
- * ignored. A page whose slug is a strict prefix of other pages (e.g.
- * `decisions` index vs `decisions/adrs/...`) becomes the labelled landing
- * page of its folder node.
+ * Human label for a canonical route: the display form of the page title when
+ * there is a page there, else the last segment's label.
+ *
+ * This is the single rule behind the "a route that is both a folder and a
+ * page" case (website#96): such a route is an entry like any other and shows
+ * its own page title — never a generic affordance.
  */
-export function buildSidebarTree(
+export function routeLabel(slug: string, title: string | undefined): string {
+  if (title !== undefined && title.length > 0) {
+    return displayTitle(title);
+  }
+  const segments = routeSegments(slug);
+  return segmentLabel(segments[segments.length - 1] ?? "");
+}
+
+export function hrefFor(version: string, slug: string): string {
+  return slug === "" ? `/docs/${version}/` : `/docs/${version}/${slug}/`;
+}
+
+function compareEntries(left: SidebarEntry, right: SidebarEntry): number {
+  return (
+    left.order - right.order ||
+    displayTitle(left.title).localeCompare(displayTitle(right.title)) ||
+    left.slug.localeCompare(right.slug)
+  );
+}
+
+/**
+ * Group entries into the reader-intent navigation model. Empty groups are
+ * dropped, so the top level carries only groups the pinned corpus fills.
+ * Entry order within a group is `sidebar_order`, then label, then slug, so
+ * the result is deterministic for identical inputs.
+ */
+export function buildNavGroups(
   entries: readonly SidebarEntry[],
-): SidebarNode[] {
-  const roots = new Map<string, MutableNode>();
-
-  function childOf(
-    parent: Map<string, MutableNode>,
-    segment: string,
-  ): MutableNode {
-    let node = parent.get(segment);
-    if (node === undefined) {
-      node = { segments: [], page: null, children: new Map() };
-      parent.set(segment, node);
-    }
-    return node;
-  }
-
+  currentSlug = "",
+): DocsNavGroup[] {
+  const buckets = new Map<NavGroupId, SidebarEntry[]>();
   for (const entry of entries) {
-    if (entry.slug === "") {
-      continue;
-    }
-    const segments = entry.slug.split("/");
-    let level = roots;
-    let node: MutableNode | undefined;
-    for (const segment of segments) {
-      node = childOf(level, segment);
-      level = node.children;
-    }
-    // Last-writer collision: keep the lowest explicit order.
-    if (node !== undefined) {
-      if (node.page === null || entry.order < node.page.order) {
-        node.page = entry;
-      }
+    const id = groupForRoute(entry.slug);
+    const bucket = buckets.get(id);
+    if (bucket === undefined) {
+      buckets.set(id, [entry]);
+    } else {
+      bucket.push(entry);
     }
   }
-
-  function finalize(
-    segment: string,
-    node: MutableNode,
-    trail: readonly string[],
-  ): SidebarNode {
-    const segments = [...trail, segment];
-    const kids = [...node.children.entries()]
-      .map(([key, kid]) => finalize(key, kid, segments))
-      .sort(
-        (left, right) =>
-          left.order - right.order ||
-          nodeLabel(left).localeCompare(nodeLabel(right)),
-      );
-    const ownOrder = node.page?.order;
-    const kidOrder = kids.length > 0 ? kids[0]?.order : undefined;
-    const order =
-      ownOrder !== undefined && kidOrder !== undefined
-        ? Math.min(ownOrder, kidOrder)
-        : (ownOrder ?? kidOrder ?? Number.MAX_SAFE_INTEGER);
-    return {
-      segments,
-      page: node.page,
-      children: kids,
-      order,
-      isCurrent: false,
-      isSelf: false,
-    };
-  }
-
-  return [...roots.entries()]
-    .map(([key, node]) => finalize(key, node, []))
-    .sort(
-      (left, right) =>
-        left.order - right.order ||
-        nodeLabel(left).localeCompare(nodeLabel(right)),
+  return NAV_GROUPS.filter(
+    (group) => (buckets.get(group.id)?.length ?? 0) > 0,
+  ).map((group) => {
+    const groupEntries = [...(buckets.get(group.id) ?? [])].sort(
+      compareEntries,
     );
-}
-
-/** Folder label: the landing page's display title when present, else the segment label. */
-export function nodeLabel(node: SidebarNode): string {
-  if (node.page !== null) {
-    return displayTitle(node.page.title);
-  }
-  return segmentLabel(node.segments[node.segments.length - 1] ?? "");
-}
-
-/** Human label for one path segment inside a folder (never a page title). */
-export function folderSegmentLabel(segment: string): string {
-  return segmentLabel(segment);
-}
-
-export function markCurrent(
-  nodes: readonly SidebarNode[],
-  currentSlug: string,
-): SidebarNode[] {
-  return nodes.map((node) => {
-    const kids = markCurrent(node.children, currentSlug);
-    const isSelf = node.page?.slug === currentSlug;
-    const isCurrent = isSelf || kids.some((kid) => kid.isCurrent);
-    return { ...node, children: kids, isCurrent, isSelf };
+    return {
+      id: group.id,
+      label: group.label,
+      entries: groupEntries,
+      isCurrent: groupEntries.some((entry) => entry.slug === currentSlug),
+    };
   });
+}
+
+/** Every entry in sidebar reading order (groups in manifest order). */
+export function flattenNavEntries(
+  groups: readonly DocsNavGroup[],
+): readonly SidebarEntry[] {
+  return groups.flatMap((group) => group.entries);
+}
+
+/**
+ * Previous/next targets for the rendered page, derived from the sidebar
+ * reading order. A page that is not in the navigation model (for example an
+ * unpublished entry) gets no pager instead of a guessed neighbour.
+ */
+export function pagerFor(
+  groups: readonly DocsNavGroup[],
+  currentSlug: string,
+): NavPager {
+  const flat = flattenNavEntries(groups);
+  const index = flat.findIndex((entry) => entry.slug === currentSlug);
+  if (index === -1) {
+    return { previous: null, next: null };
+  }
+  return {
+    previous: flat[index - 1] ?? null,
+    next: flat[index + 1] ?? null,
+  };
+}
+
+/**
+ * Breadcrumb trail for a canonical docs slug, derived from the route (never
+ * from corpus frontmatter): the docs index, the reader-intent group, then
+ * every route prefix up to the current page. Intermediate steps link only
+ * when a published page exists at that route, so a trail can never point at a
+ * 404; the current step is always plain text, and labels use the same
+ * render-time display rule as the sidebar.
+ */
+export function buildBreadcrumbs(options: {
+  readonly version: string;
+  readonly slug: string;
+  readonly titles: ReadonlyMap<string, string>;
+}): readonly BreadcrumbItem[] {
+  const { version, slug, titles } = options;
+  const items: BreadcrumbItem[] = [
+    {
+      label: DOCS_ROOT_LABEL,
+      href: slug === "" ? null : hrefFor(version, ""),
+    },
+    { label: navGroupLabel(groupForRoute(slug)), href: null },
+  ];
+  const segments = routeSegments(slug);
+  for (let index = 0; index < segments.length; index += 1) {
+    const prefix = segments.slice(0, index + 1).join("/");
+    const title = titles.get(prefix);
+    const isCurrent = index === segments.length - 1;
+    items.push({
+      label: routeLabel(prefix, title),
+      href: isCurrent || title === undefined ? null : hrefFor(version, prefix),
+    });
+  }
+  return items;
 }
 
 function escapeHtml(text: string): string {
@@ -190,36 +232,29 @@ function escapeHref(href: string): string {
   return href.replace(/&/g, "&amp;").replace(/"/g, "&quot;");
 }
 
-export function hrefFor(version: string, slug: string): string {
-  return slug === "" ? `/docs/${version}/` : `/docs/${version}/${slug}/`;
-}
-
-function renderNode(node: SidebarNode, version: string, depth: number): string {
-  const kids = node.children
-    .map((kid) => renderNode(kid, version, depth + 1))
-    .join("");
-  const hasPage = node.page !== null;
-  const link = hasPage
-    ? `<a href="${escapeHref(hrefFor(version, (node.page as SidebarEntry).slug))}"${node.isSelf ? ' aria-current="page"' : ""}>${escapeHtml(displayTitle((node.page as SidebarEntry).title))}</a>`
-    : `<span class="docs-nav-folder-label" aria-hidden="false">${escapeHtml(folderSegmentLabel(node.segments[node.segments.length - 1] ?? ""))}</span>`;
-
-  if (node.children.length === 0) {
-    return `<li class="docs-nav-leaf">${link}</li>`;
-  }
-  const open = node.isCurrent ? " open" : "";
-  const list = `<ul>${kids}</ul>`;
-  // Folder with a landing page: the page link renders first, the subtree
-  // collapses under a separate "Contents" disclosure so the link itself
-  // stays a plain keyboard-operable anchor.
-  if (hasPage) {
-    return `<li class="docs-nav-branch">${link}<details class="docs-nav-sub"${open}><summary><span>Contents</span></summary>${list}</details></li>`;
-  }
-  return `<li class="docs-nav-branch"><details class="docs-nav-sub"${open}><summary>${escapeHtml(folderSegmentLabel(node.segments[node.segments.length - 1] ?? ""))}</summary>${list}</details></li>`;
-}
-
+/**
+ * Render the two-layer sidebar: one `<ul>` of groups, each with a
+ * `<details>`/`<summary>` disclosure and exactly one `<ul>` of page links.
+ * The current page carries the page's only `aria-current="page"`; the
+ * current group renders open so the reader's section is visible on load.
+ */
 export function renderSidebarTree(
-  nodes: readonly SidebarNode[],
+  groups: readonly DocsNavGroup[],
   version: string,
+  currentSlug: string,
 ): string {
-  return `<ul class="docs-nav-tree">${nodes.map((node) => renderNode(node, version, 0)).join("")}</ul>`;
+  const groupHtml = groups
+    .map((group) => {
+      const open = group.isCurrent ? " open" : "";
+      const items = group.entries
+        .map((entry) => {
+          const current =
+            entry.slug === currentSlug ? ' aria-current="page"' : "";
+          return `<li class="docs-nav-entry"><a href="${escapeHref(hrefFor(version, entry.slug))}"${current}>${escapeHtml(routeLabel(entry.slug, entry.title))}</a></li>`;
+        })
+        .join("");
+      return `<li class="docs-nav-group"><details class="docs-nav-group-details"${open}><summary>${escapeHtml(group.label)}</summary><ul>${items}</ul></details></li>`;
+    })
+    .join("");
+  return `<ul class="docs-nav-tree">${groupHtml}</ul>`;
 }

@@ -3,11 +3,17 @@
  * Documentation version selector (RS-1 .. RS-5): presentation-only navigation.
  *
  * Data source: `src/content/versions.json` (RS-1 — single enumeration). Renders
- * one real link per hosted version in declared order, marks the current version
- * with `aria-current="page"`, and rewrites only the version segment of the
- * current route (RS-3), falling back to the target version's index when the
- * current content identity is absent there. Copies no specification prose
- * (LD-6).
+ * one real link per hosted version in declared order and rewrites only the
+ * version segment of the current route (RS-3), falling back to the target
+ * version's index when the current content identity is absent there. Copies no
+ * specification prose (LD-6).
+ *
+ * Current-version marker (website#78): the switcher no longer claims
+ * `aria-current="page"`. That value means "the page you are reading", so a
+ * second one here competed with the sidebar's page link; the current version
+ * is marked with `data-current` for styling plus an explicit
+ * "(current version)" suffix in its accessible name, leaving the docs route
+ * with exactly one `aria-current="page"`.
  *
  * Why links and not a `<select>`: the rewrite rule lives in exactly one place,
  * `rewriteVersionInRoute()` in `../lib/versions.ts`. An earlier revision also
@@ -53,10 +59,13 @@ const entries = versions.versions.map((entry) =>
         <a
           class="version-link"
           href={entry.href}
-          aria-current={entry.isCurrent ? "page" : undefined}
+          data-current={entry.isCurrent ? "true" : undefined}
         >
           {entry.label}
           {entry.suffix}
+          {entry.isCurrent && (
+            <span class="visually-hidden"> (current version)</span>
+          )}
         </a>
       </li>
     ))}
@@ -120,7 +129,7 @@ const entries = versions.versions.map((entry) =>
     min-block-size: var(--touch-target);
   }
 
-  .version-link[aria-current="page"] {
+  .version-link[data-current="true"] {
     color: var(--ink);
     font-weight: 700;
   }

@@ -1,7 +1,6 @@
 ---
 import { getCollection, render } from "astro:content";
 import "../../../styles/global.css";
-import { sep } from "node:path";
 import { assertValidRevisionPin } from "../../../lib/docsValidation.ts";
 import { getVersions, isValidVersionSegment } from "../../../lib/versions.ts";
 import {
@@ -9,12 +8,19 @@ import {
   validateRouteCollisions,
 } from "../../../lib/docsRoutes.ts";
 import {
+  sidebarEntriesFrom,
+  slugFromSourceFile,
+  sourcePathFromFilePath,
+} from "../../../lib/docsEntries.ts";
+import {
   buildLegacyAliases,
   loadMergedRedirects,
 } from "../../../lib/redirects.ts";
 import VersionSelector from "../../../components/VersionSelector.astro";
 import DocsSidebar from "../../../components/DocsSidebar.astro";
+import DocsBreadcrumbs from "../../../components/DocsBreadcrumbs.astro";
 import DocsToc from "../../../components/DocsToc.astro";
+import DocsPager from "../../../components/DocsPager.astro";
 import DocsCodeEnhancer from "../../../components/DocsCodeEnhancer.astro";
 import SiteFooter from "../../../components/SiteFooter.astro";
 import SiteHeader from "../../../components/SiteHeader.astro";
@@ -28,35 +34,13 @@ import SiteHeader from "../../../components/SiteHeader.astro";
 //   docs/decisions/adrs/README.md -> "decisions/adrs/readme"
 //   docs/projects/bitty/...       -> "projects/bitty/..." (partition kept)
 //
-// NOTE: import.meta.url points at the compiled chunk in dist/.prerender at
-// build time, not at this source file, so the mirror is located by path
-// invariant (<root>/src/content/docs) rather than relative to this module.
+// NOTE: the mirror is located by path invariant
+// (`./lib/docsEntries.ts`, `<root>/src/content/docs/`) rather than relative to
+// this module, because import.meta.url points at the compiled chunk in
+// dist/.prerender at build time, not at this source file. The entry mapping
+// itself lives in `./lib/docsEntries.ts` so the sidebar, breadcrumbs, and
+// pager resolve the same canonical slug for the same source file.
 export async function getStaticPaths() {
-  function sourcePathFromFilePath(filePath: string, id: string): string {
-    const posix = filePath.split(sep).join("/");
-    const marker = "src/content/docs/";
-    const index = posix.lastIndexOf(marker);
-    if (index === -1) {
-      throw new Error(
-        `Docs entry "${id}" is outside src/content/docs: ${filePath}`,
-      );
-    }
-    return posix.slice(index + marker.length);
-  }
-
-  function slugFromSourceFile(
-    filePath: string | undefined,
-    id: string,
-  ): string {
-    if (filePath === undefined || filePath.length === 0) {
-      throw new Error(`Docs entry "${id}" has no filePath`);
-    }
-    const sourcePath = sourcePathFromFilePath(filePath, id);
-    const identity = sourcePathToRouteIdentity(sourcePath);
-    const withoutDocs = identity.routeWithoutVersion.slice("/docs/".length);
-    return withoutDocs.endsWith("/") ? withoutDocs.slice(0, -1) : withoutDocs;
-  }
-
   assertValidRevisionPin();
   const versions = getVersions();
   const docs = await getCollection("docs");
@@ -198,6 +182,12 @@ const versionLabels = new Map(
 
 const slugParam = Astro.params.slug ?? "";
 const currentRoute = `/docs/${version}/${slugParam}${slugParam ? "/" : ""}`;
+
+// Breadcrumb labels: canonical titles per published slug, derived through the
+// same collection -> entry mapping the sidebar uses (`./lib/docsEntries.ts`),
+// so the trail and the sidebar label one page identically by construction.
+const navEntries = sidebarEntriesFrom(await getCollection("docs"));
+const navTitles = new Map(navEntries.map((entry) => [entry.slug, entry.title]));
 ---
 
 <html lang="en">
@@ -249,6 +239,11 @@ const currentRoute = `/docs/${version}/${slugParam}${slugParam ? "/" : ""}`;
         <DocsSidebar version={version} currentSlug={canonicalSlug} />
         <div class="docs-article">
           <header class="docs-header">
+            <DocsBreadcrumbs
+              version={version}
+              slug={canonicalSlug}
+              titles={navTitles}
+            />
             <p class="eyebrow">
               {entry.data.category} · {versionLabels.get(version) ?? version}
             </p>
@@ -258,11 +253,12 @@ const currentRoute = `/docs/${version}/${slugParam}${slugParam ? "/" : ""}`;
               {entry.data.status}
             </p>
           </header>
+          <DocsToc headings={headings} />
           <article class="prose">
             <Content />
           </article>
+          <DocsPager version={version} currentSlug={canonicalSlug} />
         </div>
-        <DocsToc headings={headings} />
       </div>
     </main>
     <SiteFooter />

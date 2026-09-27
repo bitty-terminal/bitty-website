@@ -845,11 +845,17 @@ body > .version-selector {
   text-align: start;
 }
 
-/* Docs navigation layout (CTX-0039): left sidebar, article, right TOC.
- * Single column on narrow viewports (the sidebar becomes a <details>
- * drawer); sidebar plus article from 50rem; all three columns from 70rem.
- * Only the docs page template uses this grid — home/index routes are
- * untouched.
+/* Docs navigation layout (CTX-0039, CTX-0050): left sidebar, article, right
+ * TOC. Single column on narrow viewports (the sidebar becomes a <details>
+ * drawer and the TOC a <details> disclosure under the title); sidebar plus
+ * article from 50rem; all three columns from 70rem.
+ *
+ * Narrow-viewport reading order is DOM order — sidebar drawer, article
+ * header, TOC, article body, pager — so section navigation sits under the
+ * title instead of after the whole article (website#91). From 70rem
+ * `.docs-article` becomes `display: contents`, which lifts its children into
+ * this grid: the header and body take the middle column while the TOC keeps
+ * its sticky third column. No TOC is rendered twice.
  *
  * CTX-0044 reading layout: the docs shell is wider than the generic
  * content cap, the center column takes the leftover track
@@ -862,6 +868,9 @@ main.docs-main {
 .docs-layout {
   display: grid;
   gap: var(--docs-layout-gap);
+  /* Stacked rows keep the previous vertical rhythm (each block owns its own
+   * spacing); the gap is a column gap until the layout splits columns. */
+  row-gap: 0;
 }
 
 .docs-article {
@@ -890,10 +899,6 @@ main.docs-main {
     grid-template-columns: var(--docs-sidebar-width) minmax(0, 1fr);
     align-items: start;
   }
-
-  .docs-layout .docs-toc {
-    grid-column: 1 / -1;
-  }
 }
 
 @media (width >= 70rem) {
@@ -903,8 +908,31 @@ main.docs-main {
       );
   }
 
+  /* Lift the article's children into the page grid (see the block comment
+   * above): header and pager in the middle column, prose below the header,
+   * TOC sticky in the third column. */
+  .docs-article {
+    display: contents;
+  }
+
+  .docs-header {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .docs-article .prose {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .docs-article .docs-pager {
+    grid-column: 2;
+    grid-row: 3;
+  }
+
   .docs-layout .docs-toc {
-    grid-column: auto;
+    grid-column: 3;
+    grid-row: 1 / span 2;
   }
 
   /* Desktop keeps the sidebar and TOC in view beside the article. */

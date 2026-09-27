@@ -291,7 +291,9 @@ export function findBrokenInternalLinks(
   return broken;
 }
 
-/** Collapse `.`/`..` segments of a `/`-joined relative path. */
+/**
+ * Collapse `.`/`..` segments of a `/`-joined relative path.
+ */
 function normalizeDocPath(path: string): string {
   const parts: string[] = [];
   for (const part of path.split("/")) {
@@ -303,6 +305,110 @@ function normalizeDocPath(path: string): string {
     }
   }
   return parts.join("/");
+}
+
+/**
+ * Static docs-shell checks (CTX-0050): the defects the shell rework fixes
+ * must not be able to come back silently.
+ *
+ * Evaluated per rendered docs page, over the built HTML only:
+ * - the article body must not repeat the page title (website#74: the leading
+ *   `# <title>` heading used to survive demotion as an `h2`),
+ * - exactly one element carries `aria-current="page"` (website#78: the
+ *   version switcher used to add a second one),
+ * - the sidebar renders at most two list levels (website#96: no third
+ *   level, ever),
+ * - the breadcrumb landmark is present.
+ *
+ * The caller scopes this to rendered docs pages; redirect stubs and
+ * passthrough mirrors have no shell.
+ */
+export type DocsShellDefect = {
+  readonly kind: "title-echo" | "aria-current" | "sidebar-depth" | "breadcrumb";
+  readonly detail: string;
+};
+
+const H1_PATTERN = /<h1\b[^>]*>([\s\S]*?)<\/h1>/iu;
+const ARTICLE_PATTERN = /<article\b[^>]*>([\s\S]*?)<\/article>/iu;
+const BODY_HEADING_PATTERN = /<h([1-6])\b[^>]*>([\s\S]*?)<\/h\1>/iu;
+const SIDEBAR_PATTERN =
+  /<nav\b[^>]*class="[^"]*docs-sidebar[^"]*"[^>]*>([\s\S]*?)<\/nav>/iu;
+const ARIA_CURRENT_PAGE_PATTERN = /<[a-z][^>]*\saria-current="page"/giu;
+
+function textContent(source: string): string {
+  return source
+    .replace(/<[^>]*>/gu, "")
+    .replace(/\s+/gu, " ")
+    .trim();
+}
+
+/** Deepest `<ul>` nesting inside the sidebar navigation. */
+export function sidebarListDepth(html: string): number {
+  const sidebar = SIDEBAR_PATTERN.exec(html);
+  if (sidebar === null || sidebar[1] === undefined) {
+    return 0;
+  }
+  let depth = 0;
+  let current = 0;
+  const tokenPattern = /<\/?ul\b/giu;
+  let match = tokenPattern.exec(sidebar[1]);
+  while (match !== null) {
+    current += match[0].startsWith("</") ? -1 : 1;
+    depth = Math.max(depth, current);
+    match = tokenPattern.exec(sidebar[1]);
+  }
+  return depth;
+}
+
+/** Number of elements claiming to be the current page. */
+export function pageAriaCurrentCount(html: string): number {
+  return (html.match(ARIA_CURRENT_PAGE_PATTERN) ?? []).length;
+}
+
+/** `true` when the article body opens with a heading that repeats the `h1`. */
+export function repeatsPageTitle(html: string): boolean {
+  const heading = H1_PATTERN.exec(html);
+  const article = ARTICLE_PATTERN.exec(html);
+  if (heading === null || article === null || article[1] === undefined) {
+    return false;
+  }
+  const body = BODY_HEADING_PATTERN.exec(article[1]);
+  if (body === null || body[2] === undefined) {
+    return false;
+  }
+  const title = textContent(heading[1] ?? "");
+  return title.length > 0 && textContent(body[2]) === title;
+}
+
+export function auditDocsShell(html: string): readonly DocsShellDefect[] {
+  const defects: DocsShellDefect[] = [];
+  if (repeatsPageTitle(html)) {
+    defects.push({
+      kind: "title-echo",
+      detail: "article body repeats the page h1 as its first heading",
+    });
+  }
+  const current = pageAriaCurrentCount(html);
+  if (current !== 1) {
+    defects.push({
+      kind: "aria-current",
+      detail: `expected exactly one aria-current="page", found ${current}`,
+    });
+  }
+  const depth = sidebarListDepth(html);
+  if (depth > 2) {
+    defects.push({
+      kind: "sidebar-depth",
+      detail: `sidebar renders ${depth} nested list levels (two-layer ceiling)`,
+    });
+  }
+  if (!html.includes('aria-label="Breadcrumb"')) {
+    defects.push({
+      kind: "breadcrumb",
+      detail: "breadcrumb landmark missing",
+    });
+  }
+  return defects;
 }
 
 async function collectHtmlPaths(root: string): Promise<string[]> {

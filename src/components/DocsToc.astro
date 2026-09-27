@@ -1,13 +1,23 @@
 ---
 /**
- * Per-article table of contents (CTX-0039): the H2/H3 headings of the
- * rendered article as plain anchor links.
+ * Per-article table of contents (CTX-0039, CTX-0050): the H2/H3 headings of
+ * the rendered article as plain anchor links.
  *
  * Data source: the `headings` returned by Astro's `render(entry)` — the same
  * pipeline that emits the article's heading ids, so links match by
  * construction. The list is fully usable with JavaScript disabled; the
  * inline script only highlights the section in view via
  * IntersectionObserver and never owns routing or content.
+ *
+ * Placement (website#91): one `<nav>`, rendered between the article header
+ * and the article body, so a narrow-viewport reader finds section navigation
+ * directly under the title instead of at the end of the article. Below the
+ * 70rem layout breakpoint it is a `<details>` disclosure that a tiny script
+ * collapses (the same pattern as the sidebar drawer); from 70rem
+ * `global.css` lifts it out of the article column into the sticky third
+ * column and this component swaps the disclosure summary for the inline
+ * "On this page" label. One `<nav>`, one set of heading anchors: nothing is
+ * duplicated, so an anchor can never appear twice on the page.
  */
 type TocHeading = {
   readonly depth: number;
@@ -26,26 +36,46 @@ const items = headings.filter(
 ---
 
 {items.length > 0 && (
-  <nav class="docs-toc" aria-label="On this page">
-    <p class="docs-toc-title">On this page</p>
-    <ul>
-      {items.map((item) => (
-        <li data-depth={item.depth}>
-          <a href={`#${item.slug}`}>{item.text}</a>
-        </li>
-      ))}
-    </ul>
-  </nav>
+  <details class="docs-toc" open>
+    <summary>On this page</summary>
+    <nav class="docs-toc-nav" aria-label="On this page">
+      <p class="docs-toc-title">On this page</p>
+      <ul>
+        {items.map((item) => (
+          <li data-depth={item.depth}>
+            <a href={`#${item.slug}`}>{item.text}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </details>
 )}
+
+<script>
+  // CTX-0050: keep the disclosure collapsed on narrow viewports, where the
+  // TOC sits under the article title, and open (summary hidden by CSS) from
+  // the 70rem layout where it is the sticky right rail. Runs on breakpoint
+  // changes too, so a resize never leaves the rail hidden behind a summary
+  // that is display:none. Scoped to this component instance.
+  const toc = document.querySelector("details.docs-toc");
+  const narrow = window.matchMedia("(max-width: 69.9375rem)");
+  const syncToc = () => {
+    if (toc instanceof HTMLDetailsElement) {
+      toc.open = !narrow.matches;
+    }
+  };
+  syncToc();
+  narrow.addEventListener("change", syncToc);
+</script>
 
 <script>
   // Progressive enhancement only: the server-rendered anchor links already
   // navigate. Highlight the link whose heading is in view; without
   // IntersectionObserver (or without JS) the TOC stays a plain link list.
-  const toc = document.querySelector(".docs-toc");
-  if (toc && "IntersectionObserver" in window) {
+  const tocRoot = document.querySelector(".docs-toc");
+  if (tocRoot && "IntersectionObserver" in window) {
     const links = new Map<string, HTMLAnchorElement>();
-    for (const anchor of toc.querySelectorAll<HTMLAnchorElement>(
+    for (const anchor of tocRoot.querySelectorAll<HTMLAnchorElement>(
       'a[href^="#"]',
     )) {
       const id = decodeURIComponent(
@@ -57,7 +87,9 @@ const items = headings.filter(
     }
     if (links.size > 0) {
       const clear = (): void => {
-        for (const anchor of toc.querySelectorAll('a[aria-current="true"]')) {
+        for (const anchor of tocRoot.querySelectorAll(
+          'a[aria-current="true"]',
+        )) {
           anchor.removeAttribute("aria-current");
         }
       };
@@ -85,27 +117,47 @@ const items = headings.filter(
 <style>
   .docs-toc {
     min-width: 0;
+    margin-block-end: 2.5rem;
     font-size: var(--text-xs);
     line-height: 1.5;
   }
 
-  .docs-toc-title {
-    margin-block-end: 0.5rem;
+  /* Narrow viewports: the summary is the section toggle, so it carries the
+   * "On this page" label and the inline title is hidden. */
+  .docs-toc > summary {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: var(--touch-target);
+    cursor: pointer;
     color: var(--ink);
     font-weight: 700;
   }
 
-  .docs-toc ul {
+  .docs-toc > summary::before {
+    content: "\25B8";
+    margin-inline-end: 0.375rem;
+    color: var(--muted);
+  }
+
+  .docs-toc[open] > summary::before {
+    transform: rotate(90deg);
+  }
+
+  .docs-toc-title {
+    display: none;
+  }
+
+  .docs-toc-nav ul {
     margin: 0;
     padding: 0;
     list-style: none;
   }
 
-  .docs-toc li[data-depth="3"] a {
+  .docs-toc-nav li[data-depth="3"] a {
     padding-inline-start: 0.75rem;
   }
 
-  .docs-toc a {
+  .docs-toc-nav a {
     display: block;
     min-block-size: 2rem;
     align-content: center;
@@ -115,13 +167,28 @@ const items = headings.filter(
     text-decoration: none;
   }
 
-  .docs-toc a:hover {
+  .docs-toc-nav a:hover {
     color: var(--indigo-deep);
   }
 
-  .docs-toc a[aria-current="true"] {
+  .docs-toc-nav a[aria-current="true"] {
     border-inline-start-color: var(--accent);
     color: var(--ink);
     font-weight: 700;
+  }
+
+  /* Wide viewports: the TOC is the sticky right rail and CSS keeps the
+   * disclosure open, so the summary is gone and the inline label returns. */
+  @media (width >= 70rem) {
+    .docs-toc > summary {
+      display: none;
+    }
+
+    .docs-toc-title {
+      display: block;
+      margin-block-end: 0.5rem;
+      color: var(--ink);
+      font-weight: 700;
+    }
   }
 </style>

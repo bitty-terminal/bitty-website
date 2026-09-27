@@ -1,11 +1,11 @@
 ---
 title: Finding 0001 - Astro and TypeScript 7 Check Compatibility
-description: Records the verified full Astro diagnostics gap with the required TypeScript 7 toolchain
+description: Experimental TypeScript 7 with Astro 5.2 internal type mismatches
 category: findings
 audience: contributor
-document_type: register
+document_type: reference
 status: accepted
-website_publish: false
+website_publish: true
 sidebar_order: 11
 ---
 

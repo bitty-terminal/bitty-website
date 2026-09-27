@@ -20,8 +20,8 @@
     {
       "id": "bitty-docs",
       "source": "github.com/bitty-terminal/bitty-docs",
-      "revision": "9891949ca20b245375ece9a9015d0f42458fd2b1",
-      "synced_at": "2026-09-27T17:06:14.271Z",
+      "revision": "29188785d88485898d6d86fd0632124adea126dd",
+      "synced_at": "2026-09-27T21:55:39.043Z",
       "mounts": [
         {
           "from": "docs",
@@ -31,10 +31,7 @@
       "published": {
         "min": 3,
         "max": 3
-      },
-      "exclude": [
-        "docs/projects"
-      ]
+      }
     },
     {
       "id": "bitty-plugins-docs",

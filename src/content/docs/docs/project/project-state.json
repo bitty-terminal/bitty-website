@@ -1,27 +1,27 @@
 {
   "schema_version": 1,
-  "snapshot_date": "2026-09-08",
+  "snapshot_date": "2026-09-27",
   "implementation": {
     "repository": "https://github.com/bitty-terminal/bitty",
-    "revision": "29772a35d4297e6fe403d362fb9bada55a4465b0",
-    "short": "29772a3",
+    "revision": "c6db24dfa9aec1e35ebe458a20f3a0b7b5610b51",
+    "short": "c6db24d",
     "baseline_revision": "de134ec3a09b96ce58ef2cece20d15b0c041879a",
     "baseline_short": "de134ec",
-    "previous_revision": "c49ead135494b796a38c91158e535d06a308c62a",
-    "previous_short": "c49ead1",
-    "crates": 18
+    "previous_revision": "679f12f3529e6d75dcd63a485fb4c88c2e6141cd",
+    "previous_short": "679f12f",
+    "crates": 21
   },
   "latest_release": {
-    "tag": "v0.0.19",
-    "commit": "c2aabeececaff8128671ee7a322aac116e8ed321",
-    "short": "c2aabee",
-    "date": "2026-09-03",
-    "summary": "AUR checkout root-owned (bitty CTX-0135 PR #224); binary artifact renamed bitty-app -> bitty; cross-platform dist assets bitty-<target> plus deb/rpm/apk/pkg.tar.zst, Homebrew/Scoop, AUR bitty/bitty-bin, SHA256SUMS and provenance per CHANGELOG"
+    "tag": "v0.0.21",
+    "commit": "7da6d6f46065c495c82f31ce047abaab5124bf2a",
+    "short": "7da6d6f",
+    "date": "2026-09-24",
+    "summary": "Bitty 0.0.21 released 2026-09-24 from tag v0.0.21 (7da6d6f): plugin services and manifest forms; CLI contract v1 commands; workspace and panel operations; Kitty graphics, input, render, and grid correctness; Rich Scene and semantic-terminal wiring; compatibility and DevTools evidence batches; execution and security-closure evidence; 21-crate workspace. This is a pre-alpha release; no stable, compatible, or security-verified claim is made."
   },
   "maturity": {
     "label": "Pre-alpha / Engineering Milestones M1-M8",
-    "date": "2026-09-08",
-    "oqs_accepted": 32,
+    "date": "2026-09-27",
+    "oqs_accepted": 54,
     "lifecycle": "Draft -> Experimental Implementation -> Accepted -> Verified -> Compatible -> Release-ready",
     "milestone_frame": "M1 Terminal Truth; M2 Correct Terminal; M3 Usable Terminal; M4 Workspace / Panel; M5 Plugin Ecosystem; M6 Rich / IPC / Agent; M7 Stable Compatibility; M8 Public Beta"
   },
@@ -30,37 +30,37 @@
       "id": "M1",
       "name": "Terminal Truth",
       "status": "implemented-hardening",
-      "evidence": "PTY/VT/state/render/window path exists via headless soak plus experimental slice c0aadd2/7e3104d/a8735d0; window.padding/opacity wired config to winit at 1835175; not Verified"
+      "evidence": "PTY/VT/state/render/window path exists via headless soak plus experimental slice c0aadd2/7e3104d/a8735d0; window.padding/opacity wired config to winit at 1835175; M1 protocol batch ef73c82 (DECSET 2026 synchronized output, OSC 10/11 query/set, window title); per-pane damage tracking 562f39c; live split resize updates grid and PTY winsize 6e89326; terminal.scrollback honored 1f31435; terminal.shell honored at spawn 70291b4; narrow reflow tail rewrap 1330c31; one-call shrink keeps top content f98fad8; post-v0.0.20 hardening through 23c3eb6 (erase/resize/reflow/damage/hyperlink corrections ae8f4ba, parser caps and ignore flags/charsets/SGR b52e918, bounded zero-width cells 3375439, merged fill runs and LRU glyph cache a998456); not Verified"
     },
     {
       "id": "M2",
       "name": "Correct Terminal",
       "status": "hardening",
-      "evidence": "VT correctness fixes landing (combining marks 2d36084, cursor/tab margin bounds 38973a0, OSC52 base64 0cb244d/f725664); sRGB-decode upload colors for linear swapchain present b4b4e30; DA replies pumped per pane 7048139; compat-lab forming with regenerated baselines 0e65f85; not Verified"
+      "evidence": "VT correctness fixes landing (combining marks 2d36084, cursor/tab margin bounds 38973a0, OSC52 base64 0cb244d/f725664); sRGB-decode upload colors for linear swapchain present b4b4e30; DA replies pumped per pane 7048139; compat-lab forming with regenerated baselines 0e65f85; Kitty graphics pipeline (bounded PNG/RGB decode 0cc82de, placement/rasterize/composite bd15d94, APC G parser plus base64 c1d8243, per-pane origin binding 18c333a, GPU display gate 6d4aa2f, real-GPU texture upload fdd9e28); Windows ConPTY Tier-1 1941f47; compat M1/M2 matrix report plus env-gated live probes 3c9cfea; not Verified"
     },
     {
       "id": "M3",
       "name": "Usable Terminal",
       "status": "in-progress",
-      "evidence": "config productizing (user config-file loading 9a392ed, appearance overrides bc21631, Alt-as-Mod cc40ffc, init wizard 95ed41f, leader/mod_key 2a5e451, radius_px S0 parsed no-op 84aa580); UX wave (cursor hue e8a7b76, smart_split 75f8637, z-index tiers 42d244e, split/zoom full present 5a535ee, chrome-held key-repeat swallow 88c0ead, runtime module split 61b655f, chrome-key cluster extract 3384903, scrollbar overlay c49ead1, scrolled-viewport snap on input 884fd30)"
+      "evidence": "config productizing (user config-file loading 9a392ed, appearance overrides bc21631, Alt-as-Mod cc40ffc, init wizard 95ed41f, leader/mod_key 2a5e451, radius_px S0 parsed no-op 84aa580); UX wave (cursor hue e8a7b76, smart_split 75f8637, z-index tiers 42d244e, split/zoom full present 5a535ee, chrome-held key-repeat swallow 88c0ead, runtime module split 61b655f, chrome-key cluster extract 3384903, scrollbar overlay c49ead1, scrolled-viewport snap on input 884fd30); v0.0.20 config matrix (arrow-key HJKL variants 1ea2f66, Mod+M/HJKL pinned to both mods 6e662a2, F-keys plus INS/DEL/HM/END/PU/PD chords 11d9bec, per-window font zoom bc1fbba, which-key help popup c8faa52, focus-follows-mouse 525b8ef, workspace move keys 8b987a0, workspace ops entry 227ca3a) and UX sweep (click-to-focus da49e7b, IME preedit/commit 20babf0, close confirmation 5597313, scrollbar auto default b761c03, typed input stays visible db0f7b5, honest LF/CR plus paste confirm 8e2f975); theme preset catalog 20cd735; post-v0.0.20 UX wave (search overlay 8ea5f86, keyboard copy mode e154324, multi-click selection d89fa19, session save/restore a266b2a, custom palette plus OSC 4 9c63750, batched image blits 0b416f2, honest composer/hints labels 237ad83); not Verified"
     },
     {
       "id": "M4",
       "name": "Workspace / Panel",
       "status": "early-implementation",
-      "evidence": "PanelId/ViewId/TerminalId separation with PanelRuntime::mount and MAX_OVERLAYS_PER_WINDOW 4 in bitty-ui panel.rs; bounded async panel workers off tick path d04886a; canonical bitty-terminal.workspace with deprecated tabs shim (removal >= v0.2.0) plus panel gaps regression abde197; V1-V3 panel-live digest gates 29772a3 Implemented-only, not Verified; Panel Runtime spec remains Draft pre-study CTX-0119"
+      "evidence": "PanelId/ViewId/TerminalId separation with PanelRegistry::mount_panel (crates/bitty-runtime/src/registry/panel.rs; PanelRuntime is the RFC contract name, not a code type) and MAX_OVERLAYS_PER_WINDOW 4 in bitty-ui panel.rs; bounded async panel workers off tick path d04886a; canonical bitty-terminal.workspace with deprecated tabs shim (removal >= v0.2.0) plus panel gaps regression abde197; v0.0.20 decoration/presentation wave: Core-owned gaps px, border, radius 485fbfd plus live px present wiring 638ef81, SDF rounded fills and inner-arc glyph clipping 3d08d8e, scrollbar tracks decorated frame fdd503a, panel animations open/close/focus/workspace 3c5878e, per-View appearance overrides 4e75fe8, per-panel background image 8914632, focus outline width 6a74341, globally unique ViewId for new splits 4e0d4b2, hover-to-activate dwell 262e63c; V1-V3 panel-live digest gates 29772a3 Implemented-only, not Verified; Panel Runtime spec remains Draft pre-study CTX-0119; ai/mail panel experiences extracted into the bitty-panels crate 74361aa (CTX-0438), workspace now 21 crates"
     },
     {
       "id": "M5",
       "name": "Plugin Ecosystem",
       "status": "infrastructure-only",
-      "evidence": "plugin-host dogfood of five bundled-disabled first-party plugins 7e3104d retained plus fuel cap 58e488a and TOFU fail-closed ec95c5c; plugin SDK lives in a separate repository and is not verified here"
+      "evidence": "plugin-host dogfood of five bundled-disabled first-party plugins 7e3104d retained plus fuel cap 58e488a and TOFU fail-closed ec95c5c; v0.0.20 plugin runtime Gap A e51b5cc (per-plugin !Send VM lifecycle, atomic activation, bundled plugins load, --safe starts without a third-party VM), required_services resolve-time check b425d43, 0600 managed manifest permissions 6c76a52, plugin store source resolution plus manifest/content verification 064b9de; plugin SDK lives in a separate repository and is not verified here; post-v0.0.20 plugin wave: bundled palette/statusline/file-manager/git-panel removed (dd46c7a/d4d754e/65aac5c/e84da34), external local-path install plus reload 1c5d3ff, consent-gated Layer-2 process.spawn 9830edb with [tools.*] fail-closed 64e1709, Lua bitty.ui.mount/update 414a36b; not Verified"
     },
     {
       "id": "M6",
       "name": "Rich / IPC / Agent",
       "status": "hardening-infrastructure",
-      "evidence": "Kitty chunked intake with 320MB ledger 1fc6294; semantic-terminal P1-P5 Implemented-only (CommandBlock anchoring + fold MVP 4ccb771, Hint Mode 064486b, Command Composer + external editor ab1f7ab); IPC profiling/frame-capture/ctl surface 7dbe4e2/144ee1c/04b4973 plus attestation fix c5ec211, splitView axis fix 77bd6c5, ctl denial surfacing 99f5b1d, frameHash digest method 3f5ed24 Implemented-only (pixel channel deferred, P0-AC-026 unchanged); agent credential scrubbing a2d127b; linked risks unchanged"
+      "evidence": "Kitty chunked intake with 320MB ledger 1fc6294; semantic-terminal P1-P5 Implemented-only (CommandBlock anchoring + fold MVP 4ccb771, Hint Mode 064486b, Command Composer + external editor ab1f7ab); IPC profiling/frame-capture/ctl surface 7dbe4e2/144ee1c/04b4973 plus attestation fix c5ec211, splitView axis fix 77bd6c5, ctl denial surfacing 99f5b1d, frameHash digest method 3f5ed24 Implemented-only (pixel channel deferred, P0-AC-026 unchanged); v0.0.20 ctl correctness (grid text d753986, stable ws{seq} ids 030f54e, terminal spawn observable 082586b) and kitty APC/base64/placement wiring c1d8243/bd15d94; agent credential scrubbing a2d127b; linked risks unchanged; generic IPC service wave (terminal.snapshot 9bbc1a6, host tool dispatch 50b32ec, ExecutionContext/ExecutionResult cf3ac8b, bridge client a61c291, scene fragments eef983e, agent.context migration b9ea7b6, Phase-A host binding 2cbb1fb, --test-mode surface 92cd709) and execution supervisor phase-1 (bcbb25a foundation, e32ad8c bounded output/event store, 5a41fde capability-scoped jobs); not Verified"
     },
     {
       "id": "M7",
@@ -316,70 +316,70 @@
   "subsystems": {
     "terminal_truth": {
       "assessment": "hardening",
-      "evidence": "vt/pty/term-state crates at c49ead1; OSC 133 CommandRegion ordinal grouping in crates/bitty-rich/src/shell.rs plus CommandBlock anchoring in crates/bitty-rich/src/blocks.rs 4ccb771 (Implemented-only); combining-marks fix 2d36084; cursor/tab margin bounds 38973a0; OSC52 base64 read reply f725664 and write decode 0cb244d; DA replies pumped per pane 7048139"
+      "evidence": "vt/pty/term-state crates at c49ead1; OSC 133 CommandRegion ordinal grouping in crates/bitty-rich/src/shell.rs plus CommandBlock anchoring in crates/bitty-rich/src/blocks.rs 4ccb771 (Implemented-only); combining-marks fix 2d36084; cursor/tab margin bounds 38973a0; OSC52 base64 read reply f725664 and write decode 0cb244d; DA replies pumped per pane 7048139; M1 protocol batch ef73c82 (DECSET 2026, OSC 10/11, window title); scrollback capacity honored 1f31435; narrow reflow tail rewrap 1330c31; one-call shrink keeps top content f98fad8; post-v0.0.20 hardening (erase/resize/reflow/damage/hyperlink corrections ae8f4ba, parser caps and ignore flags/charsets/SGR b52e918, bounded zero-width cells 3375439)"
     },
     "render_ux": {
       "assessment": "hardening",
-      "evidence": "render crate present; window.padding/opacity wired config to runtime to render to winit at 1835175; cursor hue at existing alpha e8a7b76; overlay z-index tiers 42d244e; smart_split orientation 75f8637; braille/block font fallback 6b5bbe6; headless surface allocation bound 4af50e7; sRGB-decode upload colors b4b4e30; split/zoom full present 5a535ee; chrome-held key-repeat swallow 88c0ead; scrollbar overlay shipped c49ead1 (Implemented-only, hidden default); measured font defaults line_height 1.375 / letter_spacing 2.0 with live cell 10x22 and metric-resolved baseline 308687d; window.radius_px S0 stored with zero render effect 84aa580; scrolled-viewport snap on input 884fd30"
+      "evidence": "render crate present; window.padding/opacity wired config to runtime to render to winit at 1835175; cursor hue at existing alpha e8a7b76; overlay z-index tiers 42d244e; smart_split orientation 75f8637; braille/block font fallback 6b5bbe6; headless surface allocation bound 4af50e7; sRGB-decode upload colors b4b4e30; split/zoom full present 5a535ee; chrome-held key-repeat swallow 88c0ead; scrollbar overlay shipped c49ead1 (Implemented-only, hidden default); measured font defaults line_height 1.375 / letter_spacing 2.0 with live cell 10x22 and metric-resolved baseline 308687d; window.radius_px S0 stored with zero render effect 84aa580; scrolled-viewport snap on input 884fd30; v0.0.20 present path: kitty rasterize/composite bd15d94 with bounded decode 0cc82de, real-GPU texture upload fdd9e28, SDF rounded decoration fills 3d08d8e, live px decoration wiring 638ef81, premultiplied renderer alpha 9ac34b9, per-pane damage tracking 562f39c, coverage-driven glyph fallback 828a787, theme preset palette apply 053d62a; post-v0.0.20 render wave (merged fill runs, table sRGB decode, LRU glyph cache a998456, damage_since full-grid bound 96ba205, batched image blits 0b416f2, custom palette plus OSC 4 9c63750)"
     },
     "compat_lab": {
       "assessment": "forming",
-      "evidence": "bitty-compat-lab crate re-exporting tests/compat/harness.rs (bounded corpus, deterministic snapshots); baselines regenerated post v2/v3 hash drift 0e65f85; singular-candidate comparator fix fd8a71a"
+      "evidence": "bitty-compat-lab crate re-exporting tests/compat/harness.rs (bounded corpus, deterministic snapshots); baselines regenerated post v2/v3 hash drift 0e65f85; singular-candidate comparator fix fd8a71a; M1/M2 matrix report plus env-gated live probes 3c9cfea; blocked-refs and dump-counter accounting fixes ab63ce9/f68a2f1"
     },
     "perf": {
       "assessment": "forming",
-      "evidence": "bitty-perf crate owning benches vt_throughput/terminal_state/reflow/search/render_prepare plus startup_real/latency_real/idle_real; process memory/CPU/frame profiling over IPC 7dbe4e2"
+      "evidence": "bitty-perf crate owning benches vt_throughput/terminal_state/reflow/search/render_prepare plus startup_real/latency_real/idle_real; process memory/CPU/frame profiling over IPC 7dbe4e2; post-v0.0.20 probe hardening (scheduler-noise discrimination e1440b3/4c58a0c, work-floor latency gates 7993786, synthetic-latency labeling 413b9da)"
     },
     "panel_runtime": {
       "assessment": "early-implementation",
-      "evidence": "PanelId/ViewId/TerminalId separation with PanelRuntime::mount and MAX_OVERLAYS_PER_WINDOW 4 in crates/bitty-ui/src/panel.rs; bounded async panel workers off tick path d04886a; canonical bitty-terminal.workspace with deprecated tabs shim abde197; panel gaps gaps_in/gaps_out 0..=16 with stack inset-only abde197; V1-V3 panel-live digest gates 29772a3 Implemented-only, not Verified; Panel Runtime spec remains Draft pre-study CTX-0119"
+      "evidence": "PanelId/ViewId/TerminalId separation with PanelRegistry::mount_panel in crates/bitty-runtime/src/registry/panel.rs (PanelRuntime is the RFC contract name, not a code type) and MAX_OVERLAYS_PER_WINDOW 4 in crates/bitty-ui/src/panel.rs; bounded async panel workers off tick path d04886a; canonical bitty-terminal.workspace with deprecated tabs shim abde197; panel gaps gaps_in/gaps_out 0..=16 with stack inset-only abde197; v0.0.20 decoration and presentation wave: Core-owned gaps px/border/radius 485fbfd plus live px present wiring 638ef81, panel animations 3c5878e, per-View appearance overrides 4e75fe8, per-panel background image 8914632, focus outline width 6a74341, unique ViewId for splits 4e0d4b2, hover-to-activate dwell 262e63c, new pane inherits cwd 65a8b73, click-to-focus da49e7b; V1-V3 panel-live digest gates 29772a3 Implemented-only, not Verified; Panel Runtime spec remains Draft pre-study CTX-0119; ai/mail panel experiences extracted into bitty-panels 74361aa (CTX-0438), workspace 21 crates"
     },
     "plugin_host": {
       "assessment": "implemented-unverified",
-      "evidence": "dogfood of five bundled-disabled first-party plugins 7e3104d retained; fuel cap per Executor step slice 58e488a; Signed TOFU fail-closed ec95c5c; experimental only, not Verified"
+      "evidence": "dogfood of five bundled-disabled first-party plugins 7e3104d retained; fuel cap per Executor step slice 58e488a; Signed TOFU fail-closed ec95c5c; v0.0.20 plugin runtime Gap A e51b5cc (per-plugin !Send VM lifecycle, atomic activation, bundled plugins load, --safe without third-party VM), required_services b425d43, 0600 managed manifest 6c76a52, store source resolution plus manifest/content verification 064b9de; experimental only, not Verified; post-v0.0.20 security wave (host secret store and opaque credential handles eb321f7, effective-capability intersection and self-grant prohibition b32d90d, sensitive-path policy and secret detection at FS authorization 43739d0, Lua registration quotas 2e12ae4, fs/intercept/git predicate hardening b76c4b1/6a9ee85/20dddcd, compat re-check at resolve/activate 9507ed4, external local-path install 1c5d3ff, Layer-2 process.spawn with [tools.*] fail-closed 9830edb/64e1709, bundled catalog removals dd46c7a/d4d754e/65aac5c/e84da34)"
     },
     "rich": {
       "assessment": "hardening",
-      "evidence": "streaming Kitty chunked intake with 320MB ledger 1fc6294; Scene admission SCN-1..3 7e85887; empty-roots fix fade082; OTP-gated clipboard reads 63b01db; semantic-terminal P1-P5 Implemented-only (CommandBlock + fold MVP 4ccb771, Hint Mode 064486b, Composer + external editor ab1f7ab); experimental only, not Verified"
+      "evidence": "streaming Kitty chunked intake with 320MB ledger 1fc6294; Scene admission SCN-1..3 7e85887; empty-roots fix fade082; OTP-gated clipboard reads 63b01db; semantic-terminal P1-P5 Implemented-only (CommandBlock + fold MVP 4ccb771, Hint Mode 064486b, Composer + external editor ab1f7ab); kitty payload decode PNG/RGB bounded 0cc82de, placement/rasterize/composite bd15d94, APC G parser plus base64 unwrap c1d8243, per-pane origin binding 18c333a; experimental only, not Verified; post-v0.0.20 hardening (hyperlink O(1) lookup 317d4b4, ImageStore admission bound to backing bytes 0d71be8, file: hyperlink rejection plus clipboard capture gate 37b7f87, unified kitty chunked caps 018e205)"
     },
     "scrollbar": {
       "assessment": "implemented-unverified",
-      "evidence": "configurable overlay scrollbar (hidden/always/auto, width 1-32 default 8) merged to bitty origin/main at c49ead1 (CTX-0181, closes #281, bitty PR #405) read-only; documented as shipped defaults in docs/projects/bitty/configuration/lua-and-xdg.md; Implemented-only, not Verified"
+      "evidence": "configurable overlay scrollbar (hidden/always/auto, width 1-32 default 8) merged to bitty origin/main at c49ead1 (CTX-0181, closes #281, bitty PR #405) read-only; documented as shipped defaults in bitty-terminal/configuration/lua-and-xdg.md; v0.0.20 auto overlay default plus configurable scrolling b761c03 and scrollbar tracking the decorated content frame fdd503a; Implemented-only, not Verified"
     },
     "ipc": {
       "assessment": "hardening",
-      "evidence": "read-only introspection queries b716665; profiling/frame-capture/input-synthesis over IPC 7dbe4e2/144ee1c; symlink-traversal rejection c5ec211; splitView axis fix 77bd6c5; ctl denials surfaced as permission errors with pinned elevation verbs 99f5b1d; frameHash digest method 3f5ed24 Implemented-only (FrameDigest family, 120s TTL, 2/s, local-only, pixel channel deferred); bitty ctl/dev/inspect/list/doctor/run CLI surface 04b4973/e31ecc4/5fed101/b620597/9c1abee; linked risks R-011..R-014 remain Open"
+      "evidence": "read-only introspection queries b716665; profiling/frame-capture/input-synthesis over IPC 7dbe4e2/144ee1c; symlink-traversal rejection c5ec211; splitView axis fix 77bd6c5; ctl denials surfaced as permission errors with pinned elevation verbs 99f5b1d; frameHash digest method 3f5ed24 Implemented-only (FrameDigest family, 120s TTL, 2/s, local-only, pixel channel deferred); bitty ctl/dev/inspect/list/doctor/run CLI surface 04b4973/e31ecc4/5fed101/b620597/9c1abee; v0.0.20 ctl correctness (grid text d753986, stable ws{seq} ids 030f54e, observable terminal spawn 082586b, session-less split oracle parity 2c6c6db); linked risks R-011..R-014 remain Open; post-v0.0.20 generic services (terminal.snapshot 9bbc1a6, host tool dispatch 50b32ec, ExecutionContext/Result cf3ac8b, bridge client a61c291, scene fragments eef983e, agent.context migration b9ea7b6, Phase-A binding 2cbb1fb, --test-mode 92cd709, raw-wire framing d07e849) plus robustness fixes (attestation-verified endpoint abb37a4, ctl timeout withdrawal 6073017, snapshot-store retirement 78fa967, ambient-scan key/value check 9dd4996, debug child-token redaction ec6660b)"
     },
     "agent": {
       "assessment": "infrastructure",
-      "evidence": "credential scrubbing for tool args/results a2d127b; bounded agent messages; MCP adapter lives in a separate repository and is not verified here"
+      "evidence": "credential scrubbing for tool args/results a2d127b; bounded agent messages; MCP adapter lives in a separate repository and is not verified here; agent payload byte-truncation fix with char-boundary marker 54daad9"
     },
     "config": {
       "assessment": "productizing",
-      "evidence": "user config-file loading 9a392ed; CLI appearance overrides for font family/size/opacity bc21631; Alt-as-Mod defaults cc40ffc; init wizard 95ed41f; scrollbar overlay config (mode/width, hidden default, fail-closed) shipped c49ead1; leader/mod_key top-level scalar (alt default, super allowed, ctrl/shift rejected) 2a5e451; measured font defaults 1.375/2.0 with live cell 10x22 308687d; layout gaps_in/gaps_out 0..=16 cells abde197; window.radius_px S0 parsed no-op 0..=24 default 0 84aa580"
+      "evidence": "user config-file loading 9a392ed; CLI appearance overrides for font family/size/opacity bc21631; Alt-as-Mod defaults cc40ffc; init wizard 95ed41f; scrollbar overlay config (mode/width, hidden default, fail-closed) shipped c49ead1; leader/mod_key top-level scalar (alt default, super allowed, ctrl/shift rejected) 2a5e451; measured font defaults 1.375/2.0 with live cell 10x22 308687d; layout gaps_in/gaps_out 0..=16 cells abde197; window.radius_px S0 parsed no-op 0..=24 default 0 84aa580; terminal.scrollback capacity honored 1f31435; terminal.shell honored at spawn 70291b4; dropped mouse validation restored 75f05f9; v0.0.20 config matrix (arrow-key HJKL variants 1ea2f66, Mod+M/HJKL both mods 6e662a2, F-keys and INS/DEL/HM/END/PU/PD chords 11d9bec, per-window font zoom bc1fbba, which-key popup c8faa52, focus-follows-mouse 525b8ef, workspace move keys 8b987a0, workspace ops entry 227ca3a); theme preset catalog 20cd735; outline colors and width f83b1e1/6a74341; panel animations 3c5878e; per-View overrides 4e75fe8; per-panel background image 8914632; post-v0.0.20 validation coverage, trust comparison, and XDG roots cb0a5ae plus custom palette and OSC 4 9c63750"
     },
     "release_packaging": {
       "assessment": "operating",
-      "evidence": "tag v0.0.19 at c2aabee (2026-09-03); binary artifact bitty-app -> bitty a724771; AUR bitty-bin prebuilt package 559ccff; closed capability set enforced at manifest time 33a6731; cross-platform dist assets plus deb/rpm/apk/pkg.tar.zst, Homebrew/Scoop, SHA256SUMS and provenance per CHANGELOG"
+      "evidence": "tag v0.0.19 at c2aabee (2026-09-03); binary artifact bitty-app -> bitty a724771; AUR bitty-bin prebuilt package 559ccff; closed capability set enforced at manifest time 33a6731; cross-platform dist assets plus deb/rpm/apk/pkg.tar.zst, Homebrew/Scoop, SHA256SUMS and provenance per CHANGELOG; tag v0.0.20 at d9f5b49 (2026-09-11) prepared by CTX-0331 (#556), first workspace Cargo bump since 0.0.1 aligned by scripts/check-release-version.sh; app icons regenerated 233f118; AUR source recipe sync guard 150855e; workspace now 21 crates (bitty-test-support CTX-0267, bitty-panels 74361aa CTX-0438, bitty-test-vm ae094b7 CTX-0507); post-v0.0.20 pipeline hardening (AppStream metainfo and Linux app ID 97f852a, Windows x86_64 portable ZIP 6eea1c6, clean-container install smoke tests 1aa56a2, per-distro runtime deps gated by ldd/readelf daac2cd, real terminfo 868c8d4, macOS Universal 2 DMG ab770ee, Linux ARM64 matrix entry db0c6c2, real musl apk 3d3cfa1, real .pkg.tar.zst 01fdbe7, stale 0.0.1 manifests retired fb0be5c); v0.0.21 at 7da6d6f (2026-09-24) adds the release engineering and pre-0.0.21 documentation/configuration/plugin wave; synchronized head c6db24d remains Implemented-only, not Verified"
     }
   },
   "sync_provenance": {
-    "carryctx_task": "CTX-0133",
-    "github_issue": "https://github.com/bitty-terminal/bitty-docs/issues/163",
-    "previous_task": "CTX-0132",
-    "previous_issue": "https://github.com/bitty-terminal/bitty-docs/issues/161",
+    "carryctx_task": "CTX-0246",
+    "github_issue": "https://github.com/bitty-terminal/bitty-docs/issues/379",
+    "previous_task": "CTX-0244",
+    "previous_issue": "https://github.com/bitty-terminal/bitty-docs/issues/371",
     "audit_task": "CTX-0092",
-    "synchronized_at": "2026-09-08",
-    "synchronized_by": "docs-impl-0133",
-    "synchronized_revision": "29772a3",
-    "previous_revision": "c49ead1",
+    "synchronized_at": "2026-09-27",
+    "synchronized_by": "ctx-0246-impl",
+    "synchronized_revision": "c6db24d",
+    "previous_revision": "679f12f",
     "baseline_revision": "de134ec",
-    "experimental_chain": "d4d75e9 -> c0aadd2 -> 7e3104d -> a8735d0 retained as evidence; main has advanced to 29772a3 (previous c49ead1: scrollbar overlay c49ead1 merged via bitty #405 plus wave: control-enqueue wake 8c6747b, session-less split present 81f1209, leader/mod_key 2a5e451, measured font defaults 308687d, workspace rename alias plus panel gaps abde197, scrolled-viewport snap on input 884fd30, radius_px S0 84aa580, frameHash digest 3f5ed24, V1-V3 panel-live gates 29772a3; all Implemented-only, none Verified)"
+    "experimental_chain": "d4d75e9 -> c0aadd2 -> 7e3104d -> a8735d0 retained as experimental evidence; synchronized main is c6db24d (previous 679f12f) through the v0.0.21 release at 7da6d6f (2026-09-24) and post-release fixes a034c9a, 841ae6e, 2339f0a, and 679f12f; the 21-crate workspace and all release/security-closure artifacts are Implemented-only, none Verified"
   },
   "ownership": {
     "owner": "docs-curator + security-auditor",
     "update_protocol": "Update only via CarryCtx task with independent docs-curator and security-auditor review, CI green, and explicit provenance record. Risk state changes require per-risk RS-1..RS-7 checklist and auditor sign-off; this file records state, it does not authorize mitigation. Experimental Implementation does not imply Verified or Accepted.",
     "source_of_truth": "This file is the canonical machine-readable source for synchronized revision, snapshot date, maturity, per-risk state, evidence revision/audit references, latest release, subsystem assessments, and sync provenance. Human-readable summaries in README, risk-register, evidence-matrix, TODO, docs/README, release-ladder are derived and validated against it."
   },
-  "notes": "Must not auto-accept risks or replace CarryCtx/security review. At Engineering Milestones M1-M8 per CTX-0133, R-005/R-006/R-007 stay Mitigated at d4d75e9 (5bdcdbd/0afc94d/d4d75e9, Issues #137/#138/#139) per RS-1..RS-7 and independent review; R-004 remains Open at 7a4ee41 with residual platform, UX, and 8192-byte bound-scope limits per audit; all other risks remain Open. Experimental Implementations c0aadd2 (vertical slice), 7e3104d (plugin dogfood), a8735d0 (PTY reply + Kitty) stay Implemented (experimental) not Verified/Compatible/Release-ready per Draft -> Experimental Implementation -> Accepted -> Verified -> Compatible ladder; semantic-terminal P1-P5 (4ccb771/064486b/ab1f7ab) are Implemented-only evidence, not Accepted/Verified, closing no open question; scrollbar overlay c49ead1 (CTX-0181, bitty #405, closes #281) is merged to origin/main and Implemented-only, not Accepted/Verified; the CTX-0133 wave (leader/mod_key 2a5e451, measured font defaults 308687d, workspace rename alias plus panel gaps abde197, radius_px S0 84aa580, frameHash digest 3f5ed24, V1-V3 panel-live gates 29772a3) is Implemented-only evidence at 29772a3, not Accepted/Verified, closing no open question, with P0-AC-026 unchanged. Subsystem rows cover only bitty origin/main evidence verified read-only for this snapshot; plugin SDK, MCP adapter, DevTools client, and website rows are omitted because they live in separate repositories and were not verified here. Overall product remains Pre-alpha, not Verified/Compatible/Release-ready. Test counts are per audit/implementation evidence, not duplicated here unless generated via cargo test."
+  "notes": "Must not auto-accept risks or replace CarryCtx/security review. CTX-0246 addresses #379; #371 (CTX-0244) was the previous canonical-state and self-containment sync; #372 is the related self-containment issue. Snapshot 2026-09-27 uses bitty c6db24d (previous 679f12f, baseline de134ec) and release v0.0.21 at 7da6d6f (2026-09-24). R-005/R-006/R-007 remain Mitigated at d4d75e9 under RS-1..RS-7; R-004 remains Open at 7a4ee41 with residual platform, UX, and 8192-byte bound-scope limits; all other risks remain Open. The v0.0.21 release and post-release fixes are Implemented-only. CTX-0680, CTX-0691, and CTX-0701 security-closure records are evidence pending independent auditor review and do not move R-014, R-015, R-022, or any other risk row. Experimental Implementations c0aadd2, 7e3104d, and a8735d0 remain Implemented, not Verified/Compatible/Release-ready; semantic-terminal P1-P5 and scrollbar overlay remain Implemented-only evidence and close no open question. The canonical open-question register has 54 Accepted and 46 Open OQ rows at this snapshot; RFC-OQ rows are tracked separately. Subsystem rows cover bitty origin/main evidence only; plugin SDK, MCP adapter, DevTools client, and website rows remain owner-separate. Overall product remains Pre-alpha, not Verified/Compatible/Release-ready. Test counts are per audit or implementation evidence, not duplicated here unless generated via cargo test."
 }

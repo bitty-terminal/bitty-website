@@ -12,13 +12,14 @@ sidebar_order: 33
 # P0 Security Acceptance Criteria
 
 Status: **normative**, accepted 2026-08-26 by the project initiator. This
-document remains a pre-implementation test contract: no criterion may be marked
+document remains a pre-`Verified` test contract: mechanisms exist in the
+pre-alpha implementation, but no criterion may be marked
 satisfied until a separate security-auditor persona review confirms recorded,
 passing evidence per its verification method.
 
 Every criterion below converts a normative P0 control from
 [security overview](overview.md), [threat model](threat-model.md), and
-[plugin system](../projects/bitty/extensibility/plugin-system.md) into an individually
+[plugin system](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/extensibility/plugin-system.md) into an individually
 testable statement. Until each criterion has recorded passing evidence per its
 verification method, all linked risks in the
 [risk register](risk-register.md) remain **Open**. No criterion is satisfied by
@@ -534,6 +535,84 @@ Verification: integration (CI).
 Pass threshold: checks present and gating; seeded vulnerable/banned
 dependency is caught; exception workflow documented.
 
+## Adopted trust, tier, role, and lease gates
+
+### P0-AC-035 Trust-level admission before grant intersection
+
+Source: threat model "Adopted trust and authorization models" (OQ-085);
+T-06. Risks: R-006, R-017.
+
+- Given a request carrying a trust level L0–L4 whose capability family
+  maps to a domain the level does not admit,
+  when effective authorization runs,
+  then the request is denied fail-closed before the grant intersection,
+  naming the level and the family only; families the matrix does not cover
+  pass through to their grants; unknown levels or domains deny.
+
+Verification: unit + integration (level × family admission matrix).
+Pass threshold: every level × mapped-family cell tested; grants alone never
+satisfy the gate.
+
+### P0-AC-036 Secret-tier consent, audit, and redaction
+
+Source: threat model "Secret-storage tiers" (OQ-055); overview "Sensitive
+data handling"; T-11. Risks: R-006, R-014 (P0-normative part).
+
+- Given a secret resolution naming a tier (`host-env`, `config-file`,
+  `os-keyring`, `command-ref`) without its required consent (allowlisted
+  read or explicit grant),
+  when resolution is attempted,
+  then it is denied with a names-only audit entry, and no value crosses a
+  log, diagnostic, or audit boundary in any tier.
+
+Verification: unit + adversarial (secret-injection tests).
+Pass threshold: denial plus names-only audit proven per tier; seeded-secret
+corpus never appears in outputs.
+
+### P0-AC-037 Credential exclusive-or and narrow-only project override
+
+Source: threat model "Credential references" (OQ-054). Risks: R-006, R-012.
+
+- Given `api_key_env` and `api_key_cmd` references where both are set, or a
+  project layer that widens the base credential reference,
+  when resolution or override validation runs,
+  then both-set denies as a conflict and any widening overlay denies;
+  neither set resolves to no credential and narrow-or-equal overlays pass.
+
+Verification: unit.
+Pass threshold: conflict, widen, narrow, and unset cases each tested;
+no path resolves two sources into one credential.
+
+### P0-AC-038 Role-point checks before grant intersection
+
+Source: threat model "Role contract" (OQ-057); T-10. Risk: R-013.
+
+- Given an agent role (Commander, Implementer, Tester, Reviewer) acting at
+  an enforcement point outside its map (context read, tool call,
+  delegation, sandboxed execution),
+  when authorization runs,
+  then the request is denied fail-closed before the grant intersection,
+  naming the role and the point only; roles never grant authority and
+  delegation only narrows.
+
+Verification: unit + integration (role × point matrix).
+Pass threshold: every role × point cell tested; no prompt, plan, or payload
+content appears in denials.
+
+### P0-AC-039 Panel lease write gate
+
+Source: threat model "Panel lease write hook" (OQ-083). Risk: R-013.
+
+- Given a panel lease in `Idle` or `Occupied(other holder)`,
+  when a holder that is not the current occupant attempts a panel write,
+  then the write is denied; acquiring an occupied panel fails and
+  release/handoff requires the current holder.
+
+Verification: unit + integration.
+Pass threshold: write-by-non-occupant, acquire-occupied, and
+foreign-release/handoff denials each tested; every transition emits its
+event only when it actually happened.
+
 ## Coverage traceability
 
 | Criterion      | Source area                   | Linked risks               |
@@ -551,6 +630,10 @@ dependency is caught; exception workflow documented.
 | P0-AC-027..030 | Supply chain                  | R-015, R-016, R-022        |
 | P0-AC-031..032 | Config trust / origin         | R-010, R-020               |
 | P0-AC-033..034 | Platform / dependencies       | R-018, R-019               |
+| P0-AC-035      | Trust-level admission         | R-006, R-017               |
+| P0-AC-036      | Secret tiers                  | R-006, R-014 (P0 part)     |
+| P0-AC-037      | Credential references         | R-006, R-012               |
+| P0-AC-038..039 | Role contract / panel lease   | R-013                      |
 
 All 22 register entries are linked. R-001 through R-022 remain **Open** until
 their cited criteria record passing evidence plus independent security-auditor

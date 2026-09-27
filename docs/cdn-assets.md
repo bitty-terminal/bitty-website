@@ -94,10 +94,13 @@ audit.
 
 ### Bundled raster on the interactive architecture passthrough
 
-- **Page and route**: the interactive architecture explorer, mirrored from
-  `bitty-terminal-docs/architecture/interactive/` and published at
+- **Page and route**: the interactive architecture explorer, published at
   `/docs/<version>/projects/bitty/architecture/interactive/` (the `0.1.0`,
-  `latest`, and `stable` aliases). The mirror file is
+  `latest`, and `stable` aliases). Its source lives in
+  `bitty-terminal-docs/architecture/interactive/`; this repository consumes it
+  through the mirror pin in `src/content/docs-revision.json`, which currently
+  materialises `bitty-terminal/bitty-docs@9891949c` (the revision in which that
+  corpus is vendored). The mirror file is
   `src/content/docs/docs/projects/bitty/architecture/interactive/index.html`.
 - **Accepted references**: two bundled PNGs reached by relative `src`:
   `assets/bitty-icon.png` (23,391 bytes, line 23) and `assets/hero.png`
@@ -109,8 +112,9 @@ audit.
   reference with the vector sibling already checked in beside it —
   `assets/bitty-icon.svg` (8,601 bytes) and `assets/hero.svg` (16,516 bytes) —
   or hosting the PNGs on the CDN and referencing them through `cdnUrl()`.
-  Removing either bundled reference, or dropping the page from the passthrough
-  set, ends the exception.
+  Removing both bundled references, or dropping the page from the passthrough
+  set, ends the exception: retiring one of the two leaves the other still
+  warn-only under this same entry.
 - **Recorded from**: bitty-terminal/bitty-docs#373.
 
 ## Deliberately out of scope

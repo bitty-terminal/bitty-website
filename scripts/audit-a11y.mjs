@@ -208,6 +208,23 @@ async function auditCss() {
       fail(`theme css: ${label} (${token}) missing`);
     }
   }
+
+  // CTX-0050 layout guard: the article must own its page-grid column. When
+  // `.docs-article` is `display: contents`, its children become grid items of
+  // `.docs-layout` and the tall sidebar drawer sizes the header's row, so the
+  // article body only starts below the drawer (measured 1280x900: header
+  // bottom 356, prose top 1091 — 735px of empty space).
+  if (/\.docs-article\s*\{[^}]*display:\s*contents/iu.test(css)) {
+    fail(
+      "docs shell css: .docs-article is display: contents (the sidebar row grows the header and drops the body)",
+    );
+  } else if (
+    /\.docs-layout\s*>\s*\.docs-article\s*\{[^}]*grid-column\s*:/iu.test(css)
+  ) {
+    pass("docs shell css: article owns its page-grid column");
+  } else {
+    fail("docs shell css: .docs-layout > .docs-article is not placed");
+  }
 }
 
 async function auditFavicons() {

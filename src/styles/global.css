@@ -845,17 +845,26 @@ body > .version-selector {
   text-align: start;
 }
 
-/* Docs navigation layout (CTX-0039, CTX-0050): left sidebar, article, right
- * TOC. Single column on narrow viewports (the sidebar becomes a <details>
- * drawer and the TOC a <details> disclosure under the title); sidebar plus
- * article from 50rem; all three columns from 70rem.
+/* Docs navigation layout (CTX-0039, CTX-0044, CTX-0050): left sidebar, right
+ * TOC, article in the middle. Single column on narrow viewports (the sidebar
+ * becomes a <details> drawer and the TOC a <details> disclosure under the
+ * title); sidebar beside the article from 50rem; the TOC rail joins from
+ * 70rem.
  *
  * Narrow-viewport reading order is DOM order — sidebar drawer, article
  * header, TOC, article body, pager — so section navigation sits under the
- * title instead of after the whole article (website#91). From 70rem
- * `.docs-article` becomes `display: contents`, which lifts its children into
- * this grid: the header and body take the middle column while the TOC keeps
- * its sticky third column. No TOC is rendered twice.
+ * title instead of after the whole article (website#91). No TOC is rendered
+ * twice.
+ *
+ * CTX-0050 layout regression: from 70rem `.docs-article` used to become
+ * `display: contents`, lifting its children into the page grid. That put the
+ * header in row 1 next to the sidebar drawer, and a grid row is as tall as
+ * its tallest item — the drawer measures ~900px, so row 1 grew to the
+ * drawer's height and the article body only started in row 2, ~600px below
+ * the title. The article is now a real grid item: `.docs-layout` holds
+ * exactly two items (drawer | article), and from 70rem `.docs-article` is
+ * its own two-column grid (body column | TOC rail). One item per column
+ * means the page row is sized by the article, not by the drawer.
  *
  * CTX-0044 reading layout: the docs shell is wider than the generic
  * content cap, the center column takes the leftover track
@@ -899,43 +908,67 @@ main.docs-main {
     grid-template-columns: var(--docs-sidebar-width) minmax(0, 1fr);
     align-items: start;
   }
+
+  /* Explicit placement, one item per column. Auto-placement drops each item
+   * into the next free cell, which is how the drawer came to share the
+   * header's row (and to size it) instead of owning its own column. */
+  .docs-layout > .docs-nav-drawer {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .docs-layout > .docs-article {
+    grid-column: 2;
+    grid-row: 1;
+  }
 }
 
 @media (width >= 70rem) {
-  .docs-layout {
-    grid-template-columns: var(--docs-sidebar-width) minmax(0, 1fr) var(
-        --docs-toc-width
-      );
-  }
-
-  /* Lift the article's children into the page grid (see the block comment
-   * above): header and pager in the middle column, prose below the header,
-   * TOC sticky in the third column. */
+  /* The article carries its own grid: body column plus sticky TOC rail.
+   * `.docs-layout` stays two columns, so the drawer and the article never
+   * share a row and the drawer's height cannot push the body down. Row gap
+   * stays 0 so each block keeps the vertical rhythm it had when stacked. */
   .docs-article {
-    display: contents;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--docs-toc-width);
+    align-items: start;
+    column-gap: var(--docs-layout-gap);
+    row-gap: 0;
   }
 
   .docs-header {
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 1;
   }
 
   .docs-article .prose {
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 2;
   }
 
   .docs-article .docs-pager {
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 3;
   }
 
-  .docs-layout .docs-toc {
-    grid-column: 3;
+  .docs-article .docs-toc {
+    grid-column: 2;
     grid-row: 1 / span 2;
   }
 
-  /* Desktop keeps the sidebar and TOC in view beside the article. */
+  /* Desktop keeps the sidebar and TOC in view beside the article. The drawer
+   * stretches to the full row height and its `::details-content` box follows,
+   * so the sticky sidebar rail can travel the whole article instead of
+   * stopping at the drawer's own content box (a sticky containing block is
+   * the parent's content box, which is content-sized by default). */
+  .docs-layout > .docs-nav-drawer {
+    align-self: stretch;
+  }
+
+  .docs-layout > .docs-nav-drawer::details-content {
+    block-size: 100%;
+  }
+
   .docs-layout .docs-sidebar,
   .docs-layout .docs-toc {
     position: sticky;

@@ -84,6 +84,35 @@ Then reference the asset from the site with `cdnUrl("images/hero-<sha>.avif")`;
 the `PUBLIC_CDN_BASE_URL` build-time constant in `astro.config.mjs` carries
 the same origin for client-side code.
 
+## Recorded exceptions
+
+Accepted deviations from the CDN-only raster rule, each entry stating the page
+and route it covers, why the site repository cannot resolve it, and what would
+retire it. A recorded exception is warn-only in `scripts/audit-a11y.mjs` for
+the passthrough page it names; the same markup on every other page fails the
+audit.
+
+### Bundled raster on the interactive architecture passthrough
+
+- **Page and route**: the interactive architecture explorer, mirrored from
+  `bitty-terminal-docs/architecture/interactive/` and published at
+  `/docs/<version>/projects/bitty/architecture/interactive/` (the `0.1.0`,
+  `latest`, and `stable` aliases). The mirror file is
+  `src/content/docs/docs/projects/bitty/architecture/interactive/index.html`.
+- **Accepted references**: two bundled PNGs reached by relative `src`:
+  `assets/bitty-icon.png` (23,391 bytes, line 23) and `assets/hero.png`
+  (171,538 bytes, line 146).
+- **Why it is accepted**: the page is generated, not authored here. The mirror
+  must never be hand-edited, so the site repository cannot remove the
+  references; an edit here is overwritten on the next mirror sync.
+- **What would retire it**: the page's source repository replacing each PNG
+  reference with the vector sibling already checked in beside it —
+  `assets/bitty-icon.svg` (8,601 bytes) and `assets/hero.svg` (16,516 bytes) —
+  or hosting the PNGs on the CDN and referencing them through `cdnUrl()`.
+  Removing either bundled reference, or dropping the page from the passthrough
+  set, ends the exception.
+- **Recorded from**: bitty-terminal/bitty-docs#373.
+
 ## Deliberately out of scope
 
 - Uploading real assets (none exist yet; screenshots are post-0.1.0).

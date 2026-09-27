@@ -1,8 +1,16 @@
 /* Bitty website visual system: cool developer surfaces, vermilion actions, and
  * a terminal-native dark mode. Presentation lives here; canonical documentation
  * meaning lives in bitty-docs and is only rendered, never restyled into a
- * different claim. No raster assets and no web fonts.
+ * different claim. No raster assets; the three typeface roles are self-hosted
+ * (CTX-0049, website#95) so type never depends on what a reader's OS ships.
  */
+
+/* Typeface roles, self-hosted from versioned packages. Each face is
+ * `unicode-range` scoped, so a reader downloads only the ranges a page uses;
+ * CJK and symbol families stay as fallbacks on the stacks in `:root`. */
+@import "@fontsource-variable/literata/standard.css";
+@import "@fontsource-variable/inter/index.css";
+@import "@fontsource-variable/jetbrains-mono/index.css";
 
 :root {
   color-scheme: light dark;
@@ -57,31 +65,37 @@
     0 1px 1px oklch(0.22 0.04 255 / 0.08),
     0 1.5rem 3.5rem -1.75rem oklch(0.22 0.04 255 / 0.32);
 
-  /* Explicit type scale. Adjacent roles remain at least 1.25x apart; repeated
-   * metadata uses the same size deliberately to avoid a flat micro-scale. */
-  --text-xs: 0.8rem;
-  --text-sm: 1rem;
-  --text-md: 1.25rem;
-  --text-lg: 1.625rem;
-  --text-xl: 2.125rem;
-  --text-2xl: 2.75rem;
-  --text-display: clamp(3.4375rem, 9vw, 5.5rem);
-  --leading-tight: 1.08;
-  --leading-heading: 1.18;
-  --leading-body: 1.65;
+  /* Type scale (CTX-0049): one 1.2x ladder from a 17px body. Article headings
+   * stay inside the reading band; only the home hero uses a clamp() display
+   * size that scales with the viewport. */
+  --text-2xs: 0.75rem; /* 12px: badges and mono counters */
+  --text-xs: 0.8125rem; /* 13px: captions, route metadata */
+  --text-sm: 0.9375rem; /* 15px: dense UI, table cells, footer */
+  --text-base: 1.0625rem; /* 17px: body prose */
+  --text-md: 1.25rem; /* 20px: leads, h4, list-row titles */
+  --text-lg: 1.5rem; /* 24px: article h3 */
+  --text-xl: 1.875rem; /* 30px: article h2 */
+  --text-2xl: 2.25rem; /* 36px: article h1 (docs header) */
+  --text-display: clamp(2.5rem, 6.5vw, 4.25rem); /* home hero h1 */
+  --leading-tight: 1.06;
+  --leading-heading: 1.22;
+  --leading-body: 1.7;
+  --leading-code: 1.6;
 
   --font-display:
-    "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", Georgia,
+    "Literata Variable", "Hiragino Mincho ProN", "Noto Serif JP", Georgia,
     "Times New Roman", serif;
   --font-body:
-    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+    "Inter Variable", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono:
-    ui-monospace, "SFMono-Regular", "Cascadia Code", "Source Code Pro", Menlo,
-    Consolas, monospace;
+    "JetBrains Mono Variable", ui-monospace, "SFMono-Regular", "Cascadia Code",
+    Menlo, Consolas, monospace;
 
   --content-width: 68rem;
-  --reading-width: 68ch;
+  /* Reading measure. `ch` is the width of "0"; Inter's lowercase averages
+   * narrower, so 62ch lands near 75 characters of prose at the 17px body. */
+  --reading-width: 62ch;
   --touch-target: 2.75rem;
   --layer-sticky: 1;
 
@@ -260,12 +274,12 @@ body > .version-selector {
   margin-block-end: 0;
 }
 
-/* The docs body currently repeats the page title as its first heading; that
- * duplication is tracked separately (the heading plugin registered in
- * astro.config.mjs never runs in the Astro build — see CTX-0038 notes). Until
- * it is fixed, do not collapse the first heading's top margin: removing it here
- * only hid the symptom by pulling the duplicated title up against the header,
- * which reads as a layout bug rather than a content bug. */
+/* The heading plugin registered in astro.config.mjs demotes every Markdown
+ * heading one level, so the docs template owns the page's only <h1> and the
+ * body starts at <h2> (CTX-0038 reported the opposite; re-verified in CTX-0049
+ * against a fresh build: 0 of 127 built pages carry a second h1). Article
+ * headings keep their own top margin, so the first body heading never collides
+ * with the header. */
 
 .skip-link {
   position: fixed;
@@ -666,34 +680,140 @@ body > .version-selector {
 
 .prose {
   max-width: var(--reading-width);
-  font-size: var(--text-md);
+  font-size: var(--text-base);
   line-height: var(--leading-body);
 }
 
+/* One vertical rhythm for prose blocks. The heading rules below are more
+ * specific, so sections keep a larger gap than consecutive paragraphs. */
+.prose > * + * {
+  margin-block-start: 1.15em;
+}
+
 .prose h2,
-.prose h3 {
+.prose h3,
+.prose h4 {
   margin-block-start: 2.5rem;
 }
 
 .prose h2 {
-  font-size: var(--text-lg);
+  font-size: var(--text-xl);
 }
 
 .prose h3 {
+  margin-block-start: 2rem;
+  font-size: var(--text-lg);
+}
+
+.prose h4 {
+  margin-block-start: 1.75rem;
   font-size: var(--text-md);
 }
 
+.prose ul,
+.prose ol {
+  padding-inline-start: 1.35em;
+}
+
+.prose li + li {
+  margin-block-start: 0.35em;
+}
+
 .prose pre,
-.prose code {
+.prose code,
+.prose kbd {
   font-family: var(--font-mono);
 }
 
+.prose code {
+  padding: 0.1em 0.35em;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--paper-deep);
+  font-size: 0.9em;
+}
+
 .prose pre {
-  padding: 1rem;
+  padding: 1rem 1.125rem;
   overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--card);
+  font-size: var(--text-sm);
+  line-height: var(--leading-code);
+}
+
+/* Shiki dual theme (CTX-0049): Astro inlines the light palette (`color`) and
+ * carries the dark one in `--shiki-dark*` custom properties, so only the dark
+ * palette needs an override and the light values stay as rendered. Both
+ * palettes come from `shikiConfig.themes` in astro.config.mjs; the dark
+ * overrides live in the palette media block at the end of this file so the
+ * contrast guard keeps reading one light/contrast/dark sequence. */
+.prose pre.astro-code span {
+  font-style: var(--shiki-light-font-style);
+}
+
+/* Code block chrome. The framed wrapper, language label, and copy control are
+ * added by the docs enhancer script, so a reader without scripting keeps the
+ * plain scrollable block. */
+.code-block {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.code-block pre.astro-code {
+  margin: 0;
+  border: 0;
+  border-radius: 0 0 var(--radius) var(--radius);
+}
+
+.code-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.125rem 0.375rem 0.125rem 0.875rem;
+  border-block-end: 1px solid var(--line);
+  border-radius: var(--radius) var(--radius) 0 0;
+  background: var(--paper-deep);
+}
+
+.code-block-language {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.code-copy {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--touch-target);
+  padding-inline: 0.625rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.code-copy:hover {
+  border-color: var(--indigo);
+  color: var(--indigo-deep);
+}
+
+.code-copy[data-copied="true"] {
+  border-color: var(--ok);
+  color: var(--ok);
+}
+
+.code-block pre:focus-visible {
+  outline-offset: -3px;
 }
 
 .prose table {
@@ -739,6 +859,8 @@ main.docs-main {
 
 .docs-header h1 {
   max-width: 100%;
+  font-size: var(--text-2xl);
+  letter-spacing: -0.02em;
   overflow-wrap: break-word;
 }
 
@@ -1000,6 +1122,21 @@ footer.site-footer p {
     --terminal-muted: oklch(0.79 0.035 252);
     --terminal-prompt: oklch(0.76 0.17 34);
     color-scheme: dark;
+  }
+
+  /* Shiki dark palette (CTX-0049): the light palette is inline on the code
+   * block, so only the dark values need to win here. */
+  .prose pre.astro-code,
+  .prose pre.astro-code span {
+    color: var(--shiki-dark) !important;
+  }
+
+  .prose pre.astro-code {
+    background-color: var(--shiki-dark-bg) !important;
+  }
+
+  .prose pre.astro-code span {
+    font-style: var(--shiki-dark-font-style);
   }
 }
 

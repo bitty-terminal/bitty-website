@@ -1,0 +1,91 @@
+---
+// Progressive code-block chrome for docs articles (CTX-0049, website#95).
+//
+// Shiki renders a bare scrollable <pre class="astro-code" data-language="…">.
+// This script frames each block with a language label and a keyboard-operable
+// copy control. It is enhancement only: without scripting the block stays a
+// plain, readable, scrollable <pre>, and nothing in the article depends on the
+// frame to be understandable.
+---
+
+<script>
+  const COPY_LABEL = "Copy code";
+  const COPIED_LABEL = "Copied";
+  const FAILED_LABEL = "Copy failed";
+  const REVERT_MS = 2000;
+
+  type CopyState = "idle" | "copied" | "failed";
+
+  function labelFor(state: CopyState): string {
+    if (state === "copied") return COPIED_LABEL;
+    if (state === "failed") return FAILED_LABEL;
+    return COPY_LABEL;
+  }
+
+  function createControl(pre: HTMLPreElement): HTMLButtonElement {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "code-copy";
+    button.textContent = COPY_LABEL;
+    button.setAttribute("aria-label", COPY_LABEL);
+
+    let timer: number | undefined;
+
+    button.addEventListener("click", () => {
+      const text = pre.textContent ?? "";
+      const settle = (state: CopyState): void => {
+        button.textContent = labelFor(state);
+        if (state === "idle") {
+          button.removeAttribute("data-copied");
+        } else {
+          button.dataset.copied = String(state === "copied");
+        }
+        if (timer !== undefined) window.clearTimeout(timer);
+        if (state !== "idle") {
+          timer = window.setTimeout(() => settle("idle"), REVERT_MS);
+        }
+      };
+
+      const write = navigator.clipboard?.writeText(text);
+      if (write === undefined) {
+        settle("failed");
+        return;
+      }
+      write.then(
+        () => settle("copied"),
+        () => settle("failed"),
+      );
+    });
+
+    return button;
+  }
+
+  function frame(pre: HTMLPreElement): void {
+    if (pre.closest(".code-block") !== null) return;
+
+    const language = (pre.dataset.language ?? "").trim();
+    const wrapper = document.createElement("div");
+    wrapper.className = "code-block";
+
+    const header = document.createElement("div");
+    header.className = "code-block-header";
+
+    const label = document.createElement("span");
+    label.className = "code-block-language";
+    label.textContent = language.length > 0 ? language : "text";
+
+    header.append(label, createControl(pre));
+    pre.replaceWith(wrapper);
+    wrapper.append(header, pre);
+  }
+
+  function enhance(): void {
+    for (const pre of document.querySelectorAll<HTMLPreElement>(
+      "article.prose pre.astro-code",
+    )) {
+      frame(pre);
+    }
+  }
+
+  enhance();
+</script>

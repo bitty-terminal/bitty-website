@@ -5,8 +5,12 @@
  * Materializes each pinned source revision in its own isolated clone, runs the
  * canonical parity gates, and fails closed when the committed mirror or its
  * provenance manifest diverges from any pin. Also rejects a malformed, short,
- * or floating pin and the pre-#98 flat pin shape. Hand edits inside
- * src/content/docs/ are caught here.
+ * or floating pin, the pre-#98 flat pin shape, mount overlap, a mirror file
+ * outside every mount, and a source whose published count leaves its reviewed
+ * band. Hand edits inside src/content/docs/ are caught here.
+ *
+ * Every failing source is collected and reported together, so a reviewer who
+ * fixes one source cannot believe the rest of the corpora are clean.
  */
 
 import { readFile } from "node:fs/promises";
@@ -26,21 +30,21 @@ import {
   runParityGatesDetailed,
 } from "./lib/docs-source.mjs";
 import {
+  assertNoSourceFailures,
   assertPublishedUnderMounts,
+  assertSourcePublishedBand,
+  mirrorPathsOutsideMounts,
   parseDocsManifest,
   sourceIdForMirrorPath,
 } from "../src/lib/docsPins.ts";
-import { validateRouteCollisions } from "../src/lib/docsRoutes.ts";
+import {
+  sourcePathToRouteIdentity,
+  validateRouteCollisions,
+} from "../src/lib/docsRoutes.ts";
 import { loadPublicationCorpus } from "../src/lib/publicationCorpus.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const paths = repoPaths(ROOT);
-
-function fail(message, details = []) {
-  console.error(`error: ${message}`);
-  for (const line of details) console.error(`  - ${line}`);
-  process.exit(1);
-}
 
 async function readCommittedManifest() {
   let raw;
@@ -60,7 +64,8 @@ async function readCommittedManifest() {
   return parseDocsManifest(parsed);
 }
 
-function compareSource({ pin, entry, expected, mirrorSlice }) {
+/** Byte-for-byte comparison of one source against the mirror and manifest. */
+function assertFileParity({ pin, entry, expected, mirrorSlice }) {
   const manifestDiff = diffHashMaps(expected, entry.files);
   const mirrorDiff = diffHashMaps(expected, mirrorSlice);
   const problems = [];
@@ -98,9 +103,8 @@ function compareSource({ pin, entry, expected, mirrorSlice }) {
     detail.push(`mirror extra (hand-added?): ${key}`);
   for (const key of mirrorDiff.changed.slice(0, 10))
     detail.push(`mirror edited (hand-edit?): ${key}`);
-  fail(
-    `${pin.id}: docs mirror is stale vs pinned ${pin.revision} (${problems.join("; ")})`,
-    detail,
+  throw new SyncError(
+    `docs mirror is stale vs pinned ${pin.revision} (${problems.join("; ")})\n    ${detail.join("\n    ")}`,
   );
 }
 
@@ -108,67 +112,109 @@ async function main() {
   const pins = await readPinFile(ROOT);
   const manifest = await readCommittedManifest();
   const entryById = new Map(manifest.sources.map((entry) => [entry.id, entry]));
-  const missingEntries = pins.sources
-    .filter((pin) => !entryById.has(pin.id))
-    .map((pin) => pin.id);
-  if (missingEntries.length > 0) {
-    fail(
-      `provenance manifest has no entry for source(s): ${missingEntries.join(", ")}; run \`just docs-sync\``,
-    );
-  }
+  const failures = [];
 
   // The publication policy is the gate's first fail-closed check: the mirror
-  // must only publish reader-facing pages, and the count below is exactly the
-  // set the build publishes (website#97, closing website#102 D2/D6). Runs on
-  // the committed mirror, before the staleness report, so a governance page on
-  // the site is never masked by mirror diff noise.
-  const corpus = await loadPublicationCorpus(paths.mirrorRoot);
-  validateRouteCollisions(corpus.publishedSources);
-  // #98 §3.2: a published page must lie under a declared mount.
-  assertPublishedUnderMounts(corpus.publishedSources, pins);
+  // must only publish reader-facing pages, and the published count in the
+  // summary is exactly the set the build publishes (website#97).
+  let corpus = null;
+  try {
+    corpus = await loadPublicationCorpus(paths.mirrorRoot);
+    validateRouteCollisions(corpus.publishedSources);
+    // #98 §3.2: a published page must lie under a declared mount.
+    assertPublishedUnderMounts(corpus.publishedSources, pins);
+  } catch (error) {
+    failures.push({ source: "<policy>", message: error.message });
+  }
 
   const mirrorFiles = await hashTree(paths.mirrorRoot);
+  // #98 §3.1.5: no mirror file may exist outside every declared mount.
+  const outsideMounts = mirrorPathsOutsideMounts(
+    Object.keys(mirrorFiles),
+    pins,
+  );
+  if (outsideMounts.length > 0) {
+    failures.push({
+      source: "<mirror>",
+      message: `${outsideMounts.length} file(s) outside every declared mount (hand-added?): ${outsideMounts.slice(0, 10).join(", ")}`,
+    });
+  }
+
+  const publishedRoutesBySource = new Map();
+  if (corpus !== null) {
+    for (const sourcePath of corpus.publishedSources) {
+      const id = sourceIdForMirrorPath(sourcePath, pins);
+      if (id === null) continue;
+      const routes = publishedRoutesBySource.get(id) ?? [];
+      routes.push(sourcePathToRouteIdentity(sourcePath).routeWithoutVersion);
+      publishedRoutesBySource.set(id, routes);
+    }
+  }
+
   const snapshots = [];
   try {
     for (const pin of pins.sources) {
-      const entry = entryById.get(pin.id);
-      const snapshot = await materializeSnapshot({
-        root: ROOT,
-        pinValue: pin.revision,
-        source: pin.source,
-        id: pin.id,
-      });
-      snapshots.push(snapshot);
-      if (snapshot.sha !== pin.revision) {
-        fail(
-          `${pin.id}: pin revision ${pin.revision} resolved to ${snapshot.sha}; re-run \`just docs-sync\``,
+      try {
+        const entry = entryById.get(pin.id);
+        if (entry === undefined) {
+          throw new SyncError(
+            "provenance manifest has no entry for this source; run `just docs-sync`",
+          );
+        }
+        const snapshot = await materializeSnapshot({
+          root: ROOT,
+          pinValue: pin.revision,
+          source: pin.source,
+          id: pin.id,
+        });
+        snapshots.push(snapshot);
+        if (snapshot.sha !== pin.revision) {
+          throw new SyncError(
+            `pin revision ${pin.revision} resolved to ${snapshot.sha}; re-run \`just docs-sync\``,
+          );
+        }
+        const parity = runParityGatesDetailed(snapshot.dir);
+        const failedParity = Object.entries(parity.results).filter(
+          ([, result]) => result !== "pass",
         );
-      }
-      const parity = runParityGatesDetailed(snapshot.dir);
-      const failedParity = Object.entries(parity.results).filter(
-        ([, result]) => result !== "pass",
-      );
-      if (failedParity.length > 0) {
-        fail(
-          `${pin.id}: parity gate(s) failed: ${failedParity
-            .map(([mode]) => mode)
-            .join(", ")}`,
+        if (failedParity.length > 0) {
+          throw new SyncError(
+            `parity gate(s) failed: ${failedParity
+              .map(([mode]) => mode)
+              .join(", ")}`,
+          );
+        }
+        if (entry.revision !== snapshot.sha) {
+          throw new SyncError(
+            `manifest revision ${entry.revision} is stale vs pinned ${snapshot.sha}`,
+          );
+        }
+        const files = await collectConsumedFiles(snapshot.dir, pin);
+        const expected = hashMapOf(files);
+        const mirrorSlice = Object.fromEntries(
+          Object.entries(mirrorFiles).filter(
+            ([mirrorPath]) =>
+              sourceIdForMirrorPath(mirrorPath, pins) === pin.id,
+          ),
         );
-      }
-      if (entry.revision !== snapshot.sha) {
-        fail(
-          `${pin.id}: manifest revision ${entry.revision} is stale vs pinned ${snapshot.sha}`,
+        assertFileParity({ pin, entry, expected, mirrorSlice });
+
+        // #98 §3.4: the source's published count must stay in its reviewed
+        // band, with the added/removed routes printed when it moves.
+        const routes = [...(publishedRoutesBySource.get(pin.id) ?? [])].sort();
+        const manifestRoutes = new Set(entry.published_routes);
+        const added = routes.filter((route) => !manifestRoutes.has(route));
+        const removed = entry.published_routes.filter(
+          (route) => !routes.includes(route),
         );
+        assertSourcePublishedBand(pin, routes.length, { added, removed });
+      } catch (error) {
+        failures.push({ source: pin.id, message: error.message });
       }
-      const files = await collectConsumedFiles(snapshot.dir, pin);
-      const expected = hashMapOf(files);
-      const mirrorSlice = Object.fromEntries(
-        Object.entries(mirrorFiles).filter(
-          ([mirrorPath]) => sourceIdForMirrorPath(mirrorPath, pins) === pin.id,
-        ),
-      );
-      compareSource({ pin, entry, expected, mirrorSlice });
     }
+
+    // Collect every failing source and report them together.
+    assertNoSourceFailures(failures);
 
     const label =
       pins.sources.length === 1
@@ -188,10 +234,10 @@ async function main() {
 }
 
 main().catch((error) => {
-  const message =
-    error instanceof SyncError
-      ? error.message
-      : (error?.message ?? error?.stack ?? String(error));
-  console.error(`error: ${message}`);
+  if (error && typeof error.message === "string") {
+    console.error(`error: ${error.message}`);
+  } else {
+    console.error(`error: ${String(error)}`);
+  }
   process.exit(1);
 });

@@ -13,8 +13,14 @@ import { describe, expect, test } from "bun:test";
 import {
   DOCS_MANIFEST_FILE,
   DOCS_PIN_FILE,
+  DocsSourceFailuresError,
   LEGACY_PIN_MIGRATION_MESSAGE,
+  assertMirrorUnderMounts,
+  assertNoDuplicateMirrorPaths,
+  assertNoSourceFailures,
+  assertSourcePublishedBand,
   mirrorPathFor,
+  mirrorPathsOutsideMounts,
   parseDocsManifest,
   parseDocsPinSet,
   selectConsumedPaths,
@@ -339,5 +345,129 @@ describe("selectConsumedPaths (per-source consumed-file selector)", () => {
     expect(sourceIdForMirrorPath("docs/projects/bitty/x.md", pins)).toBe(
       "bitty-docs",
     );
+  });
+});
+
+function twoSourcePinSet() {
+  return {
+    schema: 2,
+    sources: [
+      {
+        id: "bitty-docs",
+        source: "github.com/bitty-terminal/bitty-docs",
+        revision: REVISION,
+        synced_at: "2026-09-13T16:00:51.656Z",
+        mounts: [{ from: "docs", to: "" }],
+        exclude: ["docs/projects/"],
+        published: { min: 3, max: 3 },
+      },
+      {
+        id: "bitty-terminal-docs",
+        source: "github.com/bitty-terminal/bitty-terminal-docs",
+        revision: REVISION,
+        synced_at: "2026-09-13T16:00:51.656Z",
+        mounts: [{ from: ".", to: "projects/bitty" }],
+        published: { min: 18, max: 18 },
+      },
+    ],
+  };
+}
+
+describe("multi-source mounts and gate collection", () => {
+  test("accepts a root catch-all mount beside a nested project mount", () => {
+    const pins = parseDocsPinSet(twoSourcePinSet());
+    expect(pins.sources).toHaveLength(2);
+    // The most specific mount wins, so the nested project mount owns its path.
+    expect(sourceIdForMirrorPath("docs/projects/bitty/x.md", pins)).toBe(
+      "bitty-terminal-docs",
+    );
+    expect(sourceIdForMirrorPath("docs/README.md", pins)).toBe("bitty-docs");
+  });
+
+  test("rejects nested and duplicate mount prefixes", () => {
+    const base = twoSourcePinSet();
+    const nested = {
+      schema: 2,
+      sources: [
+        { ...base.sources[0], mounts: [{ from: "docs", to: "projects" }] },
+        {
+          ...base.sources[1],
+          mounts: [{ from: ".", to: "projects/bitty" }],
+        },
+      ],
+    };
+    expect(() => parseDocsPinSet(nested)).toThrow(/mount overlap/u);
+    const duplicate = {
+      schema: 2,
+      sources: [
+        { ...base.sources[0], mounts: [{ from: "docs", to: "shared" }] },
+        { ...base.sources[1], mounts: [{ from: ".", to: "shared" }] },
+      ],
+    };
+    expect(() => parseDocsPinSet(duplicate)).toThrow(/mount overlap/u);
+  });
+
+  test("fails closed on two sources claiming one mirror path", () => {
+    expect(() =>
+      assertNoDuplicateMirrorPaths([
+        { mirrorPath: "docs/a.md", id: "one" },
+        { mirrorPath: "docs/a.md", id: "two" },
+      ]),
+    ).toThrow(/claimed by both "one" and "two"/u);
+  });
+
+  test("fails closed on a mirror file outside every mount", () => {
+    const pins = parseDocsPinSet(twoSourcePinSet());
+    const mirror = ["docs/README.md", "docs/projects/bitty/x.md"];
+    expect(mirrorPathsOutsideMounts(mirror, pins)).toEqual([]);
+    expect(() => assertMirrorUnderMounts(mirror, pins)).not.toThrow();
+    const withStray = [...mirror, "hand-added.md"];
+    expect(mirrorPathsOutsideMounts(withStray, pins)).toEqual([
+      "hand-added.md",
+    ]);
+    expect(() => assertMirrorUnderMounts(withStray, pins)).toThrow(
+      /outside every declared mount/u,
+    );
+  });
+
+  test("the per-source band gate names the source and its moved routes", () => {
+    expect(() =>
+      assertSourcePublishedBand(
+        { id: "bitty-terminal-docs", published: { min: 18, max: 18 } },
+        18,
+      ),
+    ).not.toThrow();
+    expect(() =>
+      assertSourcePublishedBand(
+        { id: "bitty-terminal-docs", published: { min: 18, max: 18 } },
+        17,
+        { added: [], removed: ["/docs/projects/bitty/x/"] },
+      ),
+    ).toThrow(
+      /source "bitty-terminal-docs" publishes 17 page\(s\), outside its reviewed band 18-18 \(removed: \/docs\/projects\/bitty\/x\/\)/u,
+    );
+  });
+
+  test("collects every failing source instead of aborting on the first", () => {
+    const failures = [
+      { source: "bitty-terminal-docs", message: "docs mirror is stale" },
+      { source: "bitty-ai-docs", message: "parity gate(s) failed: links" },
+    ];
+    let caught: unknown = null;
+    try {
+      assertNoSourceFailures(failures);
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBeInstanceOf(DocsSourceFailuresError);
+    const error = caught as DocsSourceFailuresError;
+    expect(error.failures).toHaveLength(2);
+    expect(error.message).toContain("bitty-terminal-docs");
+    expect(error.message).toContain("bitty-ai-docs");
+    expect(error.message).toContain("2 source(s)");
+  });
+
+  test("passes when no source failed", () => {
+    expect(() => assertNoSourceFailures([])).not.toThrow();
   });
 });

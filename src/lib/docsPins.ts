@@ -694,6 +694,59 @@ export function assertPublishedUnderMounts(
   }
 }
 
+/** Mirror-relative paths that no declared mount claims (hand-added content). */
+export function mirrorPathsOutsideMounts(
+  mirrorPaths: readonly string[],
+  pins: DocsPinSet,
+): readonly string[] {
+  return mirrorPaths
+    .filter((mirrorPath) => mountForMirrorPath(mirrorPath, pins) === null)
+    .sort();
+}
+
+/** Fail closed when the mirror holds a file outside every declared mount. */
+export function assertMirrorUnderMounts(
+  mirrorPaths: readonly string[],
+  pins: DocsPinSet,
+): void {
+  const outside = mirrorPathsOutsideMounts(mirrorPaths, pins);
+  if (outside.length > 0) {
+    throw new DocsPinsError(
+      `mirror holds ${outside.length} file(s) outside every declared mount (hand-added?): ${outside.slice(0, 10).join(", ")}`,
+    );
+  }
+}
+
+/**
+ * Fail closed when one source's published count leaves its reviewed band
+ * (#98 §3.4). The band lives in the pin entry, so a movement is attributable
+ * to the source that moved and needs a reviewed `just docs-sync` diff.
+ */
+export function assertSourcePublishedBand(
+  pin: Pick<DocsSourcePin, "id" | "published">,
+  publishedCount: number,
+  addedAndRemoved: {
+    readonly added: readonly string[];
+    readonly removed: readonly string[];
+  } = {
+    added: [],
+    removed: [],
+  },
+): void {
+  const { min, max } = pin.published;
+  if (publishedCount >= min && publishedCount <= max) return;
+  const detail: string[] = [];
+  if (addedAndRemoved.added.length > 0) {
+    detail.push(`added: ${addedAndRemoved.added.slice(0, 10).join(", ")}`);
+  }
+  if (addedAndRemoved.removed.length > 0) {
+    detail.push(`removed: ${addedAndRemoved.removed.slice(0, 10).join(", ")}`);
+  }
+  throw new DocsPinsError(
+    `source "${pin.id}" publishes ${publishedCount} page(s), outside its reviewed band ${min}-${max}${detail.length > 0 ? ` (${detail.join("; ")})` : ""}`,
+  );
+}
+
 /** Per-source include/exclude carve-outs handed to the selector. */
 export type ConsumedSelectorOverrides = {
   readonly include?: readonly string[];

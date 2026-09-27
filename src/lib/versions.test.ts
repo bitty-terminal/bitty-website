@@ -10,6 +10,7 @@ import { describe, expect, test } from "bun:test";
 
 import {
   appendLocationSuffix,
+  getVersions,
   isHostedVersion,
   resolveAlias,
   rewriteVersionInRoute,
@@ -17,6 +18,9 @@ import {
   versionEntryPresentation,
   versionTargetRoute,
 } from "./versions.ts";
+import docsRevision from "../content/docs-revision.json" with { type: "json" };
+import { corpusSetId } from "./docsProvenance.ts";
+import { parseDocsPinSet } from "./docsPins.ts";
 
 describe("RS-2 active version", () => {
   test("marks the hosted version active for latest, stable, and explicit routes", () => {
@@ -156,5 +160,23 @@ describe("RS-3 query and hash enrichment", () => {
         "#new",
       ),
     ).toBe("/docs/0.1.0/?existing=1#existing");
+  });
+});
+
+describe("RS-4 version record names the pinned corpus set", () => {
+  test("every hosted version carries docs_corpus, not the retired revision", () => {
+    const expected = corpusSetId(parseDocsPinSet(docsRevision));
+    const versions = getVersions();
+    expect(versions.versions.length).toBeGreaterThan(0);
+    for (const entry of versions.versions) {
+      expect(entry.docs_corpus).toBe(expected);
+      expect(Object.keys(entry)).not.toContain("revision");
+    }
+  });
+
+  test("the identity is a derived sha256, not a bare commit SHA", () => {
+    const expected = corpusSetId(parseDocsPinSet(docsRevision));
+    expect(expected).toMatch(/^sha256:[0-9a-f]{64}$/u);
+    expect(expected).not.toMatch(/^[0-9a-f]{40}$/u);
   });
 });

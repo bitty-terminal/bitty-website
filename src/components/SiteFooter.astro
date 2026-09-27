@@ -1,14 +1,21 @@
 ---
 /**
  * Site footer — presentation-only provenance strip.
- * The docs pin is rendered from src/content/docs-revision.json so the
- * published corpus stays reproducible without hand-maintained copies.
+ * The docs pin and the corpus-set identity are rendered from
+ * src/content/docs-revision.json so the published corpus stays reproducible
+ * without hand-maintained copies.
  */
 import docsRevision from "../content/docs-revision.json" with { type: "json" };
+import { corpusSetId, DOCS_CORPUS_ID_PREFIX } from "../lib/docsProvenance.ts";
 import { parseDocsPinSet, revisionIndexOwner } from "../lib/docsPins.ts";
 
-const owner = revisionIndexOwner(parseDocsPinSet(docsRevision));
+const pins = parseDocsPinSet(docsRevision);
+const owner = revisionIndexOwner(pins);
 const shortRevision = owner.revision.slice(0, 7);
+// Short form of the derived corpus-set identity; the full value is the
+// artifact key and is carried in dist/docs-provenance.json.
+const corpusSet = corpusSetId(pins);
+const shortCorpusSet = corpusSet.slice(0, DOCS_CORPUS_ID_PREFIX.length + 12);
 ---
 
 <footer class="site-footer">
@@ -18,6 +25,7 @@ const shortRevision = owner.revision.slice(0, 7);
   </p>
   <p>
     Canonical documentation is owned by {owner.id} and consumed from the pinned
-    revision <code>{shortRevision}</code>; this site only presents it.
+    revision <code>{shortRevision}</code>; this site only presents it. The
+    deployed corpus set is <code>{shortCorpusSet}</code>.
   </p>
 </footer>

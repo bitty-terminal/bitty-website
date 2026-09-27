@@ -5,12 +5,19 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import docsRevision from "./src/content/docs-revision.json" with { type: "json" };
+import docsManifest from "./src/content/docs-manifest.json" with { type: "json" };
 import versions from "./src/content/versions.json" with { type: "json" };
 import { CDN_BASE_URL } from "./src/lib/cdn.ts";
 import {
   assertPublishedUnderMounts,
+  parseDocsManifest,
   parseDocsPinSet,
 } from "./src/lib/docsPins.ts";
+import {
+  DOCS_PROVENANCE_FILENAME,
+  assertVersionsCorpusSet,
+  buildDocsProvenance,
+} from "./src/lib/docsProvenance.ts";
 import { docsLinksMdastPlugin } from "./src/lib/docsLinksPlugin.ts";
 import { docsHeadingsMdastPlugin } from "./src/lib/docsHeadings.ts";
 import { loadPublicationCorpus } from "./src/lib/publicationCorpus.ts";
@@ -217,6 +224,46 @@ function searchIndexArtifacts() {
   };
 }
 
+// Multi-source aggregation (bitty-website#98, task T9): the deployed
+// provenance artifact. `dist/docs-provenance.json` records, for every consumed
+// source, its slug, pinned revision, mount targets, per-kind counts and the
+// routes it published, plus the aggregate totals and the corpus-set identity
+// the build used. Every value is derived from the pins
+// (`src/content/docs-revision.json`) and the committed provenance manifest
+// (`src/content/docs-manifest.json`) through `src/lib/docsProvenance.ts` — the
+// artifact cannot claim provenance the build did not consume. It is served
+// beside the other evidence artifacts (`/redirects.json`,
+// `/search-index.json`); it is not a page, so it adds no route to the sitemap
+// or the search index and the website#97 publication policy is untouched.
+function docsProvenanceArtifacts() {
+  return {
+    name: "bitty-docs-provenance",
+    hooks: {
+      "astro:build:done": async ({ dir, logger }) => {
+        const pins = parseDocsPinSet(docsRevision);
+        const manifest = parseDocsManifest(docsManifest);
+        // The version record names the corpus set the build consumed; a pin
+        // advance changes the derived id, so the build fails closed until the
+        // version record moves with it.
+        assertVersionsCorpusSet(versions.versions, pins);
+        const artifact = buildDocsProvenance(
+          pins,
+          manifest,
+          new Date().toISOString(),
+        );
+        await writeFile(
+          join(fileURLToPath(dir), DOCS_PROVENANCE_FILENAME),
+          `${JSON.stringify(artifact, null, 2)}\n`,
+          "utf8",
+        );
+        logger.info(
+          `wrote ${DOCS_PROVENANCE_FILENAME} (corpus set ${artifact.corpus_set.id}, ${artifact.sources.length} source(s), ${artifact.aggregate.published} published)`,
+        );
+      },
+    },
+  };
+}
+
 // Website Delivery RFC MV-6: the sitemap is emitted from the built output, so
 // it can only list pages the build published (the publication policy's
 // excluded routes emit no page and ship a 301 instead). The global sitemap
@@ -272,6 +319,7 @@ export default defineConfig({
     redirectArtifacts(),
     docsAssets(),
     searchIndexArtifacts(),
+    docsProvenanceArtifacts(),
     sitemapArtifacts(),
   ],
 });

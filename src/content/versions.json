@@ -4,7 +4,7 @@
   "versions": [
     {
       "version": "0.1.0",
-      "revision": "9891949ca20b245375ece9a9015d0f42458fd2b1",
+      "docs_corpus": "sha256:aa24ee54f18fee2296db573a70b2977ce8d134f2ea6c0f15bf24ae54c4552b1c",
       "label": "latest — 2026-09-13T16:00:51.656Z",
       "prerelease": false
     }

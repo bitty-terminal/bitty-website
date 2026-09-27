@@ -1,13 +1,14 @@
 /**
  * Rendered docs entry derivation shared by the docs shell components
- * (CTX-0050).
+ * (CTX-0050) and the publication policy boundary (website#97).
  *
  * The sidebar, breadcrumbs, and previous/next pager must agree on the same
  * entry set and on the same canonical slug for every page, so the
  * collection -> entry mapping lives here once instead of being re-derived per
  * component. Slugs come from the authoritative route mapper
- * (`./docsRoutes.ts`, RM-6); publication filtering follows LD-3
- * (`website_publish` only).
+ * (`./docsRoutes.ts`, RM-6); publication eligibility comes from the single
+ * policy definition (`./publicationPolicy.ts`, website#97) — no component and
+ * no script re-implements `website_publish` filtering.
  *
  * The pure helpers keep the structural surface they read (`id`, `filePath`,
  * `data`) so they stay unit-testable without an Astro runtime.
@@ -16,6 +17,12 @@
 import { sep } from "node:path";
 
 import { sourcePathToRouteIdentity } from "./docsRoutes.ts";
+import {
+  assertPublicationPolicy,
+  isPublished,
+  type PublicationMetadata,
+  type PublicationPolicyReport,
+} from "./publicationPolicy.ts";
 import type { SidebarEntry } from "./docsSidebar.ts";
 
 /**
@@ -33,6 +40,9 @@ export type DocsEntryLike = {
   readonly data: {
     readonly title: string;
     readonly sidebar_order: number;
+    readonly audience: string;
+    readonly document_type: string;
+    readonly status: string;
     readonly website_publish: boolean;
   };
 };
@@ -65,17 +75,54 @@ export function slugFromSourceFile(
 }
 
 /**
+ * Publication metadata of a collection entry: the exact input the policy
+ * decides on, derived from the source path and the validated frontmatter.
+ */
+export function publicationMetadataFromEntry(
+  entry: DocsEntryLike,
+): PublicationMetadata {
+  if (entry.filePath === undefined || entry.filePath.length === 0) {
+    throw new Error(`Docs entry "${entry.id}" has no filePath`);
+  }
+  return {
+    sourcePath: sourcePathFromFilePath(entry.filePath, entry.id),
+    audience: entry.data.audience,
+    document_type: entry.data.document_type,
+    website_publish: entry.data.website_publish === true,
+    status: entry.data.status,
+  };
+}
+
+/**
+ * Fail-closed gate over a whole collection (build time). Throws when a page
+ * requests publication without being eligible, allow-listed, or recorded as
+ * pending the docs-side flip — the same assertion the sync pipeline runs.
+ */
+export function assertCollectionPublicationPolicy(
+  entries: readonly DocsEntryLike[],
+): PublicationPolicyReport {
+  return assertPublicationPolicy(entries.map(publicationMetadataFromEntry));
+}
+
+/** Entries the policy publishes, in collection order. */
+export function publishedEntriesFrom<T extends DocsEntryLike>(
+  entries: readonly T[],
+): readonly T[] {
+  return entries.filter((entry) =>
+    isPublished(publicationMetadataFromEntry(entry)),
+  );
+}
+
+/**
  * Sidebar entries for a `docs` collection: published entries only, each
  * carrying its canonical slug, canonical title, and `sidebar_order`.
  */
 export function sidebarEntriesFrom(
   entries: readonly DocsEntryLike[],
 ): readonly SidebarEntry[] {
-  return entries
-    .filter((entry) => entry.data.website_publish === true)
-    .map((entry) => ({
-      slug: slugFromSourceFile(entry.filePath, entry.id),
-      title: entry.data.title,
-      order: entry.data.sidebar_order,
-    }));
+  return publishedEntriesFrom(entries).map((entry) => ({
+    slug: slugFromSourceFile(entry.filePath, entry.id),
+    title: entry.data.title,
+    order: entry.data.sidebar_order,
+  }));
 }

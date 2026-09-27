@@ -2,7 +2,7 @@ import { defineCollection, z } from "astro:content";
 import { glob } from "astro/loaders";
 
 // Website Delivery RFC OQ-023 — LD-2 Shared schema (strict, mirrors Documentation workflow).
-// Every docs/**/*.md frontmatter field is validated before website_publish filtering (LD-3).
+// Every docs/**/*.md frontmatter field is validated before publication-policy filtering (src/lib/publicationPolicy.ts, website#97).
 // Title-vs-H1, language gate (LD-4), and link integrity (LD-5) are enforced by sync:docs
 // validation and build-time checks in src/lib/docsValidation.ts; the collection schema
 // here guarantees the eight flat fields, no extra keys, and correct enums.

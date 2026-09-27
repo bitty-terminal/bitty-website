@@ -23,7 +23,6 @@ import {
   cleanupSnapshot,
   deriveSourceFromLocal,
   hashTree,
-  listEligibleSourcePaths,
   materializeSnapshot,
   parsePinArg,
   readPinFile,
@@ -34,6 +33,7 @@ import {
   writeFileIfChanged,
 } from "./lib/docs-source.mjs";
 import { validateRouteCollisions } from "../src/lib/docsRoutes.ts";
+import { loadPublicationCorpus } from "../src/lib/publicationCorpus.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const paths = repoPaths(ROOT);
@@ -71,8 +71,10 @@ async function main() {
     runParityGates(snapshot.dir);
 
     await replaceMirror(snapshot.dir, paths.mirrorRoot);
-    const eligible = await listEligibleSourcePaths(paths.mirrorRoot);
-    validateRouteCollisions(eligible);
+    // Eligibility comes from the publication policy, not from this script:
+    // the count below is the set the build publishes (website#97).
+    const corpus = await loadPublicationCorpus(paths.mirrorRoot);
+    validateRouteCollisions(corpus.publishedSources);
 
     const files = await hashTree(paths.mirrorRoot);
     const manifest = {
@@ -100,7 +102,7 @@ async function main() {
 
     const count = Object.keys(files).length;
     console.log(
-      `synced bitty-docs ${pinValue} -> ${snapshot.sha} (${count} files, ${eligible.length} publishable)`,
+      `synced bitty-docs ${pinValue} -> ${snapshot.sha} (${count} files, ${corpus.report.published.length} publishable, ${corpus.redirects.length} excluded page(s) redirect)`,
     );
     console.log(
       `  ${relative(ROOT, paths.manifestFile)} ${manifestChanged ? "written" : "unchanged"}`,

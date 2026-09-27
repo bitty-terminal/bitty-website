@@ -2,6 +2,10 @@ import { access, readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { flipListEntries } from "../src/lib/publicationPolicy.ts";
+import { PUBLICATION_REDIRECT_REASON } from "../src/lib/redirects.ts";
+import { sitemapRoutes } from "../src/lib/sitemap.ts";
+
 const dist = new URL("../dist/", import.meta.url);
 const immutable = "public, max-age=31536000, immutable";
 const revalidate = "public, max-age=0, must-revalidate";
@@ -127,4 +131,106 @@ requireCacheRule(rules, "/_astro/*", immutable);
 requireCacheRule(rules, "/icons/*", revalidate);
 requireCacheRule(rules, "/", revalidate);
 
-console.log("Static output and cache-header validation passed.");
+// ---------------------------------------------------------------------------
+// Publication policy (website#97): the dist must prove, from the artifacts
+// themselves, that an excluded page left the site as a 301 and that neither
+// the sitemap nor the search index can still point at it.
+// ---------------------------------------------------------------------------
+
+function urlPathFromRoute(route) {
+  if (route === "/") return "index.html";
+  if (!route.startsWith("/docs/") || !route.endsWith("/")) {
+    throw new Error(`Expected an exact /docs/ route prefix: ${route}`);
+  }
+  return `${route.slice(1)}index.html`;
+}
+
+function resolveRedirectTarget(rule) {
+  if (typeof rule?.to !== "string" || !rule.to.startsWith("/docs/")) {
+    throw new Error(
+      `redirects.json holds a rule without a /docs/ target: ${JSON.stringify(rule)}`,
+    );
+  }
+  return urlPathFromRoute(rule.to);
+}
+
+const evidence = JSON.parse(
+  await readFile(new URL("redirects.json", dist), "utf8"),
+);
+const allRules = Array.isArray(evidence?.redirects) ? evidence.redirects : [];
+const policyRules = allRules.filter(
+  (rule) => rule?.reason === PUBLICATION_REDIRECT_REASON,
+);
+if (policyRules.length === 0) {
+  throw new Error(
+    "redirects.json holds no publication-policy redirect: an excluded page would 404",
+  );
+}
+const expectedPolicyRules =
+  flipListEntries().length * evidence.hosted_versions.length;
+if (policyRules.length !== expectedPolicyRules) {
+  throw new Error(
+    `redirects.json holds ${policyRules.length} publication redirect(s); expected ${flipListEntries().length} excluded page(s) x ${evidence.hosted_versions.length} hosted version(s) = ${expectedPolicyRules}`,
+  );
+}
+
+const edgeRedirects = await readFile(new URL("_redirects", dist), "utf8");
+for (const rule of policyRules) {
+  if (rule.status !== 301) {
+    throw new Error(
+      `publication redirect ${rule.from} must be a 301, received ${rule.status}`,
+    );
+  }
+  await requireFile(new URL(resolveRedirectTarget(rule), dist));
+  try {
+    await access(new URL(urlPathFromRoute(rule.from), dist));
+    throw new Error(
+      `excluded page still emits a page: ${rule.from} (expected the 301 to ${rule.to})`,
+    );
+  } catch (error) {
+    if (error.code !== "ENOENT") throw error;
+  }
+  if (!edgeRedirects.includes(`${rule.from} ${rule.to} 301`)) {
+    throw new Error(
+      `dist/_redirects is missing the publication rule "${rule.from} ${rule.to} 301"`,
+    );
+  }
+}
+
+const excludedRoutes = new Set(policyRules.map((rule) => rule.from));
+const sitemaps = [
+  { label: "sitemap.xml", url: new URL("sitemap.xml", dist) },
+  ...evidence.hosted_versions.map((segment) => ({
+    label: `docs/${segment}/sitemap.xml`,
+    url: new URL(`docs/${segment}/sitemap.xml`, dist),
+  })),
+];
+const sitemapCounts = [];
+for (const { label, url } of sitemaps) {
+  await requireFile(url, { nonEmpty: true });
+  const routes = sitemapRoutes(await readFile(url, "utf8"));
+  for (const route of routes) {
+    if (excludedRoutes.has(route)) {
+      throw new Error(
+        `${label} lists excluded route ${route}; only published pages may be canonical`,
+      );
+    }
+    if (!knownPages.has(urlPathFromRoute(route))) {
+      throw new Error(`${label} points at missing page: ${route}`);
+    }
+  }
+  sitemapCounts.push(`${label}=${routes.length}`);
+}
+for (const record of records) {
+  const route =
+    record.slug === "" ? "/docs/latest/" : `/docs/latest/${record.slug}/`;
+  if (excludedRoutes.has(route)) {
+    throw new Error(
+      `search-index.json lists excluded route ${route}; only published pages may be indexed`,
+    );
+  }
+}
+
+console.log(
+  `Static output and cache-header validation passed (${records.length} search record(s), ${policyRules.length} publication redirect(s), sitemaps ${sitemapCounts.join(", ")}).`,
+);

@@ -162,6 +162,78 @@ export async function loadMergedRedirects(
   );
 }
 
+/**
+ * Reason recorded on every publication-policy redirect (website#97). Export
+ * so the dist gate can recognize the policy's own redirects in
+ * `dist/redirects.json` without re-deriving them.
+ */
+export const PUBLICATION_REDIRECT_REASON =
+  "publication policy (bitty-website#97): page is not reader-facing, so it left the site";
+
+/** Version-less `/docs/.../` route pair the publication policy excludes. */
+export type PublicationRedirectPlan = {
+  readonly from: string;
+  readonly to: string;
+};
+
+/**
+ * Materialize the publication policy's redirect plan as redirect entries, so
+ * an excluded page leaves the site as a 301 through the one redirect
+ * mechanism (RD-3/RD-6) instead of a 404. `effectiveVersion` is the lowest
+ * hosted version: an exclusion applies to every hosted segment, not from some
+ * later release onward.
+ *
+ * @throws when a plan entry is not an exact `/docs/.../` prefix pair or would
+ *   redirect a route onto itself
+ */
+export function buildPublicationRedirectEntries(
+  plan: readonly PublicationRedirectPlan[],
+  effectiveVersion: string,
+): readonly RedirectEntry[] {
+  return plan.map((redirect) => {
+    if (!isExactPathPrefix(redirect.from) || !isExactPathPrefix(redirect.to)) {
+      throw new Error(
+        `Publication redirect must be an exact /docs/ prefix pair ending with /: ${redirect.from} -> ${redirect.to}`,
+      );
+    }
+    if (redirect.from === redirect.to) {
+      throw new Error(`Publication redirect loop: ${redirect.from}`);
+    }
+    return {
+      old: redirect.from,
+      new: redirect.to,
+      status: 301 as const,
+      reason: PUBLICATION_REDIRECT_REASON,
+      effective_version: effectiveVersion,
+    };
+  });
+}
+
+/**
+ * Lowest concrete version of `versions` — the `effective_version` an entry
+ * needs when it must apply to every hosted segment (RD-4). Version ordering
+ * lives here so callers never compare versions themselves.
+ *
+ * @throws when no concrete semver version is present
+ */
+export function lowestVersion(versions: readonly string[]): string {
+  let lowest: string | null = null;
+  for (const version of versions) {
+    const parsed = parseSemver(version);
+    if (parsed === null) continue;
+    const lowestParsed = lowest === null ? null : parseSemver(lowest);
+    if (lowestParsed === null || compareSemver(parsed, lowestParsed) < 0) {
+      lowest = version;
+    }
+  }
+  if (lowest === null) {
+    throw new Error(
+      "Cannot derive the lowest hosted version: no concrete semver segment",
+    );
+  }
+  return lowest;
+}
+
 function parseSemver(
   value: string,
 ): readonly [number, number, number, string] | null {

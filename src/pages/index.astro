@@ -5,9 +5,9 @@
  * Presentation only: section framing is website-owned copy, while every
  * linked title, description, and status badge is rendered verbatim from the
  * pinned canonical frontmatter at build time. If a pinned entry below is
- * missing or no longer eligible for publication, the build fails closed
- * instead of rendering a stale link. Text only: no screenshots, no video,
- * no raster assets.
+ * missing or no longer published by the shared publication policy (website#97),
+ * the build fails closed instead of rendering a stale or governance link.
+ * Text only: no screenshots, no video, no raster assets.
  */
 import { getCollection } from "astro:content";
 import { sep } from "node:path";
@@ -16,6 +16,8 @@ import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import TerminalIllustration from "../components/TerminalIllustration.astro";
 import { sourcePathToRouteIdentity } from "../lib/docsRoutes.ts";
+import { publicationMetadataFromEntry } from "../lib/docsEntries.ts";
+import { isPublished } from "../lib/publicationPolicy.ts";
 import { PILLARS } from "../lib/pillars.ts";
 import "../styles/global.css";
 
@@ -49,7 +51,7 @@ const ARCHITECTURE_SOURCES = [
 
 const ALSO_SOURCES = [
   "docs/projects/bitty/product/vision.md",
-  "docs/security/overview.md",
+  "docs/roadmap/README.md",
 ];
 
 function sourcePathFromFilePath(filePath: string, id: string): string {
@@ -77,9 +79,12 @@ async function resolveHomeDocs(sources: string[]): Promise<HomeDoc[]> {
       );
     }
     const entry = matches[0] as (typeof matches)[number];
-    if (entry.data.website_publish !== true) {
+    // One eligibility definition (website#97): the home page advertises what
+    // the publication policy publishes, so a governance page can never be
+    // linked from a published, indexed page.
+    if (!isPublished(publicationMetadataFromEntry(entry))) {
       throw new Error(
-        `Home page entry "${sourcePath}" is not eligible for publication`,
+        `Home page entry "${sourcePath}" is not published by the publication policy (website#97)`,
       );
     }
     return {

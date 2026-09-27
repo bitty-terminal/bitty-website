@@ -1,0 +1,66 @@
+{
+  "policy_version": "2026-09-27.3",
+  "note": "Publication allow-list (website#97). Shrink-only: every entry needs an explicit reviewed change. Governance corpora may never be added; see src/lib/publicationPolicy.ts. 2026-09-27.2: plugin-author `specification` pages left this list because the rule now treats the audience's own specification type as reader-facing (owner decision on #97).",
+  "entries": [
+    {
+      "path": "docs/projects/bitty/architecture/final/README.md",
+      "audience": "contributor",
+      "document_type": "overview",
+      "reason": "Reader-facing index of the exported architecture diagram assets that the published diagram suite serves"
+    },
+    {
+      "path": "docs/projects/bitty/architecture/overview.md",
+      "audience": "contributor",
+      "document_type": "overview",
+      "reason": "Reader-facing architecture overview: system context, layers, data flow, and architectural status (the home page and concept pillars link to it)"
+    },
+    {
+      "path": "docs/projects/bitty/architecture/README.md",
+      "audience": "contributor",
+      "document_type": "overview",
+      "reason": "Reader-facing landing page for the published architecture diagram suite (MV-4 mirrored interactive app linked from published pages)"
+    },
+    {
+      "path": "docs/projects/bitty/configuration/lua-and-xdg.md",
+      "audience": "mixed",
+      "document_type": "specification",
+      "reason": "Reader-facing configuration contract: Lua configuration, XDG roots, layering, and cross-platform paths (audience mixed, document_type specification)"
+    },
+    {
+      "path": "docs/projects/bitty/examples/README.md",
+      "audience": "mixed",
+      "document_type": "index",
+      "reason": "Reader-facing section index: examples tree entry point (audience mixed, document_type index)"
+    },
+    {
+      "path": "docs/projects/bitty/product/vision.md",
+      "audience": "mixed",
+      "document_type": "overview",
+      "reason": "Reader-facing product overview: accepted direction, goals, non-goals (audience mixed, document_type overview)"
+    },
+    {
+      "path": "docs/projects/bitty/reference/README.md",
+      "audience": "mixed",
+      "document_type": "index",
+      "reason": "Reader-facing section index: reference tree entry point (audience mixed, document_type index)"
+    },
+    {
+      "path": "docs/projects/bitty/requirements/README.md",
+      "audience": "mixed",
+      "document_type": "index",
+      "reason": "Reader-facing section index: requirements tree entry point (audience mixed, document_type index)"
+    },
+    {
+      "path": "docs/README.md",
+      "audience": "mixed",
+      "document_type": "index",
+      "reason": "Revision index of the docs tree: the site's /docs/<version>/ landing page and documentation map (reader-facing index)"
+    },
+    {
+      "path": "docs/roadmap/README.md",
+      "audience": "mixed",
+      "document_type": "index",
+      "reason": "Reader-facing section index: roadmap tree entry point (audience mixed, document_type index)"
+    }
+  ]
+}

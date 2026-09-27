@@ -3,10 +3,11 @@
  * Documentation sidebar navigation (CTX-0045, CTX-0050): two-layer
  * reader-intent navigation.
  *
- * Data source: the `docs` content collection filtered to
- * `website_publish: true` (LD-3), mapped through the shared entry derivation
- * (`../lib/docsEntries.ts`) so the sidebar, the breadcrumbs, and the
- * previous/next pager all agree on the same canonical slugs.
+ * Data source: the `docs` content collection, filtered by the shared
+ * publication policy (`../lib/publicationPolicy.ts`, website#97) and mapped
+ * through the shared entry derivation (`../lib/docsEntries.ts`), so the
+ * sidebar, the breadcrumbs, and the previous/next pager all agree on the same
+ * canonical slugs.
  *
  * Shape: the six reader-intent groups of `../lib/docsNavGroups.ts` are the
  * only top level, and each group renders exactly one flat list of page links

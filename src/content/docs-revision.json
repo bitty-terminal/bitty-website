@@ -24,7 +24,7 @@
       "id": "bitty-plugins-docs",
       "source": "github.com/bitty-terminal/bitty-plugins-docs",
       "revision": "dcb7b84069b5b67d72d238dd646cc446d1ece384",
-      "synced_at": "2026-09-28T00:00:00.000Z",
+      "synced_at": "2026-09-27T20:24:03.000Z",
       "mounts": [
         {
           "from": ".",

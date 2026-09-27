@@ -249,6 +249,16 @@ for (const source of pinSet.sources) {
     );
   }
 }
+// Every pinned source must be present AND nothing else: stale evidence for a
+// removed source would otherwise keep validating after its pin is gone.
+const pinnedIds = new Set(pinSet.sources.map((source) => source.id));
+for (const id of Object.keys(docsRevisions)) {
+  if (!pinnedIds.has(id)) {
+    throw new Error(
+      `dist/redirects.json docs_revisions holds unknown source "${id}"; expected exactly the pinned source(s) ${[...pinnedIds].join(", ")}`,
+    );
+  }
+}
 
 const edgeRuleLines = edgeRedirects
   .split(/\r?\n/u)

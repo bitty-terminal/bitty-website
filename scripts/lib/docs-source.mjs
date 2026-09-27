@@ -35,6 +35,7 @@ import { spawnSync } from "node:child_process";
 
 import {
   DocsPinsError,
+  SOURCE_SLUG,
   mirrorPathFor,
   parseDocsPinSet,
   selectConsumedPaths,
@@ -42,8 +43,6 @@ import {
 
 /** Canonical parity gate modes every corpus ships. */
 export const PARITY_MODES = ["metadata", "language", "links", "hygiene"];
-
-const SOURCE_SLUG = /^[A-Za-z0-9.-]+\/[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/;
 
 export class SyncError extends Error {}
 
@@ -167,19 +166,14 @@ export async function readRawManifest(root) {
   }
 }
 
-/** `true` when `raw` is the pre-#98 flat `{revision, source, synced_at}`. */
-export function isLegacyPin(raw) {
-  if (raw === null || typeof raw !== "object" || Array.isArray(raw))
-    return false;
-  const keys = Object.keys(raw);
-  if (keys.length === 0 || "schema" in raw || "sources" in raw) return false;
-  return keys.every((key) => ["revision", "source", "synced_at"].includes(key));
-}
-
 /**
  * Migrate the legacy flat pin to schema 2 in memory: one `bitty-docs` source
  * whose mount (`docs` → ``) reproduces every current mirror path unchanged.
  * `publishedBand` is the observed per-source band (reviewed when committed).
+ *
+ * The caller re-validates the result through `parseDocsPinSet` before use, so
+ * the migration cannot hand a hand-built shape to the rest of the pipeline
+ * unnoticed.
  */
 export function migrateLegacyPin(raw, publishedBand) {
   const id = repoNameForSource(raw.source)

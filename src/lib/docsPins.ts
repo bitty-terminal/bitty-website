@@ -42,6 +42,15 @@ export const MIRROR_DOCS_DIR = "docs";
 export const REVISION_INDEX_MIRROR_PATH = `${MIRROR_DOCS_DIR}/README.md`;
 
 /**
+ * Source-relative path of the revision index inside a docs corpus.
+ *
+ * Every corpus keeps its documentation map at `docs/README.md` (the
+ * bitty-terminal-docs layout), which is why the canonical mount (`docs` → ``)
+ * also reproduces the mirror's own revision-index path.
+ */
+export const REVISION_INDEX_SOURCE_PATH = `${MIRROR_DOCS_DIR}/README.md`;
+
+/**
  * Rejection message for the pre-#98 flat pin shape. The migration is a
  * `just docs-sync` run in the same commit as the schema change, so the message
  * names the command rather than the code that would have to change.
@@ -63,7 +72,12 @@ export const FLOATING_BRANCHES: ReadonlySet<string> = new Set([
 ]);
 
 const TAG_LIKE = /^v?\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
-const SOURCE_SLUG = /^[A-Za-z0-9.-]+\/[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/;
+/**
+ * Source slug syntax a pin entry accepts (`host/owner/repo`). Exported so the
+ * sync scripts read the slug rule from this module instead of re-declaring it
+ * (single schema authority, bitty-website#98 review).
+ */
+export const SOURCE_SLUG = /^[A-Za-z0-9.-]+\/[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+$/;
 const SOURCE_ID = /^[a-z][a-z0-9-]*$/;
 const TO_PATH = /^[a-z][a-z0-9-]*(?:\/[a-z0-9][a-z0-9-]*)*$/;
 const FROM_PATH = /^(?:\.|[a-z0-9][a-z0-9-]*(?:\/[a-z0-9][a-z0-9-]*)*)$/;
@@ -220,7 +234,18 @@ function assertKnownKeys(
   }
 }
 
-function isLegacyPin(record: Record<string, unknown>): boolean {
+/**
+ * `true` when `value` is the pre-#98 flat pin `{revision, source, synced_at}`.
+ *
+ * Exported because `scripts/lib/docs-source.mjs` and `scripts/sync-docs.mjs`
+ * must answer the same question with the same rule; the legacy detector is a
+ * schema decision and therefore belongs to this module, not a copy.
+ */
+export function isLegacyPin(value: unknown): boolean {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) {
+    return false;
+  }
+  const record = value as Record<string, unknown>;
   if ("schema" in record || "sources" in record) return false;
   const keys = Object.keys(record);
   if (keys.length === 0) return false;
@@ -410,11 +435,24 @@ export function parseDocsPinSet(raw: unknown): DocsPinSet {
   }
   const pins: DocsPinSet = { schema: DOCS_PIN_SCHEMA, sources };
   assertMountsDisjoint(pins);
-  // The revision index must be owned by exactly one declared mount, or the
-  // publication policy has no last-resort redirect target.
-  if (mountForMirrorPath(REVISION_INDEX_MIRROR_PATH, pins) === null) {
+  // The revision index must be supplied by exactly one declared mount, or the
+  // publication policy has no last-resort redirect target. Ownership is decided
+  // by resolving the index file through each mount, not by the mirror prefix
+  // alone: a mount whose `from` does not contain `docs/README.md` cannot write
+  // that path, however plausible its `to` prefix looks.
+  const indexOwners = pins.sources.filter((pin) =>
+    pin.mounts.some((mount) => mountSuppliesRevisionIndex(mount)),
+  );
+  if (indexOwners.length === 0) {
     throw new DocsPinsError(
-      `${DOCS_PIN_FILE} declares no source that owns the revision index (${REVISION_INDEX_MIRROR_PATH})`,
+      `${DOCS_PIN_FILE} declares no source that owns the revision index (${REVISION_INDEX_MIRROR_PATH}); a mount must supply ${REVISION_INDEX_SOURCE_PATH} through its \`from\``,
+    );
+  }
+  if (indexOwners.length > 1) {
+    throw new DocsPinsError(
+      `${DOCS_PIN_FILE} declares ${indexOwners.length} sources that own the revision index (${REVISION_INDEX_MIRROR_PATH}): ${indexOwners
+        .map((pin) => pin.id)
+        .join(", ")}`,
     );
   }
   return pins;
@@ -567,6 +605,23 @@ export type MirrorOwner = {
   readonly id: string;
   readonly mount: DocsMount;
 };
+
+/**
+ * `true` when mapping the corpus revision index through this mount lands
+ * exactly on {@link REVISION_INDEX_MIRROR_PATH}.
+ *
+ * The index file lives at {@link REVISION_INDEX_SOURCE_PATH} (`docs/README.md`)
+ * in every corpus, so only a mount whose `from` actually contains that file can
+ * write the mirror's revision index. Comparing mirror prefixes alone would let
+ * `mounts: [{ from: "docs/decisions", to: "" }]` claim ownership of a path it
+ * can never supply.
+ */
+export function mountSuppliesRevisionIndex(mount: DocsMount): boolean {
+  return (
+    mirrorPathFor(REVISION_INDEX_SOURCE_PATH, mount) ===
+    REVISION_INDEX_MIRROR_PATH
+  );
+}
 
 /**
  * Resolve the source that owns a mirror-relative path.

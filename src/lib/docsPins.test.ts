@@ -21,6 +21,7 @@ import {
   assertSourcePublishedBand,
   mirrorPathFor,
   mirrorPathsOutsideMounts,
+  mountSuppliesRevisionIndex,
   parseDocsManifest,
   parseDocsPinSet,
   selectConsumedPaths,
@@ -169,6 +170,44 @@ describe("parseDocsPinSet", () => {
         sources: [{ ...base.sources[0], published: { min: 5, max: 2 } }],
       }),
     ).toThrow(/must not exceed/u);
+  });
+
+  test("rejects a mount that writes the index prefix without supplying the index file", () => {
+    const base = validPinSet();
+    // `docs/decisions → ""` owns the `docs/` mirror prefix but can never write
+    // docs/README.md: mapping the corpus revision index (`docs/README.md`)
+    // through that mount yields null, so ownership must fail closed.
+    expect(() =>
+      parseDocsPinSet({
+        schema: 2,
+        sources: [
+          {
+            ...base.sources[0],
+            mounts: [{ from: "docs/decisions", to: "" }],
+          },
+        ],
+      }),
+    ).toThrow(/no source that owns the revision index/u);
+  });
+});
+
+describe("mountSuppliesRevisionIndex", () => {
+  test("only a mount whose `from` contains the corpus revision index supplies it", () => {
+    // The canonical bitty-docs mount maps docs/README.md to itself.
+    expect(mountSuppliesRevisionIndex({ from: "docs", to: "" })).toBe(true);
+    // A nested `from` cannot reach the index file itself.
+    expect(mountSuppliesRevisionIndex({ from: "docs/decisions", to: "" })).toBe(
+      false,
+    );
+    // The repository root mounts `docs/` at the mirror root, not the index.
+    expect(mountSuppliesRevisionIndex({ from: ".", to: "" })).toBe(false);
+    expect(
+      mountSuppliesRevisionIndex({ from: ".", to: "projects/bitty" }),
+    ).toBe(false);
+    // A remapped mount publishes the index under its own prefix.
+    expect(
+      mountSuppliesRevisionIndex({ from: "docs", to: "projects/bitty" }),
+    ).toBe(false);
   });
 });
 

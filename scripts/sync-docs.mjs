@@ -30,7 +30,6 @@ import {
   cleanupSnapshot,
   collectConsumedFiles,
   hashMapOf,
-  isLegacyPin,
   materializeSnapshot,
   migrateLegacyPin,
   nowIso,
@@ -51,6 +50,8 @@ import {
   assertNoDuplicateMirrorPaths,
   assertNoSourceFailures,
   assertPublishedUnderMounts,
+  assertSourcePublishedBand,
+  isLegacyPin,
   mountForMirrorPath,
   parseDocsManifest,
   parseDocsPinSet,
@@ -77,7 +78,14 @@ async function loadCommittedPins() {
     console.log(
       "migrating the legacy flat pin to schema 2 (bitty-website#98) ...",
     );
-    return { pins: migrateLegacyPin(raw, { min: 0, max: 0 }), migrated: true };
+    // Re-validate the migration through the schema authority before use: the
+    // hand-built shape must satisfy the same parser as every other pin read.
+    // The migration has no reviewed band yet (it establishes the observed one),
+    // so the band gate below skips this run.
+    return {
+      pins: parseDocsPinSet(migrateLegacyPin(raw, { min: 0, max: 0 })),
+      migrated: true,
+    };
   }
   return { pins: parseDocsPinSet(raw), migrated: false };
 }
@@ -267,6 +275,35 @@ async function main() {
       }
     }
     assertNoSourceFailures(lossFailures);
+
+    // #98 §3.4, same gate as `docs:check`, same helper and message: the sync
+    // path must refuse to write a pin whose observed publish count left the
+    // reviewed band, instead of leaving the failure to the next docs-check.
+    // A migration run has no reviewed band yet (it records the observed one),
+    // so only committed schema-2 pins are gated; every failing source is
+    // collected, and nothing has been written at this point.
+    if (!migrated) {
+      const bandFailures = [];
+      for (const source of staged) {
+        const routes = [
+          ...(publishedRoutesBySource.get(source.pin.id) ?? []),
+        ].sort();
+        const previousRoutes = previousBySource.get(source.pin.id) ?? [];
+        const added = routes.filter((route) => !previousRoutes.includes(route));
+        const removed = previousRoutes.filter(
+          (route) => !routes.includes(route),
+        );
+        try {
+          assertSourcePublishedBand(source.pin, routes.length, {
+            added,
+            removed,
+          });
+        } catch (error) {
+          bandFailures.push({ source: source.pin.id, message: error.message });
+        }
+      }
+      assertNoSourceFailures(bandFailures);
+    }
 
     await replaceMirror(staging, paths.mirrorRoot);
     const manifestChanged = await writeFileIfChanged(

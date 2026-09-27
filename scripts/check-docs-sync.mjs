@@ -30,10 +30,10 @@ import {
   runParityGatesDetailed,
 } from "./lib/docs-source.mjs";
 import {
+  assertMirrorUnderMounts,
   assertNoSourceFailures,
   assertPublishedUnderMounts,
   assertSourcePublishedBand,
-  mirrorPathsOutsideMounts,
   parseDocsManifest,
   sourceIdForMirrorPath,
 } from "../src/lib/docsPins.ts";
@@ -131,16 +131,14 @@ async function main() {
   }
 
   const mirrorFiles = await hashTree(paths.mirrorRoot);
-  // #98 §3.1.5: no mirror file may exist outside every declared mount.
-  const outsideMounts = mirrorPathsOutsideMounts(
-    Object.keys(mirrorFiles),
-    pins,
-  );
-  if (outsideMounts.length > 0) {
-    failures.push({
-      source: "<mirror>",
-      message: `${outsideMounts.length} file(s) outside every declared mount (hand-added?): ${outsideMounts.slice(0, 10).join(", ")}`,
-    });
+  // #98 §3.1.5: no mirror file may exist outside every declared mount. This is
+  // the authority's fail-closed wrapper (one path, no ad-hoc reimplementation
+  // of the predicate), collected like every other source failure so a reviewer
+  // still sees the whole picture in one run.
+  try {
+    assertMirrorUnderMounts(Object.keys(mirrorFiles), pins);
+  } catch (error) {
+    failures.push({ source: "<mirror>", message: error.message });
   }
 
   const publishedRoutesBySource = new Map();
@@ -162,6 +160,14 @@ async function main() {
         if (entry === undefined) {
           throw new SyncError(
             "provenance manifest has no entry for this source; run `just docs-sync`",
+          );
+        }
+        // The manifest must record the same repository the pin names: a rename
+        // or a copy-paste between sources would otherwise pass every
+        // revision/hash comparison for the wrong provenance.
+        if (entry.source !== pin.source) {
+          throw new SyncError(
+            `manifest source "${entry.source}" does not match the pinned source "${pin.source}"; run \`just docs-sync\``,
           );
         }
         const snapshot = await materializeSnapshot({

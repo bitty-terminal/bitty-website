@@ -18,6 +18,7 @@ import {
   buildPublicationRedirectEntries,
   lowestVersion,
   renderEdgeRedirects,
+  renderRedirectEvidence,
   type RedirectEntry,
 } from "./redirects.ts";
 
@@ -236,5 +237,29 @@ describe("renderEdgeRedirects (Cloudflare _redirects budget)", () => {
     ]);
     expect(naive).toHaveLength(99);
     expect(naive.length).toBeGreaterThan(withFlag.length);
+  });
+});
+
+describe("renderRedirectEvidence (deployed provenance key set, #98)", () => {
+  const revisions = {
+    "bitty-docs": "9891949ca20b245375ece9a9015d0f42458fd2b1",
+  };
+
+  test("carries docs_revisions (the pinned-source map) and no scalar docs_revision", () => {
+    const payload = JSON.parse(
+      renderRedirectEvidence([], {
+        docsRevisions: revisions,
+        hostedVersions: ["latest", "stable", "0.1.0"],
+      }),
+    );
+    // The deployed-artifact schema change of #98: one entry per pinned source.
+    expect(Object.keys(payload).sort()).toEqual([
+      "docs_revisions",
+      "hosted_versions",
+      "redirects",
+      "source",
+    ]);
+    expect(payload.docs_revisions).toEqual(revisions);
+    expect("docs_revision" in payload).toBe(false);
   });
 });

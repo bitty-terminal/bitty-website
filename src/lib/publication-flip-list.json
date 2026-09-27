@@ -1,5 +1,5 @@
 {
-  "policy_version": "2026-09-28.4",
+  "policy_version": "2026-09-28.5",
   "note": "Paths that request publication (website_publish: true) but are demoted by the publication policy at the pinned revisions. This is the docs-side frontmatter flip list: the entry's `source` corpus sets website_publish: false (or removes the field) on its path, and the entry is deleted here in the same coordinated change. Shrink-only.",
   "entries": [
     {

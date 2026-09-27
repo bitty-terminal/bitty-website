@@ -49,7 +49,7 @@ import flipListData from "./publication-flip-list.json" with { type: "json" };
 import withholdListData from "./publication-withhold-list.json" with { type: "json" };
 
 /** Policy revision, bumped whenever the rule, the data files, or a bound moves. */
-export const PUBLICATION_POLICY_VERSION = "2026-09-28.4";
+export const PUBLICATION_POLICY_VERSION = "2026-09-28.5";
 
 /** Date the owner decision behind this policy was recorded. */
 export const PUBLICATION_POLICY_DATE = "2026-09-27";
@@ -99,8 +99,9 @@ export const TYPE_AUDIENCE_EXCEPTIONS: readonly {
  * The pre-#98 `25-35` band was a single-source target and it cannot hold once
  * the site aggregates more than one corpus: onboarding `bitty-terminal-docs`
  * alone re-homes 7 published routes to a source that has not landed yet, so
- * the aggregate legitimately reads 21 (bitty-website#98 T5), and it reaches 44
- * once the plugin source lands (T6). The band is therefore re-based to a
+ * the aggregate legitimately reads 21 (bitty-website#98 T5), and it reads 47
+ * once the plugin source lands (T6): bitty-docs 3 + bitty-terminal-docs 18 +
+ * bitty-plugins-docs 26. The band is therefore re-based to a
  * coarse "the site is neither empty nor a corpus dump" bound; the reviewed,
  * attributable gate is the per-source `published.min`/`published.max` band in
  * `src/content/docs-revision.json` (checked by `assertSourcePublishedBand` in

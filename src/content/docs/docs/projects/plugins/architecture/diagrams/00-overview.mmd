@@ -1,0 +1,6 @@
+flowchart LR
+  PLUGIN["Plugin<br/>one VM per ID plus generation<br/>accepted: plugin-platform-rfc"] --> HOST["Extension Host<br/>only executor, mediates privilege<br/>accepted: plugin-platform-rfc"]
+  HOST -.->|"observation only<br/>presentation, never truth"| TRUTH["Terminal Truth<br/>core-owned grid and modes<br/>accepted: plugin-system"]
+  REG["Registry<br/>attestation and index only<br/>accepted: package-followup-rfc"] --> HOST
+  SDK["SDK and Template<br/>scaffold, lint, conformance<br/>accepted: split-decision"] --> PLUGIN
+  PANEL(["Panel Boundary<br/>container accepted, provider draft<br/>ui-extensibility-arch"]) -.-> HOST

@@ -1,0 +1,15 @@
+flowchart LR
+  MANIFEST(["bitty-plugin.toml<br/>validated before code<br/>accepted: plugin-platform-rfc"]) --> GRANT(["Capability Grant<br/>per manifest hash<br/>accepted: plugin-platform-rfc"])
+  GRANT --> VM[["Lua VM<br/>isolated, restricted stdlib<br/>accepted: lua-runtime-rfc"]]
+  DISC(["Discovered<br/>nothing trusted"]) --> FETCH(["Fetched<br/>quarantine"])
+  FETCH --> VER(["Verified<br/>chain H-A plus H-B plus diff"])
+  VER --> STAGE(["Staged<br/>in store, not active"])
+  STAGE --> ACT(["Activated<br/>atomic switch"])
+  ACT --> RET(["Retained<br/>bounded rollback"])
+  CHAIN(["Integrity Chain<br/>framing, checksum, binding<br/>accepted: package-lifecycle-rfc"]) --> VER
+  TRUST(["Publisher Trust<br/>V-A pin, V-B TOFU, V-C signed<br/>accepted: package-lifecycle-rfc"]) --> VER
+  LIFE(["Declared to Disposed<br/>generation N plus 1 reload<br/>accepted: plugin-platform-rfc"]) --> GEN(["Generation<br/>owns timers, tasks, queues"])
+  GEN --> VM
+  VM -.->|"subscribe"| EV(["Event Pipeline<br/>DropOldest default<br/>accepted: plugin-platform-rfc"])
+  VM --> STORE(["Plugin Store<br/>survives disposal<br/>accepted: host-runtime-rfc"])
+  SAFE(["bitty safe<br/>skips third-party"]) -.-> VM

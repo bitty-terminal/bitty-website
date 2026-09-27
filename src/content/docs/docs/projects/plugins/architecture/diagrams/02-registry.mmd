@@ -1,0 +1,15 @@
+flowchart LR
+  OFF(["Official Entry<br/>registry plus official plus pin<br/>accepted: onboarding"]) --> IDX(["Index Snapshot<br/>signed, versioned<br/>accepted: package-followup-rfc"])
+  COM(["Community Entry<br/>metadata only, never pinned<br/>accepted: onboarding"]) --> IDX
+  IDX --> CLIENT["Client Verify<br/>signatures, freshness, H-A, H-B, diff<br/>accepted: package-followup-rfc"]
+  KEYS["Key Directory<br/>rotation, revocation, freshness<br/>accepted: package-followup-rfc"] --> CLIENT
+  SRC(["Source Classes<br/>bundled, registry, git, local-path<br/>accepted: package-followup-rfc"]) --> DISC2(["Discovered"])
+  RES["Resolver<br/>deterministic, one version per ID<br/>accepted: package-followup-rfc"] --> LOCK(["Lockfile<br/>H-A, H-B, H-C<br/>accepted: package-lifecycle-rfc"])
+  LOCK --> CHAIN2(["Integrity Chain"])
+  TPL["Plugin Template<br/>scaffold plus CI<br/>accepted: split-decision"] --> MAN2(["bitty-plugin.toml"])
+  DEFS["LuaLS Definitions<br/>typed API surface<br/>accepted: split-decision"] --> VM2[["Lua VM"]]
+  LINT["Manifest Lint<br/>schema plus capability review<br/>accepted: split-decision"] --> MAN2
+  MOCK["Mock Host<br/>conformance evidence only"] -.-> VM2
+  CTR["Panel Container<br/>generic plus Event Bus<br/>accepted: split-decision"] -.->|"container accepted<br/>provider open"| PROV(["Panel Provider<br/>RFC-OQ-2, 3, 5<br/>draft: ui-extensibility-arch"])
+  PROV -.-> MODES(["Presentation Modes<br/>runtime properties<br/>draft: ecosystem-model"])
+  SLOTS(["Declarative Slots<br/>v1 mount and update only<br/>accepted: api-v1"]) --> CTR

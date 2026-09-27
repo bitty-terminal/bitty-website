@@ -44,7 +44,7 @@ export const PILLARS: readonly Pillar[] = [
     claim: "Designed to be configured and extended in Lua, behind capabilities",
     detail:
       "The target configuration and extension design uses Lua with XDG roots and declared capabilities, while the host remains responsible for enforcement; the plugin-system document calls this product direction, not shipped behavior.",
-    href: "/docs/latest/projects/bitty/extensibility/plugin-system/",
+    href: "/docs/latest/projects/plugins/extensibility/plugin-system/",
     linkText: "Read the plugin system",
   },
 ];

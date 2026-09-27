@@ -99,8 +99,9 @@ audit.
   `latest`, and `stable` aliases). Its source lives in
   `bitty-terminal-docs/architecture/interactive/`; this repository consumes it
   through the mirror pin in `src/content/docs-revision.json`, which currently
-  materialises `bitty-terminal/bitty-docs@9891949c` (the revision in which that
-  corpus is vendored). The mirror file is
+  materialises `bitty-terminal/bitty-docs@9891949c` — the revision that still
+  carries the terminal-platform corpus, later split out to
+  `bitty-terminal-docs`. The mirror file is
   `src/content/docs/docs/projects/bitty/architecture/interactive/index.html`.
 - **Accepted references**: two bundled PNGs reached by relative `src`:
   `assets/bitty-icon.png` (23,391 bytes, line 23) and `assets/hero.png`

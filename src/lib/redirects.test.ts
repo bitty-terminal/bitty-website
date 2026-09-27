@@ -10,9 +10,11 @@ import { describe, expect, test } from "bun:test";
 
 import { nearestPublishedAncestor } from "./docsRoutes.ts";
 import {
+  CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT,
   PUBLICATION_REDIRECT_REASON,
   buildPublicationRedirectEntries,
   lowestVersion,
+  renderEdgeRedirects,
 } from "./redirects.ts";
 
 describe("nearestPublishedAncestor", () => {
@@ -102,6 +104,43 @@ describe("lowestVersion", () => {
   test("fails closed without a concrete version", () => {
     expect(() => lowestVersion(["latest", "stable"])).toThrow(
       /no concrete semver/u,
+    );
+  });
+});
+
+describe("renderEdgeRedirects (Cloudflare _redirects budget)", () => {
+  const expanded = (reason: string, index: number) => ({
+    from: `/docs/latest/legacy-${index}/`,
+    to: `/docs/latest/legacy-target-${index}/`,
+    status: 301 as const,
+    reason,
+    effective_version: "0.1.0",
+    version: "0.1.0",
+  });
+
+  test("a publication demotion is an exact rule only", () => {
+    const output = renderEdgeRedirects(
+      [
+        expanded(PUBLICATION_REDIRECT_REASON, 1),
+        expanded("legacy subtree move", 2),
+      ],
+      {},
+    );
+    const lines = output.split("\n");
+    expect(lines.filter((line) => line.includes("legacy-1"))).toEqual([
+      "/docs/latest/legacy-1/ /docs/latest/legacy-target-1/ 301",
+    ]);
+    // A subtree move still needs the wildcard form: it carries descendants.
+    expect(lines.filter((line) => line.includes("legacy-2/*"))).toHaveLength(1);
+  });
+
+  test("fails closed when the dynamic budget would be exceeded", () => {
+    const rules = Array.from(
+      { length: CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT + 1 },
+      (_, i) => expanded("legacy subtree move", i),
+    );
+    expect(() => renderEdgeRedirects(rules, {})).toThrow(
+      /limit of 100 \(deployment code 100324\)/,
     );
   });
 });

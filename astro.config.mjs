@@ -197,6 +197,14 @@ export default defineConfig({
     },
   },
   markdown: {
+    // Dual code theme (CTX-0049, website#95): Shiki emits both palettes as
+    // custom properties and global.css picks the one that matches the
+    // document colour scheme. `one-light`/`one-dark-pro` sit closest to the
+    // cool neutral + vermilion palette; the previous single `github-dark`
+    // theme painted a dark block onto the pale page.
+    shikiConfig: {
+      themes: { light: "one-light", dark: "one-dark-pro" },
+    },
     processor: satteri({
       mdastPlugins: [
         docsHeadingsMdastPlugin(),

@@ -18,9 +18,11 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
+  auditDocsShell,
   collectRenderedPages,
   findBrokenInternalLinks,
   findDisallowedAssetReferences,
+  sidebarListDepth,
 } from "../src/lib/a11yAudit.ts";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -206,6 +208,23 @@ async function auditCss() {
       fail(`theme css: ${label} (${token}) missing`);
     }
   }
+
+  // CTX-0050 layout guard: the article must own its page-grid column. When
+  // `.docs-article` is `display: contents`, its children become grid items of
+  // `.docs-layout` and the tall sidebar drawer sizes the header's row, so the
+  // article body only starts below the drawer (measured 1280x900: header
+  // bottom 356, prose top 1091 — 735px of empty space).
+  if (/\.docs-article\s*\{[^}]*display:\s*contents/iu.test(css)) {
+    fail(
+      "docs shell css: .docs-article is display: contents (the sidebar row grows the header and drops the body)",
+    );
+  } else if (
+    /\.docs-layout\s*>\s*\.docs-article\s*\{[^}]*grid-column\s*:/iu.test(css)
+  ) {
+    pass("docs shell css: article owns its page-grid column");
+  } else {
+    fail("docs shell css: .docs-layout > .docs-article is not placed");
+  }
 }
 
 async function auditFavicons() {
@@ -246,6 +265,21 @@ if (!(await exists(dist))) {
       strictHeadings: page.path === join(dist, "index.html"),
       passthrough: page.passthrough,
     });
+    // CTX-0050 docs shell: the one-h1 rule above cannot see a duplicated
+    // title, an extra aria-current, or a deeper-than-two-layer sidebar, so
+    // the shell contract is asserted separately on every rendered docs page.
+    if (!page.passthrough && page.relativePath.startsWith("docs/")) {
+      const defects = auditDocsShell(html);
+      if (defects.length === 0) {
+        pass(
+          `${name}: docs shell (single title, one aria-current, ${sidebarListDepth(html)}-layer sidebar, breadcrumb)`,
+        );
+      } else {
+        for (const defect of defects) {
+          fail(`${name}: docs shell: ${defect.detail}`);
+        }
+      }
+    }
     if (!page.passthrough) {
       // Site-internal doc links must resolve to a rendered page. Redirect
       // stubs count as shipped routes. Upstream passthrough apps own their

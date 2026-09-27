@@ -1,0 +1,120 @@
+---
+/**
+ * Docs previous/next pager (CTX-0050, website#96).
+ *
+ * Neighbours come from the sidebar reading order — groups in manifest order,
+ * entries by `sidebar_order` then label — via `pagerFor`
+ * (`../lib/docsSidebar.ts`), so the pager can never disagree with the
+ * sidebar about what comes next. Links are ordinary anchors (keyboard
+ * reachable, 44px touch target) and each one spells out the target page, so
+ * the accessible name is "Previous <page title>" / "Next <page title>"
+ * rather than a bare direction word.
+ *
+ * A page that is not part of the navigation model (for example an entry
+ * excluded from publication) renders no pager instead of a guessed
+ * neighbour.
+ */
+import { getCollection } from "astro:content";
+import { sidebarEntriesFrom } from "../lib/docsEntries.ts";
+import {
+  buildNavGroups,
+  hrefFor,
+  pagerFor,
+  routeLabel,
+} from "../lib/docsSidebar.ts";
+
+type Props = {
+  /** Raw version route segment, e.g. `latest`. */
+  version: string;
+  /** Canonical slug of the rendered page (`""` for the revision index). */
+  currentSlug: string;
+};
+
+const { version, currentSlug } = Astro.props as Props;
+
+const entries = sidebarEntriesFrom(await getCollection("docs"));
+const { previous, next } = pagerFor(
+  buildNavGroups(entries, currentSlug),
+  currentSlug,
+);
+---
+
+{(previous !== null || next !== null) && (
+  <nav class="docs-pager" aria-label="Pagination">
+    {previous !== null && (
+      <a
+        class="docs-pager-link docs-pager-prev"
+        href={hrefFor(version, previous.slug)}
+        rel="prev"
+      >
+        <span class="docs-pager-hint">Previous</span>
+        <span class="docs-pager-target">
+          {routeLabel(previous.slug, previous.title)}
+        </span>
+      </a>
+    )}
+    {next !== null && (
+      <a
+        class="docs-pager-link docs-pager-next"
+        href={hrefFor(version, next.slug)}
+        rel="next"
+      >
+        <span class="docs-pager-hint">Next</span>
+        <span class="docs-pager-target">
+          {routeLabel(next.slug, next.title)}
+        </span>
+      </a>
+    )}
+  </nav>
+)}
+
+<style>
+  .docs-pager {
+    display: grid;
+    gap: 1rem;
+    margin-block-start: 2.5rem;
+    padding-block-start: 1.5rem;
+    border-block-start: 1px solid var(--line);
+  }
+
+  @media (width >= 40rem) {
+    .docs-pager {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .docs-pager-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-block-size: var(--touch-target);
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--card);
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .docs-pager-link:hover {
+    border-color: var(--indigo);
+    color: var(--indigo-deep);
+  }
+
+  .docs-pager-next {
+    text-align: end;
+  }
+
+  .docs-pager-hint {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .docs-pager-target {
+    font-size: var(--text-sm);
+    font-weight: 700;
+  }
+</style>

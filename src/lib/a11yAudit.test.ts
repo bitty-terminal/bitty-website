@@ -15,10 +15,15 @@ import { join } from "node:path";
 import {
   BUNDLED_VECTOR_EXTENSIONS,
   RASTER_EXTENSIONS,
+  auditDocsShell,
   classifyAssetReference,
   collectRenderedPages,
   findBrokenInternalLinks,
   findDisallowedAssetReferences,
+  normalizedText,
+  pageAriaCurrentCount,
+  repeatsPageTitle,
+  sidebarListDepth,
 } from "./a11yAudit.ts";
 
 const MIXED_CDN_LOCAL_SRCSET = [
@@ -240,5 +245,82 @@ describe("a11y internal dead links", () => {
       KNOWN,
     );
     expect(broken).toEqual([]);
+  });
+});
+
+describe("a11y docs shell audit", () => {
+  const SHELL = [
+    "<h1>ADR 0006 - os.getenv Exposure and Bitty Module Policy</h1>",
+    '<nav class="docs-breadcrumb" aria-label="Breadcrumb"><ol><li>Concepts</li></ol></nav>',
+    '<nav class="docs-sidebar" aria-label="Documentation">',
+    "<ul>",
+    '<li class="docs-nav-group"><details class="docs-nav-group-details" open><summary>Concepts</summary><ul>',
+    '<li class="docs-nav-entry"><a href="/docs/latest/decisions/adrs/adr-0006-os-env-policy/" aria-current="page">os.getenv Exposure and Bitty Module Policy</a></li>',
+    "</ul></details></li>",
+    "</ul>",
+    "</nav>",
+    '<article class="prose"><h2 id="status">Status</h2><p>Accepted.</p></article>',
+  ].join("\n");
+
+  test("accepts a compliant docs shell", () => {
+    expect(auditDocsShell(SHELL)).toEqual([]);
+    expect(sidebarListDepth(SHELL)).toBe(2);
+    expect(pageAriaCurrentCount(SHELL)).toBe(1);
+    expect(repeatsPageTitle(SHELL)).toBe(false);
+  });
+
+  test("flags an article body that repeats the page title", () => {
+    const echoed = SHELL.replace(
+      '<h2 id="status">Status</h2>',
+      "<h2>ADR 0006 - os.getenv Exposure and Bitty Module Policy</h2>",
+    );
+    expect(repeatsPageTitle(echoed)).toBe(true);
+    expect(auditDocsShell(echoed).map((defect) => defect.kind)).toContain(
+      "title-echo",
+    );
+  });
+
+  test("flags a second page-wide aria-current and a third list level", () => {
+    const doubled = SHELL.replace(
+      '<a href="/docs/latest/decisions/adrs/adr-0006-os-env-policy/" aria-current="page">',
+      '<a href="/docs/latest/" aria-current="page">Docs</a><a href="/docs/latest/decisions/adrs/adr-0006-os-env-policy/" aria-current="page">',
+    );
+    // A third list level nested inside the second one, which is the shape the
+    // two-layer ceiling forbids.
+    const nested = doubled.replace(
+      "</a></li>",
+      '</a><ul><li class="docs-nav-entry"><a href="/docs/latest/decisions/">nested</a></li></ul></li>',
+    );
+    const kinds = auditDocsShell(nested).map((defect) => defect.kind);
+    expect(kinds).toContain("aria-current");
+    expect(sidebarListDepth(nested)).toBe(3);
+    expect(kinds).toContain("sidebar-depth");
+  });
+
+  test("flags a missing breadcrumb landmark", () => {
+    const bare = SHELL.replace(
+      'aria-label="Breadcrumb"',
+      'aria-label="Sections"',
+    );
+    expect(auditDocsShell(bare).map((defect) => defect.kind)).toContain(
+      "breadcrumb",
+    );
+  });
+
+  // Invariant for the comparison text (CTX-0050): the tag removal runs to a
+  // fixed point, because CodeQL's js/incomplete-multi-character-sanitization
+  // (high) fires on the single-pass form and that alert fails the required
+  // CodeQL check. This test documents the invariant; it is NOT a guard that
+  // fails when the loop is reverted — measured, the single pass and the loop
+  // agree on every input tried ({a,<,>} strings up to length 8, and the 422
+  // built HTML files), so the CI CodeQL check is what actually pins the loop.
+  // A lone `<` with no `>` also survives; the value is only ever compared as
+  // text and never inserted into a document.
+  test("removes nested angle brackets to a fixed point", () => {
+    const nested = "<<script>alert(1)<</script>";
+    expect(normalizedText(nested)).toBe("alert(1)");
+    expect(normalizedText(nested)).not.toContain("<");
+    expect(normalizedText(normalizedText(nested))).toBe(normalizedText(nested));
+    expect(normalizedText("<h2>  Status </h2>")).toBe("Status");
   });
 });

@@ -1,0 +1,100 @@
+---
+/**
+ * Docs breadcrumb trail (CTX-0050, website#96).
+ *
+ * The trail is derived from the canonical route, never from corpus
+ * frontmatter: the docs index, the reader-intent group, then every route
+ * prefix up to the page being read (`../lib/docsSidebar.ts`,
+ * `buildBreadcrumbs`). Intermediate steps link only when a published page
+ * exists at that route, so the trail never points at a 404; the current step
+ * is plain text and carries no `aria-current`, keeping the page's single
+ * `aria-current="page"` on the sidebar link (website#78).
+ *
+ * Rendered above the article title inside a labelled `<nav>` landmark
+ * (`<ol>` steps, separators supplied by CSS so they are not announced).
+ */
+import { buildBreadcrumbs, type BreadcrumbItem } from "../lib/docsSidebar.ts";
+
+type Props = {
+  /** Raw version route segment, e.g. `latest`. */
+  version: string;
+  /** Canonical slug of the rendered page (`""` for the revision index). */
+  slug: string;
+  /** Canonical title per published slug (labels only; links come from routes). */
+  titles: ReadonlyMap<string, string>;
+};
+
+const { version, slug, titles } = Astro.props as Props;
+
+const crumbs: readonly BreadcrumbItem[] = buildBreadcrumbs({
+  version,
+  slug,
+  titles,
+});
+---
+
+<nav class="docs-breadcrumb" aria-label="Breadcrumb">
+  <ol>
+    {crumbs.map((crumb) => (
+      <li>
+        {crumb.href === null ? (
+          <span class="docs-breadcrumb-text">{crumb.label}</span>
+        ) : (
+          <a href={crumb.href}>{crumb.label}</a>
+        )}
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<style>
+  .docs-breadcrumb {
+    min-width: 0;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+
+  .docs-breadcrumb ol {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Separator is decoration: a CSS marker is never announced by a screen
+   * reader, so the trail reads as the step names alone. */
+  .docs-breadcrumb li + li::before {
+    content: "/";
+    margin-inline-end: 0.5rem;
+    color: var(--line);
+  }
+
+  .docs-breadcrumb a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: var(--touch-target);
+    color: var(--muted);
+    text-decoration: none;
+  }
+
+  .docs-breadcrumb a:hover {
+    color: var(--indigo-deep);
+    text-decoration: underline;
+  }
+
+  .docs-breadcrumb-text {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: var(--touch-target);
+    color: var(--muted);
+  }
+
+  .docs-breadcrumb li:last-child .docs-breadcrumb-text {
+    color: var(--ink);
+    font-weight: 700;
+  }
+</style>

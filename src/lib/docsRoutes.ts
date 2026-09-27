@@ -42,7 +42,8 @@ export type VersionedDocsRoute = {
 };
 
 const CATEGORY_PATTERN = /^[a-z][a-z0-9-]*$/;
-const ALLOWED_CATEGORIES = new Set<string>([
+/** Frontmatter categories the documentation schema declares routable. */
+export const ALLOWED_CATEGORIES: ReadonlySet<string> = new Set<string>([
   "architecture",
   "configuration",
   "decisions",
@@ -70,7 +71,20 @@ const ALLOWED_CATEGORIES = new Set<string>([
 // Legacy filesystem directories not in the frontmatter category enum but present
 // in the pinned corpus (for example `docs/interfaces/`). The router preserves the
 // filesystem segment verbatim per RM-1, so they must map rather than fail the build.
-const LEGACY_CATEGORIES = new Set<string>(["interfaces"]);
+export const LEGACY_CATEGORIES: ReadonlySet<string> = new Set<string>([
+  "interfaces",
+]);
+
+/**
+ * Every category a route may start with (frontmatter enum plus legacy
+ * filesystem directories). Consumers that must stay exhaustive over the
+ * routable space — the navigation manifest in `./docsNavGroups.ts` — read
+ * this set instead of restating the list.
+ */
+export const ROUTABLE_CATEGORIES: ReadonlySet<string> = new Set<string>([
+  ...ALLOWED_CATEGORIES,
+  ...LEGACY_CATEGORIES,
+]);
 
 function slugifySegment(segment: string): string {
   const slug = githubSlug(segment);

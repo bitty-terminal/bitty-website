@@ -20,6 +20,13 @@
  * An unknown route fails closed instead of silently disappearing from the
  * sidebar.
  *
+ * A topic segment is not necessarily a top-level route category: a corpus may
+ * keep `sdk`, `packaging`, or `runtime` as directories beneath its project
+ * mount, and those names must group too, or the pages fall back to the
+ * container group. That is why {@link NAV_GROUPS} owns every topic segment a
+ * consumed corpus can present (checked exhaustively against the mirror by
+ * `./docsNavGroups.test.ts`), not only the top-level categories.
+ *
  * Category -> group is a presentation decision owned here; moving a topic
  * between groups is a one-line change in `NAV_GROUPS`.
  */
@@ -33,13 +40,15 @@ export type NavGroup = {
   readonly id: NavGroupId;
   /** Rendered top-level label. */
   readonly label: string;
-  /** Route categories owned by this group. */
+  /** Route categories and project topic segments owned by this group. */
   readonly categories: readonly string[];
 };
 
 /**
  * The six reader-intent groups, in rendering order. Every entry in
- * `ROUTABLE_CATEGORIES` appears in exactly one group's `categories`.
+ * `ROUTABLE_CATEGORIES` appears in exactly one group's `categories`, and so
+ * does every topic segment a consumed corpus presents below its project mount
+ * (the exhaustiveness check in `./docsNavGroups.test.ts` reads the mirror).
  */
 export const NAV_GROUPS: readonly NavGroup[] = [
   {
@@ -50,7 +59,13 @@ export const NAV_GROUPS: readonly NavGroup[] = [
   {
     id: "concepts",
     label: "Concepts",
-    categories: ["architecture", "decisions"],
+    categories: [
+      "architecture",
+      "decisions",
+      // Plugin host runtime topics (`projects/plugins/runtime/...`): how the
+      // platform executes plugins is design, not a reference lookup.
+      "runtime",
+    ],
   },
   {
     id: "using",
@@ -68,7 +83,13 @@ export const NAV_GROUPS: readonly NavGroup[] = [
   {
     id: "extending",
     label: "Extending",
-    categories: ["extensibility", "interfaces"],
+    categories: [
+      "extensibility",
+      "interfaces",
+      // Packaging/distribution topics (`projects/plugins/packaging/...`): how a
+      // plugin author ships a plugin, grouped with the extension surfaces.
+      "packaging",
+    ],
   },
   {
     id: "reference",
@@ -80,6 +101,9 @@ export const NAV_GROUPS: readonly NavGroup[] = [
       "requirements",
       "security",
       "specifications",
+      // Plugin SDK topics (`projects/plugins/sdk/...`): the author-facing API
+      // surface, a reference lookup like `reference/`.
+      "sdk",
     ],
   },
   {

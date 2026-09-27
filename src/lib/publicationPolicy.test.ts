@@ -468,10 +468,11 @@ describe("fail closed", () => {
     // attributable gate is the per-source `published.min/max` band in the pin
     // entry. The coarse bound must still admit the migration's smallest
     // legitimate aggregate (21 published after onboarding
-    // `bitty-terminal-docs`) and its end state (44 once the plugin source
-    // lands), so a shrink or a re-tightening here is a reviewed change.
+    // `bitty-terminal-docs`) and the measured state once `bitty-plugins-docs`
+    // lands (47 = bitty-docs 3 + bitty-terminal-docs 18 + bitty-plugins-docs
+    // 26), so a shrink or a re-tightening here is a reviewed change.
     expect(PUBLISHED_PAGE_MIN).toBeLessThanOrEqual(21);
-    expect(PUBLISHED_PAGE_MAX).toBeGreaterThanOrEqual(44);
+    expect(PUBLISHED_PAGE_MAX).toBeGreaterThanOrEqual(47);
   });
 
   test("a stale allow-list entry aborts the policy", () => {

@@ -11,7 +11,9 @@
  * - shrink-only data files: the allow-list path set is pinned exactly, so
  *   adding an entry needs a reviewed edit here, and no governance corpus path
  *   may ever be allow-listed;
- * - the published set stays inside the 25-35 page band of the owning issue.
+ * - the published set stays inside the coarse aggregate sanity bound, while the
+ *   operative, attributable gate is each source's `published.min/max` band in
+ *   the pin entry (#98 OQ-2 retired the single-source 25-35 page target).
  *
  * No host or checkout path is embedded: the mirror is located relative to
  * this module.

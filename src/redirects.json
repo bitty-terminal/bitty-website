@@ -56,6 +56,62 @@
     "effective_version": "0.1.0"
   },
   {
+    "old": "/docs/projects/bitty/extensibility/package-management/",
+    "new": "/docs/",
+    "status": 301,
+    "descendants": false,
+    "reason": "bitty-website#98 multi-source move: /docs/projects/bitty/extensibility/package-management/ -> /docs/projects/plugins/extensibility/package-management/ (bitty-plugins-docs); interim target /docs/ is the nearest published ancestor until that source lands",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/projects/bitty/extensibility/plugin-system/",
+    "new": "/docs/",
+    "status": 301,
+    "descendants": false,
+    "reason": "bitty-website#98 multi-source move: /docs/projects/bitty/extensibility/plugin-system/ -> /docs/projects/plugins/extensibility/plugin-system/ (bitty-plugins-docs); interim target /docs/ is the nearest published ancestor until that source lands",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/projects/bitty/specifications/plugin-api-v1-lua-surface-rfc/",
+    "new": "/docs/",
+    "status": 301,
+    "descendants": false,
+    "reason": "bitty-website#98 multi-source move: /docs/projects/bitty/specifications/plugin-api-v1-lua-surface-rfc/ -> /docs/projects/plugins/sdk/plugin-api-v1-lua-surface-rfc/ (bitty-plugins-docs); interim target /docs/ is the nearest published ancestor until that source lands",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/projects/bitty/specifications/plugin-host-runtime-rfc/",
+    "new": "/docs/",
+    "status": 301,
+    "descendants": false,
+    "reason": "bitty-website#98 multi-source move: /docs/projects/bitty/specifications/plugin-host-runtime-rfc/ -> /docs/projects/plugins/runtime/plugin-host-runtime-rfc/ (bitty-plugins-docs); interim target /docs/ is the nearest published ancestor until that source lands",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/projects/bitty/specifications/plugin-platform-rfc/",
+    "new": "/docs/",
+    "status": 301,
+    "descendants": false,
+    "reason": "bitty-website#98 multi-source move: /docs/projects/bitty/specifications/plugin-platform-rfc/ -> /docs/projects/plugins/specifications/plugin-platform-rfc/ (bitty-plugins-docs); interim target /docs/ is the nearest published ancestor until that source lands",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/projects/bitty/specifications/plugin-reuse-and-providers/",
+    "new": "/docs/",
+    "status": 301,
+    "descendants": false,
+    "reason": "bitty-website#98 multi-source move: /docs/projects/bitty/specifications/plugin-reuse-and-providers/ -> /docs/projects/plugins/packaging/plugin-reuse-and-providers/ (bitty-plugins-docs); interim target /docs/ is the nearest published ancestor until that source lands",
+    "effective_version": "0.1.0"
+  },
+  {
+    "old": "/docs/projects/bitty/specifications/ui-extensibility-architecture/",
+    "new": "/docs/",
+    "status": 301,
+    "descendants": false,
+    "reason": "bitty-website#98 multi-source move: /docs/projects/bitty/specifications/ui-extensibility-architecture/ -> /docs/projects/plugins/architecture/ui-extensibility-architecture/ (bitty-plugins-docs); interim target /docs/ is the nearest published ancestor until that source lands",
+    "effective_version": "0.1.0"
+  },
+  {
     "old": "/docs/reference/",
     "new": "/docs/projects/bitty/reference/",
     "status": 301,

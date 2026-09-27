@@ -10,7 +10,9 @@ import { describe, expect, test } from "bun:test";
 
 import {
   PublishedRouteLossError,
+  aggregatePublishedRoutes,
   assertNoPublishedRouteLoss,
+  assertNoPublishedRouteLossBySource,
   routeLossReport,
   withRouteLossGate,
 } from "./docsAggregation.ts";
@@ -78,6 +80,59 @@ describe("assertNoPublishedRouteLoss", () => {
   test("an unchanged published set never fails", () => {
     const routes = ["/docs/", "/docs/a/"];
     expect(() => assertNoPublishedRouteLoss(routes, routes, [])).not.toThrow();
+  });
+});
+
+describe("aggregatePublishedRoutes", () => {
+  test("unions every source's routes without duplicates, sorted", () => {
+    expect(
+      aggregatePublishedRoutes([
+        ["/docs/b/", "/docs/"],
+        ["/docs/", "/docs/a/"],
+      ]),
+    ).toEqual(["/docs/", "/docs/a/", "/docs/b/"]);
+  });
+});
+
+describe("assertNoPublishedRouteLossBySource (cross-source moves, #98 T5)", () => {
+  const previousBySource = () =>
+    new Map<string, readonly string[]>([
+      ["bitty-docs", ["/docs/", "/docs/projects/bitty/architecture/overview/"]],
+    ]);
+
+  test("a route re-homed to another source keeps its URL and is not a loss", () => {
+    // bitty-docs drops the route, bitty-terminal-docs publishes the same URL:
+    // the aggregate still publishes it, so the migration loses nothing.
+    const nextBySource = [
+      ["/docs/"],
+      ["/docs/projects/bitty/architecture/overview/"],
+    ];
+    expect(() =>
+      assertNoPublishedRouteLossBySource(previousBySource(), nextBySource, []),
+    ).not.toThrow();
+  });
+
+  test("a route no source publishes any more is a loss, attributed to its old source", () => {
+    const nextBySource = [["/docs/"]];
+    let caught: unknown = null;
+    try {
+      assertNoPublishedRouteLossBySource(previousBySource(), nextBySource, []);
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBeInstanceOf(PublishedRouteLossError);
+    expect((caught as PublishedRouteLossError).uncovered).toEqual([
+      "bitty-docs: /docs/projects/bitty/architecture/overview/",
+    ]);
+  });
+
+  test("a lost route covered by a redirect to a published target passes", () => {
+    const nextBySource = [["/docs/"]];
+    expect(() =>
+      assertNoPublishedRouteLossBySource(previousBySource(), nextBySource, [
+        redirect("/docs/projects/bitty/architecture/overview/", "/docs/"),
+      ]),
+    ).not.toThrow();
   });
 });
 

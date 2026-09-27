@@ -95,6 +95,54 @@ export function assertNoPublishedRouteLoss(
   }
 }
 
+/** Union of every source's version-less published routes, sorted. */
+export function aggregatePublishedRoutes(
+  routesBySource: Iterable<readonly string[]>,
+): readonly string[] {
+  const union = new Set<string>();
+  for (const routes of routesBySource) {
+    for (const route of routes) union.add(route);
+  }
+  return [...union].sort();
+}
+
+/**
+ * Cross-source published-route regression gate (#98 task T5).
+ *
+ * {@link assertNoPublishedRouteLoss} compares one previous set with one next
+ * set. Onboarding a corpus moves routes BETWEEN sources while keeping the URL
+ * (measured: 17 of the 27 published routes are re-homed from `bitty-docs` to
+ * `bitty-terminal-docs` at the same path), so a per-source comparison would
+ * report them as lost even though the site still serves them. This wrapper
+ * compares against the AGGREGATE published set of `next` and still attributes
+ * a real loss to the source that used to publish it: a route is lost only when
+ * no source publishes it any more.
+ *
+ * @param previousBySource - committed per-source published routes
+ * @param nextBySource - just-computed per-source published routes (any iterable
+ *   of route lists; the union is derived here)
+ * @throws {@link PublishedRouteLossError} naming every uncovered route,
+ *   prefixed with the source id that used to publish it
+ */
+export function assertNoPublishedRouteLossBySource(
+  previousBySource: ReadonlyMap<string, readonly string[]>,
+  nextBySource: Iterable<readonly string[]>,
+  redirects: readonly RedirectEntry[],
+): void {
+  const nextUnion = aggregatePublishedRoutes(nextBySource);
+  const nextSet = new Set(nextUnion);
+  const uncovered: string[] = [];
+  for (const [id, previousRoutes] of previousBySource) {
+    const lost = previousRoutes.filter((route) => !nextSet.has(route));
+    if (lost.length === 0) continue;
+    const report = routeLossReport(lost, nextUnion, redirects);
+    for (const route of report.uncovered) uncovered.push(`${id}: ${route}`);
+  }
+  if (uncovered.length > 0) {
+    throw new PublishedRouteLossError(uncovered);
+  }
+}
+
 /**
  * Encode the ordering the acceptance criterion requires: the route-loss gate
  * runs BEFORE `commit` (the pin advance / mirror + manifest write). When the

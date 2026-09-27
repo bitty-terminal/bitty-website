@@ -37,7 +37,7 @@ import {
   parseDocsManifest,
   sourceIdForMirrorPath,
 } from "../src/lib/docsPins.ts";
-import { assertNoPublishedRouteLoss } from "../src/lib/docsAggregation.ts";
+import { assertNoPublishedRouteLossBySource } from "../src/lib/docsAggregation.ts";
 import { loadMergedRedirects } from "../src/lib/redirects.ts";
 import {
   sourcePathToRouteIdentity,
@@ -217,16 +217,28 @@ async function main() {
           (route) => !routes.includes(route),
         );
         // #98 §3.3: no published route may disappear without a published
-        // redirect target, compared on route identity (not count).
-        assertNoPublishedRouteLoss(
-          entry.published_routes,
-          routes,
-          redirectEntries,
-        );
+        // redirect target, compared on route identity (not count) over the
+        // AGGREGATE published set (T5): a route re-homed to another source
+        // keeps its URL and is not a loss; a real loss is attributed to the
+        // source that used to publish it. The per-source band is checked here.
         assertSourcePublishedBand(pin, routes.length, { added, removed });
       } catch (error) {
         failures.push({ source: pin.id, message: error.message });
       }
+    }
+
+    // #98 §3.3 / T5: the published-route regression gate, over the aggregate
+    // published set of every source.
+    try {
+      assertNoPublishedRouteLossBySource(
+        new Map(
+          manifest.sources.map((entry) => [entry.id, entry.published_routes]),
+        ),
+        [...publishedRoutesBySource.values()],
+        redirectEntries,
+      );
+    } catch (error) {
+      failures.push({ source: "<route-loss>", message: error.message });
     }
 
     // Collect every failing source and report them together.

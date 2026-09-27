@@ -31,7 +31,7 @@ markdownlint:
 docs-sync *args:
     bun run sync:docs {{args}}
 
-# Fail closed when the committed mirror is stale vs the pinned revision (SY-4).
+# Fail closed when the committed mirror is stale vs a pinned source revision (SY-4).
 docs-check:
     bun run docs:check
 

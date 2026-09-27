@@ -277,14 +277,22 @@ function parseIncludeList(value: unknown, what: string): readonly string[] {
       `${what} must be an array of source-relative paths`,
     );
   }
+  const entries: string[] = [];
   for (const entry of value) {
-    if (typeof entry !== "string" || !FROM_PATH.test(entry) || entry === ".") {
+    const normalized =
+      typeof entry === "string" ? stripTrailingSlash(entry) : "";
+    if (
+      normalized.length === 0 ||
+      normalized === "." ||
+      !FROM_PATH.test(normalized)
+    ) {
       throw new DocsPinsError(
         `${what} entries must be source-relative paths: ${JSON.stringify(entry)}`,
       );
     }
+    entries.push(normalized);
   }
-  return [...(value as string[])].sort();
+  return entries.sort();
 }
 
 function parseBand(value: unknown, what: string): PublishedBand {
@@ -715,8 +723,8 @@ export function selectConsumedPaths(
   mount: DocsMount,
   overrides: ConsumedSelectorOverrides = {},
 ): readonly string[] {
-  const include = overrides.include ?? [];
-  const exclude = overrides.exclude ?? [];
+  const include = (overrides.include ?? []).map(stripTrailingSlash);
+  const exclude = (overrides.exclude ?? []).map(stripTrailingSlash);
   const selected: string[] = [];
   for (const raw of sourceRelPaths) {
     const path = raw.split("\\").join("/").replace(/^\.\//, "");
@@ -731,6 +739,10 @@ export function selectConsumedPaths(
     selected.push(path);
   }
   return selected.sort();
+}
+
+function stripTrailingSlash(path: string): string {
+  return path.replace(/\/+$/, "");
 }
 
 /** The `from` prefix of a mount (empty string for the repository root). */

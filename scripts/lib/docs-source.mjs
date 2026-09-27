@@ -33,7 +33,12 @@ import { tmpdir } from "node:os";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
 import { spawnSync } from "node:child_process";
 
-import { DocsPinsError, parseDocsPinSet } from "../../src/lib/docsPins.ts";
+import {
+  DocsPinsError,
+  mirrorPathFor,
+  parseDocsPinSet,
+  selectConsumedPaths,
+} from "../../src/lib/docsPins.ts";
 
 /** Canonical parity gate modes every corpus ships. */
 export const PARITY_MODES = ["metadata", "language", "links", "hygiene"];
@@ -162,11 +167,9 @@ export function isLegacyPin(raw) {
  * `publishedBand` is the observed per-source band (reviewed when committed).
  */
 export function migrateLegacyPin(raw, publishedBand) {
-  const { id } = {
-    id: repoNameForSource(raw.source)
-      .replace(/[^a-z0-9-]/gi, "-")
-      .toLowerCase(),
-  };
+  const id = repoNameForSource(raw.source)
+    .replace(/[^a-z0-9-]/gi, "-")
+    .toLowerCase();
   return {
     schema: 2,
     sources: [
@@ -398,11 +401,52 @@ export async function hashTree(dir) {
   return hashes;
 }
 
-/** Only the `docs/...` entries of a whole-tree hash map. */
-export function docsOnly(hashes) {
-  return Object.fromEntries(
-    Object.entries(hashes).filter(([key]) => key.startsWith("docs/")),
+/**
+ * The consumed files of one pinned snapshot, resolved through the pin's mounts.
+ *
+ * The selector itself lives in `../../src/lib/docsPins.ts` (the single
+ * authority); this function only walks the snapshot, asks the selector, and
+ * maps each consumed source path to its mirror path and content hash.
+ *
+ * @returns sorted `{ mirrorPath, sourceRelPath, absPath, hash }` records
+ */
+export async function collectConsumedFiles(snapshotDir, pin) {
+  const all = await walkFiles(snapshotDir);
+  const files = [];
+  for (const mount of pin.mounts) {
+    const selected = selectConsumedPaths(all, mount, {
+      ...(pin.include === undefined ? {} : { include: pin.include }),
+      ...(pin.exclude === undefined ? {} : { exclude: pin.exclude }),
+    });
+    for (const sourceRelPath of selected) {
+      const mirrorPath = mirrorPathFor(sourceRelPath, mount);
+      if (mirrorPath === null) continue;
+      const absPath = join(snapshotDir, ...sourceRelPath.split("/"));
+      files.push({
+        mirrorPath,
+        sourceRelPath,
+        absPath,
+        hash: await sha256File(absPath),
+      });
+    }
+  }
+  // Code-unit order (not localeCompare) so the manifest hash map has the same
+  // key order as a plain sorted tree walk; the mirror bytes and the manifest
+  // stay byte-identical across the pre-#98 and schema-2 pipelines.
+  return files.sort((left, right) =>
+    left.mirrorPath < right.mirrorPath
+      ? -1
+      : left.mirrorPath > right.mirrorPath
+        ? 1
+        : 0,
   );
+}
+
+/** `{ mirrorPath: sha256 }` of a consumed-file list, in path order. */
+export function hashMapOf(files) {
+  const hashes = {};
+  for (const file of files) hashes[file.mirrorPath] = file.hash;
+  return hashes;
 }
 
 /** Copy a materialized tree (containing `docs/`) over the mirror root. */

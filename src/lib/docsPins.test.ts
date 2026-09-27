@@ -14,8 +14,11 @@ import {
   DOCS_MANIFEST_FILE,
   DOCS_PIN_FILE,
   LEGACY_PIN_MIGRATION_MESSAGE,
+  mirrorPathFor,
   parseDocsManifest,
   parseDocsPinSet,
+  selectConsumedPaths,
+  sourceIdForMirrorPath,
   validatePinFormat,
 } from "./docsPins.ts";
 
@@ -234,5 +237,107 @@ describe("parseDocsManifest", () => {
         sources: [{ ...source, parity: { ...source.parity, links: "maybe" } }],
       }),
     ).toThrow(/must be "pass" or "fail"/u);
+  });
+});
+
+describe("selectConsumedPaths (per-source consumed-file selector)", () => {
+  const SNAPSHOT = [
+    "README.md",
+    "AGENTS.md",
+    "LICENSE",
+    "justfile",
+    "lefthook.yml",
+    ".gitignore",
+    ".github/workflows/ci.yml",
+    ".carryctx/config.toml",
+    ".worktrees/ctx-1/notes.md",
+    "scripts/check.mjs",
+    "docs/README.md",
+    "docs/plugins/example.md",
+    "architecture/overview.md",
+    "architecture/final/README.md",
+    "specifications/plugin-api.md",
+    "product/vision.md",
+    "assets/diagram.d2",
+  ];
+
+  test("a repository-root mount consumes topic trees and drops metadata", () => {
+    const consumed = selectConsumedPaths(SNAPSHOT, {
+      from: ".",
+      to: "projects/bitty",
+    });
+    expect(consumed).toEqual([
+      "architecture/final/README.md",
+      "architecture/overview.md",
+      "assets/diagram.d2",
+      "product/vision.md",
+      "specifications/plugin-api.md",
+    ]);
+    // Repository metadata, the reserved `docs/` tree and dot entries are out.
+    for (const excluded of [
+      "README.md",
+      "AGENTS.md",
+      "LICENSE",
+      "justfile",
+      "lefthook.yml",
+      ".gitignore",
+      ".github/workflows/ci.yml",
+      ".carryctx/config.toml",
+      ".worktrees/ctx-1/notes.md",
+      "scripts/check.mjs",
+      "docs/README.md",
+      "docs/plugins/example.md",
+    ]) {
+      expect(consumed).not.toContain(excluded);
+    }
+  });
+
+  test("a named-subdirectory mount consumes the directory wholesale", () => {
+    // The existing bitty-docs mount must keep `docs/README.md` (the revision
+    // index), so a mount naming a subdirectory is not subject to the
+    // repository-root metadata rule.
+    const consumed = selectConsumedPaths(SNAPSHOT, { from: "docs", to: "" });
+    expect(consumed).toEqual(["docs/README.md", "docs/plugins/example.md"]);
+  });
+
+  test("exclude carves reviewed paths out of a mount", () => {
+    const consumed = selectConsumedPaths(
+      SNAPSHOT,
+      { from: "docs", to: "" },
+      { exclude: ["docs/plugins/"] },
+    );
+    expect(consumed).toEqual(["docs/README.md"]);
+  });
+
+  test("include restricts a mount to reviewed subtrees", () => {
+    const consumed = selectConsumedPaths(
+      SNAPSHOT,
+      { from: ".", to: "projects/bitty" },
+      { include: ["specifications/"] },
+    );
+    expect(consumed).toEqual(["specifications/plugin-api.md"]);
+  });
+
+  test("maps a source path through a mount to its mirror path", () => {
+    expect(
+      mirrorPathFor("architecture/overview.md", {
+        from: ".",
+        to: "projects/bitty",
+      }),
+    ).toBe("docs/projects/bitty/architecture/overview.md");
+    expect(mirrorPathFor("docs/README.md", { from: "docs", to: "" })).toBe(
+      "docs/README.md",
+    );
+    expect(
+      mirrorPathFor("architecture/overview.md", { from: "docs", to: "" }),
+    ).toBeNull();
+  });
+
+  test("resolves a mirror path back to its owning source", () => {
+    const pins = parseDocsPinSet(validPinSet());
+    expect(sourceIdForMirrorPath("docs/README.md", pins)).toBe("bitty-docs");
+    expect(sourceIdForMirrorPath("docs/projects/bitty/x.md", pins)).toBe(
+      "bitty-docs",
+    );
   });
 });

@@ -5,30 +5,35 @@
  *   bun run sync:docs                       # re-materialize every source at
  *                                           # its committed pin (no-op when
  *                                           # the mirror already matches)
- *   bun run sync:docs --source <id> --pin <40-char-sha|immutable-tag>
+ *   bun run sync:docs [--source <id>] --pin <40-char-sha|immutable-tag>
  *
  * Pin file (schema 2): src/content/docs-revision.json — one entry per source,
  * each with its mounts into the aggregate mirror and its published band.
  * Manifest (schema 2): src/content/docs-manifest.json — per-source parity
  * results, counts, per-file SHA-256, and the routes the source publishes.
  *
- * Every source is materialized in its own isolated temporary clone (never a
- * shared checkout), the canonical parity gates run on that snapshot, and the
- * mirror + manifest are written deterministically. Running the same pins twice
- * is a byte-for-byte no-op.
+ * Each source is materialized in its own isolated temporary clone (never a
+ * shared checkout), the canonical parity gates run on that snapshot, the
+ * consumed files are staged through the pin's mounts, and only after the
+ * aggregate mirror is assembled and validated is anything written. Running the
+ * same pins twice is a byte-for-byte no-op.
  */
 
-import { dirname, relative, resolve } from "node:path";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
   SyncError,
   assertPinFormat,
   cleanupSnapshot,
-  hashTree,
+  collectConsumedFiles,
+  hashMapOf,
   isLegacyPin,
   materializeSnapshot,
   migrateLegacyPin,
+  nowIso,
   parseSyncArgs,
   parityReport,
   readRawPinFile,
@@ -36,31 +41,25 @@ import {
   replaceMirror,
   runParityGatesDetailed,
   serializeJson,
+  stageMirror,
   writeFileIfChanged,
 } from "./lib/docs-source.mjs";
 import {
   DOCS_MANIFEST_SCHEMA,
   DOCS_PIN_SCHEMA,
+  assertNoDuplicateMirrorPaths,
+  assertPublishedUnderMounts,
+  mountForMirrorPath,
   parseDocsPinSet,
 } from "../src/lib/docsPins.ts";
-import { validateRouteCollisions } from "../src/lib/docsRoutes.ts";
+import {
+  sourcePathToRouteIdentity,
+  validateRouteCollisions,
+} from "../src/lib/docsRoutes.ts";
 import { loadPublicationCorpus } from "../src/lib/publicationCorpus.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const paths = repoPaths(ROOT);
-
-/**
- * T1 migrates the single bitty-docs pin; the per-source materialization for N
- * sources lands with the next step of #98. Fail closed rather than silently
- * materializing only the last source.
- */
-function assertSingleSource(pins) {
-  if (pins.sources.length !== 1) {
-    throw new SyncError(
-      `sync:docs currently pins one source; found ${pins.sources.length} in ${paths.pinFile}`,
-    );
-  }
-}
 
 async function loadCommittedPins() {
   const raw = await readRawPinFile(ROOT);
@@ -78,12 +77,10 @@ async function loadCommittedPins() {
   return { pins: parseDocsPinSet(raw), migrated: false };
 }
 
-function countsOf(corpus) {
-  return {
-    published: corpus.report.published.length,
-    demoted: corpus.report.demoted.length,
-    excluded: corpus.report.excluded.length,
-  };
+function countBy(entries) {
+  const counts = new Map();
+  for (const entry of entries) counts.set(entry, (counts.get(entry) ?? 0) + 1);
+  return counts;
 }
 
 async function main() {
@@ -91,108 +88,173 @@ async function main() {
     process.argv.slice(2),
   );
   const { pins, migrated } = await loadCommittedPins();
-  assertSingleSource(pins);
-  const pin = pins.sources[0];
 
-  if (sourceId !== null && sourceId !== pin.id) {
+  if (sourceId !== null && !pins.sources.some((pin) => pin.id === sourceId)) {
     throw new SyncError(
-      `--source "${sourceId}" is not a pinned source (pinned: ${pin.id})`,
+      `--source "${sourceId}" is not a pinned source (pinned: ${pins.sources
+        .map((pin) => pin.id)
+        .join(", ")})`,
     );
   }
-  const targetRevision = pinValue ?? pin.revision;
-  if (pinValue !== null) {
-    // Validate the advance against the shared pin rules before resolving it.
-    assertPinFormat(pinValue);
+  if (pinValue !== null && sourceId === null && pins.sources.length > 1) {
+    throw new SyncError(
+      "--pin requires --source when more than one source is pinned",
+    );
   }
+  if (pinValue !== null) assertPinFormat(pinValue);
 
-  let snapshot = null;
+  const snapshots = [];
+  let staging = null;
   try {
-    console.log(`resolving ${pin.id} ${targetRevision} ...`);
-    snapshot = await materializeSnapshot({
-      root: ROOT,
-      pinValue: targetRevision,
-      source: pin.source,
-      id: pin.id,
-    });
-    console.log(`  resolved to ${snapshot.sha}`);
-    console.log("  parity gates (metadata, language, links, hygiene) ...");
-    const parity = runParityGatesDetailed(snapshot.dir);
-    const failedParity = Object.entries(parity.results).filter(
-      ([, result]) => result !== "pass",
-    );
-    if (failedParity.length > 0) {
-      throw new SyncError(
-        `${pin.id}: parity gate(s) failed: ${failedParity.map(([mode]) => mode).join(", ")}`,
+    const staged = [];
+    for (const pin of pins.sources) {
+      const advancing =
+        pinValue !== null && (sourceId === null || sourceId === pin.id);
+      const targetRevision = advancing ? pinValue : pin.revision;
+      console.log(`resolving ${pin.id} ${targetRevision} ...`);
+      const snapshot = await materializeSnapshot({
+        root: ROOT,
+        pinValue: targetRevision,
+        source: pin.source,
+        id: pin.id,
+      });
+      snapshots.push(snapshot);
+      console.log(`  ${pin.id} resolved to ${snapshot.sha}`);
+      const parity = runParityGatesDetailed(snapshot.dir);
+      const failed = Object.entries(parity.results).filter(
+        ([, result]) => result !== "pass",
       );
+      if (failed.length > 0) {
+        throw new SyncError(
+          `${pin.id}: parity gate(s) failed: ${failed
+            .map(([mode]) => mode)
+            .join(", ")}`,
+        );
+      }
+      const files = await collectConsumedFiles(snapshot.dir, pin);
+      if (files.length === 0) {
+        throw new SyncError(
+          `${pin.id}: the declared mount(s) consumed no files`,
+        );
+      }
+      staged.push({ pin, sha: snapshot.sha, parity, files });
     }
 
-    await replaceMirror(snapshot.dir, paths.mirrorRoot);
+    // Merge: no two sources may claim one mirror path.
+    assertNoDuplicateMirrorPaths(
+      staged.flatMap((source) =>
+        source.files.map((file) => ({
+          mirrorPath: file.mirrorPath,
+          id: source.pin.id,
+        })),
+      ),
+    );
+
+    staging = await mkdtemp(join(tmpdir(), "bitty-docs-staging-"));
+    await stageMirror(
+      staging,
+      staged.flatMap((source) => source.files),
+    );
+
     // Eligibility comes from the publication policy, not from this script:
-    // the count below is the set the build publishes (website#97).
-    const corpus = await loadPublicationCorpus(paths.mirrorRoot);
+    // the counts below are the set the build publishes (website#97).
+    const corpus = await loadPublicationCorpus(staging);
     validateRouteCollisions(corpus.publishedSources);
-    const counts = countsOf(corpus);
+    assertPublishedUnderMounts(corpus.publishedSources, pins);
 
-    const files = await hashTree(paths.mirrorRoot);
-    const pages = Object.keys(files).filter((key) =>
-      key.endsWith(".md"),
-    ).length;
-    const publishedBand = migrated
-      ? { min: counts.published, max: counts.published }
-      : pin.published;
-
-    const manifest = {
-      schema: DOCS_MANIFEST_SCHEMA,
-      sources: [
-        {
-          id: pin.id,
-          source: pin.source,
-          revision: snapshot.sha,
-          mounts: pin.mounts,
-          parity: parityReport(parity),
-          counts: {
-            files: Object.keys(files).length,
-            pages,
-            published: counts.published,
-            demoted: counts.demoted,
-            withheld: 0,
-            excluded: counts.excluded,
-          },
-          files,
-          published_routes: [...corpus.publishedRoutes].sort(),
-        },
-      ],
+    const ownerOf = (mirrorPath) => {
+      const owner = mountForMirrorPath(mirrorPath, pins);
+      if (owner === null) {
+        throw new SyncError(
+          `mirror path "${mirrorPath}" is outside every mount`,
+        );
+      }
+      return owner.id;
     };
+    const publishedRoutesBySource = new Map();
+    for (const sourcePath of corpus.publishedSources) {
+      const id = ownerOf(sourcePath);
+      const routes = publishedRoutesBySource.get(id) ?? [];
+      routes.push(sourcePathToRouteIdentity(sourcePath).routeWithoutVersion);
+      publishedRoutesBySource.set(id, routes);
+    }
+    const demotedBySource = countBy(
+      corpus.report.demoted.map((meta) => ownerOf(meta.sourcePath)),
+    );
+    const excludedBySource = countBy(
+      corpus.report.excluded.map((meta) => ownerOf(meta.sourcePath)),
+    );
+
+    const manifestSources = staged
+      .map((source) => {
+        const routes = [
+          ...(publishedRoutesBySource.get(source.pin.id) ?? []),
+        ].sort();
+        return {
+          id: source.pin.id,
+          source: source.pin.source,
+          revision: source.sha,
+          mounts: source.pin.mounts,
+          parity: parityReport(source.parity),
+          counts: {
+            files: source.files.length,
+            pages: source.files.filter((file) =>
+              file.mirrorPath.endsWith(".md"),
+            ).length,
+            published: routes.length,
+            demoted: demotedBySource.get(source.pin.id) ?? 0,
+            withheld: 0,
+            excluded: excludedBySource.get(source.pin.id) ?? 0,
+          },
+          files: hashMapOf(source.files),
+          published_routes: routes,
+        };
+      })
+      .sort((left, right) => left.id.localeCompare(right.id));
+
+    const pinSources = staged
+      .map((source) => {
+        const observed = {
+          min: (publishedRoutesBySource.get(source.pin.id) ?? []).length,
+          max: (publishedRoutesBySource.get(source.pin.id) ?? []).length,
+        };
+        return {
+          id: source.pin.id,
+          source: source.pin.source,
+          revision: source.sha,
+          synced_at:
+            source.pin.revision === source.sha
+              ? source.pin.synced_at
+              : nowIso(),
+          mounts: source.pin.mounts,
+          published: migrated ? observed : source.pin.published,
+          ...(source.pin.include === undefined
+            ? {}
+            : { include: source.pin.include }),
+          ...(source.pin.exclude === undefined
+            ? {}
+            : { exclude: source.pin.exclude }),
+        };
+      })
+      .sort((left, right) => left.id.localeCompare(right.id));
+
+    await replaceMirror(staging, paths.mirrorRoot);
     const manifestChanged = await writeFileIfChanged(
       paths.manifestFile,
-      serializeJson(manifest),
+      serializeJson({ schema: DOCS_MANIFEST_SCHEMA, sources: manifestSources }),
     );
-
-    const syncedAt =
-      !migrated && pin.revision === snapshot.sha
-        ? pin.synced_at
-        : new Date().toISOString();
     const pinChanged = await writeFileIfChanged(
       paths.pinFile,
-      serializeJson({
-        schema: DOCS_PIN_SCHEMA,
-        sources: [
-          {
-            id: pin.id,
-            source: pin.source,
-            revision: snapshot.sha,
-            synced_at: syncedAt,
-            mounts: pin.mounts,
-            published: publishedBand,
-            ...(pin.include === undefined ? {} : { include: pin.include }),
-            ...(pin.exclude === undefined ? {} : { exclude: pin.exclude }),
-          },
-        ],
-      }),
+      serializeJson({ schema: DOCS_PIN_SCHEMA, sources: pinSources }),
     );
 
+    for (const source of manifestSources) {
+      console.log(
+        `synced ${source.id} -> ${source.revision} (${source.counts.files} files, ${source.counts.pages} pages, ${source.counts.published} publishable)`,
+      );
+    }
     console.log(
-      `synced ${pin.id} ${targetRevision} -> ${snapshot.sha} (${manifest.sources[0].counts.files} files, ${counts.published} publishable, ${corpus.redirects.length} excluded page(s) redirect)`,
+      `  total: ${manifestSources.reduce((sum, source) => sum + source.counts.files, 0)} files, ${corpus.report.published.length} publishable, ${corpus.redirects.length} excluded page(s) redirect`,
     );
     console.log(
       `  ${relative(ROOT, paths.manifestFile)} ${manifestChanged ? "written" : "unchanged"}`,
@@ -201,7 +263,8 @@ async function main() {
       `  ${relative(ROOT, paths.pinFile)} ${pinChanged ? "written" : "unchanged"}`,
     );
   } finally {
-    if (snapshot) await cleanupSnapshot(snapshot.dir);
+    for (const snapshot of snapshots) await cleanupSnapshot(snapshot.dir);
+    if (staging) await rm(staging, { recursive: true, force: true });
   }
 }
 

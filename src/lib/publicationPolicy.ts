@@ -442,9 +442,12 @@ export function evaluatePublicationPolicy(
       });
     }
     if (isForbiddenAllowListEntry(entry)) {
+      const why = isForbiddenPublicationPath(entry.path)
+        ? `${entry.path} is a governance corpus path (${PUBLICATION_POLICY_ISSUE})`
+        : `${entry.path} carries document_type ${entry.document_type}, which is a governance type`;
       problems.push({
         kind: "forbidden-allow-list",
-        detail: `${entry.path} is a governance corpus path (${PUBLICATION_POLICY_ISSUE}) and may never be allow-listed`,
+        detail: `${why} and may never be allow-listed`,
       });
     }
   }

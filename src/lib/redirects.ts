@@ -234,6 +234,30 @@ export function lowestVersion(versions: readonly string[]): string {
   return lowest;
 }
 
+/**
+ * Cloudflare's `_redirects` budget, per the Workers static-assets redirect
+ * documentation: a file may carry 2,000 static rules and 100 dynamic
+ * (wildcard) rules, for a combined total of 2,100. Exceeding either per-kind
+ * budget fails deployment (code 100324 for the dynamic one). `wrangler deploy
+ * --dry-run` — the command this repository's gates run — does not evaluate
+ * these limits, so the mechanism checks them itself and fails the build closed
+ * instead of shipping a tree the API will reject.
+ *
+ * The static budget is 2,000, not 2,100: 2,100 is the combined ceiling, so a
+ * guard that only compared the total would let a static-only tree of
+ * 2,001-2,100 rules build green and fail in production — the failure this
+ * guard exists to prevent.
+ */
+export const CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT = 100;
+export const CLOUDFLARE_STATIC_REDIRECT_LIMIT = 2000;
+export const CLOUDFLARE_TOTAL_REDIRECT_LIMIT = 2100;
+
+/** A rule is dynamic when its pattern carries a wildcard or a placeholder. */
+function isDynamicRedirectLine(line: string): boolean {
+  const pattern = line.split(/\s+/)[0] ?? "";
+  return pattern.includes("*") || /:[a-zA-Z]/.test(pattern);
+}
+
 function parseSemver(
   value: string,
 ): readonly [number, number, number, string] | null {
@@ -422,7 +446,35 @@ export function renderEdgeRedirects(
     lines.push(`${rule.from} ${rule.to} ${rule.status}`);
   }
   for (const rule of table) {
+    // Cloudflare counts a rule with a wildcard as *dynamic*: 100 dynamic and
+    // 2,000 static rules per file, 2,100 in total. A publication demotion
+    // targets a leaf page that has no descendants, so the exact rule above is
+    // the whole rule; emitting the wildcard form as well spent 156 of the 100
+    // dynamic slots and made the production deploy fail (code 100324). Legacy
+    // subtree moves keep the wildcard form because they carry descendants.
+    if (rule.reason === PUBLICATION_REDIRECT_REASON) continue;
     lines.push(`${rule.from}* ${rule.to}:splat ${rule.status}`);
+  }
+  const ruleLines = lines.filter((line) => !line.startsWith("#"));
+  const dynamicRules = ruleLines.filter(isDynamicRedirectLine);
+  const staticRuleCount = ruleLines.length - dynamicRules.length;
+  if (dynamicRules.length > CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT) {
+    throw new Error(
+      `_redirects uses ${dynamicRules.length} dynamic rules, above Cloudflare's limit of ${CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT} (deployment code 100324): ${dynamicRules
+        .slice(0, 3)
+        .map((line) => line.split(/\s+/)[0])
+        .join(", ")} ...`,
+    );
+  }
+  if (staticRuleCount > CLOUDFLARE_STATIC_REDIRECT_LIMIT) {
+    throw new Error(
+      `_redirects uses ${staticRuleCount} static rules, above Cloudflare's limit of ${CLOUDFLARE_STATIC_REDIRECT_LIMIT} (2,100 is the combined ceiling, not the per-kind one)`,
+    );
+  }
+  if (ruleLines.length > CLOUDFLARE_TOTAL_REDIRECT_LIMIT) {
+    throw new Error(
+      `_redirects uses ${ruleLines.length} rules, above Cloudflare's combined limit of ${CLOUDFLARE_TOTAL_REDIRECT_LIMIT}`,
+    );
   }
   return `${lines.join("\n")}\n`;
 }

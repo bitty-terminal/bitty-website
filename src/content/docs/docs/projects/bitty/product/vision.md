@@ -13,10 +13,12 @@ sidebar_order: 10
 
 ## Document status
 
-- Phase: directional baseline before product development begins
-- Implementation status: no released or user-ready product is claimed; foundation
-  and headless implementation evidence exists, but this document does not claim
-  that any capability is released or independently verified
+- Phase: directional baseline; experimental implementation and pre-alpha
+  releases exist, but no stable or supported product contract is claimed
+- Implementation status: no stable, supported, or user-ready product is
+  claimed; foundation and headless implementation evidence exists and
+  pre-alpha releases exist (latest `v0.0.20`), but this document does not claim
+  that any capability is stable, `Compatible`, or independently verified
 - Source: the [first eight rounds of discussion between the project initiator and
   the architecture advisor](https://chatgpt.com/share/6a8d7652-9de0-83e9-9a6b-bdc54ff2f7d6),
   reorganized into a maintainable form
@@ -43,8 +45,8 @@ Four statements summarize this design direction:
 
 > Small core. Stable API. Everything composable. Extensions own the experience.
 
-This is a project goal. It does not imply that a working terminal, stable API,
-or plugin ecosystem exists today.
+This is a project goal. It does not imply that a stable terminal product,
+`Compatible` API, or plugin ecosystem exists today.
 
 ## Strategic shape and priority
 
@@ -66,9 +68,10 @@ capabilities can remain absent, rather than imposing workstation costs on an
 unused terminal. Platform interfaces should remain capability-specific instead
 of becoming a single God abstraction.
 
-The project is currently **Pre-alpha / M1 Hardening**. Existing architecture
-and headless test evidence records design or implementation progress; it is not
-proof of a released, independently verified terminal product. After the design
+The project is currently **Pre-alpha / M1 Hardening**. Existing architecture,
+headless test evidence, and pre-alpha releases (latest `v0.0.20`) record design
+and implementation progress; they are not proof of a stable, `Compatible`, or
+independently verified terminal product. After the design
 gates, priority should transition from architecture-first toward
 dogfooding-first. The working sequence is: Terminal Truth (PTY, VT, and state);
 real renderer, fonts, input, and IME; a usable shell/nvim/tmux terminal;
@@ -118,7 +121,7 @@ reconciliation) is accepted in
 (OQ-010, 2026-08-27). Whether to retain a static auxiliary entry point, which
 Lua version and binding to use, and plugin VM isolation details still require
 formal decisions. See the
-[Technology and Dependency Strategy](../../../project/technology-strategy.md).
+[Technology and Dependency Strategy](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/technology-strategy.md).
 
 ### Cross-platform is a product goal
 
@@ -128,7 +131,7 @@ Windows ConPTY explicitly.
 
 Being a target platform does not imply equal maturity on day one. Support tiers,
 CI coverage, and fallback strategies are defined in
-[ADR 0002 - Platform Support Tiers](../../../decisions/adrs/ADR-0002-platform-support-tiers.md).
+[ADR 0002 - Platform Support Tiers](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0002-platform-support-tiers.md).
 
 ### Agent-friendly, not Agent-centric
 
@@ -265,7 +268,7 @@ empty.
   (Accepted, OQ-010, 2026-08-27); static auxiliary entry point and overlay
   mechanics remain follow-up work.
 - Which platforms belong in Tier 1, Tier 2, and Tier 3, and what is the explicit
-  BSD scope? (Accepted: [ADR 0002 - Platform Support Tiers](../../../decisions/adrs/ADR-0002-platform-support-tiers.md).)
+  BSD scope? (Accepted: [ADR 0002 - Platform Support Tiers](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0002-platform-support-tiers.md).)
 - Which VT, keyboard, image, and shell-integration protocols must the first
   compatibility milestone cover? (First-milestone set accepted:
   [Compatibility Milestone RFC](../specifications/compatibility-milestone-rfc.md);

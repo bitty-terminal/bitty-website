@@ -11,9 +11,11 @@ sidebar_order: 10
 
 # Troubleshooting
 
-No product troubleshooting procedures exist because Bitty has not been
-implemented or released. Planned diagnostic, safe-mode, log, and recovery ideas
-must not be presented as commands users can run.
+No product troubleshooting procedures exist because no stable or supported
+public contract is claimed; experimental code and pre-alpha releases exist
+(latest `v0.0.20`), but no diagnostic or recovery path is `Verified` or
+`Compatible`. Planned diagnostic, safe-mode, log, and recovery ideas must not
+be presented as commands users can run.
 
 ## Admission criteria
 

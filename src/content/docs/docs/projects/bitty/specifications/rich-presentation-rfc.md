@@ -13,13 +13,13 @@ sidebar_order: 19
 
 > Status: **accepted** on 2026-08-28 by the project initiator. This document defines the accepted
 > image, rich-block, scene, zone, and structured-transport contracts for
-> [OQ-008](../../../decisions/open-questions.md),
-> [OQ-015](../../../decisions/open-questions.md), and
-> [OQ-016](../../../decisions/open-questions.md) at the design level; it closes [OQ-008](../../../decisions/open-questions.md), [OQ-015](../../../decisions/open-questions.md), and [OQ-016](../../../decisions/open-questions.md). It does not describe implemented
+> [OQ-008](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md),
+> [OQ-015](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md), and
+> [OQ-016](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) at the design level; it closes [OQ-008](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md), [OQ-015](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md), and [OQ-016](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md). It does not describe implemented
 > behavior, does not authorize shipped, stable, or compatibility-guaranteed
 > behavior, and does not weaken any normative security control. Experimental
 > implementation may exist as review evidence but carries no compatibility
-> promise beyond the accepted contract. Acceptance was per independent category-owner, docs-curator, and security-auditor review (CTX-0062) with P0 sign-off simulated 2026-08-28; see [P0 Review Sign-off](#p0-review-sign-off) and the [P0 review checklist](../../../reviews/p0-review-checklist.md). The lifecycle is `Draft -> experimental review evidence -> Accepted -> normative`.
+> promise beyond the accepted contract. Acceptance was per independent category-owner, docs-curator, and security-auditor review (CTX-0062) with P0 sign-off simulated 2026-08-28; see [P0 Review Sign-off](#p0-review-sign-off) and the [P0 review checklist](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/reviews/p0-review-checklist.md). The lifecycle is `Draft -> experimental review evidence -> Accepted -> normative`.
 
 ## Purpose and scope
 
@@ -51,31 +51,31 @@ Out of scope (owned elsewhere):
   [Terminal State RFC](terminal-state-rfc.md));
 - Plugin API surface, capability grammar, manifest schema, and event pipeline
   classes (OQ-011/OQ-012/OQ-013,
-  [Plugin Platform RFC](plugin-platform-rfc.md));
+  [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md));
 - per-plugin instruction, CPU, memory, and queue ceilings (OQ-014,
-  [Isolation Resource RFC](isolation-resource-rfc.md));
+  [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md));
 - Lua runtime, standard-library subset, and module search rules (OQ-009,
-  [Lua Runtime RFC](lua-runtime-rfc.md));
+  [Lua Runtime RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/lua-runtime-rfc.md));
 - CLI grammar and exit-code contract (OQ-017) and IPC wire format, peer
   authentication, and scopes (OQ-018).
 
 ## Normative sources this specification must not weaken
 
-- [Security Overview](../../../security/overview.md): untrusted-by-default posture,
+- [Security Overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md): untrusted-by-default posture,
   invariants 3 (presentation, never Terminal Truth), 4 (no hot-path execution),
   7 (bounded inputs), and the P0 graphics and resource rows.
-- [Threat Model](../../../security/threat-model.md): PTY-to-terminal-state controls,
+- [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md): PTY-to-terminal-state controls,
   graphics decompression-bomb defense, deny-by-default resource loader,
   terminal-protocol-to-desktop capability gates, and abuse cases T-02, T-03,
   T-05, T-13.
-- [Security Risk Register](../../../security/risk-register.md): R-002 (compressed
+- [Security Risk Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md): R-002 (compressed
   graphics exhaustion), R-003 (protocol-directed file/device access), R-005
   (dangerous link schemes), R-008 (Terminal Truth integrity), R-013/R-021
   (rich-content script and resource risks).
 - [Core and Plugin Boundaries](../architecture/core-boundaries.md): mechanism
   versus policy split, Terminal Truth ownership, declarative UI, and the two
   security domains (`TerminalSecurityPolicy` versus `PluginCapabilities`).
-- [Plugin System](../extensibility/plugin-system.md) and
+- [Plugin System](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/extensibility/plugin-system.md) and
   [Rich Content](../interfaces/rich-content.md): terminal surface versus rich
   surface versus overlay surface, explicit semantic source requirement,
   level-2 versus level-3 presentation distinction, and
@@ -203,17 +203,17 @@ Status: **accepted initial values** parameterized for harness coverage. Changing
 a value requires an RFC revision, never silent drift. Floors are enforced;
 unknown or out-of-range budget keys fail validation closed.
 
-| ID    | Dimension                         | Accepted default                              | Enforcement point                         |
-| ----- | --------------------------------- | --------------------------------------------- | ----------------------------------------- |
-| IMG-1 | Max compressed payload per image  | 4 MiB                                         | parser payload cap before adapter         |
-| IMG-2 | Max decoded dimensions per image  | 4096 x 4096                                   | before allocation                         |
-| IMG-3 | Max decoded bytes per image       | 64 MiB (width x height x 4, overflow-checked) | before allocation                         |
-| IMG-4 | Max total `ImageStore` bytes      | 256 MiB                                       | store admission; evict oldest on overflow |
-| IMG-5 | Max image count                   | 256                                           | store admission                           |
-| IMG-6 | Max animation frames per image    | 64                                            | adapter; excess frames discarded          |
-| IMG-7 | Max total decoded animation bytes | IMG-3 x IMG-6, bounded by IMG-4               | store admission                           |
-| IMG-8 | Max placement count per terminal  | 128                                           | placement admission                       |
-| IMG-9 | Animated frame rate               | at most 30 fps, host-throttled                | renderer pacing                           |
+| ID    | Dimension                         | Accepted default                                                 | Enforcement point                         |
+| ----- | --------------------------------- | ---------------------------------------------------------------- | ----------------------------------------- |
+| IMG-1 | Max compressed payload per image  | 4 MiB                                                            | parser payload cap before adapter         |
+| IMG-2 | Max decoded dimensions per image  | 4096 x 4096                                                      | before allocation                         |
+| IMG-3 | Max decode peak memory per image  | 64 MiB (width x height x peak_bytes_per_pixel, overflow-checked) | before allocation                         |
+| IMG-4 | Max total `ImageStore` bytes      | 256 MiB                                                          | store admission; evict oldest on overflow |
+| IMG-5 | Max image count                   | 256                                                              | store admission                           |
+| IMG-6 | Max animation frames per image    | 64                                                               | adapter; excess frames discarded          |
+| IMG-7 | Max total decoded animation bytes | IMG-3 x IMG-6, bounded by IMG-4                                  | store admission                           |
+| IMG-8 | Max placement count per terminal  | 128                                                              | placement admission                       |
+| IMG-9 | Animated frame rate               | at most 30 fps, host-throttled                                   | renderer pacing                           |
 
 Notes:
 
@@ -221,7 +221,43 @@ Notes:
   declares huge dimensions.
 - IMG-4 is an aggregate budget across all protocols and all terminals of one
   window; it follows the isolation budget floor and maximum policy in the
-  [Isolation Resource RFC](isolation-resource-rfc.md).
+  [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md).
+
+IMG-3 is a **peak-memory ceiling**, not a resident-bytes count: the
+pre-decode charge is the overflow-checked formula
+`width x height x peak_bytes_per_pixel`, plus bounded fixed codec overhead
+(the encoded input and row/upsampler scratch) outside the formula. The factor
+is `4` for a direct RGBA8 write and higher where the decoder materializes a
+full-size internal buffer:
+
+| Decode path                                                                                               | `peak_bytes_per_pixel` |
+| --------------------------------------------------------------------------------------------------------- | ---------------------- |
+| Direct RGBA8 output (PNG, baseline JPEG, WebP lossless with alpha)                                        | `4`                    |
+| Full-size decoder scratch (lossy `VP8` without alpha, lossless `VP8L` without alpha, conservative `VP8X`) | `8`                    |
+| Progressive JPEG (SOF2) 4:2:0 or grayscale                                                                | `8`                    |
+| Progressive JPEG 4:4:4                                                                                    | `10`                   |
+| Progressive JPEG with four full-resolution components                                                     | `12`                   |
+| Lossy WebP with alpha (`ALPH` chunk plus lossy `VP8`)                                                     | `11`                   |
+
+Progressive JPEG charges `4 + 2 x ceil(sum(h_i x v_i) / (h_max x v_max))`,
+floored at `8`, from the SOF2 component table.
+
+Under the BG-3 file-backed background decode alias this tightens the accepted
+set: `4096 x 4096` non-alpha WebP is rejected pre-allocation (largest accepted
+square side `2896`; `3840 x 2160` lossy WebP still fits at about `63.3 MiB`),
+progressive 4:2:0 `2896 x 2896` and 4:4:4 `2590 x 2590` are accepted, and
+lossy-alpha `2469 x 2469` is accepted (`2470 x 2470` is rejected). The sniff
+also fails closed on a `VP8X` chunk crossing the declared RIFF container and
+on PNG sample depths outside `{1, 2, 4, 8}`. `bitty` PR #656 (merge `af913ee`,
+CTX-0395, `crates/bitty-rich/src/background.rs`) implements the charge, with
+the peak per accepted subformat pinned in
+`crates/bitty-rich/tests/background_peak_memory.rs`. `bitty` #771 (CTX-0467)
+pins the load identity to the bytes that were actually decoded: acquisition
+uses one opened descriptor, a post-read `fstat` on the same descriptor
+re-verifies length and mtime, and the cache key is derived from the decoded
+bytes (exact length, post-read mtime, and an FNV-1a/64 content hash), failing
+closed on any identity change; the raster cache carries the same key so stale
+blits cannot be reused.
 
 ### Kitty chunked-intake implementation evidence (bitty #376)
 
@@ -268,6 +304,19 @@ bytes; it is not the IMG-4 256 MiB aggregate decoded-store budget and does not
 redefine it. The decoding pipeline, animation lifecycle, and renderer contract
 sections of this RFC continue to describe the accepted target, not shipped
 behavior.
+
+Update (`bitty` #771, CTX-0467): the per-transmission policy is now uniform.
+`KITTY_MAX_CHUNKED_BYTES` aliases the single-shot `KITTY_MAX_PAYLOAD_BYTES`
+(4096 bytes), and an assembled chunked total past that cap fails `Oversize`,
+checked before further allocation with the in-flight stream dropped. A chunked
+stream that fits the cap but cannot be admitted without displacing a resident
+entry, or whose completion arrives while the count cap is full, fails the
+new `LedgerFull` outcome: nothing is stored and nothing is evicted. Only
+single-shot ingest still performs bounded FIFO evict-to-fit, so item 2's
+320,000,000-byte ledger cap remains as a Ghostty-parity backstop that the
+4 KiB per-transmission cap makes unreachable. This update supersedes item 2's
+chunked admission/eviction and item 3's cap split; the `bitty` #376 record
+above stays as merged.
 
 ### Kitty decode, placement, and present-path implementation evidence
 
@@ -571,6 +620,39 @@ capability that would let an embedder mint grants remain outside this headless
 seam; OSC 52 read requests stay denied without a live, in-scope token; and no
 `Verified`/`Compatible` claim is made by this evidence.
 
+Update (`bitty` #805, CTX-0486): `ClipboardState` now carries an explicit
+`ClipboardPolicy` with a `Gated` default, so the captured-write history in
+item 4 only ever holds payloads that were explicitly allowed. Under the
+`Gated` (default) and `Denied` policies every OSC 52 write is rejected with
+the new `ClipboardOutcome::WriteDenied`, stores nothing, and increments
+`denied_writes`; only an explicit `ClipboardPolicy::Allow` (via
+`with_policy`) captures. A granted read over a default state therefore
+returns empty data instead of the last hostile write. The grant mechanics in
+items 1-5 (token minting, scope binding, default-deny token path, `Debug`
+redaction) are unchanged, and the accepted `copy` contract in the table above
+is unaffected. Probe: `crates/bitty-rich/tests/ctx0486_policy_probe.rs`.
+
+### OSC 8 hyperlink URI policy (implementation evidence)
+
+Status: **experimental review evidence only.** `bitty` #805 (CTX-0486,
+`crates/bitty-rich/src/hyperlink.rs`) tightens the presentation-layer URI
+policy for OSC 8 hyperlinks:
+
+- Only `http`/`https`/`mailto` URIs (per `validate_url`) are ever presented as
+  clickable spans. The `file:` scheme — every case variant and encoded
+  spelling — is rejected outright, so untrusted remote output cannot surface a
+  clickable local-file span whose activation path leads to an OS handler; the
+  span disappears entirely rather than degrading to a partial affordance.
+- Local file opening stays the runtime's separate, explicit
+  `FileUrlActivation` capability path (runtime-issued mouse gesture, plugin
+  intercept, `validate_file_url`), which this presentation layer neither
+  grants nor bypasses.
+
+The scheme-policy, user-gesture, and no-shell-interpolation requirements in
+the security-alignment table are unchanged; this note records the shipped
+presentation edge for R-005 and claims no `Verified`/`Compatible` status.
+Probe: `crates/bitty-rich/tests/ctx0486_policy_probe.rs`.
+
 ## Structured transport and alternate-screen policy (OQ-016)
 
 ### The three semantic sources
@@ -682,7 +764,7 @@ Accepted policy for v1:
 | Budget                           | Applies to                 | Accepted ceiling |
 | -------------------------------- | -------------------------- | ---------------- |
 | `ImageStore` bytes               | all images of one window   | 256 MiB          |
-| Decoded bytes per image          | one image                  | 64 MiB           |
+| Decode peak memory per image     | one image                  | 64 MiB           |
 | Image count                      | one store                  | 256              |
 | Placement count                  | one terminal               | 128              |
 | Scene nodes per `RichBlock`      | one block                  | 2048             |
@@ -789,7 +871,7 @@ require a follow-up decision:
    or wait for `1.x`, and whether math uses a shared shaping crate.
 5. Whether rich output may claim exclusive replacement of a zone's output
    region in v1 or whether replacement waits for level-3 policy (mirrors
-   [Plugin Platform RFC](plugin-platform-rfc.md) open point 2).
+   [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md) open point 2).
 6. Alternate-screen granularity: whether suppression is binary (all `Inline`
    blocks) or zone-scoped (only the zone the TUI owns).
 7. RichBlock persistence: whether blocks survive detached terminal reattach
@@ -800,23 +882,23 @@ require a follow-up decision:
 9. Widget-level `RichSurface` composition above `SceneNode` (Text, RichText,
    CodeBlock, Image, Stack, Grid, ScrollView, Button, Input, Canvas) so plugins
    never depend on raw scene or GPU objects. This is a candidate refinement
-   from the 2026-09-13 `014.md` review; the raw `SceneNode` contribution must
+   from the 2026-09-13 review; the raw `SceneNode` contribution must
    not be treated as a frozen plugin ABI, and adoption needs a follow-up RFC
    revision.
 
 ## Acceptance criteria
 
-This RFC is accepted on 2026-08-28 and closes OQ-008, OQ-015, and OQ-016. The following criteria were satisfied per the [open-question register](../../../decisions/open-questions.md) rules:
+This RFC is accepted on 2026-08-28 and closes OQ-008, OQ-015, and OQ-016. The following criteria were satisfied per the [open-question register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) rules:
 
 1. The prose and every identifier in the three OQ rows of
-   [open-questions.md](../../../decisions/open-questions.md) (OQ-008, OQ-015, OQ-016)
+   [open-questions.md](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) (OQ-008, OQ-015, OQ-016)
    have independent category-owner, docs-curator, and security-reviewer
    sign-off, including the limits tables and the alternate-screen default-deny
    policy.
 2. Affected documents were synchronized in the same change: this RFC is `accepted` frontmatter and
    [Rich Content](../interfaces/rich-content.md),
    [Core and Plugin Boundaries](../architecture/core-boundaries.md),
-   and the [Decision Register](../../../decisions/index.md) reference the accepted contract rather than describing a parallel
+   and the [Decision Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/index.md) reference the accepted contract rather than describing a parallel
    design.
 3. No element weakens a normative P0 gate; any discovered conflict returns the
    conflicting clause to revision rather than downgrading the gate.
@@ -828,18 +910,18 @@ This RFC is accepted on 2026-08-28 and closes OQ-008, OQ-015, and OQ-016. The fo
 ## P0 Review Sign-off
 
 > P0 review per CTX-0062 tracks acceptance of OQ-008, OQ-015, and OQ-016 via this
-> RFC. Frontmatter is `accepted` and [open-questions.md](../../../decisions/open-questions.md) is updated per its close
+> RFC. Frontmatter is `accepted` and [open-questions.md](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) is updated per its close
 > rule. This section records passing sign-off and closes the three open questions.
 
-| Role                           | Reviewer           | Verdict | Evidence / scope                                                                                                                                                                                         | Date       |
-| ------------------------------ | ------------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| security-auditor               | `bitty-security`   | pass    | T-02/T-03/T-05/T-13, R-002/R-003/R-005/R-008/R-013/R-021, P0-AC-003/004/005/021, image bounds before allocation, deny-by-default resource loader, authenticated transport, alternate-screen default-deny | 2026-08-28 |
-| category-owner (architecture)  | `bitty-architect`  | pass    | Presentation model, `ImageStore`/`ImagePlacement`, `RichBlock`/`Scene`/`SemanticZone`, anchor survival, selection/a11y/search/export contracts                                                           | 2026-08-28 |
-| category-owner (extensibility) | `bitty-experience` | pass    | `ui.rich` and `ui.protocol-register` capability gates, structured-transport framing/backpressure/lifecycle, declarative scene limits                                                                     | 2026-08-28 |
-| docs-curator                   | `bitty-curator`    | pass    | Frontmatter `accepted`, taxonomy, links to [Rich Content](../interfaces/rich-content.md) and [Threat Model](../../../security/threat-model.md), English-only, decision-register sync                     | 2026-08-28 |
+| Role                           | Reviewer           | Verdict | Evidence / scope                                                                                                                                                                                                                        | Date       |
+| ------------------------------ | ------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| security-auditor               | `bitty-security`   | pass    | T-02/T-03/T-05/T-13, R-002/R-003/R-005/R-008/R-013/R-021, P0-AC-003/004/005/021, image bounds before allocation, deny-by-default resource loader, authenticated transport, alternate-screen default-deny                                | 2026-08-28 |
+| category-owner (architecture)  | `bitty-architect`  | pass    | Presentation model, `ImageStore`/`ImagePlacement`, `RichBlock`/`Scene`/`SemanticZone`, anchor survival, selection/a11y/search/export contracts                                                                                          | 2026-08-28 |
+| category-owner (extensibility) | `bitty-experience` | pass    | `ui.rich` and `ui.protocol-register` capability gates, structured-transport framing/backpressure/lifecycle, declarative scene limits                                                                                                    | 2026-08-28 |
+| docs-curator                   | `bitty-curator`    | pass    | Frontmatter `accepted`, taxonomy, links to [Rich Content](../interfaces/rich-content.md) and [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md), English-only, decision-register sync | 2026-08-28 |
 
 As of 2026-08-28, `bitty-rich`, `bitty-ipc`, and `bitty-agent` remain draft
 headless crates implementing the accepted contract per
-[ADR 0003](../../../decisions/adrs/ADR-0003-core-workspace-topology.md) and the
+[ADR 0003](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0003-core-workspace-topology.md) and the
 [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md); crate
 presence does not imply shipped behavior.

@@ -56,7 +56,7 @@ import {
   parseDocsManifest,
   parseDocsPinSet,
 } from "../src/lib/docsPins.ts";
-import { assertNoPublishedRouteLoss } from "../src/lib/docsAggregation.ts";
+import { assertNoPublishedRouteLossBySource } from "../src/lib/docsAggregation.ts";
 import { loadMergedRedirects } from "../src/lib/redirects.ts";
 import {
   sourcePathToRouteIdentity,
@@ -194,6 +194,9 @@ async function main() {
     const demotedBySource = countBy(
       corpus.report.demoted.map((meta) => ownerOf(meta.sourcePath)),
     );
+    const withheldBySource = countBy(
+      corpus.report.withheld.map((meta) => ownerOf(meta.sourcePath)),
+    );
     const excludedBySource = countBy(
       corpus.report.excluded.map((meta) => ownerOf(meta.sourcePath)),
     );
@@ -216,7 +219,7 @@ async function main() {
             ).length,
             published: routes.length,
             demoted: demotedBySource.get(source.pin.id) ?? 0,
-            withheld: 0,
+            withheld: withheldBySource.get(source.pin.id) ?? 0,
             excluded: excludedBySource.get(source.pin.id) ?? 0,
           },
           files: hashMapOf(source.files),
@@ -253,8 +256,11 @@ async function main() {
 
     // #98 §3.3 / T4: the published-route regression gate runs BEFORE anything
     // is written. The committed manifest is the baseline; every route it
-    // published that the new set drops must be covered by a redirect to a
-    // published target, and the gate compares route identities, not counts.
+    // published that no source publishes any more must be covered by a
+    // redirect to a published target, and the gate compares route identities,
+    // not counts. The comparison is over the AGGREGATE published set (T5):
+    // onboarding a corpus re-homes routes between sources while keeping the
+    // URL, so a per-source comparison would report those as lost.
     const redirectEntries = await loadMergedRedirects(ROOT);
     const previousRaw = await readRawManifest(ROOT);
     const previousBySource = new Map();
@@ -263,18 +269,17 @@ async function main() {
         previousBySource.set(entry.id, entry.published_routes);
       }
     }
-    const lossFailures = [];
-    for (const [id, previousRoutes] of previousBySource) {
-      const nextRoutes =
-        manifestSources.find((source) => source.id === id)?.published_routes ??
-        [];
-      try {
-        assertNoPublishedRouteLoss(previousRoutes, nextRoutes, redirectEntries);
-      } catch (error) {
-        lossFailures.push({ source: id, message: error.message });
-      }
+    try {
+      assertNoPublishedRouteLossBySource(
+        previousBySource,
+        manifestSources.map((source) => source.published_routes),
+        redirectEntries,
+      );
+    } catch (error) {
+      assertNoSourceFailures([
+        { source: "<route-loss>", message: error.message },
+      ]);
     }
-    assertNoSourceFailures(lossFailures);
 
     // #98 §3.4, same gate as `docs:check`, same helper and message: the sync
     // path must refuse to write a pin whose observed publish count left the

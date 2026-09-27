@@ -1,6 +1,6 @@
 ---
 title: Command-line interface
-description: Pre-implementation reference for the extensible CLI, runtime control, output, and introspection contracts
+description: Candidate reference for the extensible CLI, runtime control, output, and introspection contracts
 category: reference
 audience: user
 document_type: reference
@@ -11,10 +11,12 @@ sidebar_order: 10
 
 # Command-line interface
 
-> Status: pre-implementation architecture. An extensible, first-class CLI is an
-> accepted working direction. The shared executable registry, command tree,
+> Status: candidate architecture. An extensible, first-class CLI is an
+> accepted working direction, and experimental parser/registry code exists in
+> the `bitty` workspace. The shared executable registry, command tree,
 > identifiers, environment variables, output schemas, and exit codes are
-> candidate contracts until separately specified.
+> candidate contracts until separately specified, implemented, and verified;
+> no stable or supported CLI contract is claimed.
 
 The Bitty CLI is a formal frontend to the same capabilities used by GUI
 actions, key bindings, Lua, IPC, developer tools, and agent adapters. It must
@@ -22,8 +24,8 @@ not become a second implementation of runtime behavior hidden inside argument
 parsing.
 
 IPC authentication, client scope, and untrusted terminal-output requirements
-are normative in the [security overview](../../../security/overview.md) and
-[threat model](../../../security/threat-model.md).
+are normative in the [security overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md) and
+[threat model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md).
 
 ## Candidate direction: one executable registry, many frontends
 
@@ -100,8 +102,8 @@ bitty
 └── version
 ```
 
-This tree is a candidate namespace, not shipped CLI. Its intent is to keep the
-top level small and stable:
+This tree is a candidate namespace, not a stable or supported CLI. Its intent
+is to keep the top level small and stable:
 
 - `bitty` opens the terminal with the default shell.
 - `bitty run [OPTIONS] -- COMMAND...` starts a child program.
@@ -209,7 +211,7 @@ conflicts. The exact command tokens for that route remain undecided.
 Status: **candidate grammar example.**
 
 ```sh
-bitty x xuepoo.markdown render README.md
+bitty x example.markdown render README.md
 ```
 
 Status: **candidate contract.**
@@ -232,7 +234,7 @@ loading the plugin VM. `bitty --help` should place optional aliases under an
 `Extensions` section so users can distinguish core and third-party behavior.
 
 Package lifecycle and external executable extensions are covered in
-[Package management](../extensibility/package-management.md).
+[Package management](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/extensibility/package-management.md).
 
 ## Shipped slice: `bitty plugin` management
 
@@ -283,9 +285,9 @@ bitty list commands
 bitty list plugins
 bitty list protocols
 
-bitty inspect command xuepoo.markdown:render
+bitty inspect command example.markdown:render
 bitty inspect key ctrl+shift+m
-bitty inspect plugin xuepoo.markdown
+bitty inspect plugin example.markdown
 bitty inspect config font.size
 bitty inspect protocol kitty-graphics
 ```
@@ -358,12 +360,42 @@ same safe-mode precedence applies to all three. Non-safe behavior is unchanged.
 Implementation note: `bitty-app::config_cli::load_merged_config` returns
 `bitty_config::safe_merged()` when `--safe` is set. The contrast obligations for
 the safe outline pair are AC-1..AC-3 in
-[RFC-0001](../../../decisions/rfcs/RFC-0001-appearance-configuration.md); the safe
+[RFC-0001](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/rfcs/RFC-0001-appearance-configuration.md); the safe
 decoration invariant is rule 5 of the
 [Workspace Compositor Specification](../specifications/workspace-compositor.md);
 the layer model is owned by the
 [Configuration Model RFC](../specifications/configuration-model-rfc.md) and the
 [Lua and XDG configuration](../configuration/lua-and-xdg.md) reference.
+
+## Test mode
+
+Status: **implementation reference (experimental).** Documented from the merged
+`bitty` behavior at `92cd709` (CTX-0506, PR #831); the flag is `Implemented`
+(experimental), not `Verified`.
+
+`bitty --test-mode` runs a deterministic headless E2E servo: the real runtime
+plus the `BITTY_SOCKET` IPC surface without a display, GPU, winit event loop, or
+VM, so native tests can drive panels and assert state over the `bitty.debug/*`
+protocol. The flag is argv-only — it has no environment-variable, configuration,
+or profile equivalent — and it takes precedence over `--headless`. The test
+surface itself is documented as the test-mode E2E amendment in the
+[DevTools RFC](../specifications/devtools-rfc.md#test-mode-e2e-surface-implemented-only-amendment-a3).
+
+Loop and exit behavior:
+
+- the loop runs at a fixed 16 ms tick (~60 Hz): it pumps the PTY, drains the
+  control queue, ticks the runtime, and publishes the inspect snapshot;
+- it exits `0` only after the elevated `bitty.debug/testExit` wire verb applies;
+  there is no CLI verb for `testExit`, so a harness sends the raw method and
+  needs `BITTY_CTL_ELEVATE=debug.control`;
+- it is fail-closed: when the IPC socket cannot serve, the process reports the
+  failure on stderr and exits `1` instead of running a harness against no
+  surface. Normal startup keeps its documented fail-soft IPC behavior.
+
+Bounds: test mode grants no new scope, issues no automation bearer, changes no
+rate, redaction, or payload bound, and opens no transport beyond the
+current-user `0600` Unix socket with its accepted endpoint and peer checks
+(Unix-only; no TCP listener). The control queue and reply bounds stay in force.
 
 ## Output contract
 

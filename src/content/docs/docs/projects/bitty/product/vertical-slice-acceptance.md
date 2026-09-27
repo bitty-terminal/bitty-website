@@ -29,11 +29,15 @@ sidebar_order: 23
 > behavior. Candidate sections below are explicitly marked **Candidate**;
 > experimental evidence is marked **Experimental Implementation**. No OQ is
 > closed by this draft; closing any OQ requires a registered decision per the
-> [open-question register](../../../decisions/open-questions.md). This spec's
+> [open-question register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md). This spec's
 > experimental implementation was reviewed only as code evidence, not as
 > spec acceptance; `Accepted` still requires independent architecture,
 > security, and performance review and `just check`, `actionlint`, and
-> `act -n -W .github/workflows/ci.yml` pass on the same revision.
+> `act -n -W .github/workflows/ci.yml` pass on the same revision. The
+> revision-locked evidence status for A1-A9 and the five review gates is
+> recorded in [Vertical Slice Review Gates (A1-A9)](vertical-slice-review-gates.md):
+> the four independent review gates remain `Open`, local gates are `Evidenced`
+> on the docs revision, and no gate here is `Accepted`/`Verified`.
 
 ## Purpose and scope
 
@@ -85,9 +89,9 @@ explicitly encoded.
 | Terminal invariants | `Action` -> state, 8 invariants, damage `generation`, deterministic replay per [Terminal State RFC](../specifications/terminal-state-rfc.md) (OQ-007)                                                                                      | Which reflow algorithm is pinned for this slice, and how its hash pins the replay corpus                                                                                                                                |
 | Input families      | M1 input scope per [Compatibility Milestone RFC](../specifications/compatibility-milestone-rfc.md) (OQ-004): required VT + mouse 1000/1002/1003/1006 + focus 1004 + bracketed paste 2004                                                   | Bounded encoding limits, Kitty keyboard opt-in negotiation (`CSI ? 7727`), shift-override, pixel-scroll, pinch/swipe deferred per [Input and Pointer Contract](../specifications/input-pointer-rfc.md) (CTX-0107 draft) |
 | Text and rendering  | `cell.width` 1-or-2 + trailing spacer, `Snapshot + Damage -> DrawList` seam in `bitty-render`, `char_cell_width` approximation as headless evidence per [Text and Rendering RFC](../specifications/text-rendering-rfc.md) (CTX-0108 draft) | Authoritative EAW tables, UAX #29 grapheme-to-cell mapping, fallback/shaping/ligature/kerning, atlas eviction, DPI-aware metrics for this slice                                                                         |
-| Platform            | Tier promises and gates per [ADR 0002](../../../decisions/adrs/ADR-0002-platform-support-tiers.md) (OQ-003)                                                                                                                                | Exact per-platform manual evidence set and which Tier 2 platforms are exercised in this slice                                                                                                                           |
+| Platform            | Tier promises and gates per [ADR 0002](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0002-platform-support-tiers.md) (OQ-003)                                                                             | Exact per-platform manual evidence set and which Tier 2 platforms are exercised in this slice                                                                                                                           |
 | Performance         | PB-1..PB-7 targets per [Performance Budget RFC](../specifications/performance-budget-rfc.md) (OQ-001)                                                                                                                                      | How each budget is measured for one window / one terminal and what is deferred to later slices                                                                                                                          |
-| Headless            | Deferred daemon per [ADR 0008](../../../decisions/adrs/ADR-0008-headless.md) (OQ-020); `HeadlessRasterizer` as non-user-ready headless evidence per text-rendering draft                                                                   | Visible/headless consistency proof and deterministic headless golden corpus for this slice                                                                                                                              |
+| Headless            | Deferred daemon per [ADR 0008](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0008-headless.md) (OQ-020); `HeadlessRasterizer` as non-user-ready headless evidence per text-rendering draft                | Visible/headless consistency proof and deterministic headless golden corpus for this slice                                                                                                                              |
 
 Any row whose right column is still candidate must not be cited as normative
 until its acceptance decision is registered. `HeadlessRasterizer` in
@@ -99,8 +103,8 @@ rendering.
 
 This plan refines, but does not move or relax, the following accepted
 contracts (all 32 OQs `Accepted` as of 2026-08-29 per the
-[open-question register](../../../decisions/open-questions.md) and the
-[decision register](../../../decisions/index.md)):
+[open-question register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) and the
+[decision register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/index.md)):
 
 - [Product Vision](vision.md): small core, stable API, everything
   composable; terminal correctness and platform capability-specific boundaries
@@ -111,10 +115,10 @@ contracts (all 32 OQs `Accepted` as of 2026-08-29 per the
   extension host is mechanism/policy split.
 - [Performance Budget RFC](../specifications/performance-budget-rfc.md)
   (OQ-001): PB-1..PB-7 as design constraints and later hard gates.
-- [ADR 0002 Platform Support Tiers](../../../decisions/adrs/ADR-0002-platform-support-tiers.md)
+- [ADR 0002 Platform Support Tiers](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0002-platform-support-tiers.md)
   (OQ-003): Tier 1/2/3 promises and CI guarantees.
-- [ADR 0003 Core Workspace Topology](../../../decisions/adrs/ADR-0003-core-workspace-topology.md)
-  (OQ-005) and [ADR 0004 Upstream Dependencies](../../../decisions/adrs/ADR-0004-upstream-dependencies.md)
+- [ADR 0003 Core Workspace Topology](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0003-core-workspace-topology.md)
+  (OQ-005) and [ADR 0004 Upstream Dependencies](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0004-upstream-dependencies.md)
   (OQ-006): 16-crate workspace, MSRV 1.85 / toolchain 1.97.1,
   `vte 0.15`, `winit 0.30`, `wgpu 25.0`, `crossfont 0.9`, `portable-pty 0.9`,
   `piccolo 0.3.3`.
@@ -125,36 +129,36 @@ contracts (all 32 OQs `Accepted` as of 2026-08-29 per the
   (OQ-004): M1 required/allowed/denied matrix; differential and negative test
   obligations.
 - [Configuration Model RFC](../specifications/configuration-model-rfc.md)
-  (OQ-010), [Lua Runtime RFC](../specifications/lua-runtime-rfc.md) (OQ-009)
-  plus [ADR 0005](../../../decisions/adrs/ADR-0005-lua-pins-and-stdlib.md) (OQ-030),
-  [ADR 0006](../../../decisions/adrs/ADR-0006-os-env-policy.md) (OQ-031), and
-  [ADR 0007](../../../decisions/adrs/ADR-0007-async-gc.md) (OQ-032): `ConfigPlan`,
+  (OQ-010), [Lua Runtime RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/lua-runtime-rfc.md) (OQ-009)
+  plus [ADR 0005](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0005-lua-pins-and-stdlib.md) (OQ-030),
+  [ADR 0006](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0006-os-env-policy.md) (OQ-031), and
+  [ADR 0007](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0007-async-gc.md) (OQ-032): `ConfigPlan`,
   restricted stdlib, capability-gated `bitty.env.get`, `Send`/`Sync` boundary,
   GC tuning, budget charging.
-- [Plugin Platform RFC](../specifications/plugin-platform-rfc.md)
-  (OQ-011/012/013), [Isolation Resource RFC](../specifications/isolation-resource-rfc.md)
+- [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md)
+  (OQ-011/012/013), [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md)
   (OQ-014), [Default Distribution RFC](../specifications/default-distribution-rfc.md)
-  (OQ-002), [Package Lifecycle RFC](../specifications/package-lifecycle-rfc.md)
-  (OQ-021), [Package Follow-up RFC](../specifications/package-followup-rfc.md)
+  (OQ-002), [Package Lifecycle RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/packaging/package-lifecycle-rfc.md)
+  (OQ-021), [Package Follow-up RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/packaging/package-followup-rfc.md)
   (OQ-022/026-029): bundled-disabled-by-default, queue budgets
   PerSub 64 / PerPlugin 1024/256 KiB / Global 8192/2 MiB, VM budgets, signing
   deferred — this slice proves the terminal without exercising the plugin
   lifecycle beyond safe-mode equivalence.
 - [Rich Presentation RFC](../specifications/rich-presentation-rfc.md)
   (OQ-008/015/016), [CLI Contract RFC](../specifications/cli-contract-rfc.md)
-  (OQ-017), [IPC and Agent RFC](../specifications/ipc-agent-rfc.md) (OQ-018),
+  (OQ-017), [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md) (OQ-018),
   [DevTools RFC](../specifications/devtools-rfc.md) (OQ-019),
-  [ADR 0008 Headless](../../../decisions/adrs/ADR-0008-headless.md) (OQ-020),
+  [ADR 0008 Headless](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0008-headless.md) (OQ-020),
   [Governance RFC](../specifications/governance-rfc.md) (OQ-024),
   [Website Delivery RFC](../specifications/website-delivery-rfc.md) (OQ-023),
   [Risk Evidence RFC](../specifications/risk-evidence-rfc.md) (OQ-025):
   none are exercised as shipped behavior in this slice; rich/image/IPC/agent
   remain `Implemented` but not `Verified` at `be3bdb4`.
-- [Security Overview](../../../security/overview.md),
-  [Threat Model](../../../security/threat-model.md),
-  [Risk Register](../../../security/risk-register.md),
-  [P0 Acceptance Criteria](../../../security/p0-acceptance-criteria.md),
-  [Evidence Matrix](../../../security/evidence-matrix.md):
+- [Security Overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md),
+  [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md),
+  [Risk Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md),
+  [P0 Acceptance Criteria](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md),
+  [Evidence Matrix](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/evidence-matrix.md):
   invariant 3 (presentation never truth), invariant 4 (no hot-path plugin),
   invariant 7 (bounded inputs), T-01/T-02/T-03/T-13 and P0-AC-001..034 gating;
   `R-004` re-audited at `bitty 7a4ee41` remains `Open`.
@@ -163,9 +167,9 @@ contracts (all 32 OQs `Accepted` as of 2026-08-29 per the
   (CTX-0108, draft) are explicitly candidate predecessors; this plan does not
   promote either to accepted and carries their bounded-payload and
   non-user-ready disclaimers.
-- [Technology Strategy](../../../project/technology-strategy.md),
-  [Repository Map](../../../project/repository-map.md),
-  [Documentation Workflow](../../../development/documentation-workflow.md):
+- [Technology Strategy](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/technology-strategy.md),
+  [Repository Map](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/repository-map.md),
+  [Documentation Workflow](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/documentation-workflow.md):
   any threshold or behavior selected here is an attribution within those
   parents, never a bypass.
 
@@ -195,7 +199,7 @@ Distribution RFC). No Lua enters the output or input hot paths.
 
 ### Dependency rule
 
-All crate edges follow [ADR 0003](../../../decisions/adrs/ADR-0003-core-workspace-topology.md)
+All crate edges follow [ADR 0003](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0003-core-workspace-topology.md)
 rule 3: `Terminal -> Snapshot`, renderer never reads private grid, lower
 layers never depend on higher layers. Snapshot is the only cross-domain
 contract.
@@ -279,7 +283,7 @@ contract.
   at `7a4ee41` (CTX-0097) plus bracketed paste `CSI ? 2004 h` as defense in
   depth when the application has enabled it. PASTE payload exceeding the bound
   is truncated at a char boundary with telemetry, never expanded.
-- Clipboard policy per [P0-AC-007/008](../../../security/p0-acceptance-criteria.md)
+- Clipboard policy per [P0-AC-007/008](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md)
   and audit `7a4ee41`: OSC 52 read denied in this slice (M1), OSC 52 write
   gated and platform-limited; residual gaps (platform backends
   `arboard` X11/Wayland/macOS/Windows, real-window UX, 8192 post-acquisition
@@ -374,15 +378,15 @@ availability. Listing them here prevents scope creep and aligns with the
 source early-deferral list in the
 [Proposed Delivery Sequence](proposed-delivery-sequence.md):
 
-| Excluded                                                                                                                                | Why deferred                                                                                                                   | Owns the future contract                                                                                                                                                                                           |
-| --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Panel ecosystem (Panel, Panel Runtime, inter-Panel Event Bus, workspace compositor layout `H/V`/`LayoutTree`, Core decoration policies) | Panel generalizes `View` beyond one terminal; requires its own RFC/ADR per panel-vision                                        | [Panel Extensibility Vision](panel-vision.md) + [Workspace Compositor](../specifications/workspace-compositor.md) (both Draft)                                                                                     |
-| Browser surface, AI/Agent experience, MCP adapter, Agent harness                                                                        | Agent-friendly not agent-centric; plugin-hosted per vision; no model/vendor binding in core                                    | [AI Architecture](../specifications/ai-architecture.md) (Draft, post-1.0 per vision non-goals) + [IPC and Agent RFC](../specifications/ipc-agent-rfc.md) (Accepted, but `Implemented` not `Verified` at `be3bdb4`) |
-| `bittyd` daemon, detach/reattach, remote UI, session persistence, multiplexer ownership                                                 | Deferred to post-v1.0 per [ADR 0008](../../../decisions/adrs/ADR-0008-headless.md) with mandatory trust-boundary analysis gate | ADR 0008 + [Threat Model](../../../security/threat-model.md) invariants 5/6                                                                                                                                        |
-| Marketplace / plugin store / theme marketplace / SSH manager / fancy tabs/chrome / markdown rendering                                   | Early builds would destabilize foundations per proposed-delivery-sequence deferral list                                        | [Plugin Platform RFC](../specifications/plugin-platform-rfc.md), [Package Lifecycle RFC](../specifications/package-lifecycle-rfc.md), [Default Distribution RFC](../specifications/default-distribution-rfc.md)    |
-| Multi-window, multi-terminal, splits, tabs, workspaces, overlays                                                                        | Requires layout/lifecycle beyond one window; owned by future compositor/panel slice                                            | [Core and Plugin Boundaries](../architecture/core-boundaries.md) + [Workspace Compositor](../specifications/workspace-compositor.md)                                                                               |
-| Image protocols (Kitty Graphics, Sixel, iTerm2 inline), rich blocks/scenes/zones beyond action plumbing                                 | Image storage/placement is outside M1; deferred to rich slice                                                                  | [Rich Presentation RFC](../specifications/rich-presentation-rfc.md) (Accepted) but not exercised here beyond `OscUnknown` recording                                                                                |
-| Third-party plugin activation beyond safe-mode equivalence                                                                              | This slice proves core without attributable plugin budgets                                                                     | Plugin platform + isolation RFCs                                                                                                                                                                                   |
+| Excluded                                                                                                                                | Why deferred                                                                                                                                                                      | Owns the future contract                                                                                                                                                                                                                                                                                                           |
+| --------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Panel ecosystem (Panel, Panel Runtime, inter-Panel Event Bus, workspace compositor layout `H/V`/`LayoutTree`, Core decoration policies) | Panel generalizes `View` beyond one terminal; requires its own RFC/ADR per panel-vision                                                                                           | [Panel Extensibility Vision](panel-vision.md) + [Workspace Compositor](../specifications/workspace-compositor.md) (both Draft)                                                                                                                                                                                                     |
+| Browser surface, AI/Agent experience, MCP adapter, Agent harness                                                                        | Agent-friendly not agent-centric; plugin-hosted per vision; no model/vendor binding in core                                                                                       | [AI Architecture](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/architecture/ai-architecture.md) (Draft, post-1.0 per vision non-goals) + [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md) (Accepted, but `Implemented` not `Verified` at `be3bdb4`)     |
+| `bittyd` daemon, detach/reattach, remote UI, session persistence, multiplexer ownership                                                 | Deferred to post-v1.0 per [ADR 0008](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0008-headless.md) with mandatory trust-boundary analysis gate | ADR 0008 + [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md) invariants 5/6                                                                                                                                                                                                     |
+| Marketplace / plugin store / theme marketplace / SSH manager / fancy tabs/chrome / markdown rendering                                   | Early builds would destabilize foundations per proposed-delivery-sequence deferral list                                                                                           | [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md), [Package Lifecycle RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/packaging/package-lifecycle-rfc.md), [Default Distribution RFC](../specifications/default-distribution-rfc.md) |
+| Multi-window, multi-terminal, splits, tabs, workspaces, overlays                                                                        | Requires layout/lifecycle beyond one window; owned by future compositor/panel slice                                                                                               | [Core and Plugin Boundaries](../architecture/core-boundaries.md) + [Workspace Compositor](../specifications/workspace-compositor.md)                                                                                                                                                                                               |
+| Image protocols (Kitty Graphics, Sixel, iTerm2 inline), rich blocks/scenes/zones beyond action plumbing                                 | Image storage/placement is outside M1; deferred to rich slice                                                                                                                     | [Rich Presentation RFC](../specifications/rich-presentation-rfc.md) (Accepted) but not exercised here beyond `OscUnknown` recording                                                                                                                                                                                                |
+| Third-party plugin activation beyond safe-mode equivalence                                                                              | This slice proves core without attributable plugin budgets                                                                                                                        | Plugin platform + isolation RFCs                                                                                                                                                                                                                                                                                                   |
 
 Any proposal to pull an excluded item into this slice requires a new scoped
 ADR or RFC; it must not enter via an edit to this document alone and must
@@ -406,8 +410,8 @@ address the owning RFC's acceptance gates.
   `v0.1` row in the [Release Ladder](release-ladder.md) candidate
   maturity ladder, but ladder placement alone does not authorize implementation.
 - CTX-0111 is expected to reconcile this plan into the
-  [Roadmap: Now / Next / Later](../../../roadmap/now-next-later.md) horizon and
-  [`TODO.md`](../../../../TODO.md) sequencing; that reconciliation belongs to
+  [Roadmap: Now / Next / Later](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/roadmap/now-next-later.md) horizon and
+  [`TODO.md`](https://github.com/bitty-terminal/bitty-docs/blob/main/TODO.md) sequencing; that reconciliation belongs to
   CTX-0111, not to a side edit here, and is recorded as a follow-up dependency.
 - Cross-repo implementation link (CTX-0116, 2026-08-31, experimental):
   `bitty` `CTX-0095` `c0aadd2` `feat(runtime): implement real single-window vertical slice`
@@ -421,8 +425,8 @@ address the owning RFC's acceptance gates.
   authorize bypass of the review gates above. Candidate vs experimental vs
   accepted vs implemented vs verified remains distinct until independent review
   and evidence are recorded per `Draft -> Experimental Implementation -> Accepted -> Verified`.
-- CTX-0116 reconciled this plan into [Roadmap: Now / Next / Later](../../../roadmap/now-next-later.md)
-  and [`TODO.md`](../../../../TODO.md) as experimental evidence; spec remains `Draft`.
+- CTX-0116 reconciled this plan into [Roadmap: Now / Next / Later](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/roadmap/now-next-later.md)
+  and [`TODO.md`](https://github.com/bitty-terminal/bitty-docs/blob/main/TODO.md) as experimental evidence; spec remains `Draft`.
 
 ## Verification and evidence (candidate)
 
@@ -474,7 +478,7 @@ mechanized proof below.
   `bitty debug snapshot` behind the DevTools RFC scope) emits `Snapshot +
 Damage` for offline inspection. Its scope and schema remain owned by the
   [DevTools RFC](../specifications/devtools-rfc.md) and
-  [Threat Model](../../../security/threat-model.md) debug-instrumentation
+  [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md) debug-instrumentation
   permissions; it does not expose GPU/PTY internals.
 
 ### Platform and budget evidence
@@ -493,7 +497,11 @@ Damage` for offline inspection. Its scope and schema remain owned by the
 
 ### Review gates (block implementation until passed)
 
-The slice is **not authorized** for product code until all hold:
+The slice is **not authorized** for product code until all hold. The
+revision-locked evidence status for each gate and for A1-A9 is maintained in
+the [Vertical Slice Review Gates (A1-A9)](vertical-slice-review-gates.md)
+record; as of that record the four independent review gates are `Open` and only
+the local-gates gate is `Evidenced` on the docs revision.
 
 1. **Architecture review** — slice scope, single-window ownership, dependency
    diagram, damage/replay contract, and crate edges reviewed by the
@@ -520,7 +528,7 @@ as its accepted design constraint.
 ## Risks and residual gaps (candidate disclosure)
 
 - `R-004` remains `Open` at `7a4ee41` per the
-  [Risk Register](../../../security/risk-register.md) and [Evidence Matrix](../../../security/evidence-matrix.md);
+  [Risk Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md) and [Evidence Matrix](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/evidence-matrix.md);
   platform clipboard backends (arboard X11/Wayland/macOS/Windows), real-window
   UX, and the `8192`-byte post-acquisition bound scope are residual and are
   not claimed fixed by this slice.
@@ -542,7 +550,7 @@ as its accepted design constraint.
   draft to accepted, update its accepted source and link the acceptance
   decision here — do not silently promote candidate prose.
 - When the slice moves from `Draft` to `Accepted` to `Implemented` to
-  `Verified`, update its status and the linked [Risk Register](../../../security/risk-register.md)
+  `Verified`, update its status and the linked [Risk Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md)
   evidence note per the [Risk Evidence RFC](../specifications/risk-evidence-rfc.md);
   `Verified` requires independent `security-auditor` and P0-AC evidence. The
   update belongs in a dedicated CarryCtx task for that slice, not as a side
@@ -550,10 +558,10 @@ as its accepted design constraint.
 - Keep every link local and repository-portable; no local filesystem link
   appears in workspace roots or any `AGENTS.md`. Validate with `just links`
   and `just metadata` before any PR.
-- English-only per the [Documentation Workflow](../../../development/documentation-workflow.md);
+- English-only per the [Documentation Workflow](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/documentation-workflow.md);
   flat frontmatter with no arrays or maps; repository hygiene via `just check`.
 - Canonical sync for the broader program remains
-  [`docs/project/project-state.json`](../../../project/project-state.json)
+  [`docs/project/project-state.json`](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/project-state.json)
   validated by `bun .github/scripts/check-state.mjs` (synchronized `a8735d0`,
   chain `d4d75e9 -> c0aadd2 -> 7e3104d -> a8735d0`, `R-004` `Open`, `R-005`/`R-006`/`R-007`
   `Mitigated`, experimental not `Verified`); `c0aadd2`/`a8735d0` were added via
@@ -566,18 +574,19 @@ as its accepted design constraint.
 - [Architecture Overview](../architecture/overview.md) — layers and execution domains.
 - [Core and Plugin Boundaries](../architecture/core-boundaries.md) — ownership and hot-path invariants.
 - [Performance Budget RFC](../specifications/performance-budget-rfc.md) — PB-1..PB-7 targets (OQ-001).
-- [ADR 0002 Platform Support Tiers](../../../decisions/adrs/ADR-0002-platform-support-tiers.md) — Tier 1/2/3 (OQ-003).
-- [ADR 0003 Core Workspace Topology](../../../decisions/adrs/ADR-0003-core-workspace-topology.md) — 16-crate DAG (OQ-005).
-- [ADR 0004 Upstream Dependencies](../../../decisions/adrs/ADR-0004-upstream-dependencies.md) — `vte`, `winit`, `wgpu`, `crossfont`, `portable-pty` (OQ-006).
-- [ADR 0008 Headless Daemon, Detach/Reattach and Remote UI Trust Boundary](../../../decisions/adrs/ADR-0008-headless.md) — daemon deferred to post-v1.0 (OQ-020).
+- [ADR 0002 Platform Support Tiers](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0002-platform-support-tiers.md) — Tier 1/2/3 (OQ-003).
+- [ADR 0003 Core Workspace Topology](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0003-core-workspace-topology.md) — 16-crate DAG (OQ-005).
+- [ADR 0004 Upstream Dependencies](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0004-upstream-dependencies.md) — `vte`, `winit`, `wgpu`, `crossfont`, `portable-pty` (OQ-006).
+- [ADR 0008 Headless Daemon, Detach/Reattach and Remote UI Trust Boundary](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0008-headless.md) — daemon deferred to post-v1.0 (OQ-020).
 - [Terminal State RFC](../specifications/terminal-state-rfc.md) — 8 invariants, replay, damage, state hash (OQ-007).
 - [Compatibility Milestone RFC](../specifications/compatibility-milestone-rfc.md) — M1 protocol matrix (OQ-004).
 - [Input and Pointer Contract](../specifications/input-pointer-rfc.md) — keyboard/mouse/wheel/IME/bounded encoding (CTX-0107 draft).
 - [Text and Rendering RFC](../specifications/text-rendering-rfc.md) — segmentation/width/bidi/shaping/atlas/DPI (CTX-0108 draft).
-- [Security Overview](../../../security/overview.md), [Threat Model](../../../security/threat-model.md), [Risk Register](../../../security/risk-register.md), [P0 Acceptance Criteria](../../../security/p0-acceptance-criteria.md), [Evidence Matrix](../../../security/evidence-matrix.md) — normative P0 gates.
+- [Security Overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md), [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md), [Risk Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md), [P0 Acceptance Criteria](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md), [Evidence Matrix](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/evidence-matrix.md) — normative P0 gates.
 - [Proposed Delivery Sequence](proposed-delivery-sequence.md) — candidate spine `PTY -> VT -> Grid -> Font -> GPU -> Correct Terminal -> Config` and early-deferral list.
 - [Release Ladder](release-ladder.md) — `v0.1` minimal terminal slice mapping.
-- [Now / Next / Later](../../../roadmap/now-next-later.md) — candidate horizon that will carry the slice sequencing once CTX-0111 reconciles it.
-- [Documentation Workflow](../../../development/documentation-workflow.md) — lifecycle `Draft -> experimental review evidence -> Accepted -> normative`.
-- [Open-Question Register](../../../decisions/open-questions.md) — 32 OQs `Accepted` as of 2026-08-29.
-- [Decision Register](../../../decisions/index.md) — accepted foundation artifacts.
+- [Vertical Slice Review Gates (A1-A9)](vertical-slice-review-gates.md) — revision-locked evidence status for the acceptance criteria and the five review gates.
+- [Now / Next / Later](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/roadmap/now-next-later.md) — candidate horizon that will carry the slice sequencing once CTX-0111 reconciles it.
+- [Documentation Workflow](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/documentation-workflow.md) — lifecycle `Draft -> experimental review evidence -> Accepted -> normative`.
+- [Open-Question Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) — 32 OQs `Accepted` as of 2026-08-29.
+- [Decision Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/index.md) — accepted foundation artifacts.

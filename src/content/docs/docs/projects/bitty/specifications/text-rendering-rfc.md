@@ -29,7 +29,7 @@ sidebar_order: 14
 > (document). Candidate prose is explicitly marked; accepted facts are cited
 > separately; experimental code is distinct from `Draft` and `Verified`.
 > No OQ is closed by this draft; closing any OQ requires a registered
-> decision per the [open-question register](../../../decisions/open-questions.md).
+> decision per the [open-question register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md).
 
 ## Purpose and scope
 
@@ -60,18 +60,18 @@ and owned elsewhere: the VT parser and `Action` stream (OQ-007,
 `ImagePlacement` limits and placement (OQ-008, [Rich Presentation RFC](rich-presentation-rfc.md));
 semantic zones and `RichBlock`/`Scene` composition (OQ-015/016, Rich RFC);
 CLI and IPC framing and scopes (OQ-017/018); per-plugin isolation ceilings
-(OQ-014, [Isolation Resource RFC](isolation-resource-rfc.md)) except where
+(OQ-014, [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md)) except where
 this RFC adds text-specific sub-budgets.
 
 ### Candidate vs accepted status
 
-| Area            | Accepted fact (cite)                                                                                                                                                                                                                       | Candidate in this draft                                                                                                                            |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Grid invariants | `cell.width` is `1` or `2`, trailing spacer invariant (Terminal State RFC, invariant 2/3)                                                                                                                                                  | Which scalar sequences occupy `2` columns and how ZWJ/VS resolve                                                                                   |
-| Width function  | `crates/bitty-term-state/src/cell.rs::char_cell_width` is the single implementation today (compact approximation, `forbid(unsafe)`, headless)                                                                                              | Authoritative EAW tables, grapheme-to-cell mapping, and ambiguous-width policy that will replace the approximation once accepted                   |
-| Renderer seam   | `bitty-render::{GlyphRasterizer, GlyphCache, AtlasLayout, GridRenderer}` and the `Snapshot + Damage -> DrawList -> Surface::present` pipeline are `Implemented` at `be3bdb4` (`HeadlessRasterizer` headless evidence only, not user-ready) | Fallback chain, shaping, ligature/kerning, color-emoji, variable-font, bidi-reordered present, and DPI-aware cell metrics that sit above that seam |
-| Platform        | `winit@0.30` + `wgpu@25.0` via `bitty-platform`/`bitty-render`; `crossfont@0.9` wrapped behind `GlyphRasterizer` per [ADR 0004](../../../decisions/adrs/ADR-0004-upstream-dependencies.md)                                                 | Exact shaper crate, emoji backend, and font-enumeration policy remain candidate                                                                    |
-| Performance     | PB-1..PB-7 are accepted targets (Performance Budget RFC)                                                                                                                                                                                   | Text-specific sub-budgets and attribution for shaping, fallback, and atlas work against PB-4/PB-6/PB-7                                             |
+| Area            | Accepted fact (cite)                                                                                                                                                                                                                          | Candidate in this draft                                                                                                                            |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Grid invariants | `cell.width` is `1` or `2`, trailing spacer invariant (Terminal State RFC, invariant 2/3)                                                                                                                                                     | Which scalar sequences occupy `2` columns and how ZWJ/VS resolve                                                                                   |
+| Width function  | `crates/bitty-term-state/src/cell.rs::char_cell_width` is the single implementation today (compact approximation, `forbid(unsafe)`, headless)                                                                                                 | Authoritative EAW tables, grapheme-to-cell mapping, and ambiguous-width policy that will replace the approximation once accepted                   |
+| Renderer seam   | `bitty-render::{GlyphRasterizer, GlyphCache, AtlasLayout, GridRenderer}` and the `Snapshot + Damage -> DrawList -> Surface::present` pipeline are `Implemented` at `be3bdb4` (`HeadlessRasterizer` headless evidence only, not user-ready)    | Fallback chain, shaping, ligature/kerning, color-emoji, variable-font, bidi-reordered present, and DPI-aware cell metrics that sit above that seam |
+| Platform        | `winit@0.30` + `wgpu@25.0` via `bitty-platform`/`bitty-render`; `crossfont@0.9` wrapped behind `GlyphRasterizer` per [ADR 0004](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0004-upstream-dependencies.md) | Exact shaper crate, emoji backend, and font-enumeration policy remain candidate                                                                    |
+| Performance     | PB-1..PB-7 are accepted targets (Performance Budget RFC)                                                                                                                                                                                      | Text-specific sub-budgets and attribution for shaping, fallback, and atlas work against PB-4/PB-6/PB-7                                             |
 
 Any row whose right column is still candidate must not be cited as normative
 until its acceptance decision is registered. The two evidence-only
@@ -97,15 +97,20 @@ evidence**; they are headless test seams, not user-facing typography.
   [Core and Plugin Boundaries](../architecture/core-boundaries.md): one-way
   crate DAG; `Terminal -> Snapshot` only, renderer never reads Terminal
   private structures; Text and Presentation are Core-owned mechanisms.
-- [ADR 0004](../../../decisions/adrs/ADR-0004-upstream-dependencies.md): the
+  Bidi reordering, shaping, and text layout are Core-owned because they
+  change Terminal Truth invariants (grapheme -> cell mapping, cursor,
+  selection, snapshot/damage); plugins may only add presentation above this
+  seam and never reorder or re-shape Terminal Truth
+  ([DIR-014](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/index.md#accepted-working-directions)).
+- [ADR 0004](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0004-upstream-dependencies.md): the
   rendering rows wrap `vte@0.15`, `winit@0.30`, `wgpu@25.0`, `crossfont@0.9`;
   shaping/fallback decisions must revise the ADR, not silently add a new
   upstream.
-- [Platform Support Tiers](../../../decisions/adrs/ADR-0002-platform-support-tiers.md):
+- [Platform Support Tiers](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0002-platform-support-tiers.md):
   Tier 1 Linux/macOS/Windows plus Tier 2 BSD expectations for DPI and font
   stack behavior.
-- [Security Overview](../../../security/overview.md), [Threat Model](../../../security/threat-model.md),
-  and [P0 Acceptance Criteria](../../../security/p0-acceptance-criteria.md):
+- [Security Overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md), [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md),
+  and [P0 Acceptance Criteria](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md):
   invariant 3 (presentation never Terminal Truth), invariant 4 (no hot-path
   plugin execution), invariant 7 (bounded inputs), P0-AC-001/002 (bounded
   parser), graphics T-02/T-03 limits, and the fuzz/differential gates.
@@ -114,7 +119,7 @@ evidence**; they are headless test seams, not user-facing typography.
   PB-6 throughput floor (`>=40 MB/s` parse-and-render), PB-7 idle
   (`<=1% CPU`, zero wakeups when idle). See
   [Reconciliation with performance budgets](#reconciliation-with-performance-budgets).
-- [Isolation Resource RFC](isolation-resource-rfc.md):
+- [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md):
   global and per-plugin budgets are the parent envelope; text features must
   not borrow from them without attribution.
 
@@ -970,7 +975,7 @@ each will require a follow-up decision. Each cites the gate that will accept it.
 
 ## Acceptance criteria
 
-Per the [open-question register](../../../decisions/open-questions.md) close rule,
+Per the [open-question register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) close rule,
 this RFC stays `draft` (candidate) until all of the following are satisfied in
 the same PR that promotes its frontmatter to `accepted`:
 
@@ -981,7 +986,7 @@ the same PR that promotes its frontmatter to `accepted`:
 2. Affected documents were synchronized in the same change: this RFC's
    frontmatter, [Core and Plugin Boundaries](../architecture/core-boundaries.md),
    [Architecture Overview](../architecture/overview.md),
-   the [Decision Register](../../../decisions/index.md), and the
+   the [Decision Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/index.md), and the
    [Specifications index](README.md) reference the accepted contract rather than
    describing a parallel design; `docs/projects/bitty/product/unicode-ime.md`'s overlay portion
    cites this RFC as the authoritative presentation half.
@@ -1001,10 +1006,10 @@ the same PR that promotes its frontmatter to `accepted`:
 - [Rich Presentation RFC](rich-presentation-rfc.md) (OQ-008/015/016) — `ImageStore`/`ImagePlacement` bounded budgets IMG-1..IMG-9 and SCN-1..SCN-5, `Image != Cell`, scene composition, authenticated structured transport.
 - [Compatibility Milestone RFC](compatibility-milestone-rfc.md) (OQ-004) — M1-required VT subset, UTF-8 foundation.
 - [Performance Budget RFC](performance-budget-rfc.md) (OQ-001) — PB-1..PB-7 budgets and cross-cutting rules.
-- [Isolation Resource RFC](isolation-resource-rfc.md) (OQ-014) — RC-1..RC-10 ceilings and failure semantics.
-- [ADR 0003](../../../decisions/adrs/ADR-0003-core-workspace-topology.md) — crate DAG, MSRV, headless rendering seam.
-- [ADR 0004](../../../decisions/adrs/ADR-0004-upstream-dependencies.md) — adopt/wrap/reject choices and maintenance policy.
-- [Security Overview](../../../security/overview.md) and [Threat Model](../../../security/threat-model.md) — invariants, trust boundaries, T-01..T-14.
+- [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md) (OQ-014) — RC-1..RC-10 ceilings and failure semantics.
+- [ADR 0003](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0003-core-workspace-topology.md) — crate DAG, MSRV, headless rendering seam.
+- [ADR 0004](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0004-upstream-dependencies.md) — adopt/wrap/reject choices and maintenance policy.
+- [Security Overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md) and [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md) — invariants, trust boundaries, T-01..T-14.
 - [Core and Plugin Boundaries](../architecture/core-boundaries.md) — mechanism vs policy, Text as Core-owned.
 - `bitty/docs/product/unicode-ime.md` (CTX-0079 draft) — bounded `char_cell_width` approximation, `tests/compat/unicode/corpus/*.bin` corpora, `MAX_CORPUS_BYTES`/`MAX_ACTIONS` bounds, IME preedit/commit bounded model.
 - `crates/bitty-term-state/src/cell.rs` — `char_cell_width`, `is_zero_width`, `is_wide`, width invariants.

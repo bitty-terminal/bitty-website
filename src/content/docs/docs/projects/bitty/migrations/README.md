@@ -11,9 +11,10 @@ sidebar_order: 10
 
 # Migrations
 
-There are no released versions to migrate between. This directory remains an
-empty-state contract until a supported upgrade introduces a user, configuration,
-plugin, package, storage, or protocol transition.
+There are no supported versions to migrate between. Pre-alpha releases exist
+(latest `v0.0.20`), but no Stable or `Compatible` contract is claimed, so this
+directory remains an empty-state contract until a supported upgrade introduces
+a user, configuration, plugin, package, storage, or protocol transition.
 
 ## Admission criteria
 

@@ -68,20 +68,20 @@ Out of scope (owned elsewhere):
 - image, rich-block, scene, zone, and structured transport contracts (OQ-008,
   OQ-015, OQ-016, [Rich Presentation RFC](rich-presentation-rfc.md));
 - Plugin API v1, capability families, manifest, and event pipeline classes
-  (OQ-011, OQ-012, OQ-013, [Plugin Platform RFC](plugin-platform-rfc.md));
+  (OQ-011, OQ-012, OQ-013, [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md));
 - per-plugin budgets, queue ceilings, and adversarial isolation tests (OQ-014,
-  [Isolation Resource RFC](isolation-resource-rfc.md));
+  [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md));
 - Lua runtime, standard-library subset, and module search rules (OQ-009,
-  [Lua Runtime RFC](lua-runtime-rfc.md)) and configuration layering (OQ-010,
+  [Lua Runtime RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/lua-runtime-rfc.md)) and configuration layering (OQ-010,
   [Configuration Model RFC](configuration-model-rfc.md));
 - CLI grammar and exit codes (OQ-017) and IPC wire format (OQ-018).
 
 ## Normative sources this specification must not weaken
 
-- [Security Overview](../../../security/overview.md): untrusted-by-default posture,
+- [Security Overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md): untrusted-by-default posture,
   invariants 3 (presentation never Terminal Truth), 4 (no hot-path execution),
   7 (bounded inputs), and the P0 resource and capability rows.
-- [Threat Model](../../../security/threat-model.md): untrusted PTY, plugin, and MCP
+- [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md): untrusted PTY, plugin, and MCP
   content, presentation-only plugin influence, resource exhaustion (T-01), and
   terminal-to-desktop capability gates (T-13).
 - [Core and Plugin Boundaries](../architecture/core-boundaries.md): mechanism
@@ -134,7 +134,7 @@ Runtime and an
 inter-Panel Event Bus are candidate future components, not contracts defined
 here. Their lifecycle, event taxonomy, bounds, and host/plugin boundary belong
 to that future RFC, informed by the future Panel Extensibility Vision document
-(CTX-0094, pending review) and accepted [IPC and Agent RFC](ipc-agent-rfc.md).
+(CTX-0094, pending review) and accepted [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md).
 
 Hyprland is a read-only philosophy reference for workspace tiling. Its
 compositor windows are not Bitty Panels: Bitty `Window` means the native OS
@@ -344,7 +344,7 @@ composition, never by `LayoutProvider` plugins or `View` content.
 | --------------- | -------------------------------------------------------------- | ---------------- | ----------- | --------- | ----- |
 | `gaps_in`       | Gap between adjacent `View`s inside one `Workspace`            | 6 px             | 0 to 32 px  | 0         | Core  |
 | `gaps_out`      | Gap between the `Workspace` tiling area and `Window` edge      | 6 px             | 0 to 32 px  | 0         | Core  |
-| `border`        | Border thickness drawn around each `View`                      | 2 px             | 0 to 8 px   | 1         | Core  |
+| `border`        | Border thickness drawn around each `View`                      | 1 px             | 0 to 8 px   | 1         | Core  |
 | `radius`        | Corner radius for `View` frames                                | 6 px             | 0 to 16 px  | 0         | Core  |
 | `content_inset` | Padding between the `View` frame border and its hosted content | 6 px             | 0 to 32 px  | 0         | Core  |
 
@@ -373,6 +373,20 @@ Rules:
    are `6` logical px.
 6. `bitty --safe` starts with `gaps_in = 0`, `gaps_out = 0`, `border = 1`,
    `radius = 0`, `content_inset = 0` regardless of user configuration.
+7. Overlay bounds (`LayoutTree` overlay nodes for floats, popups, and other
+   tiers) are authored in cells, in the same coordinate space as the
+   `Workspace` container. The cell solver uses them directly. The
+   physical-pixel present solver scales them by the live cell size and then
+   clips them to its parent area. An overlay's present frame and hit-test
+   rectangle therefore equal its cell allocation scaled by the live cell size
+   (clipped to the parent area). Its hosted grid follows the content
+   rectangle inside that frame, after `border` and `content_inset`.
+
+Change provenance for rule 7 and the topmost hit-test sentence in the
+Interactions rule 1 (CTX-0807/CTX-0803, `bitty` PR #1485): both record the
+overlay-unit and hit-test alignment shipped in `bitty` `d2ccd64`. The
+CTX-0333 provenance note below covers the decoration defaults, not these
+additions.
 
 Change provenance (CTX-0333, `bitty` PR #562): this amendment raises
 `decoration.gaps_in` from `4` to `6` so the default sibling
@@ -395,7 +409,7 @@ contract. It does not promote this specification beyond `Accepted`, does not
 close its open items, and does not claim `Verified`/`Compatible`; the full
 compositor above remains the target. Entries 1-4 record the single-window
 compositor slice; entries 5-6 record `bitty-ui` presentation primitives merged
-later. All cited commits are ancestors of `origin/main`, verified read-only via
+later; entry 7 records the overlay-unit and hit-test alignment. All cited commits are ancestors of `origin/main`, verified read-only via
 `merge-base --is-ancestor`.
 
 What merged, exactly:
@@ -450,14 +464,31 @@ What merged, exactly:
    geometry are unchanged, and the heuristic is unit-tested. This is an opt-in
    `bitty-ui` constructor, not the `LayoutProvider` dwindle plugin promised
    above, and the app split path still chooses an explicit axis.
+7. **Overlay units and topmost hit testing** (`bitty` PR #1485 `d2ccd64`,
+   CTX-0807/CTX-0803, closes `bitty` #1481):
+   - `layout_with_decoration_scaled` scales overlay bounds by the live cell
+     size (`OverlayUnits` in `crates/bitty-ui/src/decoration.rs`), per rule 7
+     above. Before this, a float presented as a sliver whose pixel frame
+     equalled its cell numbers, with a `1 x 1` hosted grid. The unit-agnostic
+     `layout_with_decoration` output is unchanged.
+   - `cursor_to_present_cell`, `cursor_to_leaf_cell`, and the in-grid status
+     bar probe resolve the topmost frame in paint order, per the Interactions
+     rule 1 below.
+   - Evidence: `crates/bitty-runtime/tests/overlay_units_present.rs` and the
+     decoration unit tests. The View-owned selection and pointer routing that
+     ships in the same PR is recorded in the
+     [Input and Pointer Contract](input-pointer-rfc.md).
 
-Explicit non-claims: live present-path painting of px decoration is
-**deferred** (`bitty` CTX-0294 on the CTX-0238g stage-2 renderer lane; the
-single-window path still paints the cell-unit `layout.*` gaps), and the
-`LayoutProvider` plugin algorithms, drag/resize interactions, and scratchpad
-retention in this specification are not implemented in the slice. The
-`smart_split` constructor and the overlay tiers above are opt-in `bitty-ui`
-primitives recorded as evidence, not live compositor wiring.
+Explicit non-claims: the `LayoutProvider` plugin algorithms, drag/resize
+interactions, and scratchpad retention in this specification are not
+implemented in the slice. Live present-path px decoration painting is no longer
+a non-claim (`bitty` PR #519 CTX-0294 and PR #533 CTX-0311 shipped it; the
+single-window path also still paints the cell-unit `layout.*` gaps). The
+`smart_split` constructor and the `overlay_tiered`/`overlay_stack`
+constructors above are opt-in `bitty-ui` primitives recorded as evidence, not
+live compositor wiring. The `OverlayTier` ordering itself is consumed at
+runtime: the present path paints frames in tier order, and hit testing
+resolves the topmost tier (entry 7).
 
 ## Layout algorithms as plugin via LayoutProvider
 
@@ -535,7 +566,10 @@ Rules:
 
 1. Drag and resize never run inside the VT parser or damage-to-snapshot path;
    they are presentation interactions with explicit hit testing against
-   decoration-inclusive `View` rectangles.
+   decoration-inclusive `View` rectangles. Hit testing resolves the topmost
+   `View` in paint order (base, then overlay tiers, later solver order
+   winning within a tier), so a visible overlay owns the pointer over the
+   `View` it covers.
 2. Cross-workspace moves are atomic: both source and destination `LayoutTree`s
    are validated before either is committed; on validation failure both remain
    unchanged and a diagnostic is emitted.
@@ -635,17 +669,17 @@ Lua and no bypass of the existing P0 gates.
   (`bitty` PR #562).
 - The focused/idle outline color contract and the panel open/close, focus, and
   workspace-switch animations are **accepted** in
-  [RFC-0001](../../../decisions/rfcs/RFC-0001-appearance-configuration.md) (OQ-039)
+  [RFC-0001](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/rfcs/RFC-0001-appearance-configuration.md) (OQ-039)
   and
-  [RFC-0002](../../../decisions/rfcs/RFC-0002-panel-animations.md) (OQ-040),
+  [RFC-0002](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/rfcs/RFC-0002-panel-animations.md) (OQ-040),
   closed 2026-09-12 in the
-  [open-question register](../../../decisions/open-questions.md) and shipped in
+  [open-question register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) and shipped in
   `bitty` PR #580 (CTX-0341). This accepted specification does not define their
   values and owns no animation behavior; the shipped animation keys are
   documented in [Lua and XDG](../configuration/lua-and-xdg.md) and this
   specification's decoration contract is unchanged.
 - A focus/idle outline **width** contract is **accepted** in
-  [RFC-0001](../../../decisions/rfcs/RFC-0001-appearance-configuration.md) (OQ-045,
+  [RFC-0001](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/rfcs/RFC-0001-appearance-configuration.md) (OQ-045,
   docs `CTX-0163`, 2026-09-12):
   `decoration.border_width` / `_focused` / `_idle` in logical px, resolving
   per `View` and supplying the AC-2 non-color cue. It is accepted as a contract
@@ -654,7 +688,7 @@ Lua and no bypass of the existing P0 gates.
   rectangle and must not move the content grid.
 - The per-View/per-panel appearance override layer
   (`views.<selector>.*`) is **accepted** in
-  [RFC-0001](../../../decisions/rfcs/RFC-0001-appearance-configuration.md) (OQ-041,
+  [RFC-0001](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/rfcs/RFC-0001-appearance-configuration.md) (OQ-041,
   docs `CTX-0163`, 2026-09-12): per-field per-`View` resolution of border color,
   outline width, and background image/fit over the Core-owned decoration
   values. It adds a presentation-resolution pass and per-`View` presentation
@@ -662,7 +696,7 @@ Lua and no bypass of the existing P0 gates.
   enters rectangle math.
 - Point-in-time decoration citations in the pre-studies still spell the
   pre-CTX-0333 defaults: [Panel Runtime pre-study](panel-runtime-pre-study.md)
-  `gaps_in 4` and [Browser and Agent pre-study](browser-agent-pre-study.md)
+  `gaps_in 4` and [Browser and Agent pre-study](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/interfaces/browser-agent-pre-study.md)
   `gaps_in 4` / `--safe 0/0/1/0`. They cite committed snapshots, so they are
   recorded here as reference edges for a later reviewed sync rather than edited
   in place.
@@ -670,13 +704,24 @@ Lua and no bypass of the existing P0 gates.
   (docs `CTX-0167`, `bitty` `b761c03`) records shipped-versus-missing panel
   chrome, semantic-block projection, hint/composer wiring, and rich panel
   content. It cites this accepted contract and proposes no change to it.
+- The recorded Panel/Workspace interaction direction — `Mod`+left-drag
+  repositioning, free validated resizing, `Mod`+V floating, Bar-edge
+  configurability, stable-identity display ordinals, the never-empty Workspace
+  invariant, cross-Workspace drag, drag-to-Bar semantics, and the
+  capability-gated Lua surface — is a **candidate** design record in the
+  [Panel and Workspace Interaction (Candidate)](panel-workspace-interaction-candidate.md).
+  It refines this specification's interactions, identity, and no-window-leak
+  rules by reference only, defines no contract, and changes nothing here; its
+  open items (including the unified `Mod` per
+  [OQ-052](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md))
+  remain open.
 
 This specification is accepted as a standalone contract per CTX-0118; it
 does not close an open question on its own beyond its standalone acceptance and
 does not claim `Verified` or `Compatible` status. Remaining open items above
 require follow-up RFCs or tasks per the
-[documentation workflow](../../../development/documentation-workflow.md) and
-[open-question register](../../../decisions/open-questions.md).
+[documentation workflow](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/documentation-workflow.md) and
+[open-question register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md).
 
 ## References
 
@@ -685,7 +730,7 @@ require follow-up RFCs or tasks per the
 - Waybar: highly customizable Wayland bar with composable modules and
   `modules-left`, `modules-center`, `modules-right` slot composition.
 - [Configuration Model RFC](configuration-model-rfc.md)
-- [Plugin Platform RFC](plugin-platform-rfc.md)
-- [Isolation Resource RFC](isolation-resource-rfc.md)
+- [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md)
+- [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md)
 - [Rich Presentation RFC](rich-presentation-rfc.md)
-- [Lua Runtime RFC](lua-runtime-rfc.md)
+- [Lua Runtime RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/lua-runtime-rfc.md)

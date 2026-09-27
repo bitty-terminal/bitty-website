@@ -1,6 +1,6 @@
 ---
 title: Rich content and presentation interfaces
-description: Pre-implementation contract for terminal truth, rich blocks, semantic sources, and presentation composition
+description: Candidate contract for terminal truth, rich blocks, semantic sources, and presentation composition
 category: extensibility
 audience: plugin-author
 document_type: specification
@@ -11,9 +11,10 @@ sidebar_order: 30
 
 # Rich content and presentation interfaces
 
-> Status: pre-implementation architecture. This document defines an accepted
-> boundary and candidate interfaces; it does not describe implemented APIs or
-> protocols.
+> Status: candidate architecture. This document defines an accepted boundary
+> and candidate interfaces; experimental code exists for parts of the image
+> intake path, but no stable or supported API or protocol is claimed, and
+> nothing here is `Verified` or `Compatible`.
 
 Bitty should support streaming Markdown and other structured output without
 rewriting PTY bytes or changing the VT grid that terminal applications depend
@@ -47,9 +48,9 @@ routing, layout, scrolling, and damage tracking are core mechanisms. Markdown,
 AI, JSON, CSV, diagnostics, notebooks, and other semantics belong in plugins.
 
 Bounded parsing and resource policy are normative in the
-[security overview](../../../security/overview.md). Rich-content exhaustion and local
+[security overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md). Rich-content exhaustion and local
 resource access remain open risks R-002, R-003, R-005, and R-021 in the
-[security risk register](../../../security/risk-register.md).
+[security risk register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md).
 
 ## Rich content must have an explicit semantic source
 
@@ -232,7 +233,7 @@ diagnosed or resolved by explicit policy.
 
 Presentation must not rely on the last plugin loaded. Ownership, conflict
 handling, alternate-screen restrictions, and safe overlays are specified in
-[Plugin system](../extensibility/plugin-system.md).
+[Plugin system](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/extensibility/plugin-system.md).
 
 ## Developer tools direction
 
@@ -252,13 +253,16 @@ feature.
 
 Status: **experimental review evidence.** `bitty` `1fc6294` (CTX-0214,
 PR #376, `crates/bitty-rich/src/kitty.rs`) merged an intake-only Kitty
-graphics milestone: chunked `m=` transmissions assemble their exact bytes,
-admission evicts the oldest entries first under a 320,000,000-byte
-(`320 * 1000 * 1000`, decimal) stored-plus-in-flight ledger with fail-closed
-rejections, the single-shot path keeps its historical truncation unchanged,
-and no decode, placement, animation, or renderer coupling is included. The
-full intake semantics, bounds, and deferred-rendering boundary are recorded in
-the [Rich Presentation RFC](../specifications/rich-presentation-rfc.md).
+graphics milestone: chunked `m=` transmissions assemble their exact bytes
+under fail-closed admission (update: `bitty` #771, CTX-0467, unifies the
+chunked per-transmission cap with the 4 KiB single-shot cap and replaces
+chunked eviction with `Oversize`/`LedgerFull` failure), the single-shot path
+keeps its historical truncation and is the only path that evicts by bounded
+FIFO under a 320,000,000-byte (`320 * 1000 * 1000`, decimal)
+stored-plus-in-flight ledger, and no decode, placement, animation, or
+renderer coupling is included. The full intake semantics, bounds, and
+deferred-rendering boundary are recorded in the
+[Rich Presentation RFC](../specifications/rich-presentation-rfc.md).
 
 Further merged milestones now extend that path beyond intake: bounded payload
 decode for PNG/RGB/RGBA with fail-closed limits (`CTX-0247`), `APC G` parser
@@ -268,9 +272,19 @@ real-GPU texture upload and blit (`CTX-0291`), with live `chafa` kitty-format
 pixel evidence. The exact pipeline, bounds, deviations, and deferred pieces
 are recorded in the [Rich Presentation RFC](../specifications/rich-presentation-rfc.md)
 decode/placement evidence subsections. This document otherwise remains a
-pre-implementation contract: nothing here becomes an implemented API by virtue
-of those milestones, and Sixel, iTerm2 inline images, animation, and the
-structured transports below remain unimplemented.
+candidate contract: nothing here becomes a stable or supported API by virtue
+of those experimental milestones, and Sixel, iTerm2 inline images, animation,
+and the structured transports below remain unimplemented.
+
+Current model boundary (2026-09-16, `bitty` `origin/main` `e8dc9e5`):
+`RichBlock` and `SceneNode` (`crates/bitty-rich/src/scene.rs`), plus the
+fragment-to-`RichBlock` projection (`crates/bitty-rich/src/projection.rs`),
+exist only as headless in-memory models in `bitty-rich`. No scene graph
+reaches the grid or the GPU present path; `bitty-render` consumes cell
+snapshots from `bitty-term-state` and drives the Kitty image texture upload
+and blit path, and it has no `bitty-rich` dependency edge. The composition
+described in this document therefore remains a design target rather than
+wired behavior.
 
 ## Open questions
 

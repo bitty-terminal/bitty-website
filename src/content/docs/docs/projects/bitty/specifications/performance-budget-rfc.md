@@ -14,15 +14,15 @@ sidebar_order: 13
 ## Document status
 
 - Status: **accepted** on 2026-08-26 by the project initiator.
-- Closes open question [OQ-001](../../../decisions/open-questions.md); acceptance was
+- Closes open question [OQ-001](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md); acceptance was
   recorded per the
-  [documentation workflow](../../../development/documentation-workflow.md).
+  [documentation workflow](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/documentation-workflow.md).
 - Implementation status: no Bitty product code exists. Every budget below is a
   **target contract for future implementation**, not a claim about current
   behavior. None of these numbers has been measured against a real build.
 - Provenance rule: all comparative figures come from third-party public
   sources of varying methodology rigor, following the provenance rules of the
-  [documentation workflow](../../../development/documentation-workflow.md). They
+  [documentation workflow](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/documentation-workflow.md). They
   justify the order of magnitude of each budget, not an exact value.
 
 ## Purpose and scope
@@ -169,7 +169,7 @@ become acceptance criteria.
 - Rationale: no directly comparable, well-sourced figure exists for terminal
   binaries specifically; this is an **inference** anchored on typical Rust GUI
   application sizes and the dependency-governance principle that the core
-  stays small ([technology strategy](../../../project/technology-strategy.md)).
+  stays small ([technology strategy](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/technology-strategy.md)).
   Marked lower-confidence than PB-1 through PB-4; should be revisited after
   the first real link.
 

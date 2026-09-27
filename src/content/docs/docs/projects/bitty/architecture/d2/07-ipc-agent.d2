@@ -1,0 +1,77 @@
+# docs/projects/bitty/architecture/d2/07-ipc-agent.d2 — L1 IPC, Debug Protocol & Agent Architecture
+# Source of truth: ../glossary.yaml
+# Visual rules: rect=module/crate, rounded=panel/capability, dashed=boundary/sandbox, solid=call/depends
+# Levels: L1 subsystem — IPC, transport, authentication, MCP agent protocol
+
+direction: right
+
+# --- Clients ---
+client_domain: {
+  label: "External Clients & AI Agents"
+  style.stroke-dash: 4
+  style.fill: "#faf5ff"
+  devtools: {
+    label: "bitty-devtools\nGUI verification CLI"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  ai_agent: {
+    label: "Coding / Desktop Agent\nAnthropic / AGY / Cursor"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  cli_ctl: {
+    label: "bitty ctl / inspect\nCLI management tool"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+# --- Gateway ---
+ipc_gateway: {
+  label: "Bitty IPC Transport & Scope Gate"
+  style.fill: "#eff6ff"
+  unix_socket: {
+    label: "Unix Domain Socket\n0600 file permissions"
+    shape: rectangle
+  }
+  msgpack_codec: {
+    label: "Binary / JSON-RPC Framing\nbounded message size"
+    shape: rectangle
+  }
+  scope_validator: {
+    label: "Scope Gate\ninspect, input, debug"
+    shape: rectangle
+    style.border-radius: 8
+    style.fill: "#fef3c7"
+  }
+}
+
+# --- Core Services ---
+core_services: {
+  label: "Core Observation & Control Handlers"
+  style.stroke-dash: 3
+  style.fill: "#ecfdf5"
+  frame_capture: {
+    label: "Frame Capture Engine\nPNG / Raw RGBA / Hash"
+    shape: rectangle
+  }
+  input_synth: {
+    label: "Input Synthesis\nsynthesize key / mouse"
+    shape: rectangle
+  }
+  state_observer: {
+    label: "Terminal State Observer\nscreen buffer & cursor"
+    shape: rectangle
+  }
+}
+
+# --- Edges ---
+client_domain.devtools -> ipc_gateway.unix_socket: "connect"
+client_domain.ai_agent -> ipc_gateway.unix_socket: "MCP JSON-RPC"
+client_domain.cli_ctl -> ipc_gateway.unix_socket: "IPC command"
+ipc_gateway.unix_socket -> ipc_gateway.msgpack_codec: "read frames"
+ipc_gateway.msgpack_codec -> ipc_gateway.scope_validator: "check tokens"
+ipc_gateway.scope_validator -> core_services.frame_capture: "debug:capture"
+ipc_gateway.scope_validator -> core_services.input_synth: "input:synth"
+ipc_gateway.scope_validator -> core_services.state_observer: "inspect:grid"

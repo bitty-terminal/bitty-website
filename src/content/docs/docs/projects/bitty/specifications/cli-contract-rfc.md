@@ -13,12 +13,12 @@ sidebar_order: 18
 
 > Status: **accepted** on 2026-08-28 by the project initiator. This document defines the accepted
 > top-level CLI command set, dynamic namespace, action and output schemas, alias policy, and
-> stable exit codes for [OQ-017](../../../decisions/open-questions.md) at the design level; it closes [OQ-017](../../../decisions/open-questions.md). It does not describe implemented
+> stable exit codes for [OQ-017](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) at the design level; it closes [OQ-017](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md). It does not describe implemented
 > behavior, does not authorize shipped, stable, or compatibility-guaranteed
 > behavior, and does not weaken any normative security control. Experimental
 > implementation may exist as review evidence but carries no compatibility
 > promise beyond the accepted contract. Acceptance was per independent category-owner, docs-curator, and security-auditor review (CTX-0070) with P0 sign-off simulated 2026-08-28; see [P0 Review Sign-off](#p0-review-sign-off)
-> and the [P0 review checklist](../../../reviews/p0-review-checklist.md). The lifecycle is `Draft -> experimental review evidence -> Accepted -> normative`.
+> and the [P0 review checklist](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/reviews/p0-review-checklist.md). The lifecycle is `Draft -> experimental review evidence -> Accepted -> normative`.
 
 ## Purpose and scope
 
@@ -52,12 +52,12 @@ Out of scope (owned elsewhere):
 
 - instance discovery, IPC framing, wire envelope, peer-credential authentication,
   per-request scope evaluation, and rate limits RC-9 and RC-10 (owned by
-  [IPC and Agent RFC](ipc-agent-rfc.md) under OQ-018; this RFC references but
+  [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md) under OQ-018; this RFC references but
   does not duplicate that wire contract);
 - plugin capability identifiers, event phases, and package manifest, lockfile,
   or signature verification (owned by
-  [Plugin Platform RFC](plugin-platform-rfc.md) and
-  [Package Lifecycle RFC](package-lifecycle-rfc.md) under OQ-011 through OQ-013
+  [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md) and
+  [Package Lifecycle RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/packaging/package-lifecycle-rfc.md) under OQ-011 through OQ-013
   and OQ-021);
 - rich-block, scene, semantic-zone, and structured-transport contracts (owned by
   [Rich Presentation RFC](rich-presentation-rfc.md) under OQ-008, OQ-015, OQ-016);
@@ -76,21 +76,21 @@ The following are normative and override every proposal here. If any grammar,
 default, alias, schema, or exit-code behavior below weakens them, the normative
 text wins and this RFC must be corrected:
 
-- [Security Overview](../../../security/overview.md): invariants 1 through 10,
+- [Security Overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md): invariants 1 through 10,
   especially invariant 5 (IPC is local-user-only and every operation has an
   explicit scope), invariant 6 (MCP and Agent access is read-only by default;
   terminal content is untrusted observation data), the capability-family table,
   and the safe-mode requirement.
-- [Threat Model](../../../security/threat-model.md): boundary map
+- [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md): boundary map
   `PTY bytes | Lua plugin | IPC/MCP -> Bitty core`, section "IPC, CLI, and
   child processes" (T-09, R-011, R-012) where the CLI is the local-user
   frontend, and the general bounded-parsing requirement (T-01) that applies to
   every parser including the CLI.
-- [Security Risk Register](../../../security/risk-register.md): R-011 (IPC scope
+- [Security Risk Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md): R-011 (IPC scope
   escalation through a second frontend), R-012 (credential leak via environment
   or SSH forwarding), R-014 (secret exposure via traces), and R-001 (parser
   bounds).
-- [P0 Security Acceptance Criteria](../../../security/p0-acceptance-criteria.md):
+- [P0 Security Acceptance Criteria](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md):
   P0-AC-001 (parser bounds), P0-AC-021 through P0-AC-023 (IPC auth, scope, and
   child-credential rules), and P0-AC-026 (redaction) where CLI output may expose
   sensitive fields.
@@ -106,7 +106,7 @@ text wins and this RFC must be corrected:
 This RFC proposes only spelling, schemas, defaults, and verification plans for
 those normative gates. No new ambient authority, bypass API, or silent
 capability increase is introduced; per
-[documentation workflow](../../../development/documentation-workflow.md) change
+[documentation workflow](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/documentation-workflow.md) change
 trigger rules, any future change to a trust boundary updates the security corpus
 first.
 
@@ -169,20 +169,20 @@ and never loads a plugin VM.
 
 ### Class assignment and rationale
 
-| Subtree            | Class                       | Requires instance                                 | Why in v1                                                                                                                                                                                  |
-| ------------------ | --------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `bitty run`        | local                       | no                                                | Starting a child must remain visibly distinct from controlling an existing instance; `--` unambiguously separates Bitty args from the child. `bitty htop` never means `bitty run -- htop`. |
-| `bitty ctl`        | runtime                     | yes, single selected instance                     | Instance, window, view, and terminal control must share the authenticated, scoped transport owned by [IPC and Agent RFC](ipc-agent-rfc.md).                                                |
-| `bitty config`     | local with one runtime verb | mostly no; `config reload` needs instance         | `config check`, `config path`, `config show`, `config diff`, `config defaults` run in a fresh configuration VM and produce a typed plan; `config reload` is the only runtime verb.         |
-| `bitty plugin`     | local                       | no                                                | Installation, disable, enable, and locked-environment listing must not require a running instance.                                                                                         |
-| `bitty list`       | mixed                       | no for local resources; yes for runtime resources | Enumerates fonts, themes, keymaps, actions, commands, plugins, and protocols without leaking a runtime assumption.                                                                         |
-| `bitty inspect`    | mixed                       | same as above                                     | User-facing explanation of effective state and ownership.                                                                                                                                  |
-| `bitty dev`        | mixed                       | no for local captures; yes for runtime traces     | Tracing, captures, dumps, and overlays; deferred rendering overlays remain explicitly deferred per [Command-line interface](../interfaces/cli.md).                                         |
-| `bitty doctor`     | local                       | no                                                | Stable recovery and diagnostics entry point; must work in safe mode.                                                                                                                       |
-| `bitty cmd`        | mixed                       | depends on target executable                      | Direct qualified executable invocation for automation and diagnostics.                                                                                                                     |
-| `bitty x`          | extension                   | depends on plugin command class                   | Collision-free plugin entry point; mandatory for every plugin command.                                                                                                                     |
-| `bitty completion` | local                       | no                                                | Emits completion scripts for Bash, Zsh, Fish, PowerShell, and Nushell from static manifests.                                                                                               |
-| `bitty version`    | local                       | no                                                | Machine-readable version, channel, and build metadata.                                                                                                                                     |
+| Subtree            | Class                       | Requires instance                                 | Why in v1                                                                                                                                                                                                            |
+| ------------------ | --------------------------- | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bitty run`        | local                       | no                                                | Starting a child must remain visibly distinct from controlling an existing instance; `--` unambiguously separates Bitty args from the child. `bitty htop` never means `bitty run -- htop`.                           |
+| `bitty ctl`        | runtime                     | yes, single selected instance                     | Instance, window, view, and terminal control must share the authenticated, scoped transport owned by [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md). |
+| `bitty config`     | local with one runtime verb | mostly no; `config reload` needs instance         | `config check`, `config path`, `config show`, `config diff`, `config defaults` run in a fresh configuration VM and produce a typed plan; `config reload` is the only runtime verb.                                   |
+| `bitty plugin`     | local                       | no                                                | Installation, disable, enable, and locked-environment listing must not require a running instance.                                                                                                                   |
+| `bitty list`       | mixed                       | no for local resources; yes for runtime resources | Enumerates fonts, themes, keymaps, actions, commands, plugins, and protocols without leaking a runtime assumption.                                                                                                   |
+| `bitty inspect`    | mixed                       | same as above                                     | User-facing explanation of effective state and ownership.                                                                                                                                                            |
+| `bitty dev`        | mixed                       | no for local captures; yes for runtime traces     | Tracing, captures, dumps, and overlays; deferred rendering overlays remain explicitly deferred per [Command-line interface](../interfaces/cli.md).                                                                   |
+| `bitty doctor`     | local                       | no                                                | Stable recovery and diagnostics entry point; must work in safe mode.                                                                                                                                                 |
+| `bitty cmd`        | mixed                       | depends on target executable                      | Direct qualified executable invocation for automation and diagnostics.                                                                                                                                               |
+| `bitty x`          | extension                   | depends on plugin command class                   | Collision-free plugin entry point; mandatory for every plugin command.                                                                                                                                               |
+| `bitty completion` | local                       | no                                                | Emits completion scripts for Bash, Zsh, Fish, PowerShell, and Nushell from static manifests.                                                                                                                         |
+| `bitty version`    | local                       | no                                                | Machine-readable version, channel, and build metadata.                                                                                                                                                               |
 
 Starting a terminal and controlling an existing instance remain visibly
 different operations: `bitty run` spawns, `bitty ctl` connects. No alias merges
@@ -238,17 +238,17 @@ schema, output kind, and scope), not a second registry.
 Every registry entry is an owned, versioned record that is auditable without
 running the implementation:
 
-| Field           | Type and bounds                                                       | Meaning                                                                            |
-| --------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `id`            | dot-separated `^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$`, 3 to 128 bytes | Stable identifier. Core prefix is `core.`; plugin prefix is `<publisher>.<name>.`. |
-| `kind`          | enum `action` or `command`                                            | Whether the entry has typed argument and result schemas.                           |
-| `class`         | enum `local`, `runtime`, or `extension`                               | Whether it needs an instance or an installed plugin.                               |
-| `scopes`        | array of defined scopes from [IPC and Agent RFC](ipc-agent-rfc.md)    | Required scopes, empty for local unauthenticated entries.                          |
-| `args_schema`   | bounded JSON Schema, depth at most 16                                 | Typed input shape; string fields bound individually.                               |
-| `result_schema` | bounded JSON Schema or null for actions                               | Typed output shape for `--format json`.                                            |
-| `error_classes` | subset of the stable error taxonomy                                   | Which error classes the entry may return.                                          |
-| `introduced_in` | semver string                                                         | First version that contains the entry.                                             |
-| `deprecated`    | null or object with `since` and `successor`                           | Deprecation metadata when applicable.                                              |
+| Field           | Type and bounds                                                                                                                             | Meaning                                                                            |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `id`            | dot-separated `^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$`, 3 to 128 bytes                                                                       | Stable identifier. Core prefix is `core.`; plugin prefix is `<publisher>.<name>.`. |
+| `kind`          | enum `action` or `command`                                                                                                                  | Whether the entry has typed argument and result schemas.                           |
+| `class`         | enum `local`, `runtime`, or `extension`                                                                                                     | Whether it needs an instance or an installed plugin.                               |
+| `scopes`        | array of defined scopes from [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md) | Required scopes, empty for local unauthenticated entries.                          |
+| `args_schema`   | bounded JSON Schema, depth at most 16                                                                                                       | Typed input shape; string fields bound individually.                               |
+| `result_schema` | bounded JSON Schema or null for actions                                                                                                     | Typed output shape for `--format json`.                                            |
+| `error_classes` | subset of the stable error taxonomy                                                                                                         | Which error classes the entry may return.                                          |
+| `introduced_in` | semver string                                                                                                                               | First version that contains the entry.                                             |
+| `deprecated`    | null or object with `since` and `successor`                                                                                                 | Deprecation metadata when applicable.                                              |
 
 The registry is the source for `bitty list commands`, `bitty inspect command`,
 `--help` generation, completion, and IPC dispatch. Generators must not hand-edit
@@ -257,7 +257,7 @@ any of those surfaces to diverge from the registry.
 ### Error taxonomy shared with the wire
 
 The CLI reuses the stable error taxonomy owned alongside the wire protocol
-([IPC and Agent RFC](ipc-agent-rfc.md)): `InvalidArgument`, `InvalidFrame`,
+([IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md)): `InvalidArgument`, `InvalidFrame`,
 `PayloadTooLarge`, `MethodInvalid`, `VersionMismatch`, `Unauthenticated`,
 `Denied` (with `ScopeViolation`, `RateLimited`, `PayloadCap`, `ChunkViolation`),
 `Timeout`, `NotFound`, `Conflict`, `Unavailable`, `Internal`, plus
@@ -272,8 +272,8 @@ Every plugin command is addressable without alias or help regeneration:
 
 ```sh
 bitty x <publisher>.<name> <command> [args]
-bitty x xuepoo.markdown render README.md
-bitty cmd xuepoo.markdown:render --file README.md
+bitty x example.markdown render README.md
+bitty cmd example.markdown:render --file README.md
 ```
 
 `bitty x` is the candidate spelling from
@@ -339,7 +339,7 @@ loading the plugin VM. `bitty --help`, `bitty list commands`, and
 `bitty completion <shell>` reflect the installed manifest set, not the set of
 loaded Lua VMs. Starting the CLI never loads every plugin runtime; this matches
 the completion contract in [Command-line interface](../interfaces/cli.md) and
-the lazy-load principle in [Isolation and Resource RFC](isolation-resource-rfc.md).
+the lazy-load principle in [Isolation and Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md).
 
 ### Help generation rules for the dynamic namespace
 
@@ -368,7 +368,7 @@ candidate: the child environment may receive the advisory identifiers
 `BITTY_INSTANCE_ID`, `BITTY_TERMINAL_ID`, `BITTY_VIEW_ID`, `BITTY_SOCKET`, plus
 the stable indicators `TERM=bitty`, `BITTY=1`, `BITTY_VERSION=<semver>`. No
 credential is placed in that environment; authorization always remains
-server-side per [IPC and Agent RFC](ipc-agent-rfc.md).
+server-side per [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md).
 
 ### `bitty ctl` (runtime)
 
@@ -391,7 +391,7 @@ Every `ctl` verb maps one-to-one to a registry executable (for example
 `bitty ctl view split` maps to `core.view.split`). Arguments are validated
 against the executable's `args_schema` before any IPC frame is sent. Instance
 selection precedence is exactly the one owned by
-[IPC and Agent RFC](ipc-agent-rfc.md): explicit `--socket`, then `--instance`,
+[IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md): explicit `--socket`, then `--instance`,
 then inherited `BITTY_SOCKET` or `BITTY_INSTANCE_ID`, then exactly-one-live
 fallback, otherwise ambiguity error. Ambiguity never silently selects an
 unrelated instance.
@@ -428,9 +428,9 @@ bitty list plugins
 bitty list protocols
 
 bitty inspect command core.terminal.text
-bitty inspect command xuepoo.markdown:render
+bitty inspect command example.markdown:render
 bitty inspect key ctrl+shift+m
-bitty inspect plugin xuepoo.markdown
+bitty inspect plugin example.markdown
 bitty inspect config font.size
 bitty inspect protocol kitty-graphics
 ```
@@ -536,7 +536,7 @@ Rules:
 - JSON output is bounded: a truncated frame decoded to more than 256 KiB ends
   the stream with a `PayloadTooLarge` error rather than buffering unbounded.
 - Depth of the parsed JSON value is capped at 32 to prevent stack exhaustion,
-  matching the wire rule in [IPC and Agent RFC](ipc-agent-rfc.md).
+  matching the wire rule in [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md).
 
 Versioning of the envelope is independent of the wire version, but the two
 share the rule that a version bump remains backward-readable for at least one
@@ -665,7 +665,7 @@ versions; either changing requires an RFC revision with a dated transition.
 ## Instance targeting and environment (CLI surface)
 
 The wire and authentication decisions in this section are owned by
-[IPC and Agent RFC](ipc-agent-rfc.md) and are not re-decided here. The CLI
+[IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md) and are not re-decided here. The CLI
 surface guarantees that:
 
 - Explicit `--socket <path>` bypasses all discovery and fails closed when the
@@ -687,11 +687,11 @@ surface guarantees that:
   stable for v1** except for the three that are already stable by necessity:
   `TERM`, `BITTY`, and `BITTY_VERSION`. Stabilizing any additional variable
   requires its own security review and RFC revision per the
-  [Threat Model](../../../security/threat-model.md) remote and environment handling.
+  [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md) remote and environment handling.
 
 No credential or administrator token is ever placed in that environment;
 durable grants follow the consent ledger owned by
-[IPC and Agent RFC](ipc-agent-rfc.md).
+[IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md).
 
 ## Help, versioning, and compatibility
 
@@ -721,7 +721,7 @@ presentational purposes: there is no implicit default change without an RFC;
 
 - **No ambient authority in the envelope.** A CLI invocation never injects a
   scope inside the request payload; scopes are evaluated server-side on every
-  request as owned by [IPC and Agent RFC](ipc-agent-rfc.md).
+  request as owned by [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md).
 - **Terminal output remains observation data.** `bitty ctl terminal text`
   produces untrusted text; CLI help and the `doctor` stream label it as such
   and never treat it as instruction text (T-10 and R-013 parity).
@@ -740,23 +740,23 @@ presentational purposes: there is no implicit default change without an RFC;
   `bitty doctor` explicitly reports that it ran in safe mode when that path was
   taken.
 - **Supply chain.** `bitty plugin install` follows the transactional activation
-  and lockfile rules in [Package Lifecycle RFC](package-lifecycle-rfc.md); the
+  and lockfile rules in [Package Lifecycle RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/packaging/package-lifecycle-rfc.md); the
   CLI never executes package code at install time.
 
 ## Verification
 
 Every contract row requires automation; no manual-only gate closes it.
 
-| Gate                             | What it checks                                                                                                                                                                                                                                                        |
-| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Registry conformance suite       | Every executable in the registry round-trips through CLI, IPC, and Lua claim tests: valid args succeed, invalid args are rejected with the declared `UsageError` or typed error, and result shapes validate against `result_schema`.                                  |
-| CLI grammar suite                | `bitty run -- htop` never means something else; unknown flags and stray `--` are `UsageError` (2); `--help` never requires an instance; `bitty x` qualified, short, and top-level aliases wire correctly or emit a diagnostic and refuse silently-ambiguous dispatch. |
-| Output envelope suite            | `--format json` and `--format jsonl` produce exactly the v1 envelope; stdout never contains interleaved logs; oversized payloads are `PayloadTooLarge` with a 0-byte stdout JSON envelope, not truncation.                                                            |
-| Alias and collision suite        | Two plugins claiming the same alias produce a `doctor` and `list commands` diagnostic and both aliases are disabled; the qualified route and `bitty cmd` remain available; installing or removing a plugin updates `bitty completion` without loading any VM.         |
-| Exit-code suite                  | Platform-specific failures map to the stable 0 through 8 set and match the IPC error-class mapping; `bitty doctor` category codes match the underlying diagnostic class.                                                                                              |
-| Instance-targeting suite         | Precedence `--socket` then `--instance` then inherited context then exactly-one shortcut then ambiguity, never silent selection of an unrelated instance (shares fixtures with [IPC and Agent RFC](ipc-agent-rfc.md)).                                                |
-| Safe-mode and redaction suite    | `doctor`, `config check`, `list`, and `inspect` variants produce the safe-mode banner and truncated, redacted previews under P0-AC-026.                                                                                                                               |
-| Negative and bounded-input suite | Oversized arguments, manifest injections, depth-32 overflow, and malformed qualified ids fail closed before dispatch with a typed error.                                                                                                                              |
+| Gate                             | What it checks                                                                                                                                                                                                                                                                                  |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Registry conformance suite       | Every executable in the registry round-trips through CLI, IPC, and Lua claim tests: valid args succeed, invalid args are rejected with the declared `UsageError` or typed error, and result shapes validate against `result_schema`.                                                            |
+| CLI grammar suite                | `bitty run -- htop` never means something else; unknown flags and stray `--` are `UsageError` (2); `--help` never requires an instance; `bitty x` qualified, short, and top-level aliases wire correctly or emit a diagnostic and refuse silently-ambiguous dispatch.                           |
+| Output envelope suite            | `--format json` and `--format jsonl` produce exactly the v1 envelope; stdout never contains interleaved logs; oversized payloads are `PayloadTooLarge` with a 0-byte stdout JSON envelope, not truncation.                                                                                      |
+| Alias and collision suite        | Two plugins claiming the same alias produce a `doctor` and `list commands` diagnostic and both aliases are disabled; the qualified route and `bitty cmd` remain available; installing or removing a plugin updates `bitty completion` without loading any VM.                                   |
+| Exit-code suite                  | Platform-specific failures map to the stable 0 through 8 set and match the IPC error-class mapping; `bitty doctor` category codes match the underlying diagnostic class.                                                                                                                        |
+| Instance-targeting suite         | Precedence `--socket` then `--instance` then inherited context then exactly-one shortcut then ambiguity, never silent selection of an unrelated instance (shares fixtures with [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md)). |
+| Safe-mode and redaction suite    | `doctor`, `config check`, `list`, and `inspect` variants produce the safe-mode banner and truncated, redacted previews under P0-AC-026.                                                                                                                                                         |
+| Negative and bounded-input suite | Oversized arguments, manifest injections, depth-32 overflow, and malformed qualified ids fail closed before dispatch with a typed error.                                                                                                                                                        |
 
 ## Deferred candidates
 
@@ -769,7 +769,7 @@ Every contract row requires automation; no manual-only gate closes it.
   `BITTY_VERSION`, and `TERM` . The `BITTY_INSTANCE_ID`, `BITTY_TERMINAL_ID`,
   `BITTY_VIEW_ID`, and `BITTY_SOCKET` variables are explicitly not stabilized
   in v1 and require a follow-up RFC with the security review from
-  [IPC and Agent RFC](ipc-agent-rfc.md) before they become public protocol.
+  [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md) before they become public protocol.
 
 ## Risks and open choices
 
@@ -782,25 +782,25 @@ Every contract row requires automation; no manual-only gate closes it.
 
 ## Acceptance criteria
 
-This RFC is accepted on 2026-08-28 and closes [OQ-017](../../../decisions/open-questions.md). The following criteria were satisfied per the [open-question register](../../../decisions/open-questions.md) rules:
+This RFC is accepted on 2026-08-28 and closes [OQ-017](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md). The following criteria were satisfied per the [open-question register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) rules:
 
-1. The prose and every identifier in the OQ-017 row of [open-questions.md](../../../decisions/open-questions.md) have independent category-owner, docs-curator, and security-reviewer sign-off, including the top-level command tree, `bitty x` qualified route, single registry with action/output schemas, alias and completion rules, and exit codes 0 through 8 stability.
-2. Affected documents were synchronized in the same change: this RFC is `accepted` frontmatter and [CLI](../interfaces/cli.md), [Decision Register](../../../decisions/index.md), [Specifications](README.md), [P0 review checklist](../../../reviews/p0-review-checklist.md), and [README](../../../README.md) reference the accepted contract rather than the draft; [open-questions.md](../../../decisions/open-questions.md) moves OQ-017 from `Draft` to `Accepted` per its close rule.
+1. The prose and every identifier in the OQ-017 row of [open-questions.md](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) have independent category-owner, docs-curator, and security-reviewer sign-off, including the top-level command tree, `bitty x` qualified route, single registry with action/output schemas, alias and completion rules, and exit codes 0 through 8 stability.
+2. Affected documents were synchronized in the same change: this RFC is `accepted` frontmatter and [CLI](../interfaces/cli.md), [Decision Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/index.md), [Specifications](README.md), [P0 review checklist](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/reviews/p0-review-checklist.md), and [README](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/README.md) reference the accepted contract rather than the draft; [open-questions.md](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) moves OQ-017 from `Draft` to `Accepted` per its close rule.
 3. No element weakens a normative P0 gate; any discovered conflict returns the conflicting clause to revision rather than downgrading the gate.
 4. Verification gates have at least one headless conformance harness per section (registry, CLI grammar, envelope, alias/collision, exit codes, instance targeting, safe-mode/redaction, bounded-input) with deterministic evidence, mirroring the harness style in `bitty-plugin-host` and `bitty-lua`.
 
 ## P0 Review Sign-off
 
-> P0 review per CTX-0070 tracks acceptance of OQ-017 via this RFC. Frontmatter is `accepted` and [open-questions.md](../../../decisions/open-questions.md) is updated per its close rule. This section records passing sign-off and closes OQ-017.
+> P0 review per CTX-0070 tracks acceptance of OQ-017 via this RFC. Frontmatter is `accepted` and [open-questions.md](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) is updated per its close rule. This section records passing sign-off and closes OQ-017.
 
-| Role                          | Reviewer           | Verdict | Evidence / scope                                                                                                                                                   | Date       |
-| ----------------------------- | ------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- |
-| security-auditor              | `bitty-security`   | pass    | R-011, R-012, R-014, T-01, T-09, P0-AC-001/021/022/023/026, bounded parsing 256 KiB depth 32, alias collision, `bitty x` qualified route                           | 2026-08-28 |
-| category-owner (interfaces)   | `bitty-architect`  | pass    | top-level tree 13 subtrees, single registry action/output schemas, `bitty x` qualified/short/top-level alias, envelope v1, exit codes 0-8                          | 2026-08-28 |
-| category-owner (architecture) | `bitty-experience` | pass    | registry ownership, completion generation, instance-targeting precedence `--socket`/`--instance`/inherited/ambiguity, safe-mode/redaction                          | 2026-08-28 |
-| docs-curator                  | `bitty-curator`    | pass    | Frontmatter `accepted`, taxonomy, links to [CLI](../interfaces/cli.md) and [Threat Model](../../../security/threat-model.md), English-only, decision-register sync | 2026-08-28 |
+| Role                          | Reviewer           | Verdict | Evidence / scope                                                                                                                                                                                                      | Date       |
+| ----------------------------- | ------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| security-auditor              | `bitty-security`   | pass    | R-011, R-012, R-014, T-01, T-09, P0-AC-001/021/022/023/026, bounded parsing 256 KiB depth 32, alias collision, `bitty x` qualified route                                                                              | 2026-08-28 |
+| category-owner (interfaces)   | `bitty-architect`  | pass    | top-level tree 13 subtrees, single registry action/output schemas, `bitty x` qualified/short/top-level alias, envelope v1, exit codes 0-8                                                                             | 2026-08-28 |
+| category-owner (architecture) | `bitty-experience` | pass    | registry ownership, completion generation, instance-targeting precedence `--socket`/`--instance`/inherited/ambiguity, safe-mode/redaction                                                                             | 2026-08-28 |
+| docs-curator                  | `bitty-curator`    | pass    | Frontmatter `accepted`, taxonomy, links to [CLI](../interfaces/cli.md) and [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md), English-only, decision-register sync | 2026-08-28 |
 
-As of 2026-08-28, the CLI contract remains a design contract per [ADR 0003](../../../decisions/adrs/ADR-0003-core-workspace-topology.md) and the [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md); crate presence does not imply shipped behavior.
+As of 2026-08-28, the CLI contract remains a design contract per [ADR 0003](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0003-core-workspace-topology.md) and the [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md); crate presence does not imply shipped behavior.
 
 As of 2026-09-10, the `bitty plugin` subtree has an implemented local-class
 slice (`list|install|remove|enable|disable|info` over a hash-pinned managed
@@ -813,9 +813,9 @@ a design contract until separately implemented and evidenced.
 ## References
 
 - [Command-line interface](../interfaces/cli.md) — candidate gateway and per-subtree context this RFC concretizes.
-- [IPC and Agent RFC](ipc-agent-rfc.md) — bounded framing, wire, auth, scopes (including RC-9 and RC-10), and Agent bounded-message contracts that `bitty ctl` rides.
-- [Plugin Platform RFC](plugin-platform-rfc.md) — executable and capability families, manifest and lifecycle generations that the dynamic namespace consumes.
-- [Package Lifecycle RFC](package-lifecycle-rfc.md) — package install, lockfile, transactional activation, and rollback that `bitty plugin` drives.
+- [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md) — bounded framing, wire, auth, scopes (including RC-9 and RC-10), and Agent bounded-message contracts that `bitty ctl` rides.
+- [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md) — executable and capability families, manifest and lifecycle generations that the dynamic namespace consumes.
+- [Package Lifecycle RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/packaging/package-lifecycle-rfc.md) — package install, lockfile, transactional activation, and rollback that `bitty plugin` drives.
 - [DevTools RFC](devtools-rfc.md) — instrumentation and debug scopes that `bitty dev` will surface once accepted.
-- [Security Overview](../../../security/overview.md), [Threat Model](../../../security/threat-model.md), [Security Risk Register](../../../security/risk-register.md), and [P0 Security Acceptance Criteria](../../../security/p0-acceptance-criteria.md) — normative gates for every boundary, parser, and trace in this document.
-- [Documentation Workflow](../../../development/documentation-workflow.md) — lifecycle rule that draft text does not authorize shipped behavior and that acceptance requires independent review.
+- [Security Overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md), [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md), [Security Risk Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md), and [P0 Security Acceptance Criteria](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md) — normative gates for every boundary, parser, and trace in this document.
+- [Documentation Workflow](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/documentation-workflow.md) — lifecycle rule that draft text does not authorize shipped behavior and that acceptance requires independent review.

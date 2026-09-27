@@ -13,7 +13,7 @@ sidebar_order: 12
 
 > Status: **accepted** on 2026-08-26 by the project initiator. This document is
 > the "Terminal state RFC" that closes
-> [OQ-007](../../../decisions/open-questions.md). It defines a contract; it does
+> [OQ-007](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md). It defines a contract; it does
 > not describe implemented behavior.
 
 ## Purpose and scope
@@ -35,8 +35,8 @@ Normative sources this specification must not weaken:
 - [Rich content and presentation interfaces](../interfaces/rich-content.md):
   Terminal state is the canonical result of PTY input; presentation interprets
   it without mutation.
-- [Security overview](../../../security/overview.md) and
-  [Threat Model](../../../security/threat-model.md): bounded parsing, panic-free
+- [Security overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md) and
+  [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md): bounded parsing, panic-free
   recovery from malformed sequences (T-01), core-owned grid semantics (T-13),
   hard payload/decode limits.
 

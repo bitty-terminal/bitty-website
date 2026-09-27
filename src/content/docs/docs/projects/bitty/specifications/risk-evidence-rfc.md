@@ -12,17 +12,17 @@ sidebar_order: 21
 # Risk Evidence RFC
 
 > Status: **accepted** on 2026-08-29 by the project initiator. This document defines the accepted risk-to-P0-AC traceability, evidence taxonomy, artifact storage, and review gates for closing each security risk without weakening P0 controls for
-> [OQ-025](../../../decisions/open-questions.md) at the design level; it closes [OQ-025](../../../decisions/open-questions.md). It does not describe implemented
+> [OQ-025](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) at the design level; it closes [OQ-025](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md). It does not describe implemented
 > behavior, does not authorize shipped, stable, normative, or
 > compatibility-guaranteed behavior, and does not weaken any normative control. Experimental
 > implementation, test logs, fuzz corpora, or CI artifacts may exist as review
 > evidence but carry no compatibility promise beyond the accepted contract. Acceptance was per independent category-owner, docs-curator, and
 > security-auditor review (CTX-0078) with P0 sign-off on 2026-08-29; see [P0 Review Sign-off](#p0-review-sign-off) and the
-> [P0 review checklist](../../../reviews/p0-review-checklist.md). The lifecycle is `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`.
+> [P0 review checklist](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/reviews/p0-review-checklist.md). The lifecycle is `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`.
 
 ## Purpose and scope
 
-[OQ-025](../../../decisions/open-questions.md) asks: _what implementation and test
+[OQ-025](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) asks: _what implementation and test
 evidence closes each security risk without weakening the normative controls?_
 The register states all 22 risks are Open because Bitty has no implementation
 evidence yet, and that a risk may move to `Mitigated` only when its linked
@@ -36,18 +36,18 @@ In scope:
   and exit conditions for each of R-001 through R-022;
 - the traceability from each risk to its normative control(s) and to one or
   more testable criteria in
-  [P0 Security Acceptance Criteria](../../../security/p0-acceptance-criteria.md);
+  [P0 Security Acceptance Criteria](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md);
 - the evidence taxonomy (verification methods, pass thresholds, artifact kinds,
   retention, and CarryCtx linkage) that satisfies
-  [Threat Model](../../../security/threat-model.md) verification gates;
+  [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md) verification gates;
 - review gates, roles, and sign-off for moving a risk between states;
 - the relationship to stage (P0 versus P1) and to residual-risk handling.
 
 Out of scope (owned elsewhere):
 
 - selecting or tuning any ceiling, capability identifier, or trust boundary
-  itself (owned by [Security Overview](../../../security/overview.md),
-  [Threat Model](../../../security/threat-model.md), and the per-domain RFCs/ADRs
+  itself (owned by [Security Overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md),
+  [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md), and the per-domain RFCs/ADRs
   for OQ-014, OQ-011/OQ-012/OQ-013, OQ-008/OQ-015/OQ-016, OQ-017, OQ-018,
   OQ-019, OQ-030, OQ-031, OQ-032, which set the mechanisms and numbers; this RFC
   only selects the evidence that proves them);
@@ -58,28 +58,28 @@ Out of scope (owned elsewhere):
 
 This RFC introduces no new trust boundary, no bypass API, and no relaxation
 of any P0 gate. Per
-[documentation workflow](../../../development/documentation-workflow.md) change-trigger
+[documentation workflow](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/documentation-workflow.md) change-trigger
 rules, any future change to a trust boundary itself updates the security corpus
 first; this RFC then updates its traceability.
 
 ## Normative sources this specification must not weaken
 
-- [Security Overview](../../../security/overview.md): invariants 1 through 10
+- [Security Overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md): invariants 1 through 10
   (especially the five release-blocking invariants), capability families, trust
   boundary table, P0 baseline, secret-minimization posture, and the rule that
   deferral to P1 or P2 must not create a P0 bypass.
-- [Threat Model](../../../security/threat-model.md): assets, actors, boundary map,
+- [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md): assets, actors, boundary map,
   principal data flows, abuse cases T-01 through T-14, and verification-gate
   requirements.
-- [Security Risk Register](../../../security/risk-register.md): severity, likelihood,
+- [Security Risk Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md): severity, likelihood,
   stage, required-mitigation column, and state rules for R-001 through R-022.
-- [P0 Security Acceptance Criteria](../../../security/p0-acceptance-criteria.md):
+- [P0 Security Acceptance Criteria](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md):
   testable given/when/then criteria P0-AC-001 through P0-AC-034, their source
   controls, linked risks, verification methods (`unit`, `integration`,
   `adversarial`, `manual-audit`), and pass thresholds.
 - [Core and Plugin Boundaries](../architecture/core-boundaries.md) and
-  [Plugin Platform RFC](plugin-platform-rfc.md),
-  [Isolation Resource RFC](isolation-resource-rfc.md), and other accepted or
+  [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md),
+  [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md), and other accepted or
   proposed RFCs/ADRs that select mechanisms and ceilings: this RFC consumes their
   numbers and mechanisms but does not retune them.
 
@@ -93,7 +93,7 @@ normative control, the normative text wins and this RFC must be corrected.
 | Term                | Accepted meaning                                                                                                                                                                                                                                                                                                                           |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Risk state          | One of `Open`, `Mitigated`, `Accepted` per register rules. `Mitigated` means the linked P0-AC criteria for the risk have passing evidence plus independent review; `Accepted` means an explicit, time-bounded CarryCtx decision with owner, rationale, and residual risk has been accepted for risks that cannot be fully mitigated at P0. |
-| P0-AC criterion     | A testable given/when/then statement from [P0 Security Acceptance Criteria](../../../security/p0-acceptance-criteria.md) with a stable ID, source control, linked risk(s), verification method, and pass threshold.                                                                                                                        |
+| P0-AC criterion     | A testable given/when/then statement from [P0 Security Acceptance Criteria](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md) with a stable ID, source control, linked risk(s), verification method, and pass threshold.                                                                     |
 | Evidence artifact   | A produced, storable observation that a criterion's pass threshold held: headless test log, fuzz run summary with corpus hash, `cargo check` / `cargo audit` / `cargo vet` / CodeQL SARIF, CI run log, or manual-audit report.                                                                                                             |
 | Residual risk       | The remaining sub-case of a risk whose exit evidence is only partially satisfied; tracked as the same risk ID staying Open with a residual note, per register guidance.                                                                                                                                                                    |
 | Verification method | `unit`, `integration`, `adversarial` (fuzz, negative, malformed, oversized, timeout), `manual-audit` (independent reviewer evidence), and `ci-gate` (advisory/license/source/banned, lint, mode checks) as used in P0-AC conventions.                                                                                                      |
@@ -121,7 +121,7 @@ normative control, the normative text wins and this RFC must be corrected.
    residual).
 5. No RFC, checker, or environment flag may bypass a P0-AC threshold; the same
    thresholds gate local `just check` and CI. This RFC provides the checklist
-   that closes [OQ-025](../../../decisions/open-questions.md) at the design level.
+   that closes [OQ-025](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) at the design level.
 
 ## Accepted risk-closure lifecycle
 
@@ -162,42 +162,42 @@ this RFC alone.
 - **RS-7 Safe-mode invariance.** Every path above preserves `bitty --safe`
   startup with minimal built-in configuration and zero third-party plugins;
   recovered evidence re-proves it after any security-sensitive change per
-  P0-AC-019 and [Isolation Resource RFC](isolation-resource-rfc.md) FS-8.
+  P0-AC-019 and [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md) FS-8.
 
 ## Traceability: risk to P0-AC
 
-This table is the single authoritative traceability for [OQ-025](../../../decisions/open-questions.md).
+This table is the single authoritative traceability for [OQ-025](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md).
 It restates the coverage in
-[P0 Security Acceptance Criteria](../../../security/p0-acceptance-criteria.md#coverage-traceability)
+[P0 Security Acceptance Criteria](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md#coverage-traceability)
 with the additional register columns required for closure gating. A risk with no
 row here is a defect in this RFC; a P0-AC ID that appears in no row is unused
 evidence and must be linked or removed via an RFC revision, never silently
 ignored.
 
-| Risk  | Summary (register title)                         | Stage | Normative control area                   | Linked P0-AC criteria           | Canonical mechanism document                                                                                       |
-| ----- | ------------------------------------------------ | ----- | ---------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| R-001 | Malformed VT sequences crash/hang                | P0    | VT parsing, bounded incremental parser   | P0-AC-001, P0-AC-002            | [Terminal State RFC](terminal-state-rfc.md), parser limits                                                         |
-| R-002 | Compressed graphics exhaustion                   | P0    | Graphics, decoded-size and pixel limits  | P0-AC-003, P0-AC-004            | [Rich Presentation RFC](rich-presentation-rfc.md) IMG-1..IMG-7                                                     |
-| R-003 | Graphics/rich reads/deletes arbitrary files      | P0    | Local files, deny-by-default loader      | P0-AC-005, P0-AC-006            | [Rich Presentation RFC](rich-presentation-rfc.md), [Isolation Resource RFC](isolation-resource-rfc.md) deny loader |
-| R-004 | OSC 52 clipboard leak or paste injection         | P0    | Clipboard and paste                      | P0-AC-007, P0-AC-008            | [Threat Model](../../../security/threat-model.md) T-04                                                             |
-| R-005 | OSC 8 / rich links invoke dangerous schemes      | P0    | Hyperlinks                               | P0-AC-009                       | [Rich Presentation RFC](rich-presentation-rfc.md) transport policy                                                 |
-| R-006 | Plugin gains ambient authority                   | P0    | Plugins, restricted stdlib, capabilities | P0-AC-011, P0-AC-012, P0-AC-013 | [Plugin Platform RFC](plugin-platform-rfc.md), [Lua Runtime RFC](lua-runtime-rfc.md)                               |
-| R-007 | Plugin crash/loop/storm blocks terminal          | P0    | Plugins, budgets, hot-path exclusion     | P0-AC-013, P0-AC-014, P0-AC-015 | [Isolation Resource RFC](isolation-resource-rfc.md) RC-1..RC-5                                                     |
-| R-008 | Plugin mutates Terminal Truth                    | P0    | Core-owned state, presentation-only API  | P0-AC-016, P0-AC-017            | [Core Boundaries](../architecture/core-boundaries.md), [Plugin Platform RFC](plugin-platform-rfc.md)               |
-| R-009 | Cannot recover from broken plugin/config         | P0    | Recovery, safe mode                      | P0-AC-019, P0-AC-020            | [Default Distribution RFC](default-distribution-rfc.md), [Configuration Model RFC](configuration-model-rfc.md)     |
-| R-010 | Project config executes in untrusted clone       | P1    | Configuration and workspace trust        | P0-AC-031                       | [Configuration Model RFC](configuration-model-rfc.md)                                                              |
-| R-011 | IPC client reads/inject/kills/changes config     | P0    | IPC, local-user auth, scopes             | P0-AC-021, P0-AC-022            | [IPC and Agent RFC](ipc-agent-rfc.md)                                                                              |
-| R-012 | Child credential leaks via env/SSH               | P0    | Child scope limitation                   | P0-AC-023                       | [IPC and Agent RFC](ipc-agent-rfc.md), [Isolation Resource RFC](isolation-resource-rfc.md) IR-D1                   |
-| R-013 | Agent confused deputy via terminal output        | P0    | MCP/Agent read-only, untrusted labeling  | P0-AC-024                       | [IPC and Agent RFC](ipc-agent-rfc.md), [DevTools RFC](devtools-rfc.md)                                             |
-| R-014 | DevTools/traces expose secrets                   | P1    | Traces, DevTools scopes, redaction       | P0-AC-025, P0-AC-026            | [DevTools RFC](devtools-rfc.md)                                                                                    |
-| R-015 | Malicious update enters runtime                  | P0    | Supply chain integrity                   | P0-AC-027, P0-AC-028, P0-AC-029 | [Package Lifecycle RFC](package-lifecycle-rfc.md)                                                                  |
-| R-016 | Update silently adds capabilities                | P1    | Capability diff blocks update            | P0-AC-030                       | [Plugin Platform RFC](plugin-platform-rfc.md), [Package Lifecycle RFC](package-lifecycle-rfc.md)                   |
-| R-017 | Native plugin bypasses Lua controls              | P0    | Native-plugin rejection                  | P0-AC-018                       | [Plugin Platform RFC](plugin-platform-rfc.md)                                                                      |
-| R-018 | Unsafe/FFI bug compromises Bitty                 | P0    | Unsafe discipline                        | P0-AC-033                       | ADR-0005 ([ADR 0005](../../../decisions/adrs/ADR-0005-lua-pins-and-stdlib.md))                                     |
-| R-019 | Vulnerable or disallowed Rust dependency         | P0    | Dependency hygiene                       | P0-AC-034                       | ADR-0004 ([ADR 0004](../../../decisions/adrs/ADR-0004-upstream-dependencies.md))                                   |
-| R-020 | Remote-origin detection wrong, policy permissive | P0    | Origin policy                            | P0-AC-032                       | [Threat Model](../../../security/threat-model.md) `Unknown` restrictive                                            |
-| R-021 | Rich rendering introduces script/local-resource  | P0    | Markdown constrained AST, no scripts     | P0-AC-010                       | [Rich Presentation RFC](rich-presentation-rfc.md)                                                                  |
-| R-022 | Package install executes setup code              | P0    | Supply chain, no install scripts         | P0-AC-027                       | [Package Lifecycle RFC](package-lifecycle-rfc.md)                                                                  |
+| Risk  | Summary (register title)                         | Stage | Normative control area                   | Linked P0-AC criteria           | Canonical mechanism document                                                                                                                                                                                                                            |
+| ----- | ------------------------------------------------ | ----- | ---------------------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R-001 | Malformed VT sequences crash/hang                | P0    | VT parsing, bounded incremental parser   | P0-AC-001, P0-AC-002            | [Terminal State RFC](terminal-state-rfc.md), parser limits                                                                                                                                                                                              |
+| R-002 | Compressed graphics exhaustion                   | P0    | Graphics, decoded-size and pixel limits  | P0-AC-003, P0-AC-004            | [Rich Presentation RFC](rich-presentation-rfc.md) IMG-1..IMG-7                                                                                                                                                                                          |
+| R-003 | Graphics/rich reads/deletes arbitrary files      | P0    | Local files, deny-by-default loader      | P0-AC-005, P0-AC-006            | [Rich Presentation RFC](rich-presentation-rfc.md), [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md) deny loader                                                               |
+| R-004 | OSC 52 clipboard leak or paste injection         | P0    | Clipboard and paste                      | P0-AC-007, P0-AC-008            | [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md) T-04                                                                                                                                               |
+| R-005 | OSC 8 / rich links invoke dangerous schemes      | P0    | Hyperlinks                               | P0-AC-009                       | [Rich Presentation RFC](rich-presentation-rfc.md) transport policy                                                                                                                                                                                      |
+| R-006 | Plugin gains ambient authority                   | P0    | Plugins, restricted stdlib, capabilities | P0-AC-011, P0-AC-012, P0-AC-013 | [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md), [Lua Runtime RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/lua-runtime-rfc.md)               |
+| R-007 | Plugin crash/loop/storm blocks terminal          | P0    | Plugins, budgets, hot-path exclusion     | P0-AC-013, P0-AC-014, P0-AC-015 | [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md) RC-1..RC-5                                                                                                                   |
+| R-008 | Plugin mutates Terminal Truth                    | P0    | Core-owned state, presentation-only API  | P0-AC-016, P0-AC-017            | [Core Boundaries](../architecture/core-boundaries.md), [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md)                                                                      |
+| R-009 | Cannot recover from broken plugin/config         | P0    | Recovery, safe mode                      | P0-AC-019, P0-AC-020            | [Default Distribution RFC](default-distribution-rfc.md), [Configuration Model RFC](configuration-model-rfc.md)                                                                                                                                          |
+| R-010 | Project config executes in untrusted clone       | P1    | Configuration and workspace trust        | P0-AC-031                       | [Configuration Model RFC](configuration-model-rfc.md)                                                                                                                                                                                                   |
+| R-011 | IPC client reads/inject/kills/changes config     | P0    | IPC, local-user auth, scopes             | P0-AC-021, P0-AC-022            | [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md)                                                                                                                                          |
+| R-012 | Child credential leaks via env/SSH               | P0    | Child scope limitation                   | P0-AC-023                       | [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md), [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md) IR-D1        |
+| R-013 | Agent confused deputy via terminal output        | P0    | MCP/Agent read-only, untrusted labeling  | P0-AC-024                       | [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md), [DevTools RFC](devtools-rfc.md)                                                                                                         |
+| R-014 | DevTools/traces expose secrets                   | P1    | Traces, DevTools scopes, redaction       | P0-AC-025, P0-AC-026            | [DevTools RFC](devtools-rfc.md)                                                                                                                                                                                                                         |
+| R-015 | Malicious update enters runtime                  | P0    | Supply chain integrity                   | P0-AC-027, P0-AC-028, P0-AC-029 | [Package Lifecycle RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/packaging/package-lifecycle-rfc.md)                                                                                                                              |
+| R-016 | Update silently adds capabilities                | P1    | Capability diff blocks update            | P0-AC-030                       | [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md), [Package Lifecycle RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/packaging/package-lifecycle-rfc.md) |
+| R-017 | Native plugin bypasses Lua controls              | P0    | Native-plugin rejection                  | P0-AC-018                       | [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md)                                                                                                                             |
+| R-018 | Unsafe/FFI bug compromises Bitty                 | P0    | Unsafe discipline                        | P0-AC-033                       | ADR-0005 ([ADR 0005](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0005-lua-pins-and-stdlib.md))                                                                                                                       |
+| R-019 | Vulnerable or disallowed Rust dependency         | P0    | Dependency hygiene                       | P0-AC-034                       | ADR-0004 ([ADR 0004](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0004-upstream-dependencies.md))                                                                                                                     |
+| R-020 | Remote-origin detection wrong, policy permissive | P0    | Origin policy                            | P0-AC-032                       | [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md) `Unknown` restrictive                                                                                                                              |
+| R-021 | Rich rendering introduces script/local-resource  | P0    | Markdown constrained AST, no scripts     | P0-AC-010                       | [Rich Presentation RFC](rich-presentation-rfc.md)                                                                                                                                                                                                       |
+| R-022 | Package install executes setup code              | P0    | Supply chain, no install scripts         | P0-AC-027                       | [Package Lifecycle RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/packaging/package-lifecycle-rfc.md)                                                                                                                              |
 
 Notes:
 
@@ -219,7 +219,7 @@ Notes:
 ### Verification methods and what they produce
 
 Methods reuse the exact vocabulary from
-[P0 Security Acceptance Criteria](../../../security/p0-acceptance-criteria.md#conventions)
+[P0 Security Acceptance Criteria](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md#conventions)
 so that the workflow and CI do not introduce an alternate taxonomy. Each method
 produces one or more artifact kinds; every artifact that moves a criterion
 toward satisfied must be referenced with a retrievable hash or run URL.
@@ -302,7 +302,7 @@ uses P0-AC-001..P0-AC-034 identifiers; it does not restate the criteria prose.
    state was created (FS-1 parity where applicable).
 4. **Budget and attribution checks.** Where a criterion covers a budget
    dimension (for example RC-1, RC-2, RC-5 global per
-   [Isolation Resource RFC](isolation-resource-rfc.md)): enforcement fires at
+   [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md)): enforcement fires at
    the declared ceiling, attribution identifies the correct owner
    (`PluginId`+generation, terminal id, or authenticated client id), and the
    dedicated reclaim or attribution invariant holds after enforcement.
@@ -335,7 +335,7 @@ rather than silently accepting around it.
 Status: **accepted change to the register on acceptance of this RFC on 2026-08-29.** The
 register delta described here applies
 atomically with the status flip that closes
-[OQ-025](../../../decisions/open-questions.md) on acceptance. The delta is now the accepted contract; the register header status reflects the traceability and gates acceptance.
+[OQ-025](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) on acceptance. The delta is now the accepted contract; the register header status reflects the traceability and gates acceptance.
 
 | Register change                              | Accepted disposition                                                                                                                                                                                                                                                                                                                                                                                                             |
 | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -350,8 +350,8 @@ register first.
 
 ## Review gates and roles
 
-Per [documentation workflow](../../../development/documentation-workflow.md) and
-[security overview](../../../security/overview.md), every candidate that touches a
+Per [documentation workflow](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/documentation-workflow.md) and
+[security overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md), every candidate that touches a
 trust boundary, capability, resource limit, package, IPC/MCP surface, or
 sensitive-data path requires three independent reviews. This RFC is no
 exception, and the risk-closure path adds explicit verification owners:
@@ -387,10 +387,10 @@ Acceptance of the implemented contract later additionally requires:
 4. Verification plan cites concrete evidence (headless tests, measurement
    harnesses, fuzz corpora, or `cargo check` gates) and the register links
    that evidence; no link is by prose alone.
-5. Atomic update of [decision register](../../../decisions/index.md), the
+5. Atomic update of [decision register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/index.md), the
    [specifications index](README.md) or
-   [ADR index](../../../decisions/adrs/README.md), and
-   [open-question register](../../../decisions/open-questions.md) with the status
+   [ADR index](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/README.md), and
+   [open-question register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) with the status
    flip, per the close rule; CarryCtx decision and checkpoint recorded.
 
 Crate presence (`bitty-plugin-host`, `bitty-lua`, `bitty-rich`, `bitty-ipc`,
@@ -399,7 +399,7 @@ is cited and green.
 
 ## Verification plan (accepted staging of OQ-025 closure)
 
-Closure of [OQ-025](../../../decisions/open-questions.md) at the design level
+Closure of [OQ-025](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) at the design level
 requires the lifecycle above to be exercisable on at least one risk without
 claiming that any risk is already Mitigated by design acceptance. The plan stages the
 later implementation evidence with OQ-025 closed at the design level:
@@ -429,35 +429,35 @@ is not overridden by this RFC.
 
 ## Alternatives considered
 
-| Alternative                                                       | Why rejected or deferred                                                                                                                                                               |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Weaken a P0 control to make a risk "closable" without evidence    | Violates the normative precedence rule that implementation deficits do not downgrade the security contract; a control that cannot be proven stays Open and blocks release.             |
-| Auto-flip risks to Mitigated when a harness exists in `bitty`     | Breaks the independent-review requirement; crate presence does not self-accept (cf. [ADR 0003](../../../decisions/adrs/ADR-0003-core-workspace-topology.md) and the review checklist). |
-| New evidence taxonomy distinct from P0-AC methods                 | Would diverge from the accepted test contract and require a second mapping table; reusing `unit`/`integration`/`adversarial`/`manual-audit`/`ci-gate` keeps a single gated vocabulary. |
-| Per-risk new columns or a separate evidence register              | Splits the source of truth; the register plus this RFC's traceability plus CarryCtx decisions keep one authoritative closure point with stable IDs.                                    |
-| Time-bounded auto-acceptance for P1 risks                         | Contradicts the register rule that `Accepted` requires an explicit decision with owner and rationale; P1 stage is a deadline, not an automatic acceptance.                             |
-| Store evidence only as CarryCtx state without committed artifacts | Loses reproducibility across checkouts; committed corpus hashes or CI run URLs plus a CarryCtx note that cites them give both durability and auditability.                             |
+| Alternative                                                       | Why rejected or deferred                                                                                                                                                                                                                  |
+| ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Weaken a P0 control to make a risk "closable" without evidence    | Violates the normative precedence rule that implementation deficits do not downgrade the security contract; a control that cannot be proven stays Open and blocks release.                                                                |
+| Auto-flip risks to Mitigated when a harness exists in `bitty`     | Breaks the independent-review requirement; crate presence does not self-accept (cf. [ADR 0003](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0003-core-workspace-topology.md) and the review checklist). |
+| New evidence taxonomy distinct from P0-AC methods                 | Would diverge from the accepted test contract and require a second mapping table; reusing `unit`/`integration`/`adversarial`/`manual-audit`/`ci-gate` keeps a single gated vocabulary.                                                    |
+| Per-risk new columns or a separate evidence register              | Splits the source of truth; the register plus this RFC's traceability plus CarryCtx decisions keep one authoritative closure point with stable IDs.                                                                                       |
+| Time-bounded auto-acceptance for P1 risks                         | Contradicts the register rule that `Accepted` requires an explicit decision with owner and rationale; P1 stage is a deadline, not an automatic acceptance.                                                                                |
+| Store evidence only as CarryCtx state without committed artifacts | Loses reproducibility across checkouts; committed corpus hashes or CI run URLs plus a CarryCtx note that cites them give both durability and auditability.                                                                                |
 
 ## Affected contracts
 
 Acceptance of this RFC on 2026-08-29 applies these same-change updates (no separate task
 needed; a follow-up PR must keep them synchronized):
 
-- [Open-question register](../../../decisions/open-questions.md): the OQ-025 row
+- [Open-question register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md): the OQ-025 row
   moves from `Draft: [Risk Evidence RFC](risk-evidence-rfc.md)
 (2026-08-28)` to `Accepted: [Risk Evidence RFC](risk-evidence-rfc.md)`
-  and the [decision register](../../../decisions/index.md) records the accepted risk-
+  and the [decision register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/index.md) records the accepted risk-
   closure contract; the register close rule is satisfied atomically with the
   frontmatter flip of this RFC.
-- [Security Risk Register](../../../security/risk-register.md): header status gains
+- [Security Risk Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md): header status gains
   the traceability-and-gates acceptance note and each row gains its `Evidence:`
   annotation per the delta above; no row flips to `Mitigated` or `Accepted`
   without the per-risk checklist and the cited artifact.
-- [P0 Security Acceptance Criteria](../../../security/p0-acceptance-criteria.md):
+- [P0 Security Acceptance Criteria](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md):
   gains a forward link to this RFC as the evidence-storage and review-gate
   companion for P0-AC-001..P0-AC-034; the normative criteria prose, IDs, and
   thresholds are otherwise unchanged by this RFC.
-- [Decision register](../../../decisions/index.md): a candidate-queue entry for the
+- [Decision register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/index.md): a candidate-queue entry for the
   risk-evidence contract becomes `Accepted` and the normative-contracts table
   links the register and P0-AC to this RFC as their evidence companion.
 - [Specifications index](README.md) and this file: this file
@@ -503,17 +503,17 @@ or to a follow-up scoped task:
 ## Acceptance criteria
 
 This RFC is accepted on 2026-08-29 and closes
-[OQ-025](../../../decisions/open-questions.md) at the design level. The following criteria were satisfied per the [open-question register](../../../decisions/open-questions.md) close rule:
+[OQ-025](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) at the design level. The following criteria were satisfied per the [open-question register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) close rule:
 
 1. Independent review by the category owner, a docs curator, and a security
    reviewer accepts the traceability matrix, the risk-closure lifecycle, the
    evidence taxonomy, and every risk-to-criterion mapping, with explicit
    confirmation that no P0 gate is weakened.
 2. Affected documents are synchronized in the same change: the security-risk
-   and P0-AC citations in [Security Risk Register](../../../security/risk-register.md)
-   and [P0 Security Acceptance Criteria](../../../security/p0-acceptance-criteria.md),
-   the OQ-025 row in [open-question register](../../../decisions/open-questions.md),
-   and the candidate entry in [decision register](../../../decisions/index.md)
+   and P0-AC citations in [Security Risk Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md)
+   and [P0 Security Acceptance Criteria](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md),
+   the OQ-025 row in [open-question register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md),
+   and the candidate entry in [decision register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/index.md)
    reference the accepted contract, and the open-question row moves from
    pointer to closure per the register close rule.
 3. No element weakens a normative P0 gate; any discovered conflict returns the
@@ -521,7 +521,7 @@ This RFC is accepted on 2026-08-29 and closes
 4. The draft text in this file was updated to record acceptance date and
    initiator, frontmatter becomes `accepted`, and links from
    [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md) and
-   the [decision register](../../../decisions/index.md) reflect the accepted
+   the [decision register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/index.md) reflect the accepted
    evidence contract without claiming implementation. Any per-risk move to
    `Mitigated` or `Accepted` beyond the design-level closure happens only via
    a separate, evidence-cited follow-up that satisfies the Entry to Mitigated
@@ -531,46 +531,38 @@ Closes OQ-025: this RFC closes that open question at the design level; the regis
 
 ## P0 Review Sign-off
 
-> P0 review per CTX-0078 tracks acceptance of OQ-025 via this RFC. Frontmatter is `accepted` and [open-questions.md](../../../decisions/open-questions.md) is updated per its close rule. This section records passing sign-off and closes OQ-025.
+> P0 review per CTX-0078 tracks acceptance of OQ-025 via this RFC. Frontmatter is `accepted` and [open-questions.md](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) is updated per its close rule. This section records passing sign-off and closes OQ-025.
 
-<!-- markdownlint-disable MD013 -->
-
-| Role                                  | Reviewer          | Verdict | Evidence / scope                                                                                                                                                                                                                                                                                     | Date       |
-| ------------------------------------- | ----------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| security-auditor                      | `bitty-security`  | pass    | R-001..R-022 traceability to P0-AC-001..034, register State rules, evidence taxonomy `unit`/`integration`/`adversarial`/`manual-audit`/`ci-gate`, safe-mode invariance, no weakening of overview invariants 1..10                                                                                    | 2026-08-28 |
-| category-owner (security-and-quality) | `bitty-quality`   | pass    | Risk-closure lifecycle RS-1..RS-7, entry checklist 1..8, traceability table, per-risk delta, verification staging, no P0 gate weakening                                                                                                                                                              | 2026-08-29 |
-| category-owner (architecture)         | `bitty-architect` | pass    | Traceability R-001..R-022 to P0-AC, normative controls, evidence taxonomy artifact storage CarryCtx linkage, stage deadline vs deferral, safe-mode invariance                                                                                                                                        | 2026-08-29 |
-| docs-curator                          | `bitty-curator`   | pass    | Frontmatter `accepted`, lifecycle `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`, links to [Risk register](../../../security/risk-register.md), [P0-AC](../../../security/p0-acceptance-criteria.md), [Threat model](../../../security/threat-model.md), English-only | 2026-08-29 |
-
-<!-- markdownlint-enable MD013 -->
-
-<!-- markdownlint-disable MD013 -->
+| Role                                  | Reviewer          | Verdict | Evidence / scope                                                                                                                                                                                                                                                                                                                                                                                                                                              | Date       |
+| ------------------------------------- | ----------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| security-auditor                      | `bitty-security`  | pass    | R-001..R-022 traceability to P0-AC-001..034, register State rules, evidence taxonomy `unit`/`integration`/`adversarial`/`manual-audit`/`ci-gate`, safe-mode invariance, no weakening of overview invariants 1..10                                                                                                                                                                                                                                             | 2026-08-28 |
+| category-owner (security-and-quality) | `bitty-quality`   | pass    | Risk-closure lifecycle RS-1..RS-7, entry checklist 1..8, traceability table, per-risk delta, verification staging, no P0 gate weakening                                                                                                                                                                                                                                                                                                                       | 2026-08-29 |
+| category-owner (architecture)         | `bitty-architect` | pass    | Traceability R-001..R-022 to P0-AC, normative controls, evidence taxonomy artifact storage CarryCtx linkage, stage deadline vs deferral, safe-mode invariance                                                                                                                                                                                                                                                                                                 | 2026-08-29 |
+| docs-curator                          | `bitty-curator`   | pass    | Frontmatter `accepted`, lifecycle `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`, links to [Risk register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md), [P0-AC](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md), [Threat model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md), English-only | 2026-08-29 |
 
 As of 2026-08-29, the register and P0-AC remain the normative contracts with the traceability and evidence gates now accepted; crate
 presence alone (including any headless measurement harness in `bitty`) does not
 imply that a risk is mitigated, per
-[ADR 0003](../../../decisions/adrs/ADR-0003-core-workspace-topology.md).
-
-<!-- markdownlint-enable MD013 -->
+[ADR 0003](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0003-core-workspace-topology.md).
 
 ## References
 
-- Bitty accepted security corpus: [Security Overview](../../../security/overview.md),
-  [Threat Model](../../../security/threat-model.md),
-  [Risk Register](../../../security/risk-register.md),
-  [P0 Security Acceptance Criteria](../../../security/p0-acceptance-criteria.md).
+- Bitty accepted security corpus: [Security Overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md),
+  [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md),
+  [Risk Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md),
+  [P0 Security Acceptance Criteria](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md).
 - Mechanism RFCs/ADRs that supply the mechanisms and ceilings this RFC cites:
   [Terminal State RFC](terminal-state-rfc.md),
   [Rich Presentation RFC](rich-presentation-rfc.md),
-  [Isolation Resource RFC](isolation-resource-rfc.md) (RC-1..RC-10, FS-1..FS-9),
-  [Plugin Platform RFC](plugin-platform-rfc.md),
+  [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md) (RC-1..RC-10, FS-1..FS-9),
+  [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md),
   [Configuration Model RFC](configuration-model-rfc.md),
   [Default Distribution RFC](default-distribution-rfc.md),
-  [IPC and Agent RFC](ipc-agent-rfc.md),
+  [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md),
   [DevTools RFC](devtools-rfc.md),
-  [Lua Runtime RFC](lua-runtime-rfc.md),
+  [Lua Runtime RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/lua-runtime-rfc.md),
   ADR 0004 and ADR 0005 for dependency and Lua pins.
 - Review gate definitions:
-  [P0 Review Checklist](../../../reviews/p0-review-checklist.md) and
-  [documentation workflow](../../../development/documentation-workflow.md) for status
+  [P0 Review Checklist](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/reviews/p0-review-checklist.md) and
+  [documentation workflow](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/documentation-workflow.md) for status
   and lifecycle vocabulary.

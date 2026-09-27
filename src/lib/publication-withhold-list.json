@@ -1,0 +1,118 @@
+{
+  "policy_version": "2026-09-28.4",
+  "note": "Declared-but-ineligible pages (bitty-website#98): each page sets website_publish: true but is not reader-facing under the unchanged #97 rule, is not allow-listed, and is not a demotion (a flip-list entry ships a 301 because the page was published once; a withheld page never had a route, so it ships none). Shrink-only: the fix belongs to the owning corpus (owner), which must flip website_publish, change the audience/document_type, or move the page; the entry is deleted here in the same coordinated change. A declared page that is ineligible, not allow-listed and not withheld keeps failing the build.",
+  "entries": [
+    {
+      "source": "bitty-terminal-docs",
+      "path": "docs/projects/bitty/configuration/README.md",
+      "audience": "mixed",
+      "document_type": "index",
+      "owner": "bitty-core",
+      "reason": "topic-tree index; `mixed` is not a reader-facing audience under the unchanged #97 rule and `index` is eligible only for `user`. bitty-core owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-terminal-docs",
+      "path": "docs/projects/bitty/development/README.md",
+      "audience": "maintainer",
+      "document_type": "index",
+      "owner": "bitty-core",
+      "reason": "topic-tree index; `maintainer` is not a reader-facing audience under the unchanged #97 rule. bitty-core owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-terminal-docs",
+      "path": "docs/projects/bitty/interfaces/README.md",
+      "audience": "mixed",
+      "document_type": "index",
+      "owner": "bitty-core",
+      "reason": "topic-tree index; `mixed` is not a reader-facing audience under the unchanged #97 rule and `index` is eligible only for `user`. bitty-core owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-terminal-docs",
+      "path": "docs/projects/bitty/product/README.md",
+      "audience": "mixed",
+      "document_type": "index",
+      "owner": "bitty-core",
+      "reason": "topic-tree index; `mixed` is not a reader-facing audience under the unchanged #97 rule and `index` is eligible only for `user`. bitty-core owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-terminal-docs",
+      "path": "docs/projects/bitty/product/visual-identity.md",
+      "audience": "mixed",
+      "document_type": "overview",
+      "owner": "bitty-core",
+      "reason": "`mixed` is not a reader-facing audience under the unchanged #97 rule. bitty-core owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-terminal-docs",
+      "path": "docs/projects/bitty/security/README.md",
+      "audience": "security-reviewer",
+      "document_type": "index",
+      "owner": "bitty-core",
+      "reason": "topic-tree index; `security-reviewer` is not a reader-facing audience and security corpora stay off the public site. bitty-core owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-terminal-docs",
+      "path": "docs/projects/bitty/specifications/ai-surface-accepted-record.md",
+      "audience": "contributor",
+      "document_type": "specification",
+      "owner": "bitty-core",
+      "reason": "`specification` is a governance document type that is not published for `contributor` (only the `plugin-author` audience exception publishes specifications). bitty-core owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-terminal-docs",
+      "path": "docs/projects/bitty/specifications/overlay-ownership-reconciliation.md",
+      "audience": "maintainer",
+      "document_type": "specification",
+      "owner": "bitty-core",
+      "reason": "`specification` is a governance document type that is not published for `maintainer` (only the `plugin-author` audience exception publishes specifications). bitty-core owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-terminal-docs",
+      "path": "docs/projects/bitty/specifications/panel-content-scene-path-decision.md",
+      "audience": "maintainer",
+      "document_type": "specification",
+      "owner": "bitty-core",
+      "reason": "`specification` is a governance document type that is not published for `maintainer` (only the `plugin-author` audience exception publishes specifications). bitty-core owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-terminal-docs",
+      "path": "docs/projects/bitty/specifications/panel-placement-decision.md",
+      "audience": "maintainer",
+      "document_type": "specification",
+      "owner": "bitty-core",
+      "reason": "`specification` is a governance document type that is not published for `maintainer` (only the `plugin-author` audience exception publishes specifications). bitty-core owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-terminal-docs",
+      "path": "docs/projects/bitty/specifications/panel-runtime-rfc.md",
+      "audience": "maintainer",
+      "document_type": "specification",
+      "owner": "bitty-core",
+      "reason": "`specification` is a governance document type that is not published for `maintainer` (only the `plugin-author` audience exception publishes specifications). bitty-core owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-terminal-docs",
+      "path": "docs/projects/bitty/specifications/ui-convergence-roadmap.md",
+      "audience": "maintainer",
+      "document_type": "specification",
+      "owner": "bitty-core",
+      "reason": "`specification` is a governance document type that is not published for `maintainer` (only the `plugin-author` audience exception publishes specifications). bitty-core owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-terminal-docs",
+      "path": "docs/projects/bitty/specifications/ui-ux-invariant-set-candidate.md",
+      "audience": "contributor",
+      "document_type": "specification",
+      "owner": "bitty-core",
+      "reason": "`specification` is a governance document type that is not published for `contributor` (only the `plugin-author` audience exception publishes specifications). bitty-core owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    },
+    {
+      "source": "bitty-terminal-docs",
+      "path": "docs/projects/bitty/specifications/unified-mod-contract-candidate.md",
+      "audience": "contributor",
+      "document_type": "specification",
+      "owner": "bitty-core",
+      "reason": "`specification` is a governance document type that is not published for `contributor` (only the `plugin-author` audience exception publishes specifications). bitty-core owns the fix: flip website_publish to false, change the audience/document_type, or move the page."
+    }
+  ]
+}

@@ -1,314 +1,324 @@
 {
-  "policy_version": "2026-09-27.3",
-  "note": "Paths that request publication (website_publish: true) but are demoted by the publication policy at the pinned revision. This is the docs-side frontmatter flip list: bitty-docs sets website_publish: false (or removes the field) on each path, and the entry is deleted here in the same coordinated change. Shrink-only.",
+  "policy_version": "2026-09-28.4",
+  "note": "Paths that request publication (website_publish: true) but are demoted by the publication policy at the pinned revisions. This is the docs-side frontmatter flip list: the entry's `source` corpus sets website_publish: false (or removes the field) on its path, and the entry is deleted here in the same coordinated change. Shrink-only.",
   "entries": [
     {
+      "source": "bitty-docs",
       "path": "docs/decisions/adrs/ADR-0001-repository-bootstrap-baseline.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Decision register corpus (ADRs, RFCs, open questions) \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/decisions/adrs/ADR-0002-platform-support-tiers.md",
       "audience": "maintainer",
       "document_type": "specification",
       "reason": "Decision register corpus (ADRs, RFCs, open questions) \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/decisions/adrs/ADR-0003-core-workspace-topology.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Decision register corpus (ADRs, RFCs, open questions) \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/decisions/adrs/ADR-0004-upstream-dependencies.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Decision register corpus (ADRs, RFCs, open questions) \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/decisions/adrs/ADR-0005-lua-pins-and-stdlib.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Decision register corpus (ADRs, RFCs, open questions) \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/decisions/adrs/ADR-0006-os-env-policy.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Decision register corpus (ADRs, RFCs, open questions) \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/decisions/adrs/ADR-0007-async-gc.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Decision register corpus (ADRs, RFCs, open questions) \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/decisions/adrs/ADR-0008-headless.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Decision register corpus (ADRs, RFCs, open questions) \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/decisions/adrs/ADR-0009-plugin-api-v1-lua-surface.md",
       "audience": "plugin-author",
       "document_type": "specification",
       "reason": "decision record under docs/decisions/: governance corpus, never published, so its website_publish: true must flip (found by the #103 review: the plugin-author specification exception had published it)"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/decisions/adrs/ADR-0010-plugin-host-runtime-acceptance.md",
       "audience": "plugin-author",
       "document_type": "specification",
       "reason": "decision record under docs/decisions/: governance corpus, never published, so its website_publish: true must flip (found by the #103 review)"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/decisions/adrs/ADR-0011-repository-metadata-baseline.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Decision register corpus (ADRs, RFCs, open questions) \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/decisions/adrs/README.md",
       "audience": "maintainer",
       "document_type": "index",
       "reason": "Decision register corpus (ADRs, RFCs, open questions) \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/decisions/index.md",
       "audience": "maintainer",
       "document_type": "register",
       "reason": "Decision register corpus (ADRs, RFCs, open questions) \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/decisions/open-questions.md",
       "audience": "maintainer",
       "document_type": "register",
       "reason": "Decision register corpus (ADRs, RFCs, open questions) \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/decisions/rfcs/README.md",
       "audience": "contributor",
       "document_type": "index",
       "reason": "Decision register corpus (ADRs, RFCs, open questions) \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/decisions/rfcs/RFC-0001-appearance-configuration.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Decision register corpus (ADRs, RFCs, open questions) \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/decisions/rfcs/RFC-0002-panel-animations.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Decision register corpus (ADRs, RFCs, open questions) \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/development/README.md",
       "audience": "contributor",
       "document_type": "index",
       "reason": "Development process page \u2014 engineering governance corpus"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/development/documentation-workflow.md",
       "audience": "contributor",
       "document_type": "policy",
       "reason": "Development process page \u2014 engineering governance corpus"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/development/repository-bootstrap.md",
       "audience": "contributor",
       "document_type": "guide",
       "reason": "Development process page \u2014 engineering governance corpus"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/development/repository-metadata-baseline.md",
       "audience": "contributor",
       "document_type": "policy",
       "reason": "Development process page \u2014 engineering governance corpus"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/development/toolchain-policy.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Development process page \u2014 engineering governance corpus"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/development/website-sync.md",
       "audience": "contributor",
       "document_type": "guide",
       "reason": "Development process page \u2014 engineering governance corpus"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/project/technology-strategy.md",
       "audience": "contributor",
       "document_type": "explanation",
       "reason": "Project governance / state page \u2014 engineering governance corpus"
     },
     {
+      "source": "bitty-terminal-docs",
       "path": "docs/projects/bitty/specifications/README.md",
       "audience": "contributor",
       "document_type": "index",
       "reason": "Section index of the specifications governance corpus (audience contributor) \u2014 the index leaves with the corpus"
     },
     {
-      "path": "docs/projects/bitty/specifications/ai-architecture.md",
-      "audience": "contributor",
-      "document_type": "specification",
-      "reason": "Engineering specification (audience contributor, document_type specification) \u2014 governance corpus page, not reader-facing"
-    },
-    {
+      "source": "bitty-terminal-docs",
       "path": "docs/projects/bitty/specifications/cli-contract-rfc.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Engineering specification (audience contributor, document_type specification) \u2014 governance corpus page, not reader-facing"
     },
     {
+      "source": "bitty-terminal-docs",
       "path": "docs/projects/bitty/specifications/compatibility-milestone-rfc.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Engineering specification (audience contributor, document_type specification) \u2014 governance corpus page, not reader-facing"
     },
     {
+      "source": "bitty-terminal-docs",
       "path": "docs/projects/bitty/specifications/configuration-model-rfc.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Engineering specification (audience contributor, document_type specification) \u2014 governance corpus page, not reader-facing"
     },
     {
+      "source": "bitty-terminal-docs",
       "path": "docs/projects/bitty/specifications/default-distribution-rfc.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Engineering specification (audience contributor, document_type specification) \u2014 governance corpus page, not reader-facing"
     },
     {
+      "source": "bitty-terminal-docs",
       "path": "docs/projects/bitty/specifications/devtools-rfc.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Engineering specification (audience contributor, document_type specification) \u2014 governance corpus page, not reader-facing"
     },
     {
+      "source": "bitty-terminal-docs",
       "path": "docs/projects/bitty/specifications/governance-rfc.md",
       "audience": "maintainer",
       "document_type": "specification",
       "reason": "Engineering specification (audience maintainer, document_type specification) \u2014 governance corpus page, not reader-facing"
     },
     {
+      "source": "bitty-terminal-docs",
       "path": "docs/projects/bitty/specifications/input-pointer-rfc.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Engineering specification (audience contributor, document_type specification) \u2014 governance corpus page, not reader-facing"
     },
     {
-      "path": "docs/projects/bitty/specifications/ipc-agent-rfc.md",
-      "audience": "security-reviewer",
-      "document_type": "specification",
-      "reason": "Engineering specification (audience security-reviewer, document_type specification) \u2014 governance corpus page, not reader-facing"
-    },
-    {
-      "path": "docs/projects/bitty/specifications/isolation-resource-rfc.md",
-      "audience": "security-reviewer",
-      "document_type": "specification",
-      "reason": "Engineering specification (audience security-reviewer, document_type specification) \u2014 governance corpus page, not reader-facing"
-    },
-    {
-      "path": "docs/projects/bitty/specifications/lua-runtime-rfc.md",
-      "audience": "contributor",
-      "document_type": "specification",
-      "reason": "Engineering specification (audience contributor, document_type specification) \u2014 governance corpus page, not reader-facing"
-    },
-    {
-      "path": "docs/projects/bitty/specifications/package-followup-rfc.md",
-      "audience": "security-reviewer",
-      "document_type": "specification",
-      "reason": "Engineering specification (audience security-reviewer, document_type specification) \u2014 governance corpus page, not reader-facing"
-    },
-    {
-      "path": "docs/projects/bitty/specifications/package-lifecycle-rfc.md",
-      "audience": "security-reviewer",
-      "document_type": "specification",
-      "reason": "Engineering specification (audience security-reviewer, document_type specification) \u2014 governance corpus page, not reader-facing"
-    },
-    {
+      "source": "bitty-terminal-docs",
       "path": "docs/projects/bitty/specifications/performance-budget-rfc.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Engineering specification (audience contributor, document_type specification) \u2014 governance corpus page, not reader-facing"
     },
     {
+      "source": "bitty-terminal-docs",
       "path": "docs/projects/bitty/specifications/rich-presentation-rfc.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Engineering specification (audience contributor, document_type specification) \u2014 governance corpus page, not reader-facing"
     },
     {
+      "source": "bitty-terminal-docs",
       "path": "docs/projects/bitty/specifications/risk-evidence-rfc.md",
       "audience": "security-reviewer",
       "document_type": "specification",
       "reason": "Engineering specification (audience security-reviewer, document_type specification) \u2014 governance corpus page, not reader-facing"
     },
     {
+      "source": "bitty-terminal-docs",
       "path": "docs/projects/bitty/specifications/status-system.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Engineering specification (audience contributor, document_type specification) \u2014 governance corpus page, not reader-facing"
     },
     {
+      "source": "bitty-terminal-docs",
       "path": "docs/projects/bitty/specifications/terminal-registry-view-lifecycle-rfc.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Engineering specification (audience contributor, document_type specification) \u2014 governance corpus page, not reader-facing"
     },
     {
+      "source": "bitty-terminal-docs",
       "path": "docs/projects/bitty/specifications/terminal-state-rfc.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Engineering specification (audience contributor, document_type specification) \u2014 governance corpus page, not reader-facing"
     },
     {
+      "source": "bitty-terminal-docs",
       "path": "docs/projects/bitty/specifications/text-rendering-rfc.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Engineering specification (audience contributor, document_type specification) \u2014 governance corpus page, not reader-facing"
     },
     {
+      "source": "bitty-terminal-docs",
       "path": "docs/projects/bitty/specifications/website-delivery-rfc.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Engineering specification (audience contributor, document_type specification) \u2014 governance corpus page, not reader-facing"
     },
     {
+      "source": "bitty-terminal-docs",
       "path": "docs/projects/bitty/specifications/workspace-compositor.md",
       "audience": "contributor",
       "document_type": "specification",
       "reason": "Engineering specification (audience contributor, document_type specification) \u2014 governance corpus page, not reader-facing"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/security/evidence-matrix.md",
       "audience": "security-reviewer",
       "document_type": "register",
       "reason": "Security risk register / evidence matrix \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/security/overview.md",
       "audience": "mixed",
       "document_type": "policy",
       "reason": "Security governance corpus (policy / normative) \u2014 leaves the public site"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/security/p0-acceptance-criteria.md",
       "audience": "security-reviewer",
       "document_type": "specification",
       "reason": "Security governance corpus (policy / normative) \u2014 leaves the public site"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/security/risk-register.md",
       "audience": "security-reviewer",
       "document_type": "register",
       "reason": "Security risk register / evidence matrix \u2014 governance, stays canonical in bitty-docs"
     },
     {
+      "source": "bitty-docs",
       "path": "docs/security/threat-model.md",
       "audience": "security-reviewer",
       "document_type": "policy",

@@ -7,7 +7,7 @@
 direction: down
 
 title: {
-  label: "Core Workspace Topology — 16 crates (be3bdb4), 18 members with harness (7a4ee41)"
+  label: "Core Workspace Topology — 19 Crates (Spine Complete)"
   shape: rectangle
   style.fill: "#f1f5f9"
   style.stroke: "#64748b"
@@ -128,15 +128,23 @@ harness: {
     shape: rectangle
     style.border-radius: 8
   }
+  test_support: {
+    label: "bitty-test-support\nshared test helpers"
+    shape: rectangle
+    style.border-radius: 8
+  }
 }
 
 # --- Edges (solid = depends) ---
 state.term_state -> foundation.vt: "depends"
 presentation.render -> state.term_state: "snapshot only"
 presentation.render -> foundation.platform: "SurfaceTarget"
+presentation.render -> foundation.config: "theme presets"
 presentation.ui -> state.term_state
 presentation.rich -> state.term_state
 presentation.rich -> foundation.vt
+presentation.rich -> foundation.platform: "clipboard"
+presentation.rich -> foundation.ipc: "fragment DTOs"
 host.plugin_host -> state.term_state
 host.plugin_host -> foundation.config
 host.plugin_host -> foundation.package
@@ -147,8 +155,28 @@ runtime -> presentation.render
 runtime -> foundation.platform
 runtime -> presentation.ui
 runtime -> host.plugin_host
+runtime -> foundation.config
+runtime -> foundation.package
+runtime -> foundation.lua
+runtime -> foundation.ipc
+runtime -> foundation.agent
+runtime -> presentation.rich
+runtime -> harness.test_support {
+  style.stroke-dash: 3
+}
 app -> runtime
 app -> foundation.platform
+app -> foundation.config
+app -> foundation.ipc
+app -> host.plugin_host
+app -> presentation.render
+app -> state.term_state
+app -> harness.perf {
+  style.stroke-dash: 3
+}
+app -> harness.test_support {
+  style.stroke-dash: 3
+}
 harness.compat_lab -> foundation.vt {
   style.stroke-dash: 3
 }
@@ -159,6 +187,15 @@ harness.perf -> foundation.vt {
   style.stroke-dash: 3
 }
 harness.perf -> state.term_state {
+  style.stroke-dash: 3
+}
+harness.perf -> presentation.render {
+  style.stroke-dash: 3
+}
+harness.perf -> foundation.platform {
+  style.stroke-dash: 3
+}
+harness.perf -> runtime {
   style.stroke-dash: 3
 }
 

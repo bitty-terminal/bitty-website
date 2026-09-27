@@ -270,16 +270,20 @@ describe("renderRedirectEvidence (deployed provenance key set, #98)", () => {
  * Routes that answered a redirect before the T5 multi-source change and must
  * keep answering one (#98 §5: no URL 404s).
  *
- * Two groups; every route is demoted in the aggregated corpus, so each has a
- * single correct interim target — `/docs/`, the nearest published ancestor:
+ * Two groups. In the aggregated corpus every route here is either demoted (a
+ * policy 301 of its own) or absent because its page is withheld; in both cases
+ * it is a leaf whose single correct interim target is `/docs/`, the nearest
+ * published ancestor.
  *
- *   - the 34 flat CTX-0185 aliases (`docs/specifications/*.md`,
- *     `docs/extensibility/*.md`) that the two container wildcards used to
- *     carry. Retargeting those containers to `/docs/` removes their wildcard,
- *     so without a per-route entry 34 routes x 3 hosted versions turn from 301
- *     into 404 — the same class of loss as the entries above, one level down;
- *   - the routes carved out of the pinned bitty-docs revision whose owning
- *     corpus has not landed yet.
+ *   - the 35 flat CTX-0185 aliases: `docs/specifications/*.md`
+ *     (33 files, the section index `readme` included) and
+ *     `docs/extensibility/*.md` (2 files) as of the revision before that
+ *     migration. The two containers these live under were retargeted to
+ *     `/docs/`, which drops their wildcard, so without a per-route entry
+ *     35 routes x 3 hosted versions turn from 301 into 404 — the same
+ *     class of loss as the entries above, one level down;
+ *   - the 6 routes carved out of the pinned bitty-docs revision
+ *     whose owning corpus has not landed yet.
  *
  * Shrink-only: an entry leaves this list when the owning corpus lands and
  * publishes the page (then the entry names the exact target, or is dropped
@@ -308,6 +312,7 @@ const INTERIM_CONTINUITY_ROUTES = [
   "/docs/specifications/plugin-host-runtime-rfc/",
   "/docs/specifications/plugin-platform-rfc/",
   "/docs/specifications/plugin-reuse-and-providers/",
+  "/docs/specifications/readme/",
   "/docs/specifications/rich-presentation-rfc/",
   "/docs/specifications/risk-evidence-rfc/",
   "/docs/specifications/semantic-terminal-rfc/",
@@ -328,10 +333,22 @@ const INTERIM_CONTINUITY_ROUTES = [
   "/docs/projects/bitty/specifications/package-lifecycle-rfc/",
 ] as const;
 
+/** The flat group is exactly the pre-migration tree: 33 specifications files
+ * (README.md included) + 2 extensibility files. Pinned as arithmetic so
+ * dropping one route has to be argued here, not just in the list above. */
+const FLAT_ALIAS_ROUTES = 35;
+const CARVED_OUT_ROUTES = 6;
+
 describe("interim redirect continuity for moved routes (#98)", () => {
   const entries = JSON.parse(
     readFileSync(join(import.meta.dir, "..", "redirects.json"), "utf8"),
   ) as readonly RedirectEntry[];
+
+  test("the fixture is the whole set, with no duplicate route", () => {
+    const listed = [...INTERIM_CONTINUITY_ROUTES];
+    expect(new Set(listed).size).toBe(listed.length);
+    expect(listed.length).toBe(FLAT_ALIAS_ROUTES + CARVED_OUT_ROUTES);
+  });
 
   test("every moved route still answers 301 to a published ancestor", () => {
     for (const old of INTERIM_CONTINUITY_ROUTES) {

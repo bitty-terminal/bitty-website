@@ -380,6 +380,14 @@
     "effective_version": "0.1.0"
   },
   {
+    "old": "/docs/specifications/readme/",
+    "new": "/docs/",
+    "status": 301,
+    "descendants": false,
+    "reason": "bitty-website#98 T5 interim: CTX-0185 flat alias; its target tree is demoted in the aggregated corpus, so /docs/ (nearest published ancestor) keeps the 301 alive",
+    "effective_version": "0.1.0"
+  },
+  {
     "old": "/docs/specifications/rich-presentation-rfc/",
     "new": "/docs/",
     "status": 301,

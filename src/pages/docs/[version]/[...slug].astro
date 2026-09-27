@@ -117,11 +117,11 @@ export async function getStaticPaths() {
   }> = [];
 
   // RS-3 uses the source-relative path as the version-spanning content
-  // identity. The website currently renders one pinned corpus under every
-  // hosted segment, so a version's eligible set is explicit in versions.json
-  // and is the same set the static paths below expose. Keeping the map in
-  // static-path props makes a future per-version mirror change one data input
-  // rather than a second route-rewrite implementation.
+  // identity. The website currently renders the same pinned corpus set under
+  // every hosted segment, so a version's eligible set is explicit in
+  // versions.json and is the same set the static paths below expose. Keeping
+  // the map in static-path props makes a future per-version mirror change one
+  // data input rather than a second route-rewrite implementation.
   //
   // Fail closed: an unknown target version is absent from this map, so the
   // selector falls back to its index instead of guessing an identity set.

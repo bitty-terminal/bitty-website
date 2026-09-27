@@ -13,20 +13,32 @@ sidebar_order: 21
 
 > Status: **accepted** on 2026-08-29 by the project initiator. This document defines the accepted repository-governance contract: licenses, branch protections, ownership
 > rules, compatibility policy, and cross-repository release flow for the
-> seven formal repositories under `github.com/bitty-terminal` at the design level; it closes [OQ-024](../../../decisions/open-questions.md). It does not
+> seven formal repositories under `github.com/bitty-terminal` at the design level; it closes [OQ-024](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md). It does not
 > describe implemented governance beyond the branch protections already
 > visible on `main`, does not authorize published releases, and does not
 > weaken any normative security control. Experimental repository state may exist as review evidence
 > but carries no stability promise beyond the accepted contract. Acceptance was per independent category-owner, docs-curator, and
 > security-auditor review (CTX-0077) with P0 sign-off on 2026-08-29; see [P0 Review Sign-off](#p0-review-sign-off) and the
-> [P0 review checklist](../../../reviews/p0-review-checklist.md). The lifecycle is `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`.
+> [P0 review checklist](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/reviews/p0-review-checklist.md). The lifecycle is `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`.
+
+**Repository archival note (2026-09-14).** The repository counts and lists
+below (`seven` formal repositories, the `bitty-mcp` rows, and the
+`bitty-plugins/bitty-mcp` local checkout) are retained as accepted on
+2026-08-29. Since then `bitty-mcp` was archived because its MCP tool-surface
+functionality is covered by `bitty-ai`, and the estate added `bitty-ai`,
+`bitty-plugins`, and the project documentation repositories
+(`bitty-terminal-docs`, `bitty-ai-docs`, `bitty-plugins-docs`). The live
+repository list and protection state are maintained in the
+[Repository map](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/repository-map.md); the accepted governance
+mechanisms (licenses, protections, ownership, and release flow) continue to
+apply to the live repositories.
 
 ## Purpose and scope
 
-[OQ-024](../../../decisions/open-questions.md) asks: _what licenses, branch
+[OQ-024](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) asks: _what licenses, branch
 protections, ownership rules, compatibility policy, and cross-repository
 release flow apply?_ Its canonical document today is the
-[Repository map](../../../project/repository-map.md), which records the accepted
+[Repository map](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/repository-map.md), which records the accepted
 polyrepo topology and the current initialization state (seven public
 remotes with protected `main`) but leaves licenses undecided and the
 release and compatibility policies as pending decisions. This RFC answers
@@ -52,16 +64,16 @@ Out of scope (owned elsewhere):
 - product/performance budgets (OQ-001,
   [Performance Budget RFC](performance-budget-rfc.md));
 - platform support tiers and CI guarantees beyond reuse of the accepted
-  tiers (OQ-003, [ADR 0002](../../../decisions/adrs/ADR-0002-platform-support-tiers.md));
+  tiers (OQ-003, [ADR 0002](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0002-platform-support-tiers.md));
 - crate topology and dependency pins (OQ-005/OQ-006,
-  [ADR 0003](../../../decisions/adrs/ADR-0003-core-workspace-topology.md) and
-  [ADR 0004](../../../decisions/adrs/ADR-0004-upstream-dependencies.md));
+  [ADR 0003](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0003-core-workspace-topology.md) and
+  [ADR 0004](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0004-upstream-dependencies.md));
 - terminal state and action invariants (OQ-007,
   [Terminal State RFC](terminal-state-rfc.md));
 - website loader, synchronization, route mapping, and redirect manifest
-  (OQ-023, [Website content contract](../../../project/website-content-contract.md));
+  (OQ-023, [Website content contract](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/website-content-contract.md));
 - implementation and test evidence per risk (OQ-025,
-  [Risk register](../../../security/risk-register.md)).
+  [Risk register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md)).
 
 This RFC introduces no new trust boundary. Every transition into a
 privileged operation stays behind the capability, scope, and review
@@ -69,31 +81,31 @@ gates already normative in the security corpus.
 
 ## Normative sources this specification must not weaken
 
-- [Security overview](../../../security/overview.md): default posture
+- [Security overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md): default posture
   (all external input untrusted until a narrow grant), invariants 2
   through 10, trust-boundary table, and the rule that deferral to P1/P2
   must not create a P0 bypass.
-- [Threat model](../../../security/threat-model.md): supply-chain lane
+- [Threat model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md): supply-chain lane
   (T-12 / R-015), dependency governance (R-019), and the
   IPC and packaging boundaries that branch protection and license checks
   must preserve.
-- [Risk register](../../../security/risk-register.md): R-015 (supply-chain
+- [Risk register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md): R-015 (supply-chain
   integrity), R-019 (dependency governance), and R-022 (distribution
   integrity) as they touch publication and provenance.
-- [P0 Security Acceptance Criteria](../../../security/p0-acceptance-criteria.md):
+- [P0 Security Acceptance Criteria](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md):
   advisory, source, license, and banned-dependency checks (P0-AC-033
   family) and safe-mode independence.
-- [Decision register](../../../decisions/index.md): candidate versus accepted
+- [Decision register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/index.md): candidate versus accepted
   queue and the DIR-006 through DIR-012 directions that fix the
   workspace model and English-only corpus.
-- [Documentation workflow](../../../development/documentation-workflow.md):
+- [Documentation workflow](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/documentation-workflow.md):
   change-trigger matrix that makes repository, CI, delivery, ownership,
   and release-process changes require review of project governance,
   development guidance, `AGENTS.md` and rules, and the website contract
   where publishing changes.
-- [Repository map](../../../project/repository-map.md): accepted polyrepo
+- [Repository map](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/repository-map.md): accepted polyrepo
   topology, current initialization state, and the bootstrap baseline
-  accepted in [ADR 0001](../../../decisions/adrs/ADR-0001-repository-bootstrap-baseline.md).
+  accepted in [ADR 0001](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0001-repository-bootstrap-baseline.md).
 - [Architecture overview](../architecture/overview.md) and
   [Core and Plugin Boundaries](../architecture/core-boundaries.md):
   repository-per-component ownership remains candidate outside ADR 0003;
@@ -183,7 +195,7 @@ Rationale:
 - `bitty-plugin-template` consumers receive the same MIT `LICENSE`
   scaffold; replacing it with another permissive license requires a
   reviewed change that updates the template generator, the
-  [toolchain policy](../../../development/toolchain-policy.md) allowlist, and
+  [toolchain policy](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/toolchain-policy.md) allowlist, and
   the SDK docs, and must not introduce copyleft into any shipped binary
   (ADR 0004 prohibition).
 - Dependency licenses are enforced by `cargo deny` / `cargo vet` /
@@ -203,12 +215,10 @@ Rationale:
 ### `main` settings on GitHub (accepted, already visible as the current state)
 
 The following table is the accepted normative set. The
-[Repository map](../../../project/repository-map.md) records that all seven
+[Repository map](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/repository-map.md) records that all seven
 public remotes are already pushed with `main` protected as squash-only
 with required checks; this RFC makes that observation a governed
 contract and records the full flag set:
-
-<!-- markdownlint-disable MD013 -->
 
 | Setting                                  | Accepted value                                                                                                                                                                                                                                                         |
 | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -222,7 +232,7 @@ contract and records the full flag set:
 | Require signed commits                   | `false` in v1 (recommended but not required until owner tooling is uniform; revisit after first release)                                                                                                                                                               |
 | Allow force pushes / deletions on `main` | `false`                                                                                                                                                                                                                                                                |
 | Require linear history                   | implied by squash-only; not a second flag                                                                                                                                                                                                                              |
-| Auto-merge                               | `disabled` by default; `gh pr merge --squash` directly (see [AGENTS.md](../../../../AGENTS.md) GitHub guidance and `NETWORK_PROXY` for `gh`)                                                                                                                           |
+| Auto-merge                               | `disabled` by default; `gh pr merge --squash` directly (see [AGENTS.md](https://github.com/bitty-terminal/bitty-docs/blob/main/AGENTS.md) GitHub guidance and `NETWORK_PROXY` for `gh`)                                                                                |
 | CodeQL                                   | `required` where a CodeQL workflow exists (primary language per repo plus `actions` queries on `push`, `pull_request`, and weekly `schedule`); gating status is the `Analyze` / `Analyze - javascript` / `Lint GitHub Actions workflows` job per repo where applicable |
 | Dependabot PR policy                     | Merge only after required checks pass; close when `mergeable == false` due to scope or conflict and fix manually                                                                                                                                                       |
 
@@ -269,7 +279,7 @@ mode and must not become the delivery path after it.
   for the gating decision, but in `bitty-docs` merge proceeds when
   locally green and `mergeable == MERGEABLE` without waiting for
   remote `Docs quality` per this repository's
-  [AGENTS.md](../../../../AGENTS.md) remote-monitoring rule.
+  [AGENTS.md](https://github.com/bitty-terminal/bitty-docs/blob/main/AGENTS.md) remote-monitoring rule.
 - Squash is the only merge strategy; the squash commit message follows
   Conventional Commits and links its CarryCtx task and related Issues,
   PRs, and ADRs/RFCs. The feature branch is deleted after merge.
@@ -281,13 +291,13 @@ mode and must not become the delivery path after it.
 
 ### Organization and team layout
 
-| Principals                   | Accepted ownership                                                                                                                                                                                                                                                                                |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| GitHub organization          | `bitty-terminal` — formal repositories belong here; forks exist outside the organization.                                                                                                                                                                                                         |
-| Organization owners          | Project initiators who administer organization settings, team creation, and branch protection; not per-PR approvers by default.                                                                                                                                                                   |
-| Repository maintainer teams  | `bitty-core` (`bitty`), `bitty-docs-maintainers` (`bitty-docs`), `bitty-website-maintainers` (`bitty-website`), `bitty-devtools-maintainers`, `bitty-mcp-maintainers`, `bitty-sdk-maintainers`, `bitty-template-maintainers`. Each team has write and review authority on exactly one repository. |
-| Cross-cutting reviewer roles | `security-auditor`, `docs-curator`, `category-owner` (architecture, configuration, extensibility, interfaces, project, security) per the [documentation workflow](../../../development/documentation-workflow.md). Each required gate is a distinct person from the implementer.                  |
-| Plugin repositories (future) | One independent repository per first-party plugin under `bitty-terminal`; each gains its own maintainer team after a topology ADR creates the repository. The umbrella `bitty-plugins/` path remains a grouping directory, never a parent Git repository.                                         |
+| Principals                   | Accepted ownership                                                                                                                                                                                                                                                                                                                  |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GitHub organization          | `bitty-terminal` — formal repositories belong here; forks exist outside the organization.                                                                                                                                                                                                                                           |
+| Organization owners          | Project initiators who administer organization settings, team creation, and branch protection; not per-PR approvers by default.                                                                                                                                                                                                     |
+| Repository maintainer teams  | `bitty-core` (`bitty`), `bitty-docs-maintainers` (`bitty-docs`), `bitty-website-maintainers` (`bitty-website`), `bitty-devtools-maintainers`, `bitty-mcp-maintainers`, `bitty-sdk-maintainers`, `bitty-template-maintainers`. Each team has write and review authority on exactly one repository.                                   |
+| Cross-cutting reviewer roles | `security-auditor`, `docs-curator`, `category-owner` (architecture, configuration, extensibility, interfaces, project, security) per the [documentation workflow](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/documentation-workflow.md). Each required gate is a distinct person from the implementer. |
+| Plugin repositories (future) | One independent repository per first-party plugin under `bitty-terminal`; each gains its own maintainer team after a topology ADR creates the repository. The umbrella `bitty-plugins/` path remains a grouping directory, never a parent Git repository.                                                                           |
 
 No repository introduces a nested team that silently acquires
 organization ownership. Team membership changes are reviewed and require
@@ -357,14 +367,14 @@ offline note.
 - The [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md)
   candidate ladder `v0.1` through `v1.0` remains candidate maturity
   labels, not calendar promises. When the companion
-  `bitty/docs/product/release-ladder.md` staging is accepted, its
-  `0.1.0` through `0.9.0` mapping overlays this policy without weakening
-  it.
+  [release mechanics](../development/release-mechanics.md) staging is
+  accepted, its `0.1.0` through `0.9.0` mapping overlays this policy
+  without weakening it.
 
 ### MSRV and toolchain pins
 
 - MSRV for `bitty` is `1.85` as accepted in
-  [ADR 0003](../../../decisions/adrs/ADR-0003-core-workspace-topology.md) and
+  [ADR 0003](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0003-core-workspace-topology.md) and
   `rust-toolchain.toml`. Changing MSRV is a **minor** bump with at
   least one minor of warning in `CHANGELOG.md` and `README.md`, not a
   patch.
@@ -372,7 +382,7 @@ offline note.
 - Toolchain pins live in exactly one place per repo: the justfile
   (`prettier` 3.9.6, `markdownlint-cli2` 0.23.1, `actionlint` 1.7.12),
   `rust-toolchain.toml`, and lockfiles (`bun.lock`, `Cargo.lock`) per
-  the [toolchain policy](../../../development/toolchain-policy.md). Bumping a
+  the [toolchain policy](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/toolchain-policy.md). Bumping a
   pin without a semver-appropriate release note is a hygiene failure.
   Version pins are not part of the compatibility promise beyond the
   MSRV statement, but their change is recorded.
@@ -380,12 +390,12 @@ offline note.
 ### Platform compatibility
 
 Platform support follows the accepted tiers in
-[ADR 0002](../../../decisions/adrs/ADR-0002-platform-support-tiers.md):
+[ADR 0002](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0002-platform-support-tiers.md):
 Tier 1 must work and regressions are release blockers; Tier 2 should
 work with best-effort fixes; Tier 3 is community-maintained. Promoting or
 demoting a platform requires an ADR revision and updates to the
-[Repository map](../../../project/repository-map.md),
-[Technology strategy](../../../project/technology-strategy.md), and release notes
+[Repository map](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/repository-map.md),
+[Technology strategy](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/technology-strategy.md), and release notes
 in the same train.
 
 ### Deprecation and migration
@@ -399,7 +409,7 @@ path may be deprecated only with:
    with a diagnostic on the old spelling;
 3. a migration note in `CHANGELOG.md` and, where redirects apply,
    a redirect entry owned by `bitty-docs` per the
-   [documentation workflow](../../../development/documentation-workflow.md);
+   [documentation workflow](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/documentation-workflow.md);
 4. retention of the deprecated surface in the next release's
    verification harness so that `cargo semver-checks` and docs link
    checks still pass.
@@ -466,7 +476,7 @@ repositories; they never carry a release tag.
 
    Cross-repository changes should link to each other. The trailer
    fields `Docs-PR`, `Code-PR`, and associated ADR or RFC numbers are the
-   shared fields accepted in the [Repository map](../../../project/repository-map.md) per this RFC
+   shared fields accepted in the [Repository map](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/repository-map.md) per this RFC
    and adopted here.
 
 3. The implementing task pins exact versions in exactly one place per
@@ -554,19 +564,19 @@ silent retag.
 
 ## Security alignment and traceability
 
-| Accepted element                                                                                        | Normative gate it implements                                           | Threat / Risk IDs                                                        |
-| ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Single MIT license with `cargo deny` allowlist and banned-copyleft rule                                 | Supply-chain license posture, advisory/source/banned checks            | R-019, R-015                                                             |
-| `main` protected as squash-only with required status checks matching CI job names                       | Read-only CI parity, no unchecked direct merge into a trusted branch   | T-12, R-015                                                              |
-| Strict status checks, conversation resolution, blocked force push                                       | Provenance of the merge commit, auditability of every release          | R-015, P0-AC-033 family                                                  |
-| CODEOWNERS default owner per repository plus security-corpus co-ownership                               | Least-privilege review, no anonymous authority                         | T-06, invariant 2                                                        |
-| CodeQL `javascript` plus `actions` queries on every formal repository                                   | Static analysis gate on publishable surface and workflows              | R-015                                                                    |
-| Branch naming `ctx-XXXX/type-slug`, one branch per task, worktree at `.worktrees/ctx-XXXX-type-slug`    | Task scope isolation, shared-checkout hygiene                          | R-015                                                                    |
-| Semver with dated deprecation window of at least one minor and migration notes                          | Compatibility without silent breaking change                           | R-022                                                                    |
-| MSRV 1.85 pinned and change announced as minor with warning                                             | Toolchain policy reproducibility                                       | R-019                                                                    |
-| Train with `Docs-PR` / `Code-PR` trailers, dependency-ordered merges, no cross-repository atomic commit | Cross-repository provenance and ordering gate                          | R-015, R-022                                                             |
-| Pinned `bitty-docs` revision as the only website input                                                  | Content ownership and duplication prohibition per the website contract | [Website content contract](../../../project/website-content-contract.md) |
-| `gitleaks` and `cargo deny` / `cargo audit` / `cargo vet` as pre-merge gates                            | Secret minimization and supply-chain hygiene                           | R-014, R-019                                                             |
+| Accepted element                                                                                        | Normative gate it implements                                           | Threat / Risk IDs                                                                                                           |
+| ------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Single MIT license with `cargo deny` allowlist and banned-copyleft rule                                 | Supply-chain license posture, advisory/source/banned checks            | R-019, R-015                                                                                                                |
+| `main` protected as squash-only with required status checks matching CI job names                       | Read-only CI parity, no unchecked direct merge into a trusted branch   | T-12, R-015                                                                                                                 |
+| Strict status checks, conversation resolution, blocked force push                                       | Provenance of the merge commit, auditability of every release          | R-015, P0-AC-033 family                                                                                                     |
+| CODEOWNERS default owner per repository plus security-corpus co-ownership                               | Least-privilege review, no anonymous authority                         | T-06, invariant 2                                                                                                           |
+| CodeQL `javascript` plus `actions` queries on every formal repository                                   | Static analysis gate on publishable surface and workflows              | R-015                                                                                                                       |
+| Branch naming `ctx-XXXX/type-slug`, one branch per task, worktree at `.worktrees/ctx-XXXX-type-slug`    | Task scope isolation, shared-checkout hygiene                          | R-015                                                                                                                       |
+| Semver with dated deprecation window of at least one minor and migration notes                          | Compatibility without silent breaking change                           | R-022                                                                                                                       |
+| MSRV 1.85 pinned and change announced as minor with warning                                             | Toolchain policy reproducibility                                       | R-019                                                                                                                       |
+| Train with `Docs-PR` / `Code-PR` trailers, dependency-ordered merges, no cross-repository atomic commit | Cross-repository provenance and ordering gate                          | R-015, R-022                                                                                                                |
+| Pinned `bitty-docs` revision as the only website input                                                  | Content ownership and duplication prohibition per the website contract | [Website content contract](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/website-content-contract.md) |
+| `gitleaks` and `cargo deny` / `cargo audit` / `cargo vet` as pre-merge gates                            | Secret minimization and supply-chain hygiene                           | R-014, R-019                                                                                                                |
 
 ## Verification plan
 
@@ -641,36 +651,36 @@ move the linked risk toward `Mitigated`.
 Acceptance of this RFC on 2026-08-29 applies these same-change updates (no
 separate task needed; a follow-up PR must keep them synchronized):
 
-- [Repository map](../../../project/repository-map.md): the pending-decisions
+- [Repository map](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/repository-map.md): the pending-decisions
   list for licenses, successor topology, release profiles, compatibility
   matrix, and cross-repository release train refers to this RFC as the
   authoritative contract; the per-repository `Required main status
 checks` table and the current-initialization-state table gain the
   strict, CODEOWNERS, conversation-resolution, and squash-only columns
   as their governed values rather than observed values.
-- [Decision register](../../../decisions/index.md): DIR-006 through DIR-012
+- [Decision register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/index.md): DIR-006 through DIR-012
   gain a link to this RFC as the accepted ownership and release policy;
   the candidate-queue entry for repository governance is marked
   Accepted on 2026-08-29 per this RFC.
-- [Technology strategy](../../../project/technology-strategy.md): the
+- [Technology strategy](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/technology-strategy.md): the
   candidate dependency-governance, bootstrap toolchain, and release
   profile bullets link to this RFC for license, branch protection, and
   train gates; the reference to ADR 0004's license allowlist stays the
   source for dependency specifics.
-- [Toolchain policy](../../../development/toolchain-policy.md): references
+- [Toolchain policy](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/toolchain-policy.md): references
   the pinned justfile versions (`prettier` 3.9.6, `markdownlint-cli2`
   0.23.1, `actionlint` 1.7.12), `rust-toolchain.toml` MSRV 1.85, and the
   CODEOWNERS and CodeQL `actions` query requirements as the governed
   set; the file gains a short branch-protection row in its pin table.
-- [Documentation workflow](../../../development/documentation-workflow.md):
+- [Documentation workflow](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/documentation-workflow.md):
   the change-trigger matrix row for repository, CI, delivery,
   ownership, and release-process changes already owns this material and
   is linked as the review owner, not rewritten.
-- [Repository bootstrap guide](../../../development/repository-bootstrap.md):
+- [Repository bootstrap guide](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/repository-bootstrap.md):
   the non-goals paragraph for release automation, licenses, and
   publication refers to this RFC as the decision point.
-- [Project releases](../../../releases/README.md) and the root
-  [CHANGELOG.md](../../../../CHANGELOG.md): the release-note and tag
+- [Project releases](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/releases/README.md) and the root
+  [CHANGELOG.md](https://github.com/bitty-terminal/bitty-docs/blob/main/CHANGELOG.md): the release-note and tag
   annotation format become normative per this RFC's tagging and
   compatibility sections when releases exist.
 - No new repository, crate, or workflow is added by this RFC; pins for
@@ -712,7 +722,7 @@ implementation.
 ## Acceptance criteria
 
 This RFC is accepted on 2026-08-29 and closes
-[OQ-024](../../../decisions/open-questions.md) at the design level. The following criteria were satisfied per the [open-question register](../../../decisions/open-questions.md) close rule:
+[OQ-024](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) at the design level. The following criteria were satisfied per the [open-question register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) close rule:
 
 1. Independent review by the category owner, a docs curator, and a
    security reviewer accepts the license, branch protection,
@@ -729,7 +739,7 @@ This RFC is accepted on 2026-08-29 and closes
 4. The draft text in this file is updated to record acceptance date
    and initiator, frontmatter becomes `accepted`, and links from the
    [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md)
-   and the [decision register](../../../decisions/index.md) reflect the
+   and the [decision register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/index.md) reflect the
    accepted composition without claiming implementation.
 5. Verification items 1 through 4 in the plan above are shown green
    on a staged two-repository example (for example `bitty-docs` plus
@@ -739,29 +749,25 @@ Closes OQ-024: this RFC closes that open question at the design level; the regis
 
 ## P0 Review Sign-off
 
-> P0 review per CTX-0077 tracks acceptance of OQ-024 via this RFC. Frontmatter is `accepted` and [open-questions.md](../../../decisions/open-questions.md) is updated per its close rule. This section records passing sign-off and closes OQ-024.
+> P0 review per CTX-0077 tracks acceptance of OQ-024 via this RFC. Frontmatter is `accepted` and [open-questions.md](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) is updated per its close rule. This section records passing sign-off and closes OQ-024.
 
-<!-- markdownlint-disable MD013 -->
-
-| Role                                  | Reviewer          | Verdict | Evidence / scope                                                                                                                                                                                                                                                                                                                             | Date       |
-| ------------------------------------- | ----------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
-| security-auditor                      | `bitty-security`  | pass    | R-015, R-019, R-022, T-12, P0-AC-033 family, MIT license allowlist, supply-chain lane, dependency governance, distribution integrity, branch protection provenance, CodeQL `javascript`+`actions`                                                                                                                                            | 2026-08-28 |
-| category-owner (security-and-quality) | `bitty-quality`   | pass    | License MIT file placement `LICENSE` SPDX, branch protection squash-only strict CODEOWNERS conversation-resolution, compatibility policy semver MSRV 1.85 Tier 1 deprecation >=1 minor, release train `Docs-PR`/`Code-PR` trailers pinned website consumption                                                                                | 2026-08-29 |
-| category-owner (architecture)         | `bitty-architect` | pass    | Branch protection table `Required main status checks` per repository, ownership rules org teams CODEOWNERS paths, cross-repository train dependency-ordered merges atomic-evidence `gitleaks`/`cargo deny` gates                                                                                                                             | 2026-08-29 |
-| docs-curator                          | `bitty-curator`   | pass    | Frontmatter `accepted`, lifecycle `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`, links to [Repository map](../../../project/repository-map.md) and [P0 review checklist](../../../reviews/p0-review-checklist.md) and [website content contract](../../../project/website-content-contract.md), English-only | 2026-08-29 |
-
-<!-- markdownlint-enable MD013 -->
+| Role                                  | Reviewer          | Verdict | Evidence / scope                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      | Date       |
+| ------------------------------------- | ----------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
+| security-auditor                      | `bitty-security`  | pass    | R-015, R-019, R-022, T-12, P0-AC-033 family, MIT license allowlist, supply-chain lane, dependency governance, distribution integrity, branch protection provenance, CodeQL `javascript`+`actions`                                                                                                                                                                                                                                                                                                     | 2026-08-28 |
+| category-owner (security-and-quality) | `bitty-quality`   | pass    | License MIT file placement `LICENSE` SPDX, branch protection squash-only strict CODEOWNERS conversation-resolution, compatibility policy semver MSRV 1.85 Tier 1 deprecation >=1 minor, release train `Docs-PR`/`Code-PR` trailers pinned website consumption                                                                                                                                                                                                                                         | 2026-08-29 |
+| category-owner (architecture)         | `bitty-architect` | pass    | Branch protection table `Required main status checks` per repository, ownership rules org teams CODEOWNERS paths, cross-repository train dependency-ordered merges atomic-evidence `gitleaks`/`cargo deny` gates                                                                                                                                                                                                                                                                                      | 2026-08-29 |
+| docs-curator                          | `bitty-curator`   | pass    | Frontmatter `accepted`, lifecycle `Draft -> experimental review evidence -> Accepted (2026-08-29) -> normative`, links to [Repository map](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/repository-map.md) and [P0 review checklist](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/reviews/p0-review-checklist.md) and [website content contract](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/website-content-contract.md), English-only | 2026-08-29 |
 
 ## References
 
-- Bitty accepted topology: [ADR 0003](../../../decisions/adrs/ADR-0003-core-workspace-topology.md)
+- Bitty accepted topology: [ADR 0003](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0003-core-workspace-topology.md)
   (ten-crate topology, MSRV 1.85, `resolver = "3"`).
-- Upstream license allowlist: [ADR 0004](../../../decisions/adrs/ADR-0004-upstream-dependencies.md)
+- Upstream license allowlist: [ADR 0004](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0004-upstream-dependencies.md)
   (MIT, Apache-2.0, BSD, ISC, Zlib, dual Apache-2.0/MIT; copyleft
   prohibition).
-- Bootstrap contract: [ADR 0001](../../../decisions/adrs/ADR-0001-repository-bootstrap-baseline.md)
+- Bootstrap contract: [ADR 0001](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0001-repository-bootstrap-baseline.md)
   (two-package workspace, toolchain, CI gates, secret handling).
-- Platform and CI tiers: [ADR 0002](../../../decisions/adrs/ADR-0002-platform-support-tiers.md)
+- Platform and CI tiers: [ADR 0002](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0002-platform-support-tiers.md)
   (Tier 1 must-work with native runners; promotion and demotion
   criteria).
 - Current workspace evidence: [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md)
@@ -770,6 +776,6 @@ Closes OQ-024: this RFC closes that open question at the design level; the regis
   (Keep a Changelog, Semantic Versioning), `SECURITY.md` (GitHub Security
   Advisory), and `.github/workflows/ci.yml` (`Docs quality`).
 - Related RFCs: [Default Distribution RFC](default-distribution-rfc.md)
-  for OQ-002, [Package Lifecycle RFC](package-lifecycle-rfc.md) for
-  OQ-021, [Package Follow-up RFC](package-followup-rfc.md) for
+  for OQ-002, [Package Lifecycle RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/packaging/package-lifecycle-rfc.md) for
+  OQ-021, [Package Follow-up RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/packaging/package-followup-rfc.md) for
   OQ-022/OQ-026 through OQ-029.

@@ -21,8 +21,12 @@ import { describe, expect, test } from "bun:test";
 import { fileURLToPath } from "node:url";
 
 import docsRevision from "../content/docs-revision.json" with { type: "json" };
-import { readPublicationCorpus } from "./publicationCorpus.ts";
+import {
+  loadPublicationCorpus,
+  readPublicationCorpus,
+} from "./publicationCorpus.ts";
 import { mountForMirrorPath, parseDocsPinSet } from "./docsPins.ts";
+import { sourcePathToRouteIdentity } from "./docsRoutes.ts";
 import {
   ALLOWED_AUDIENCES,
   EXCLUDED_DOCUMENT_TYPES,
@@ -69,16 +73,54 @@ const EXPECTED_ALLOW_LIST_PATHS: readonly string[] = [
   "docs/roadmap/README.md",
 ];
 
-/** Demoted pages still awaiting the docs-side frontmatter flip (#98 owns it). */
-const EXPECTED_FLIP_LIST_COUNT = 52;
+/**
+ * The allow-list entries the `bitty-terminal-docs` onboarding re-attributed
+ * (every entry under `docs/projects/`, which the `bitty-docs` mount no longer
+ * supplies). The two entries outside it stay with `bitty-docs`: the revision
+ * index (`docs/README.md`) and the roadmap index.
+ */
+const EXPECTED_ALLOW_LIST_TERMINAL_PATHS: readonly string[] = [
+  "docs/projects/bitty/architecture/README.md",
+  "docs/projects/bitty/architecture/final/README.md",
+  "docs/projects/bitty/architecture/overview.md",
+  "docs/projects/bitty/configuration/lua-and-xdg.md",
+  "docs/projects/bitty/examples/README.md",
+  "docs/projects/bitty/product/vision.md",
+  "docs/projects/bitty/reference/README.md",
+  "docs/projects/bitty/requirements/README.md",
+];
+
+/**
+ * Demoted pages still awaiting the docs-side frontmatter flip (#98 owns it):
+ * 52 before the `bitty-terminal-docs` onboarding, of which 17 are now owned by
+ * that source (path-identical) and 6 were dropped because their page does not
+ * exist in the aggregated corpus at the pinned revisions.
+ */
+const EXPECTED_FLIP_LIST_COUNT = 46;
 
 /**
  * Shrink-only pin of the withhold list (bitty-website#98): declared-but-
  * ineligible pages, exact path set. Adding or removing an entry fails this
  * test until the expectation below is updated in the same reviewed change.
+ * All 14 are `bitty-terminal-docs` pages owned by `bitty-core`.
  */
-const EXPECTED_WITHHOLD_PATHS: readonly string[] = [];
-const EXPECTED_WITHHOLD_COUNT = 0;
+const EXPECTED_WITHHOLD_PATHS: readonly string[] = [
+  "docs/projects/bitty/configuration/README.md",
+  "docs/projects/bitty/development/README.md",
+  "docs/projects/bitty/interfaces/README.md",
+  "docs/projects/bitty/product/README.md",
+  "docs/projects/bitty/product/visual-identity.md",
+  "docs/projects/bitty/security/README.md",
+  "docs/projects/bitty/specifications/ai-surface-accepted-record.md",
+  "docs/projects/bitty/specifications/overlay-ownership-reconciliation.md",
+  "docs/projects/bitty/specifications/panel-content-scene-path-decision.md",
+  "docs/projects/bitty/specifications/panel-placement-decision.md",
+  "docs/projects/bitty/specifications/panel-runtime-rfc.md",
+  "docs/projects/bitty/specifications/ui-convergence-roadmap.md",
+  "docs/projects/bitty/specifications/ui-ux-invariant-set-candidate.md",
+  "docs/projects/bitty/specifications/unified-mod-contract-candidate.md",
+];
+const EXPECTED_WITHHOLD_COUNT = 14;
 
 /**
  * The governance-path rule outranks the eligibility rule (review of #103, P1):
@@ -456,6 +498,22 @@ describe("pinned corpus", () => {
     expect(report.withheld.length).toBe(EXPECTED_WITHHOLD_COUNT);
   });
 
+  test("the aggregate published count equals the sums of the per-source bands", async () => {
+    const pins = parseDocsPinSet(docsRevision);
+    const report = evaluatePublicationPolicy(
+      await readPublicationCorpus(MIRROR_ROOT),
+    );
+    const expected = pins.sources.reduce(
+      (sum, pin) => sum + pin.published.min,
+      0,
+    );
+    // 3 (bitty-docs) + 18 (bitty-terminal-docs) = 21 after the T5 onboarding;
+    // the 7 routes that move to the not-yet-landed plugin source are 301s, so
+    // they are not published, and T6 raises this to 44.
+    expect(report.published.length).toBe(expected);
+    expect(report.published.length).toBe(21);
+  });
+
   test("the flip list is unique and matches the demoted set", async () => {
     const report = assertPublicationPolicy(
       await readPublicationCorpus(MIRROR_ROOT),
@@ -497,6 +555,22 @@ describe("policy list source attribution (bitty-website#98)", () => {
       expect(entry.source).toMatch(/^[a-z][a-z0-9-]*$/u);
     }
   });
+
+  test("the allow-list split matches the measured mount ownership", () => {
+    const terminal = allowListEntries()
+      .filter((entry) => entry.source === "bitty-terminal-docs")
+      .map((entry) => entry.path)
+      .sort();
+    expect(terminal).toEqual([...EXPECTED_ALLOW_LIST_TERMINAL_PATHS].sort());
+    // Everything outside `docs/projects/` stays with bitty-docs, including the
+    // revision index that owns `/docs/`.
+    expect(
+      allowListEntries()
+        .filter((entry) => entry.source === "bitty-docs")
+        .map((entry) => entry.path)
+        .sort(),
+    ).toEqual(["docs/README.md", "docs/roadmap/README.md"]);
+  });
 });
 
 describe("withhold list (bitty-website#98)", () => {
@@ -517,22 +591,48 @@ describe("withhold list (bitty-website#98)", () => {
   test("a declared-but-ineligible page that is neither allow-listed nor withheld still fails closed", () => {
     const pages = [
       ...eligibleCorpus(),
+      // Ineligible (contributor is not a reader-facing audience), not
+      // allow-listed and not withheld: it must keep failing exactly as before.
       metadata({
-        sourcePath: "docs/projects/bitty/security/README.md",
-        audience: "security-reviewer",
-        document_type: "index",
+        sourcePath: "docs/projects/bitty/configuration/runbook.md",
+        audience: "contributor",
+        document_type: "guide",
       }),
     ];
     const report = evaluatePublicationPolicy(pages);
     const violation = report.problems.find(
       (problem) =>
         problem.kind === "violation" &&
-        problem.detail.includes("docs/projects/bitty/security/README.md"),
+        problem.detail.includes("docs/projects/bitty/configuration/runbook.md"),
     );
     expect(violation).toBeDefined();
     expect(() => assertPublicationPolicy(pages)).toThrow(
       PublicationPolicyError,
     );
+  });
+
+  test("a withheld page stops failing the build but ships no redirect", async () => {
+    const listed = withholdListEntries();
+    const withheldRoutes = new Set(
+      listed.map(
+        (entry) => sourcePathToRouteIdentity(entry.path).routeWithoutVersion,
+      ),
+    );
+    expect(withheldRoutes.size).toBe(EXPECTED_WITHHOLD_COUNT);
+    const corpus = await loadPublicationCorpus(MIRROR_ROOT);
+    // The withhold list is the *only* reason these pages are tolerated, so the
+    // same pages appear in no redirect and in no published route: a withheld
+    // page never had a served URL.
+    for (const plan of corpus.redirects) {
+      expect(withheldRoutes.has(plan.from)).toBe(false);
+    }
+    for (const route of withheldRoutes) {
+      expect(corpus.publishedRoutes).not.toContain(route);
+    }
+    for (const entry of listed) {
+      expect(entry.owner).toBe("bitty-core");
+      expect(entry.source).toBe("bitty-terminal-docs");
+    }
   });
 
   test("a withhold entry may not also be allow-listed or demoted", () => {

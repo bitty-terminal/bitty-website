@@ -13,14 +13,14 @@ sidebar_order: 19
 
 > Status: **accepted** on 2026-08-28 by the project initiator. This document defines the accepted
 > instrumentation, observability event pipeline, and versioned debug protocol for
-> the plugin runtime and the DevTools boundary; it closes [OQ-019](../../../decisions/open-questions.md)
+> the plugin runtime and the DevTools boundary; it closes [OQ-019](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md)
 > at the design level. It does not describe implemented behavior, does not authorize
 > shipped, stable, or compatibility-guaranteed behavior, and does not weaken any
 > normative security control. Experimental implementation may exist as review evidence
 > but carries no compatibility promise beyond the accepted contract. Acceptance was
 > per independent category-owner, docs-curator, and security-auditor review (CTX-0053)
 > with P0 sign-off simulated 2026-08-28; see [P0 Review Sign-off](#p0-review-sign-off)
-> and the [P0 review checklist](../../../reviews/p0-review-checklist.md). The lifecycle is
+> and the [P0 review checklist](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/reviews/p0-review-checklist.md). The lifecycle is
 > `Draft -> experimental review evidence -> Accepted -> normative`.
 >
 > Amendment A1 (Implemented-only, CTX-0124 design plus `bitty` CTX-0183,
@@ -52,10 +52,23 @@ sidebar_order: 19
 > weakens no normative control (P0-AC-026 unchanged), and records the
 > implementation half of `bitty` CTX-0244 (frameHash digest, PR #421) and
 > CTX-0242 (V1-V3 harness gates, PR #423) without moving acceptance.
+>
+> Amendment A3 (Implemented-only, `bitty` CTX-0506): this RFC additionally
+> documents the `bitty --test-mode` E2E test surface (`bitty.debug/testInfo`
+> plus `bitty.debug/testExit`). Both methods are registered only while the
+> test-mode servo serves; without the flag a normal instance answers them as
+> unknown methods (fail-closed default-deny, never `ScopeDenied`), and
+> `testExit` requires the accepted elevated `debug.control` scope through the
+> explicit `BITTY_CTL_ELEVATE` allowlist with no bearer path. Everything under
+> [Test-mode E2E surface](#test-mode-e2e-surface-implemented-only-amendment-a3)
+> is Implemented-only evidence, not accepted contract: it authorizes no
+> additional implementation beyond the merged `bitty` CTX-0506 (PR #831,
+> commit `92cd709`), weakens no normative control, and records the
+> implementation half without moving acceptance.
 
 ## Purpose and scope
 
-[OQ-019](../../../decisions/open-questions.md) asks: _when do DevTools, record/replay,
+[OQ-019](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) asks: _when do DevTools, record/replay,
 debug protocol, and MCP adapter enter the roadmap?_ The sequencing half remains
 owned by product governance and the
 [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md).
@@ -79,14 +92,14 @@ In scope:
 Out of scope (owned elsewhere):
 
 - plugin capability identifiers and manifest schema (OQ-012, accepted in
-  [Plugin Platform RFC](plugin-platform-rfc.md));
+  [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md));
 - Plugin API v1 namespaces and lifecycle generations (OQ-011, accepted in
-  [Plugin Platform RFC](plugin-platform-rfc.md));
+  [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md));
 - event phases, drop policy, and three-level queue budgets (OQ-013, accepted
-  in [Plugin Platform RFC](plugin-platform-rfc.md); values tuned in
-  [Isolation Resource RFC](isolation-resource-rfc.md));
+  in [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md); values tuned in
+  [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md));
 - Lua runtime, standard-library subset, module resolution, and diagnostics
-  (OQ-009, accepted in [Lua Runtime RFC](lua-runtime-rfc.md); follow-ups
+  (OQ-009, accepted in [Lua Runtime RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/lua-runtime-rfc.md); follow-ups
   OQ-030, OQ-031, OQ-032);
 - IPC wire format and per-action scopes for `bitty ctl` (OQ-018);
 - image, rich-block, and structured-transport contracts (OQ-008, OQ-015, OQ-016);
@@ -98,21 +111,21 @@ in the security corpus.
 
 ## Normative sources this specification must not weaken
 
-- [Security Overview](../../../security/overview.md): default posture
+- [Security Overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md): default posture
   (PTY, plugins, projects, IPC/MCP/Agent, packages, and reference repos are
   untrusted until a narrow grant); invariants 2, 3, 4, 6, 9, 10; trust
   boundaries for IPC/MCP, DevTools, and packages; capability families;
   P0 baseline including plugin limits, safe-mode recovery, and fuzz/testing
   rows.
-- [Threat Model](../../../security/threat-model.md): assets, actors, boundary map,
+- [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md): assets, actors, boundary map,
   principal data flows, abuse cases T-06, T-07, T-09, T-10, T-11, and
   T-14, and the MCP/Agents/DevTools lane that labels terminal output
   untrusted observation data and distinguishes `debug.inspect`,
   `debug.trace`, and `debug.control`.
-- [Security Risk Register](../../../security/risk-register.md): R-006, R-007,
+- [Security Risk Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md): R-006, R-007,
   R-011, R-013, R-014, and R-018 as they touch the plugin runtime and
   observability surfaces.
-- [P0 Security Acceptance Criteria](../../../security/p0-acceptance-criteria.md):
+- [P0 Security Acceptance Criteria](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md):
   P0-AC-013 through P0-AC-016, P0-AC-021 through P0-AC-026, P0-AC-033,
   and the verification-method conventions.
 - [Architecture Overview](../architecture/overview.md): the candidate
@@ -124,12 +137,12 @@ in the security corpus.
   core/plugin ownership split, reliability row (traces, record/replay hooks,
   debug instrumentation), and the rule that plugins and DevTools do not hold
   GPU objects, window handles, PTY file descriptors, or internal Rust handles.
-- [Plugin Platform RFC](plugin-platform-rfc.md): manifest, capability
+- [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md): manifest, capability
   model, lifecycle generations, and the authoritative event-pipeline section
   for delivery, ordering, and drop policy that this RFC references but does
   not duplicate.
-- [Lua Runtime RFC](lua-runtime-rfc.md) and
-  [Isolation Resource RFC](isolation-resource-rfc.md): VM construction,
+- [Lua Runtime RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/lua-runtime-rfc.md) and
+  [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md): VM construction,
   diagnostics classes, and the budget dimensions (RC-1, RC-2, RC-4, RC-5)
   whose counters this RFC exposes as observable state.
 
@@ -158,7 +171,7 @@ this RFC must be corrected.
 2. An observability event pipeline carries instrumentation records out of
    hot paths through per-consumer bounded queues with coalescing,
    batching, and counted drops; it references the single authoritative
-   drop policy in [Plugin Platform RFC](plugin-platform-rfc.md) rather
+   drop policy in [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md) rather
    than refixing it.
 3. A versioned, JSON-framed debug protocol exposes the plugin runtime
    (VMs, generations, handlers, queues, budgets, diagnostics) under the
@@ -192,7 +205,7 @@ this RFC must be corrected.
 5. Fail-closed. If the instrumentation subsystem cannot start or detects
    that enforcement machinery is disabled, the runtime refuses to load
    plugins that require that machinery rather than running unbounded
-   (FS-7 parity with [Isolation Resource RFC](isolation-resource-rfc.md)).
+   (FS-7 parity with [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md)).
 
 ### Instrumentation points
 
@@ -218,7 +231,7 @@ rules from P0-AC-026 before the record enters the observability queue.
 Instrumentation itself consumes budgets:
 
 - per-queue event text is bounded by `EVENT_MAX_BYTES` 8 KiB
-  (`BoundedText` strict parity with [Plugin Platform RFC](plugin-platform-rfc.md));
+  (`BoundedText` strict parity with [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md));
 - per-wakeup batching obeys 32 events or 8 KiB aggregate;
 - per-consumer queues follow the three-level family accepted for the
   plugin event pipeline but are enforced separately for observability
@@ -249,7 +262,7 @@ can be asserted independently.
    violations, budget hard-gate suspensions) preserve one-by-one delivery
    up to the queue bound.
 3. Drops follow the single authoritative statement in
-   [Plugin Platform RFC](plugin-platform-rfc.md#delivery-ordering-batching-and-coalescing)
+   [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md#delivery-ordering-batching-and-coalescing)
    rather than critiquing it: the observability pipeline references
    DropOldest as the accepted v1 default (consumer converges to latest
    state) and documents DropNewest as the alternative, with per-queue
@@ -264,7 +277,7 @@ plugin doctor` and `bitty dev doctor`.
 5. Batching is bounded: at most 32 records or 8 KiB per wakeup,
    whichever is smaller, so one burst cannot turn into a single
    oversized callback. Tuning belongs with the budget owners in
-   [Isolation Resource RFC](isolation-resource-rfc.md).
+   [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md).
 
 ### Publisher and drain
 
@@ -336,7 +349,16 @@ JSON records over a bounded framing.
   removing or narrowing an existing method requires a major version and
   a reviewed migration note in this RFC.
 - Payload limits: inbound method frames at most 1 MiB; outbound streams
-  are chunked at 256 KiB with explicit continuation frames.
+  are chunked at 256 KiB with explicit continuation frames. For valid Unicode
+  scalar text, the text-chunk helpers split only at scalar boundaries, and
+  concatenating successfully returned chunks reproduces the original text
+  exactly, including U+FEFF as data. The configured chunk limit must be a
+  positive integer no greater than 256 KiB; each chunk stays within that
+  UTF-8 byte limit. If the limit cannot fit the next scalar, the helper
+  fails explicitly rather than returning partial chunks as a success.
+  These helper guarantees do not change wire framing, protocol version, or
+  scopes, and do not guarantee grapheme boundaries or malformed UTF-16
+  preservation.
 
 ### Scopes
 
@@ -379,11 +401,32 @@ schema-validated; unknown fields fail closed.
 | `bitty.debug/disposeGeneration` | `control` | `pluginId`, `generation`                                                         | Disposal receipt with reclaimed task, timer, queue, and handle counts                                           |
 
 All methods respect generation ownership: resources are addressed as
-`(PluginId, generation)`, consistent with [Plugin Platform RFC](plugin-platform-rfc.md)
+`(PluginId, generation)`, consistent with [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md)
 lifecycle generations. Methods that touch terminal state (for example
 `getSnapshot`) inherit the `terminal.*` capability checks on top of the
 debug scope so that DevTools cannot expand its authority through a debug
 method.
+
+**Client trace helper (Implemented-only, `bitty-devtools` CTX-0053/#117 and
+CTX-0054/#119):** The TypeScript and Rust trace helpers account retained,
+redacted, logical UTF-8 export bytes: admission bills the record that would be
+retained after typed redaction (serialized JSON for structured events;
+per-record UTF-8 normalization for raw records), never heap or filesystem
+occupancy. Each raw record is normalized independently when appended, so a
+leading U+FEFF stays data and a fragment that cannot decode on its own is
+replaced within that fragment rather than joined with a neighbor. The
+effective byte budget is `min(trace maxBytes, retention maxBytes)`; a record
+that would exceed it is rejected with one counted drop while retained bytes,
+chunks, events, and previews stay unchanged. Opaque raw append is distinct
+from typed stream coalescing: raw records append one by one without
+coalescing, while the typed observability stream keeps the accepted coalescing
+rule. Pagination follows the accepted `fetchTraceChunk` shape over retained
+chunk byte offsets: offsets must be nonnegative byte integers on UTF-8 scalar
+boundaries, a page returns the remaining bytes of the addressed stored chunk,
+and continuation is computed from actual retained byte lengths with
+preview-equals-export per page. These clarifications change no wire, version,
+or interoperability contract, add no eviction or persistence policy, and claim
+no Verified status.
 
 ### Relation to `bitty dev` CLI
 
@@ -483,6 +526,26 @@ owning session lifetime):
 4. Revocation reuses the accepted session-consent lifecycle: explicit revoke
    calls, `bitty plugin revoke` parity, and host-side detachment with an
    auditable receipt.
+
+**Campaign client helper (Implemented-only, `bitty-devtools` CTX-0059/#105):**
+`runCampaign` defaults to read-only probes. Mutating probes require explicit
+`mutationConsent` with `disposable: true`, a successful socket preflight before
+any dispatch, and the same host-correct absolute endpoint in the consent,
+preflight, and effective dispatcher configuration. Relative paths are refused;
+`ProcessCtlDispatcher` passes its configured absolute endpoint unchanged even
+when the child working directory differs. Custom dispatchers must explicitly
+return `true` from `attestSocketTarget`; absent, false, or throwing attestation
+fails admission. This attests configured endpoint binding, **not peer
+authentication**, and replaces neither authenticated scopes nor automation
+bearer consent above. Admission or preflight failure is reported with zero
+dispatch. Without mutation consent, mutating or unknown matrix probes are
+skipped. Workspace cleanup, when separately enabled by `closeWorkspaces`, closes
+only identifiers created and owned by this run, never pre-existing workspace
+IDs (including aliases); cleanup failures remain report entries. Keystroke
+probes still require separate `keystrokeTarget` opt-in for a non-default scratch
+terminal in addition to mutation admission; disposable-instance consent alone
+does not authorize keystrokes. These client-helper changes claim no wire/core
+scope change, live-campaign verification, or acceptance of this amendment.
 
 ### Redaction defaults
 
@@ -694,6 +757,52 @@ frame-digest specifics: the 120 s TTL and 2/s ceiling stay adequate under
 harness load, the digest audit stays byte-accurate under contention, and
 no pixel channel ships without its own reviewed amendment.
 
+## Test-mode E2E surface (Implemented-only, Amendment A3)
+
+> Status: Implemented-only. This section documents `bitty` CTX-0506 (PR #831,
+> commit `92cd709`, `bitty --test-mode` headless E2E servo) as merged
+> implementation evidence and carries no acceptance, no compatibility promise,
+> and no Verified claim. It must not weaken any normative control listed under
+> [Normative sources this specification must not weaken](#normative-sources-this-specification-must-not-weaken);
+> where it conflicts with one, the normative text wins.
+
+`bitty --test-mode` runs the real runtime plus the existing `BITTY_SOCKET`
+servo without a display, GPU, winit event loop, or VM so native tests can drive
+panels and assert state; it reuses the accepted framing, dispatcher, scope
+authorization, and control-queue architecture and adds no authority of its own.
+The flag is argv-only; the [CLI reference](../interfaces/cli.md#test-mode)
+documents the loop and its exit codes.
+
+| Method                 | Registration and required scope                                                                                                  | Implemented content                                                                                                |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `bitty.debug/testInfo` | Registered only by the test-mode dispatcher (`Dispatcher::with_test_mode`); no debug scope beyond the accepted connection checks | `{"test_mode":true,"surface":"e2e","protocol":"1.0","instance":"..."}`; surface identity only, no terminal content |
+| `bitty.debug/testExit` | Registered only in test mode; requires the elevated `debug.control` scope granted through `BITTY_CTL_ELEVATE`                    | Deterministic teardown through the existing control queue; replies `{"exiting":true}` and the servo exits `0`      |
+
+1. Default-deny is registration-based. Without `--test-mode` neither method is
+   in the dispatcher table, so a call fails closed as an unknown method —
+   `NotFound` in registration terms, carried as the `usage`/`UnknownMethod`
+   wire error — and never `ScopeDenied`. No other flag, environment variable,
+   or configuration key registers the surface.
+2. `testExit` grants no new authority: it maps to the existing accepted
+   `debug.control` scope (`Scope::DebugControl`, excluded from the CLI default
+   set) and is granted only by the explicit `BITTY_CTL_ELEVATE` allowlist;
+   authorization runs before enqueue and again at drain (defense in depth). The
+   per-session automation bearer path of
+   [`synthesizeInput`/`captureFrame`](#test-automation-scope-implemented-only-amendment-a1)
+   neither issues nor satisfies it.
+3. Transport is unchanged: the same current-user `0600` Unix socket with the
+   accepted directory, ownership, and peer checks (Unix-only; no TCP listener).
+   Test mode opens no transport and no listener of its own.
+4. Bounds: the servo loop runs at a fixed 16 ms tick; the bounded control queue
+   and reply-wait limits stay in force, and rate, payload, redaction, and
+   connection limits are unchanged. The process exits `0` only on `testExit`
+   and exits `1` fail-closed when the socket cannot serve.
+
+Explicit non-goals in this slice (recorded by the merged PR): no `view resize`
+verb, no per-pane cursor or render-digest assertion (the reused `getGridText`
+covers the primary grid and cursor only), no E2E event stream, and no CLI verb
+wraps `testExit` — a harness sends the raw wire method.
+
 ## Transport, authentication, and session lifecycle (accepted)
 
 1. DevTools connections use the existing IPC transport: current-user
@@ -713,11 +822,50 @@ no pixel channel ships without its own reviewed amendment.
    grants, and the host detaches affected handlers at the next dispatch
    boundary with an auditable receipt.
 
+**Client limiter helper (Implemented-only, `bitty-devtools` CTX-0055/#102):**
+The TypeScript and Rust `RateLimiter` helpers retain the default 100 req/s
+sustained rate and 200-request burst. They start with burst-sized credit, refill
+at the configured sustained rate with fractional credit retained, and cap idle
+refill at burst capacity. Admission spends one request of credit and also
+requires fewer than `burst` admissions in the rolling 1000 ms window; entries
+expire at age 1000 ms. Rejection spends no credit and records no admission, but
+a valid observation still advances time, refills credit, and evicts old entries.
+`countInWindow` / `count_in_window` performs the same refill and eviction without
+spending credit. Count and check share one nondecreasing millisecond high-water
+clock: the first observation, including a count, establishes it, and later
+observations use the maximum of the current and all prior valid timestamps.
+
+TypeScript rate and burst accept only finite integers in `[0, 4294967295]`;
+timestamps accept only nonnegative safe-integer milliseconds in
+`[0, 9007199254740991]`. Negative zero is treated as zero. Invalid configuration
+or timestamps throw `RangeError`; invalid time changes no credit, retained
+admissions, or high-water state. Rust retains `u32` configuration and the full
+`u64` millisecond domain `[0, 18446744073709551615]`, with exact behavior parity
+on the shared timestamp domain; larger Rust times are a native API extension,
+not wire input. Zero rate permits only the initial burst, with no refill; zero
+burst admits nothing. A rate greater than burst is valid but does not bypass
+the rolling burst ceiling. This client-helper clarification changes neither
+wire/version contracts nor server enforcement, does not resolve the separate
+reconnect-counter issue #106, and claims no Verified status.
+
 > Implementation note (Implemented-only, CTX-0127): Windows instance
 > discovery over named pipes is implemented in `bitty` CTX-0196 (PR #330,
 > commit `8af138e`, registry-dir scan plus live pipe-namespace enumeration
 > with Unix exit-code parity). The accepted transport contract above is
 > unchanged; this note claims no Verified status.
+>
+> Implementation note (Implemented-only, CTX-0463): the per-connection checks
+> behind the accepted transport contract are implemented in `bitty` #773
+> (CTX-0463, `crates/bitty-ipc/src/devtools/serve.rs`, `auth.rs`). The bound
+> endpoint is re-verified per connection (directory mode `0700`, socket mode
+> `0600`, both owned by the runtime uid, symlinks rejected); the client
+> verifies the endpoint before connecting
+> (`verify_socket_endpoint_for_connect`); and child-token failures return
+> static token-free reasons. True per-connection `SO_PEERCRED` descriptor
+> checks still need an `unsafe`/nightly seam and stay deferred to CTX-0159, so
+> endpoint re-verification narrows but does not close same-UID fd-passing
+> spoofing. The accepted contract above is unchanged; this note claims no
+> Verified status.
 
 ## Record/replay and MCP adapter (accepted staging)
 
@@ -859,15 +1007,19 @@ require a follow-up decision:
     stay adequate under harness load, and whether a raw pixel channel is
     ever admitted (deferred; needs its own reviewed amendment, never an
     extension of A2).
+14. (Amendment A3, Implemented-only, acceptance open) Admission criteria for
+    the `--test-mode` E2E surface: whether registration-gated test methods and
+    the argv-only flag ever become accepted contract, and whether the deferred
+    `view resize` verb and an E2E event stream join it.
 
 ## Acceptance criteria
 
-This RFC is accepted on 2026-08-28 and closes [OQ-019](../../../decisions/open-questions.md).
-The following criteria were satisfied per the [open-question register](../../../decisions/open-questions.md)
+This RFC is accepted on 2026-08-28 and closes [OQ-019](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md).
+The following criteria were satisfied per the [open-question register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md)
 rules:
 
 1. The prose and every identifier in the OQ-019 row of
-   [open-questions.md](../../../decisions/open-questions.md) have independent
+   [open-questions.md](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) have independent
    category-owner, docs-curator, and security-reviewer sign-off, including
    every scope boundary and the record/replay staging.
 2. Affected documents were synchronized in the same change: the DevTools
@@ -882,13 +1034,13 @@ rules:
 4. The draft text in this file is updated to record acceptance date
    and initiator, frontmatter is `accepted`, and links from
    [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md)
-   and the [decision register](../../../decisions/index.md) reflect the
+   and the [decision register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/index.md) reflect the
    accepted protocol version without claiming implementation.
 
 ## P0 Review Sign-off
 
 > P0 review per CTX-0053 tracks acceptance of OQ-019 via this RFC. Frontmatter is `accepted` and
-> [open-questions.md](../../../decisions/open-questions.md) is updated per its close
+> [open-questions.md](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) is updated per its close
 > rule. This section records passing sign-off and closes OQ-019.
 
 | Role                          | Reviewer          | Verdict | Evidence / scope                                                                                                                                                                                                 | Date       |
@@ -899,6 +1051,6 @@ rules:
 | docs-curator                  | `bitty-curator`   | pass    | Frontmatter `accepted`, taxonomy, links to [Architecture Overview](../architecture/overview.md) and [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md), English-only, decision-register sync | 2026-08-28 |
 
 As of 2026-08-28, instrumentation and the debug protocol remain design contracts
-per [ADR 0003](../../../decisions/adrs/ADR-0003-core-workspace-topology.md) and the
+per [ADR 0003](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0003-core-workspace-topology.md) and the
 [Proposed Delivery Sequence](../product/proposed-delivery-sequence.md); crate
 presence does not imply shipped behavior.

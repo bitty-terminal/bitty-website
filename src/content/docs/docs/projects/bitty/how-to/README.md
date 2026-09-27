@@ -11,9 +11,12 @@ sidebar_order: 10
 
 # How-to guides
 
-No product how-to guide is currently admissible. Bitty has no released commands
-or workflows, so this directory records only the category contract and empty
-state.
+No product how-to guide is currently admissible. Experimental code and
+pre-alpha releases exist (latest `v0.0.20`), but no stable or supported public
+contract is claimed: no command set or workflow is `Verified`, `Compatible`,
+or `Release-ready`, so this directory records only the category contract and
+empty state. Nothing here may present an experimental command as a supported
+procedure.
 
 ## Admission criteria
 

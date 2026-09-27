@@ -8,7 +8,7 @@ direction: down
 
 # --- Trust boundaries (dashed sandbox) ---
 pty_boundary: {
-  label: "PT Child Process — Untrusted (IR-D1)"
+  label: "PTY Child Process — Untrusted (IR-D1)"
   style.stroke-dash: 4
   style.fill: "#fefce8"
   near: pty-master
@@ -79,6 +79,10 @@ bitty_agent: {
   label: "bitty-agent\nBounded messages"
   shape: rectangle
 }
+bitty_package: {
+  label: "bitty-package\nPackage lifecycle / store"
+  shape: rectangle
+}
 
 # --- Flows and presentation ---
 shell: {
@@ -128,7 +132,7 @@ bitty_term_state -> damage: "damage" {
 damage -> snapshot: ""
 bitty_term_state -> snapshot: "damage"
 snapshot -> bitty_render: ""
-bitty_render -> bitty_platform: "SurfaceTarget"
+bitty_platform -> bitty_render: "SurfaceTarget"
 bitty_platform -> bitty_app: "owns Window" {
   style.stroke-dash: 3
 }
@@ -144,6 +148,8 @@ plugin -> bitty_plugin_host: "command" {
   style.stroke-dash: 3
 }
 bitty_plugin_host -> bitty_runtime: "command queue"
+bitty_package -> bitty_plugin_host: "package store"
+bitty_runtime -> bitty_package: ""
 bitty_runtime -> bitty_term_state: "orchestration"
 bitty_runtime -> bitty_ui: ""
 bitty_runtime -> bitty_render: ""

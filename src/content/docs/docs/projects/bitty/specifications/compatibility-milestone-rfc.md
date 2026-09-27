@@ -17,7 +17,7 @@ Accepted on 2026-08-26 by the project initiator. Acceptance authorizes planning
 against this milestone contract; it makes no shipped-behavior claims until the
 required acceptance evidence exists.
 
-It closes open question [OQ-004](../../../decisions/open-questions.md).
+It closes open question [OQ-004](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md).
 It also feeds, but does not decide, OQ-007 (terminal state model),
 OQ-008 (image protocol), and OQ-016 (structured transports).
 
@@ -31,7 +31,7 @@ Scroll Mode. The M1 scope is unchanged; only the classification is corrected.
 
 The [product vision](../product/vision.md) requires a small core that is a
 correct terminal first; compatibility and security precede extension
-convenience. The [technology strategy](../../../project/technology-strategy.md)
+convenience. The [technology strategy](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/technology-strategy.md)
 lists candidate protocol groups — foundation VT behavior, metadata/security
 OSC sequences, modern keyboard input, image protocols, and shell integration —
 but explicitly defers prioritization to a requirements document or RFC.
@@ -119,7 +119,7 @@ compatibility register.
 | Gated (OSC 52 write)   | Permission prompt or pre-granted capability required before first write; denial path tested; clipboard content never logged; adversarial test showing untrusted output cannot trigger a silent write                                                                       |
 | Denied (OSC 52 read)   | Negative tests proving read requests are ignored/denied and no clipboard data enters the PTY-observable surface                                                                                                                                                            |
 | Shell integration      | Tests prove full functionality with zero integration active on bash, zsh, fish, PowerShell, cmd, nushell smoke suites; injected-script tests cover OSC 7 and OSC 133 zones; no prompt-text heuristic anywhere in the codebase (grep-audited review evidence)               |
-| Cross-platform         | Every Required item verified on each [ADR 0002 Tier 1 platform](../../../decisions/adrs/ADR-0002-platform-support-tiers.md) in CI; Opt-in items verified on at least one Tier 1 platform with documented gaps elsewhere                                                    |
+| Cross-platform         | Every Required item verified on each [ADR 0002 Tier 1 platform](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0002-platform-support-tiers.md) in CI; Opt-in items verified on at least one Tier 1 platform with documented gaps elsewhere |
 | Performance guardrail  | Parser throughput benchmark recorded (baseline number committed); no pathological regression versus plain-text throughput beyond an agreed factor                                                                                                                          |
 
 Evidence rules:
@@ -186,7 +186,7 @@ no evidence threshold, and no normative control.
 
 Acceptance on 2026-08-26 applied these same-change updates:
 
-- [Technology strategy](../../../project/technology-strategy.md): the candidate
+- [Technology strategy](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/technology-strategy.md): the candidate
   compatibility-path bullets now link to this RFC.
 - [Product vision](../product/vision.md): the compatibility-milestone
   open-question wording is resolved.

@@ -17,7 +17,7 @@ Accepted on 2026-08-27 by the project initiator. This RFC defines the accepted
 configuration model; it does not claim shipped, stable, or compatibility-guaranteed
 behavior. Experimental implementation may exist as review evidence but carries no
 compatibility promise beyond the accepted contract. It closes open question
-[OQ-010](../../../decisions/open-questions.md) at the design level.
+[OQ-010](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) at the design level.
 
 Accepted P1 pipeline for v1 (retained from Wave-C review evidence): Candidate A
 (two-stage declarative ConfigPlan pipeline
@@ -28,7 +28,7 @@ rejected baseline. This note was candidate-winner evidence before acceptance and
 is now the accepted contract.
 
 It targets OQ-010; it depends on the runtime and module-resolution contract
-accepted in the [Lua Runtime RFC](lua-runtime-rfc.md) (OQ-009), and it feeds
+accepted in the [Lua Runtime RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/lua-runtime-rfc.md) (OQ-009), and it feeds
 OQ-011/OQ-012 (plugin-facing configuration surfaces), OQ-017 (CLI grammar for
 `bitty config`/`bitty paths` commands), OQ-021/OQ-022 (package manifest and lock
 coexistence), and budgets PB-1/PB-2 in the
@@ -38,7 +38,7 @@ coexistence), and budgets PB-1/PB-2 in the
 
 OQ-010 asks: _are declarative `ConfigPlan` generation and Rust reconciliation
 adopted, and how do XDG layers, profiles, merge rules, reload, and project
-trust work?_ The accepted direction ([DIR-003](../../../decisions/index.md)) fixes
+trust work?_ The accepted direction ([DIR-003](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/index.md)) fixes
 Lua as the primary configuration language; the lifecycle, layer stack, merge
 rules, profiles, and trust behavior were recorded as candidate contracts in
 [Lua and XDG configuration](../configuration/lua-and-xdg.md) and are now
@@ -46,15 +46,15 @@ adopted by this RFC, which defines failure semantics and reload classification.
 
 Normative sources this specification must not weaken:
 
-- [Security overview](../../../security/overview.md): user `init.lua` is trusted code
+- [Security overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md): user `init.lua` is trusted code
   evaluated in a Config VM toward a validated plan; system/distribution
   configuration is trusted only after source verification; project
   configuration is untrusted; `bitty --safe` must always start with minimal
   built-in configuration.
-- [Threat model](../../../security/threat-model.md): T-08 (entering a cloned
+- [Threat model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md): T-08 (entering a cloned
   repository must never execute its Lua without declarative-only content or
   explicit path-and-hash consent), with risks R-009, R-010, and R-020 in the
-  [risk register](../../../security/risk-register.md).
+  [risk register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md).
 - [Core boundaries](../architecture/core-boundaries.md): security policy and
   canonical terminal state are core-owned; configuration can parametrize
   policy within bounds the schema declares, never bypass it.
@@ -168,7 +168,7 @@ document and this RFC binds its semantics:
 --source` being truthful (CLI surface owned by OQ-017).
 4. System policy entries marked non-overridable reject overriding plans at
    validation with a dedicated diagnostic class; they are distinct from system
-   defaults, per the trust table in the [security overview](../../../security/overview.md).
+   defaults, per the trust table in the [security overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md).
 5. Profile composition (`extends`) resolves single-parent chains with cycle
    detection; multiple inheritance remains an open item.
 
@@ -176,27 +176,27 @@ document and this RFC binds its semantics:
 
 Status: **shipped defaults** (read-only from `bitty` `origin/main`,
 `crates/bitty-config/src/types.rs`, `merge.rs`, `keymap.rs`, `theme.rs`,
-CTX-0153/CTX-0169/CTX-0177/CTX-0180/CTX-0185/CTX-0191/CTX-0236/CTX-0237/CTX-0240/CTX-0241/CTX-0257/CTX-0258/CTX-0259/CTX-0262/CTX-0263/CTX-0264/CTX-0265/CTX-0290/CTX-0292). This section records
+CTX-0153/CTX-0169/CTX-0177/CTX-0180/CTX-0185/CTX-0191/CTX-0236/CTX-0237/CTX-0240/CTX-0241/CTX-0257/CTX-0258/CTX-0259/CTX-0262/CTX-0263/CTX-0264/CTX-0265/CTX-0290/CTX-0292/CTX-0294/CTX-0311/CTX-0333). This section records
 shipped values as status; it instantiates the merge-class contract above
 without changing it. Normative precedence stays `CLI > file > profile >
 defaults` per [Lua and XDG configuration](../configuration/lua-and-xdg.md).
 
-| Field                                                   | Shipped default                                                                                                               | Merge class (settled) |
-| ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `font.family` / `size`                                  | `"JetBrainsMono Nerd Font"` / `12.0`                                                                                          | scalar replace        |
-| `font.line_height` / `letter_spacing`                   | `1.375` / `2.0` (effective cell `10x22` from the legacy `8x16` base; measured raster truth at `12`pt, CTX-0237)               | scalar replace        |
-| `window.opacity` / `padding`                            | `1.0` / `8`; `opacity < 1.0` scales pixel alpha through premultiplied renderer alpha (`0.0..=1.0`, CTX-0290)                  | scalar replace        |
-| `window.radius_px`                                      | `0` physical px (`0..=24`); S0 parsed no-op with zero render effect (CTX-0241)                                                | scalar replace        |
-| `mod_key`                                               | `"alt"` (`"super"` allowed; `ctrl`/`shift` rejected fail-closed, CTX-0236)                                                    | scalar replace        |
-| `terminal.scrollback`                                   | `10000`                                                                                                                       | scalar replace        |
-| `terminal.scroll_lines_per_notch`                       | `3` (`1..=32`)                                                                                                                | scalar replace        |
-| `terminal.scroll_pixels_per_notch`                      | `16` (`1..=256`)                                                                                                              | scalar replace        |
-| `selection.auto_copy`                                   | `true` (copy-on-select; `false` keeps the highlight, copies only on chord)                                                    | scalar replace        |
-| `layout.gaps_in` / `gaps_out`                           | `0` / `0` cells (`0..=16`); edge-to-edge tiling; stack leaves take the `gaps_out` inset only (CTX-0240)                       | scalar replace        |
-| `decoration.gaps_in` / `gaps_out` / `border` / `radius` | `4` / `6` / `2` / `6` logical px (`0..=32` / `0..=32` / `0..=8` / `0..=16`); Core-owned; live px painting deferred (CTX-0292) | scalar replace        |
-| `appearance.theme`                                      | unset means the `bitty-dark` preset (alias `dark`); unknown names fall back to it with a stderr warning                       | scalar replace        |
-| `keymaps`                                               | shipped Alt-as-Mod set (79 entries, context `global`); user entries replace by `context + chord`, else append                 | set-by-identifier     |
-| `plugins`                                               | empty by default                                                                                                              | set-by-identifier     |
+| Field                                                                     | Shipped default                                                                                                                                                                                                         | Merge class (settled) |
+| ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `font.family` / `size`                                                    | `"JetBrainsMono Nerd Font"` / `12.0`                                                                                                                                                                                    | scalar replace        |
+| `font.line_height` / `letter_spacing`                                     | `1.375` / `2.0` (effective cell `10x22` from the legacy `8x16` base; measured raster truth at `12`pt, CTX-0237)                                                                                                         | scalar replace        |
+| `window.opacity` / `padding`                                              | `1.0` / `8`; `opacity < 1.0` scales pixel alpha through premultiplied renderer alpha (`0.0..=1.0`, CTX-0290)                                                                                                            | scalar replace        |
+| `window.radius_px`                                                        | `0` physical px (`0..=24`); S0 parsed no-op with zero render effect (CTX-0241)                                                                                                                                          | scalar replace        |
+| `mod_key`                                                                 | `"alt"` (`"super"` allowed; `ctrl`/`shift` rejected fail-closed, CTX-0236)                                                                                                                                              | scalar replace        |
+| `terminal.scrollback`                                                     | `10000`                                                                                                                                                                                                                 | scalar replace        |
+| `terminal.scroll_lines_per_notch`                                         | `3` (`1..=32`)                                                                                                                                                                                                          | scalar replace        |
+| `terminal.scroll_pixels_per_notch`                                        | `16` (`1..=256`)                                                                                                                                                                                                        | scalar replace        |
+| `selection.auto_copy`                                                     | `true` (copy-on-select; `false` keeps the highlight, copies only on chord)                                                                                                                                              | scalar replace        |
+| `layout.gaps_in` / `gaps_out`                                             | `0` / `0` cells (`0..=16`); edge-to-edge tiling; stack leaves take the `gaps_out` inset only (CTX-0240)                                                                                                                 | scalar replace        |
+| `decoration.gaps_in` / `gaps_out` / `border` / `radius` / `content_inset` | `6` / `6` / `1` / `6` / `6` logical px (`0..=32` / `0..=32` / `0..=8` / `0..=16` / `0..=32`); Core-owned; painted on the live present path (CTX-0292/CTX-0294/CTX-0311/CTX-0333; `border` thinned 2→1 in `bitty` #1353) | scalar replace        |
+| `appearance.theme`                                                        | unset means the `bitty-dark` preset (alias `dark`); unknown names fall back to it with a stderr warning                                                                                                                 | scalar replace        |
+| `keymaps`                                                                 | shipped Alt-as-Mod set (82 entries, context `global`); user entries replace by `context + chord`, else append                                                                                                           | set-by-identifier     |
+| `plugins`                                                                 | empty by default                                                                                                                                                                                                        | set-by-identifier     |
 
 Absent `selection`/`layout`/`decoration` tables (or absent keys within them)
 mean "this layer says nothing" and inherit silently; present-but-partial
@@ -208,7 +208,7 @@ The shipped keymap set is the canonical Alt spelling rendered through the
 `mod_key` setting above (`alt` default, `super` opt-in rebinding): `alt+h/j/k/l`
 and `ctrl+alt+arrows` move focus, with CTX-0262 `alt+arrows` aliases;
 `alt+1..9` focuses workspace `1..=9`, and `shift+alt+1..9` moves the focused
-window to workspace N (CTX-0259, `bitty` #457); `alt+n` / `alt+w` / `alt+-` /
+window to workspace N (CTX-0259, `bitty` #457); `alt+t` / `alt+w` / `alt+-` /
 `alt+=` / `alt+tab` drive new, kill-confirmed close, previous, next, and
 last-used workspace (CTX-0257, `bitty` #433, DEC-0034); `alt+u`/`alt+i` page
 up/down; `shift+alt+h/j/k/l` plus CTX-0262 `shift+alt+arrows` split;
@@ -274,17 +274,22 @@ window-level rounding stays with the compositor and is not a `bitty`
 rendering stage.
 
 The shipped Core-owned decoration is the `decoration.gaps_in` / `gaps_out` /
-`border` / `radius` table (CTX-0292, `bitty` #487, merge commit `485fbfd`,
-closes `bitty` #486; accepted spec CTX-0118): logical pixels `4` / `6` / `2` /
-`6` within `0..=32` / `0..=32` / `0..=8` / `0..=16`, fail-closed validation
-with source-attributed diagnostics, scalar-replace with per-field attribution,
-`Live` reload, and `bitty --safe` forcing `0/0/1/0` regardless of user
-configuration. It is distinct from the cell-unit `layout.gaps_in` /
-`gaps_out` panel gaps above. The px surface is validated, stored, and carried
-(`layout_with_decoration`, `decorated_allocations`, `set_decoration`), but the
-present path does not paint it yet (fractional-cell View frames plus a renderer
-radius primitive), so no visual effect is claimed; live painting is deferred
-to `bitty` CTX-0294 on the CTX-0238g stage-2 renderer radius lane.
+`border` / `radius` / `content_inset` table (CTX-0292, `bitty` #487, merge
+commit `485fbfd`, closes `bitty` #486; accepted spec CTX-0118; the CTX-0333
+amendment raised `gaps_in` from `4` to `6` and added `content_inset`, `bitty`
+PR #562, merge commit `9031b3f`): logical pixels `6` / `6` / `2` / `6` / `6`
+within `0..=32` / `0..=32` / `0..=8` / `0..=16` / `0..=32`, fail-closed
+validation with source-attributed diagnostics, scalar-replace with per-field
+attribution, `Live` reload, and `bitty --safe` forcing `0/0/1/0/0` regardless
+of user configuration. It is distinct from the cell-unit `layout.gaps_in` /
+`gaps_out` panel gaps above. The px surface is validated, stored, carried
+(`layout_with_decoration`, `decorated_allocations`, `set_decoration`), and
+painted on the live present path: `bitty` PR #519 (CTX-0294, merge commit
+`638ef81`) wires the fractional-cell View frames, the gap bands, and the border
+ring, and PR #533 (CTX-0311, merge commit `3d08d8e`) paints the ring as an SDF
+rounded fill and clips glyphs at the inner arc; CTX-0333 insets leaf content by
+`border + content_inset`. The values are visible behavior, not only carried
+intent.
 
 Open: per-field reload classification moves into this RFC once the schema
 stabilizes; the shipped inventory is the implementation reference in
@@ -312,7 +317,7 @@ inferred at runtime); a reload containing any restart-required change reports
 that fact up front; reload reuses the same validation/merge path as startup so
 no divergent second parser exists. Whether module caches clear between reloads
 is shared with the module-resolution rules in the
-[Lua Runtime RFC](lua-runtime-rfc.md) (OQ-009, accepted 2026-08-27; GC/budget tuning remains Open under OQ-032).
+[Lua Runtime RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/lua-runtime-rfc.md) (OQ-009, accepted 2026-08-27; GC/budget tuning remains Open under OQ-032).
 
 ## Project trust
 
@@ -320,7 +325,7 @@ Status: **accepted mechanics**, implementing the normative T-08 defense, not
 reopening it.
 
 1. Project configuration is declarative-data-only; project-scope Lua execution
-   is not a configuration-model feature. If a `.bitty.lua`-style file is ever
+   is not a configuration-model feature. If a `.wheel.lua`-style file is ever
    honored, its content is data validated against a restricted project schema.
 2. Consent is bound to canonical path plus content hash; any content change
    invalidates prior approval (normative already — this RFC inherits it).

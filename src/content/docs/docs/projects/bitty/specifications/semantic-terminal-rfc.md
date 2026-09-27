@@ -51,8 +51,12 @@ at `7048139`; none of them is changed by the remaining proposal (P6):
 - Overlay capacity is bounded at `MAX_OVERLAYS_PER_WINDOW = 4` plus one modal
   (`crates/bitty-ui/src/panel.rs`).
 - Focus routing is deterministic over `ViewId` (`crates/bitty-ui/src/focus.rs`).
-- Panels mount as `ViewContent::Panel(PanelId)` through `PanelRuntime::mount`
-  with `PanelId`/`ViewId`/`TerminalId` kept pairwise incompatible.
+- Panels mount as `ViewContent::Panel(PanelId)` through the experimental
+  `PanelRegistry` in `crates/bitty-runtime/src/registry/panel.rs` with
+  `PanelId`/`ViewId`/`TerminalId` kept pairwise incompatible. The accepted
+  [Panel Runtime RFC](panel-runtime-rfc.md) names the host `PanelRuntime`, a
+  type that does not exist in `bitty` yet (see its
+  [Implementation status](panel-runtime-rfc.md#implementation-status)).
 - The workspace compositor contract is accepted
   ([Workspace Compositor](workspace-compositor.md)); the Panel Runtime contract
   is still a draft pre-study ([Panel Runtime Pre-Study](panel-runtime-pre-study.md)).
@@ -188,6 +192,18 @@ travel to the shell line editor as one bracketed paste followed by a final
 Enter, which keeps Unicode, multiline content, and paste safety intact without
 simulating individual keystrokes.
 
+Update (current-state note, 2026-09-16, `bitty` `origin/main` `e8dc9e5`): the
+app path is inert. The `A::OpenComposer` arm in
+`crates/bitty-app/src/chrome_keys.rs` logs a warning to stderr, consumes an
+explicitly bound chord, and changes nothing else; no modal opens, no editor is
+launched, and input routing stays as it was. `open_composer` parses in
+`crates/bitty-config/src/keymap.rs` but is never in the shipped defaults, so
+`Alt+E` remains shell input unless a user binds it. The composer engine
+(`CommandBuffer`, `ComposerSession`, keys/chords, and submit framing) is
+headless in `crates/bitty-rich/src/composer.rs`. This note records current
+behavior only; it changes no proposal above and claims no
+`Verified`/`Compatible` status.
+
 ### P5: External editor (Implemented-only)
 
 > Implemented-only in `bitty` CTX-0227 (PR #394, commit
@@ -203,6 +219,29 @@ temporary file that is removed after the editor exits, returning its content
 to the composer. A later Panel-native variant could host the editor in a
 transient floating panel instead of covering the terminal; that variant is
 deferred until the Panel Runtime contract is accepted.
+
+Update (`bitty` #801, CTX-0485): `$VISUAL`/`$EDITOR` are treated as
+attacker-influenced environment input rather than a program name to trust.
+`resolve_editor()` now returns `Result<String, EditorError>` and admits only
+the exact bare names in `EDITOR_ALLOWLIST` (`nvim`, `vim`, `vi`): the first
+non-empty variable wins, a hostile value fails `EditorError::NotAllowed`
+before any temp file is written or child is spawned, and it never falls
+through to the other variable. Paths, flags, interior whitespace, case
+variants, and metacharacters fail the exact match. The temp file is extensionless (the old
+`.sh` suffix invited editor plugins, file managers, and OS handlers to treat
+terminal content as executable) and owner-only: on Unix the create call itself
+applies mode `0o600`, the mode is re-asserted after the write, and any
+permission failure deletes the file and fails closed with
+`EditorError::WriteFailed`. Non-Unix inherits the per-user temp-directory ACL
+as a documented residual (no safe-std ACL API in this `forbid(unsafe_code)`
+crate). Probe: `crates/bitty-rich/tests/ctx0485_editor_probe.rs`. The proposal
+text above is unchanged; this update claims no `Verified`/`Compatible` status.
+Like the P4 composer engine, the composer editor path is unwired: no app call
+site invokes `bitty-rich`'s `resolve_editor()`, its temp-file round trip, or
+its editor spawn (current-state note, 2026-09-16). The app does spawn an
+editor on a separate, wired path: `bitty config edit` uses `bitty-app`'s own
+`resolve_editor()` (`crates/bitty-app/src/config_cli.rs`; `$VISUAL`, then
+`$EDITOR`, then `vi`) to run an editor on the config file.
 
 ### P6: Cross-panel Hint API (proposal-only)
 
@@ -233,9 +272,9 @@ proposal-only.
 
 > Candidate-only as of 2026-09-13: no merged implementation exists, and this
 > subsection claims nothing beyond the P1-P5 Implemented-only slices above.
-> Bitty Beacon is a working name recorded from the local research note
-> `016.md`; the note is provenance, not evidence. Tracked as
-> [OQ-089](../../../decisions/open-questions.md).
+> Bitty Beacon is a working name recorded from the local design direction;
+> the direction is provenance, not evidence. Tracked as
+> [OQ-089](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md).
 
 P3 labels addressable targets inside the visible grid; P6 generalizes target
 registration. The candidate P7 direction applies the same engine to the whole
@@ -259,7 +298,7 @@ typing a label performs the associated action.
      registering plugin's existing capabilities and consent, and a dispatch
      that maps to a process or terminal operation still passes the accepted
      scopes and the candidate command audit
-     ([AI Architecture](ai-architecture.md), OQ-087).
+     ([AI Architecture](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/architecture/ai-architecture.md), OQ-087).
 - **Label allocation (candidate).** Single-key labels are the default while
   the target count is small; beyond a threshold the allocator extends to
   two-character labels. Labels are drawn from a handedness-scoped pool (left
@@ -299,14 +338,14 @@ owners.
 - The composer must never intercept input outside its explicit mode, must fail
   open to raw PTY behavior, and must not weaken paste inspection or clipboard
   policy ([Terminal State RFC](terminal-state-rfc.md),
-  [Isolation Resource RFC](isolation-resource-rfc.md)).
+  [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md)).
 - The hint annotation layer is ephemeral presentation with fixed bounds; it
-  grants no capability and bypasses no allowlist ([Plugin Platform RFC](plugin-platform-rfc.md)).
+  grants no capability and bypasses no allowlist ([Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md)).
 - Composer submission via bracketed paste preserves existing paste-safety
   handling rather than inventing a new input path
   ([Input and Pointer Contract](input-pointer-rfc.md)).
 - IPC or agent exposure of folding, hints, or composition needs its own scoped
-  review under the [IPC and Agent RFC](ipc-agent-rfc.md) and the
+  review under the [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md) and the
   [Risk Evidence RFC](risk-evidence-rfc.md); this draft grants nothing.
 
 ## Open questions
@@ -340,7 +379,7 @@ P1-P5 implementations above are evidence only and close none of them.
   would build on; P6 waits for its acceptance.
 - [Input and Pointer Contract](input-pointer-rfc.md): owns key handling that
   P3/P4 must not break.
-- [IPC and Agent RFC](ipc-agent-rfc.md): owns any future remote exposure.
+- [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md): owns any future remote exposure.
 - Roadmap placement is proposed in
-  [Now / Next / Later](../../../roadmap/now-next-later.md) only after acceptance;
+  [Now / Next / Later](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/roadmap/now-next-later.md) only after acceptance;
   this draft changes no horizon by existing.

@@ -1,6 +1,6 @@
 ---
 title: Lua configuration and filesystem layout
-description: Pre-implementation contract for Lua configuration, XDG roots, layering, and cross-platform paths
+description: Candidate contract for Lua configuration, XDG roots, layering, and cross-platform paths
 category: configuration
 audience: mixed
 document_type: specification
@@ -11,20 +11,22 @@ sidebar_order: 10
 
 # Lua configuration and filesystem layout
 
-> Status: pre-implementation architecture. Lua is the accepted working
-> direction for user configuration. The two-stage configuration plan, layer
-> stack, merge rules, reload classification, and project-trust mechanics are
-> accepted in [Configuration Model RFC](../specifications/configuration-model-rfc.md)
+> Status: candidate architecture. Lua is the accepted working direction for
+> user configuration, and experimental `bitty-config` code exists. The
+> two-stage configuration plan, layer stack, merge rules, reload
+> classification, and project-trust mechanics are accepted in
+> [Configuration Model RFC](../specifications/configuration-model-rfc.md)
 > (OQ-010, 2026-08-27). Platform path separation, directory contents,
-> filenames, and CLI examples remain candidate contracts pending ADRs.
+> filenames, and CLI examples remain candidate contracts pending ADRs; no
+> stable or supported configuration contract is claimed.
 
 Bitty should offer Neovim-like flexibility—`init.lua`, modules, starter
 configurations, profiles, and community distributions—while keeping resolution,
 merging, validation, plugin isolation, and reload behavior deterministic.
 
 Configuration and workspace trust requirements are normative in the
-[security overview](../../../security/overview.md) and
-[threat model](../../../security/threat-model.md). The layouts proposed here must not
+[security overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md) and
+[threat model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md). The layouts proposed here must not
 turn a search path or project file into implicit code execution.
 
 ## Accepted direction: use the correct XDG roots
@@ -96,7 +98,7 @@ $XDG_CONFIG_HOME/bitty/
 Here `plugins/` contains plugin behavior configuration or declarative imports,
 not installed plugin source. The manifest and lock names are candidates; their
 package semantics are documented in
-[Package management](../extensibility/package-management.md).
+[Package management](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/extensibility/package-management.md).
 
 ## Lua modules without a global runtime path
 
@@ -235,7 +237,7 @@ appearance overrides are all ignored. Every field is attributed to Core
 defaults, decoration is forced to `0/0/1/0/0`, and the focused/idle outline
 pair to the opaque `#FFFFFF`/`#808080` built-ins. See the safe-mode precedence
 table in the [CLI reference](../interfaces/cli.md#safe-mode-configuration-precedence)
-and [RFC-0001](../../../decisions/rfcs/RFC-0001-appearance-configuration.md) (OQ-039).
+and [RFC-0001](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/rfcs/RFC-0001-appearance-configuration.md) (OQ-039).
 
 ## Merge semantics
 
@@ -261,7 +263,10 @@ developer tools can explain every effective value and conflict.
 Status: **shipped defaults** for profile selection, naming, and layering
 (read-only from `bitty` `origin/main`,
 `crates/bitty-config/src/file.rs`, CTX-0169, issue #271);
-**candidate** for multi-parent `extends`.
+**candidate** for multi-parent `extends`. Single-parent `extends` chains are
+shipped (read-only from `bitty` `origin/main`, `crates/bitty-config/src/file.rs`,
+`load_profile_chain`, issue #1366): base-first resolution with cycle detection,
+missing/illegal parents fail closed, 16-hop cap.
 
 Shipped mechanics:
 
@@ -277,8 +282,9 @@ Shipped mechanics:
 - A requested-but-missing or invalid profile fails closed (exit 2); a bare
   launch with no profile request keeps working.
 
-Candidate (unchanged): profile composition via single-parent `extends` chains
-with cycle detection; multiple inheritance remains open.
+Shipped: profile composition via single-parent `extends` chains
+with cycle detection (base-first, 16-hop cap, fail-closed);
+multiple inheritance remains open.
 
 Profiles compose focused changes rather than duplicate an entire config. A
 coding profile, for example, may extend a default profile, add development
@@ -308,8 +314,9 @@ and only multi-parent `extends` stays open.
 ## Shipped CLI overrides, setup wizard, and logging defaults
 
 Status: **shipped defaults** (read-only from `bitty` `origin/main`,
-`crates/bitty-app/src/main.rs`, CTX-0149/CTX-0180/CTX-0190). These are
-reported here as shipped status; they change no normative contract above.
+`crates/bitty-app/src/main.rs`, CTX-0149/CTX-0180/CTX-0190/CTX-0480/CTX-0481).
+These are reported here as shipped status; they change no normative contract
+above.
 
 - CLI appearance overrides (CTX-0180): `--theme NAME`, `--font-family NAME`,
   `--font-size PTS`, and `--opacity FLOAT` apply to one launch. They form a
@@ -319,6 +326,19 @@ reported here as shipped status; they change no normative contract above.
   warn-ignored. Since CTX-0290, `--opacity` below `1.0` scales pixel alpha
   through the shipped premultiplied renderer path; when the surface cannot
   composite premultiplied the window stays opaque (fail-closed).
+- Startup layout and focus values (CTX-0480, `bitty` #779): malformed
+  `--split`, `--split-ratio`, `--layout`, `--log-level`, and `--focus` input
+  fails closed with usage and exit `2` instead of warning and silently running
+  defaults; finite out-of-range split ratios and layout stack counts clamp
+  loudly. A syntactically valid but unresolvable `--focus` id still warns and
+  continues with the existing layout.
+- Fail-loud startup (CTX-0481, `bitty` #788): `--fail-loud` (also
+  `BITTY_FAIL_LOUD=1` or `true`) turns a failed primary shell, a failed startup
+  pane shell, or an attempted-but-rejected IPC servo into a startup abort with
+  exit `1` instead of the default fail-soft warning path. A
+  platform-unsupported startup step is deliberately never fatal, and
+  mid-session respawn failures keep their existing keymap/ctl warning
+  semantics.
 - Explicit config path: `--config PATH` wins verbatim; else `BITTY_CONFIG`;
   else the XDG default is probed (`$XDG_CONFIG_HOME/bitty/init.lua`,
   fallback `~/.config/bitty/init.lua`, then the `config.lua` alias).
@@ -560,33 +580,41 @@ This is the lookup table for the appearance knobs `init.lua` already accepts;
 the merge/reload mechanics stay in the
 [Configuration Model RFC](../specifications/configuration-model-rfc.md). The
 accepted focus/idle outline color contract is the
-[Appearance Configuration RFC](../../../decisions/rfcs/RFC-0001-appearance-configuration.md)
+[Appearance Configuration RFC](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/rfcs/RFC-0001-appearance-configuration.md)
 (accepted; OQ-039 focused/idle outline colors closed 2026-09-12 and shipped in
 `f83b1e1`; OQ-036 label position, OQ-037 frame color, and OQ-038 opacity and
 blur remain `Open`). The accepted animation contract is the
-[Panel Animations and Effects RFC](../../../decisions/rfcs/RFC-0002-panel-animations.md)
+[Panel Animations and Effects RFC](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/rfcs/RFC-0002-panel-animations.md)
 (accepted; OQ-040 closed 2026-09-12 and shipped in `3c5878e` CTX-0341).
 
-| Key                         | Default                        | Range or values                    |
-| --------------------------- | ------------------------------ | ---------------------------------- |
-| `appearance.theme`          | `bitty-dark` (alias `dark`)    | preset name; unknown falls back    |
-| `theme` (alias)             | unset                          | `appearance.theme` wins            |
-| `font.family`               | `JetBrainsMono Nerd Font`      | non-empty, `<= 128` bytes          |
-| `font.size`                 | `12.0`                         | `(0, 128]`                         |
-| `font.line_height`          | `1.375`                        | `[1.0, 2.0]`                       |
-| `font.letter_spacing`       | `2.0`                          | `[0.0, 8.0]`                       |
-| `window.opacity`            | `1.0`                          | `[0.0, 1.0]` whole window          |
-| `window.padding`            | `8`                            | `0..=64` logical px                |
-| `window.radius_px`          | `0`                            | `0..=24` physical px (no-op S0)    |
-| `layout.gaps_in`/`gaps_out` | `0`/`0`                        | `0..=16` cells                     |
-| `decoration.*`              | see decoration reference above | logical px                         |
-| `scrollbar.mode`/`width`    | `hidden`/`8`                   | `hidden`/`always`/`auto`, `1..=32` |
+| Key                         | Default                        | Range or values                         |
+| --------------------------- | ------------------------------ | --------------------------------------- |
+| `appearance.theme`          | `bitty-dark` (alias `dark`)    | preset name; unknown falls back         |
+| `theme` (alias)             | unset                          | `appearance.theme` wins                 |
+| `appearance.colors.*`       | unset                          | complete inline palette, `#RRGGBB`-only |
+| `font.family`               | `JetBrainsMono Nerd Font`      | non-empty, `<= 128` bytes               |
+| `font.size`                 | `12.0`                         | `(0, 128]`                              |
+| `font.line_height`          | `1.375`                        | `[1.0, 2.0]`                            |
+| `font.letter_spacing`       | `2.0`                          | `[0.0, 8.0]`                            |
+| `window.opacity`            | `1.0`                          | `[0.0, 1.0]` whole window               |
+| `window.padding`            | `8`                            | `0..=64` logical px                     |
+| `window.radius_px`          | `0`                            | `0..=24` physical px (no-op S0)         |
+| `layout.gaps_in`/`gaps_out` | `0`/`0`                        | `0..=16` cells                          |
+| `decoration.*`              | see decoration reference above | logical px                              |
+| `scrollbar.mode`/`width`    | `hidden`/`8`                   | `hidden`/`always`/`auto`, `1..=32`      |
 
 The built-in preset names, aliases, and dark/light categories are listed in the
 [theme preset catalog](themes.md); the full 30-preset catalog resolves today.
 `appearance.theme` matches a name or alias case-insensitively with surrounding
 whitespace trimmed; an unknown name falls back to the default preset and logs a
 warning to stderr instead of failing the process.
+
+- Inline custom palette (CTX-0392; read-only from `bitty` `origin/main` at
+  `c64dd1e`): `appearance.colors` carries `background`, `foreground`,
+  `cursor`, `selection`, plus exactly 16 `ansi` hex strings. Every leaf is
+  `#RRGGBB`-only; a missing, short, long, or malformed leaf rejects the whole
+  reload fail-closed, never a partial palette. No file path is accepted
+  (OQ-047 stays open).
 
 - The gap layers compose: effective gap =
   `decoration.gap * DPI_scale + layout.gap_cells * cell_axis` (CTX-0333).
@@ -636,7 +664,7 @@ warning to stderr instead of failing the process.
   focus/idle outline width (`decoration.border_width` / `_focused` / `_idle`)
   are **accepted contracts** but **not supported yet** (OQ-041 and OQ-045
   resolved 2026-09-12, docs CTX-0163;
-  [Appearance Configuration RFC](../../../decisions/rfcs/RFC-0001-appearance-configuration.md)).
+  [Appearance Configuration RFC](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/rfcs/RFC-0001-appearance-configuration.md)).
   The accepted selector grammar is `*` < content type
   (`empty`/`terminal`/`rich`/`browser`) < `ws:<1..=16>` < `view:<ViewId>`,
   resolved per field per `View`; the accepted `views.*` field set is
@@ -648,7 +676,7 @@ warning to stderr instead of failing the process.
   key is supported; do not document one as working. `background_image_roots`
   remains global-only and cannot be widened per `View`.
 - Per-panel animation overrides are **candidate and narrowed** (OQ-043;
-  [UI Extensibility Architecture](../specifications/ui-extensibility-architecture.md)):
+  [UI Extensibility Architecture](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/architecture/ui-extensibility-architecture.md)):
   the accepted OQ-041 layer fixes the override mechanics, so only the animation
   field set and its reduced-motion/budget interaction remain. The global
   `appearance.animations.*` contract is unchanged.
@@ -659,7 +687,7 @@ warning to stderr instead of failing the process.
   (`decoration.background_image` / `decoration.background_fit` /
   `decoration.background_image_roots`) is **accepted as a contract** but **not
   supported yet** (OQ-042 resolved 2026-09-12;
-  [Appearance Configuration RFC](../../../decisions/rfcs/RFC-0001-appearance-configuration.md)).
+  [Appearance Configuration RFC](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/rfcs/RFC-0001-appearance-configuration.md)).
   The accepted formats are PNG/JPEG/static WebP with bounds BG-1..BG-5 reused from
   the image-store corpus (IMG-1..IMG-5; BG-6 is a design bound, BG-7 a
   present-path bound), deny-by-default approved roots, fit modes
@@ -674,7 +702,9 @@ Status: **shipped defaults** (read-only from `bitty` `origin/main`, CTX-0236,
 CTX-0257, CTX-0258, CTX-0259, CTX-0262, CTX-0263, CTX-0264, CTX-0265; merged
 to `bitty` origin `main` at commits `2a5e451`, `227ca3a`, `6e662a2`,
 `1ea2f66`, `8b987a0`, `bc1fbba`, `11d9bec`, `c8faa52`, all verified read-only
-via `merge-base --is-ancestor`). This section is the shipped reference for the
+via `merge-base --is-ancestor`; the `leader_key`, `leader_timeout_ms`, and
+`close_confirm` rows are read-only from `origin/main` at `c64dd1e`
+(CTX-0715, CTX-0370), same verification). This section is the shipped reference for the
 keybinding surface; the merge-class instantiation stays in the
 [Configuration Model RFC](../specifications/configuration-model-rfc.md), and
 the input-side dispatch evidence stays in the
@@ -683,9 +713,12 @@ the input-side dispatch evidence stays in the
 Shipped schema:
 
 ```lua
--- Shipped schema (CTX-0236/CTX-0257).
+-- Shipped schema (CTX-0236/CTX-0257; leader override CTX-0715; close safety CTX-0370).
 return {
     mod_key = "alt", -- "alt" (default; opt/option) or "super" (meta/cmd/win)
+    leader_key = "ctrl+q", -- leader chord override; default Alt+Space (Ctrl+Space on Windows)
+    leader_timeout_ms = 1500, -- leader fail-open timeout in ms, 100..=60000 (default 1000)
+    close_confirm = "when_busy", -- "always" | "when_busy" (default) | "never"
     keymaps = {
         { chord = "alt+h", action = "goto_split:left", context = "global" },
     },
@@ -699,9 +732,20 @@ return {
   keep their exact spelling and overlay by `context + chord` identity.
 - `keymaps` is set-by-identifier: a user entry with the same `context + chord`
   replaces the shipped entry, anything else appends. The shipped set is
-  79 entries, all context `global`; unknown chords, actions, or contexts
+  82 entries, all context `global`; unknown chords, actions, or contexts
   fail closed, and single-character keys require at least one modifier.
-- Shipped groups (canonical Alt spelling): workspace `alt+n` / `alt+1..9` /
+- `leader_key` is a fully-optional top-level scalar (CTX-0715, resolved at
+  startup per CTX-0723; read-only from `bitty` `origin/main` at `c64dd1e`).
+  When present it must be a chord spelling in the shared chord grammar
+  (`"ctrl+q"`, `"alt+space"`); a bare letter fails closed with the
+  `leader_key` field path and can never steal shell typing. Absent means the
+  platform default (`Alt+Space`, `Ctrl+Space` on Windows).
+- `leader_timeout_ms` is a fully-optional top-level integer (CTX-0715) for the
+  leader fail-open timeout. When present it must be `100..=60000`
+  (default `1000`); anything else fails closed with the `leader_timeout_ms`
+  field path.
+- Shipped groups (canonical Alt spelling): new panel `alt+n`, workspace
+  `alt+t` / `alt+1..9` /
   `alt+-` / `alt+=` / `alt+tab` / `alt+w` (CTX-0257, DEC-0034) plus
   `shift+alt+1..9` move-to-workspace (CTX-0259); spatial focus
   `alt+h/j/k/l`, `alt+arrows`, `ctrl+alt+arrows`; split
@@ -724,21 +768,34 @@ return {
   popup (CTX-0265) is a presentation-only overlay generated from the live
   registry on every show; it is informational, not modal, so unbound keys
   still reach the shell while it is visible.
+- `close_confirm` is a fully-optional top-level scalar (CTX-0370; read-only
+  from `bitty` `origin/main` at `c64dd1e`) selecting the view/window close
+  safety: `"always"` confirms every close, `"when_busy"` (default) confirms
+  only while some pane's PTY runs a foreground job beyond the idle shell,
+  and `"never"` never confirms. Anything else fails closed with the
+  `close_confirm` field path. The workspace kill-confirm gate (CTX-0257) is a
+  separate control and is not governed by this key; project layers must not
+  declare it, so a repository-local file can never disable this data-loss
+  guard.
 
 Open: whether the shipped set grows CLI flags or a command-palette surface;
-the candidate Leader sequences and flash-style jump remain unimplemented
-candidates in the [Input and Pointer Contract](../specifications/input-pointer-rfc.md).
+the leader chord override plus bounded fail-open timeout above are shipped
+(CTX-0715/CTX-0723), while Leader sequences and flash-style jump remain
+unimplemented candidates in the [Input and Pointer Contract](../specifications/input-pointer-rfc.md).
 Candidate configuration surfaces are not accepted and have no schema yet, so
-none of them may be documented as working: a Leader binding plus bounded modal
-timeout ([OQ-088](../../../decisions/open-questions.md)), and the Bitty Beacon label
+none of them may be documented as working: bounded modal use of the leader
+beyond the shipped override ([OQ-088](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md)), and the Bitty Beacon label
 pools, handedness preference, and script-action registrations
-([OQ-089](../../../decisions/open-questions.md),
+([OQ-089](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md),
 [Semantic Terminal RFC](../specifications/semantic-terminal-rfc.md#p7-bitty-beacon-spatial-action-engine-candidate)).
 
 ## Reload classification (shipped schema inventory)
 
 Status: **implementation reference** read-only from `bitty` `origin/main` at
-`828a787` (verified read-only via `merge-base --is-ancestor`). The accepted
+`828a787` (verified read-only via `merge-base --is-ancestor`; the
+`appearance.colors`, `leader_key`, `leader_timeout_ms`, and `close_confirm`
+rows below are read-only from `origin/main` at `c64dd1e`, same verification).
+The accepted
 framework is the
 [Configuration Model RFC](../specifications/configuration-model-rfc.md)
 "Reload classification" section (OQ-010). Classification is declared by the
@@ -765,13 +822,16 @@ Shipped leaf inventory:
 | `decoration.border_color_focused`, `decoration.border_color_idle`                            | live     | `#FFFFFF`, `#808080` |
 | `decoration.border_width`, `decoration.border_width_focused`, `decoration.border_width_idle` | live     | `1`, `1`, `1`        |
 | `appearance.theme`                                                                           | live     | built-in default     |
+| `appearance.colors`                                                                          | live     | unset                |
 | `appearance.animations.enabled`, `appearance.animations.reduced_motion`                      | live     | built-in default     |
 | `appearance.animations.duration_ms.*`                                                        | live     | `0` ms               |
 | `appearance.animations.easing.*`                                                             | live     | built-in default     |
 | `mod_key`, `keymaps`                                                                         | live     | built-in default     |
+| `leader_key`, `leader_timeout_ms`                                                            | live     | built-in default     |
 | `terminal.scrollback`, `terminal.shell`                                                      | restart  | built-in default     |
 | `terminal.scroll_lines_per_notch`, `terminal.scroll_pixels_per_notch`                        | restart  | built-in default     |
 | `selection.auto_copy`                                                                        | restart  | built-in default     |
+| `close_confirm`                                                                              | restart  | built-in default     |
 | `layout.gaps_in`, `layout.gaps_out`                                                          | restart  | built-in default     |
 | `scrollbar.mode`, `scrollbar.width`                                                          | restart  | built-in default     |
 | `mouse.focus_follows_mouse`, `mouse.focus_follows_mouse_delay_ms`                            | restart  | built-in default     |
@@ -822,7 +882,7 @@ local distro = require("bitty.distro")
 return distro.extend("bitty-terminal/starter", {
     font = { family = "Maple Mono" },
     plugins = {
-        { "xuepoo/bitty-markdown" },
+        { "example/bitty-markdown" },
     },
 })
 ```
@@ -841,35 +901,35 @@ workspace trust and should expose a restricted declarative schema.
 
 Status: **candidate behavior.**
 
-A `.bitty.lua` could request a profile or environment values. On first use,
+A `.wheel.lua` could request a profile or environment values. On first use,
 Bitty asks the user to trust it once, trust it persistently, or reject it.
 Process execution and unrestricted host APIs remain unavailable to local
 configuration. This feature is deferred until the trust model is designed.
 
 Status: **candidate direction.**
 
-A project could also carry a declarative `.bitty/` project definition (for
+A project could also carry a declarative `.wheel/` project definition (for
 example `project.toml`, `agents/`, `workflows/`, `prompts/`, `policies/`,
 `tools/`, and `skills/`), portable and safe to commit to Git because it holds
 definitions only. Dynamic runtime state — current task, agent sessions,
 execution logs, token statistics, runtime locks, overlays, and any database —
-must never live in `.bitty/`; it belongs to repository-local or user runtime
+must never live in `.wheel/`; it belongs to repository-local or user runtime
 state so the project tree stays clean.
 
 `.agents/` is a compatibility adapter rather than a second source of truth,
 and candidate project discovery resolves in one order:
 
 ```text
-.bitty/          native project definition (highest fidelity)
+.wheel/          native project definition (highest fidelity)
 .agents/         compatibility adapter for existing agent conventions
 AGENTS.md etc.   contextual conventions, never configuration authority
 ```
 
-Candidate rules: `.bitty/` wins where both exist, a conflict is reported
+Candidate rules: `.wheel/` wins where both exist, a conflict is reported
 rather than merged silently, and the declarative-data-only rule for project
 content is unchanged. The directory name, schema, trust mechanics, and adapter
 scope are undecided; tracked as
-[OQ-068](../../../decisions/open-questions.md).
+[OQ-068](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md).
 
 ## Data, state, cache, and runtime layouts
 
@@ -912,7 +972,7 @@ Runtime sockets and locks belong to the login session, while sessions and
 layouts intended to survive restart belong in state.
 
 A candidate live-reload path for wallpaper-derived palettes extends
-[OQ-047](../../../decisions/open-questions.md): a generator such as Matugen writes
+[OQ-047](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md): a generator such as Matugen writes
 `~/.config/bitty/theme.lua` returning `background`, `foreground`, and
 `palette[0..15]`, then runs `bitty ctl theme reload`; Core applies the new
 palette in a single render pass with no tearing, black frame, or PTY reset.
@@ -941,15 +1001,39 @@ struct BittyDirs {
 Linux/BSD can use XDG; macOS and Windows should use a documented native mapping
 with an explicitly designed XDG-compatibility option if desired. Plugins query
 semantic host paths rather than concatenate `HOME` with `/.config/bitty`.
-
-Candidate Windows mapping: `%APPDATA%\bitty` for roaming configuration and the
-plugin lock file, `%LOCALAPPDATA%\bitty` for data, state, and cache so roaming
-profiles never sync rebuildable caches or session state, a named pipe
-`\\.\pipe\bitty-<username>-<instance-id>` for IPC, per-user NTFS ACLs scoped to
-the current user SID, and secrets through Windows Credential Manager or DPAPI.
-macOS uses its standard Application Support and Caches directories. An
-XDG-compatibility override is explicit and opt-in, never implicit; the exact
+An XDG-compatibility override is explicit and opt-in, never implicit; the exact
 mapping, precedence, and migration rules remain open.
+
+Status: **candidate contract, unimplemented.** No `BittyDirs` symbol exists in
+the `bitty` tree yet. The shipped code resolves only the configuration root
+(read-only from `bitty` `origin/main`, `crates/bitty-config/src/file.rs`):
+`$XDG_CONFIG_HOME` > `%APPDATA%` > `$HOME/.config` > `%LOCALAPPDATA%`, with
+the Windows variables participating through the platform-aware probe
+(CTX-0479, `bitty` #774); data, state, cache, runtime, and bin resolution plus
+every native mapping below are candidates. The table uses relative forms only
+(environment-variable roots, never absolute host paths).
+
+| Role    | Linux / BSD                 | macOS (candidate)                                              | Windows (candidate)                                                         |
+| ------- | --------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Config  | `$XDG_CONFIG_HOME/bitty`    | `~/Library/Application Support/bitty`                          | `%APPDATA%\bitty` (roaming; also the plugin lock file)                      |
+| Data    | `$XDG_DATA_HOME/bitty`      | `~/Library/Application Support/bitty`                          | `%LOCALAPPDATA%\bitty` (non-roaming; candidate `data\` split)               |
+| State   | `$XDG_STATE_HOME/bitty`     | `~/Library/Application Support/bitty` (no separate state role) | `%LOCALAPPDATA%\bitty` (candidate `state\` split; never roams)              |
+| Cache   | `$XDG_CACHE_HOME/bitty`     | `~/Library/Caches/bitty`                                       | `%LOCALAPPDATA%\bitty` (candidate `cache\` split; never roams)              |
+| Runtime | `$XDG_RUNTIME_DIR/bitty`    | `$TMPDIR/bitty-<uid>/` (per-user temp)                         | Named pipe `\\.\pipe\bitty-<username>-<instance-id>` (no filesystem socket) |
+| Bin     | `~/.local/bin` (user scope) | `/Applications/Bitty.app` or `~/Applications`                  | `%LOCALAPPDATA%\Programs\Bitty` (per-user scope)                            |
+
+Notes on the candidate mapping:
+
+- Roaming versus local on Windows: configuration roams with the user profile
+  (`%APPDATA%`); rebuildable caches, session state, and data stay machine-local
+  (`%LOCALAPPDATA%`) so roaming profiles never sync them.
+- Runtime IPC on Windows uses named pipes rather than Unix-domain sockets; the
+  pipe name carries the user and instance id so concurrent logins stay separate.
+- File modes are POSIX-only: the `0600` tiers below map to per-user NTFS DACLs
+  scoped to the current user SID on Windows (see
+  [Credential sources](#credential-sources-and-secret-storage-candidate)).
+- macOS has no separate state role: sessions, layouts, and history live under
+  Application Support alongside data; only cache splits out.
 
 Candidate discovery commands include:
 
@@ -971,16 +1055,205 @@ in preference order:
 
 1. Environment bridge: configuration declares the variable name
    (`api_key_env = "ANTHROPIC_API_KEY"`); the value is read at request time and
-   never persisted by Bitty.
-2. OS keyring: an async host API requests the secret from Secret Service,
-   Keychain, or Windows Credential Manager.
-3. Dedicated store: an owner-only (`0600`) file opened only after explicit
-   `ai.provider` authorization, with the access audited.
+   never persisted by Bitty. This tier is capability-scoped per
+   [ADR 0006](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0006-os-env-policy.md):
+   `os.getenv` stays denied in every VM and the only path is the desensitized
+   `bitty.env.get(name)` / `bitty.env.has(name)` host bridge. Keys must match
+   `^[A-Z_][A-Z0-9_]*$` (1..64 bytes), values are size-bounded (4 KiB), and a
+   denied or unset key returns `nil` indistinguishably so callers cannot probe
+   allowlist membership. The allowlist is host-owned and never Lua-widenable;
+   per-plugin VMs additionally need a manifest `env:<KEY>` (or narrow
+   `env:BITTY_*`) capability plus an explicit user grant. There is no
+   enumeration API. Every result is tagged sensitive: diagnostics, traces, crash
+   reports, and `bitty config check` output redact values by default (key name
+   and presence only), denial messages never echo values, local trace files
+   carry mode `0600`, and every `get`/`has` call plus every grant/revocation
+   emits a host-side audit event (`timestamp`, `vm_class`, `key`, `granted`,
+   `caller_location` — never the value).
+2. OS keyring: an async host API requests the secret from Secret Service
+   (Linux), Keychain (macOS), or Windows Credential Manager / DPAPI (Windows).
+3. Dedicated headless store: a `credentials.toml` file under the configuration
+   root (`$XDG_CONFIG_HOME/bitty/credentials.toml`,
+   `%APPDATA%\bitty\credentials.toml`) carrying owner-only mode `0600`,
+   opened only after explicit `ai.provider` authorization, with each access
+   audited. On Windows the `0600` requirement maps to its NTFS DACL
+   equivalent: a per-user discretionary access list scoped to the current user
+   SID, with no access granted to other accounts.
 
 The host reports source and presence, never the value. Rotation, revocation,
-and redaction follow [ADR 0006](../../../decisions/adrs/ADR-0006-os-env-policy.md)
-and the security corpus, and diagnostics redact secret-shaped values.
-Precedence, keyring-unavailable fallback, and headless behavior remain open.
+and redaction follow [ADR 0006](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0006-os-env-policy.md)
+and the security corpus, and diagnostics redact secret-shaped values
+(`*_SECRET*`, `*_TOKEN*`, `*_KEY*`, `*_PASSWORD*`, `DATABASE_URL`, and similar
+patterns). Precedence across the three tiers and keyring-unavailable fallback
+remain open.
+
+## Plugin host process.spawn surface (candidate mechanism record)
+
+Status: **candidate record** — shipped mechanism in `bitty` `origin/main`
+(read-only: CTX-0445 [bitty PR #717](https://github.com/bitty-terminal/bitty/pull/717)
+merge `9830edb`, CTX-0444 [bitty PR #716](https://github.com/bitty-terminal/bitty/pull/716)
+merge `64e1709`), not an accepted terminal-docs contract. This section records
+the Lua-visible shape and references the canonical contracts by link; it copies
+no struct or allowlist that would rot. It changes no normative contract above
+and touches no accepted ownership table in
+[Core and Plugin Boundaries](../architecture/core-boundaries.md).
+
+Placement rationale: this document already records the first Lua-visible host
+bridge (`bitty.env.get` in [Credential sources](#credential-sources-and-secret-storage-candidate));
+`bitty.process.spawn` is the second such bridge, aimed at the same Lua-author
+reader with the same fail-closed bounded-bridge posture. The accepted
+panel-runtime specifications and the plugin capability-matrix rows that already
+name `process.spawn` shapes are left untouched: this record adds a
+pointer-friendly inventory without editing their normative or candidate text.
+
+### Lua call shape
+
+Status: **shipped mechanism** (bridge shape test-pinned in `bitty`).
+
+Lua supplies only the argv array; the tool identity is resolved host-side from
+the caller's install grant, so there is no Lua-widenable tool parameter:
+
+```lua
+-- Verified shape (bitty crates/bitty-lua/tests/host_bridge.rs).
+local result = bitty.process.spawn({ "status", "--porcelain" })
+-- result: { output = "...", stderr = "...", truncated = false,
+--           exit_code = 0, untrusted = true }
+```
+
+The argv must be a dense 1-based string array: empty, sparse, non-string, or
+empty-entry shapes fail closed at the bridge. The `bitty.process` table is a
+read-only proxy like the other host tables. Bridge shape bounds are 64 entries
+of at most 4 KiB each; tighter per-tool bounds live host-side with the
+allowlist and are linked, not copied, below.
+
+### Result table
+
+Status: **shipped mechanism**.
+
+Every successful spawn delivers `output` (bounded stdout), `stderr`,
+`truncated`, `exit_code` (nil when the outcome is unknown), and `untrusted`
+(always true): child bytes are untrusted observation data, never instructions.
+Failure text on the error path is host-authored and carries only the observed
+exit code, never child bytes.
+
+### Error codes
+
+Status: **shipped mechanism** (all codes verified first-hand on `bitty`
+`origin/main`; note the spawn timeout code is `E_SPAWN_TIMEOUT`, not the
+generic bridge `E_TIMEOUT`).
+
+| Code                                               | Domain         | Meaning                                                                                                                            |
+| -------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `E_SPAWN_UNAVAILABLE`                              | runtime        | no spawn backend is wired for this VM or generation (the `HostServices` default)                                                   |
+| `E_CAPABILITY_DENIED`                              | runtime        | the `process.spawn:<tool>` grant gate refused: missing scope, or consent required, expired, or revoked (re-checked on every call)  |
+| `E_SPAWN_DENIED`                                   | runtime/budget | shape violation, allowlist denial (including the interim authorizer below), unknown tool or missing declaration, or budget overrun |
+| `E_SPAWN_FAILED`                                   | runtime        | spawn or host failure, including non-zero exits (message carries only the exit code) and non-timeout unknown outcomes to reconcile |
+| `E_SPAWN_TIMEOUT`                                  | runtime        | timeout-path unknown outcome: the child was killed and reaped, with no exit code                                                   |
+| `E_VALUE_TYPE` / `E_VALUE_NODES` / `E_VALUE_BYTES` | value          | malformed argv at the bridge (non-array, empty, sparse, non-string, empty entry, entry-count or byte-limit excess)                 |
+| `E_BRIDGE_REENTRANT`                               | runtime        | re-entrant bridge call rejected (the one guard `process.spawn` keeps)                                                              |
+
+The generic cheap-call `E_TIMEOUT` (budget domain) does not apply to
+`process.spawn`: see [Bridge accounting](#bridge-accounting-no-orphan-leak)
+below.
+
+### Execution hardening
+
+Status: **shipped mechanism** (qualitative record; the implementation is linked,
+not copied).
+
+Argv arrays go directly to the OS process API: no shell is ever constructed on
+any platform, so metacharacters in args are inert data. The child starts from a
+cleared environment plus explicit request entries only; ambient environment
+never crosses the boundary. Explicit entries are validated against a
+host-side denylist before routing, scope, or consent, closing the env-encoded
+forms of vectors the argv gate already rejects: `GIT_CONFIG_*` (including the
+numbered key/value pair families), the external-process helpers
+`GIT_EXTERNAL_DIFF`/`GIT_DIFF_OPTS` plus the editor/ssh/askpass variables, and
+the repo-identity escapes `GIT_DIR`/`GIT_WORK_TREE` fail closed, with ASCII
+case-insensitive and numbered-family prefix matching so a case-folded Windows
+env lookup cannot bypass (`bitty` #806, CTX-0488; predicate in
+[tools.rs](https://github.com/bitty-terminal/bitty/blob/main/crates/bitty-plugin-host/src/tools.rs)).
+Stdout and stderr drain concurrently on two bounded
+reaper threads, so a verbose child cannot wedge the pipes; the supervisor
+enforces the timeout, kills and reaps on expiry (no zombie), and reports the
+outcome as unknown rather than success or failure. Byte output converts lossily
+to text; only portable process APIs are used.
+
+Dispatch composes six fail-closed gates with no partial state on refusal:
+shape, allowlist routing, scope authorization, explicit effect opt-in, ledger
+consent, and supervised outcome.
+
+### Lua-visible bounds
+
+Status: **shipped mechanism** (numeric record for the Lua-visible surface only;
+deeper struct and per-tool bounds are linked, not copied).
+
+- Argv: at most 64 entries, each at most 4 KiB, 16 KiB total.
+- Supervision timeout: 1 to 30000 ms, default 5000 ms.
+- Panel-path per-call output: 8 KiB, so spawn output always fits the panel bus
+  admission bound.
+- Tracked outcomes: 64; bursts beyond the registry fail closed instead of
+  evicting silently.
+
+The bound inheritance (IPC execution, channel, tool-dispatch, and panel-bus
+precedents) is documented in the `Bounds` section of
+[spawn.rs](https://github.com/bitty-terminal/bitty/blob/main/crates/bitty-runtime/src/plugin_runtime/spawn.rs);
+the bridge entry validation lives in
+[host.rs](https://github.com/bitty-terminal/bitty/blob/main/crates/bitty-lua/src/host.rs).
+
+### Bridge accounting (no orphan leak)
+
+Status: **shipped mechanism**.
+
+`process.spawn` is exempt from the bridge's post-hoc 50 ms cheap-call deadline
+but keeps the re-entrancy guard (`bounded_spawn` in `host.rs`): a
+slow-but-successful spawn is delivered instead of being run to completion,
+stored, and then discarded as a timeout, which would orphan a registry slot Lua
+can never reconcile. Every stored spawn outcome is therefore a delivered
+outcome; the 64-slot bound covers delivered outcomes only.
+
+### Tools-enforcement references (CTX-0444)
+
+Status: **shipped mechanism** (install- and validate-time enforcement plus pure
+predicates; the runtime seam below is still interim).
+
+The canonical Layer-2 contract is the accepted `[tools.git]` slice (v1) in the
+[Layer-2 System CLI specification](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/packaging/plugin-reuse-and-providers.md)
+(`Accepted [tools.git] contract (v1)`, CTX-0425): that document owns the verb
+list and per-tool bounds, which are linked here and never copied. The host
+enforcement that merged in `bitty` PR #716:
+
+- The install-path manifest reader accepts `[tools.git]` alongside quoted
+  capability keys and `[[capabilities.filesystem]]`; unknown sections and
+  bypass shapes fail closed
+  ([manifest_toml.rs](https://github.com/bitty-terminal/bitty/blob/main/crates/bitty-runtime/src/plugin_runtime/manifest_toml.rs),
+  [package.rs](https://github.com/bitty-terminal/bitty/blob/main/crates/bitty-runtime/src/plugin_runtime/package.rs)).
+- Each `[tools.<name>]` declaration is validated, paired in both directions
+  with its `process.spawn:<tool>` capability (a spawn capability without a
+  tool declaration, or a tool declaration without its capability, fails
+  closed), and hash-bound under manifest hash v3, so raising `required` from
+  false to true is a capability increase whose grant must be re-confirmed
+  ([manifest.rs](https://github.com/bitty-terminal/bitty/blob/main/crates/bitty-plugin-host/src/manifest.rs)).
+- The pure allowlist predicates (accepted tool, tool-name grammar, verb and
+  flag policy) live in
+  [tools.rs](https://github.com/bitty-terminal/bitty/blob/main/crates/bitty-plugin-host/src/tools.rs)
+  with no I/O: the spawn surface must call them, never re-implement them.
+  Review hardened the flag policy beyond the v1 spec text; that delta is owned
+  bitty-side (see the PR #716 body) and is not reconciled here.
+
+The runtime seam is the `SpawnAuthorizer` trait in `spawn.rs`, still served by
+the fail-closed `DenyAllAuthorizer` interim on `bitty` `origin/main`: the
+surface is fully wired through the grant gate, but execution denies everything
+until the production authorizer against the installed manifest table lands.
+The per-generation grant gate and backend injection live in
+[services.rs](https://github.com/bitty-terminal/bitty/blob/main/crates/bitty-runtime/src/plugin_runtime/services.rs).
+
+### Sequel, explicitly not claimed
+
+Per-spawn UI prompting that refreshes consent, per-spawn working-directory
+plumbing from terminal state, `execution_id` surfacing for Lua-side reconcile,
+exit-code-tolerant handling, binary-safe transport, and the production
+authorizer wiring above are sequel work. Nothing in this section claims them.
 
 ## Open questions
 
@@ -1000,36 +1273,36 @@ Precedence, keyring-unavailable fallback, and headless behavior remain open.
 - What are the native macOS and Windows directory mappings?
 - What is the trust database location and invalidation rule for local project
   configuration?
-- What is the `.bitty/` project-definition directory contract (layout, schema,
+- What is the `.wheel/` project-definition directory contract (layout, schema,
   Git-tracked versus runtime-state split, and trust), and how does `.agents/`
   compatibility resolve against it without becoming a competing source of
-  truth? ([OQ-068](../../../decisions/open-questions.md))
+  truth? ([OQ-068](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md))
 - Which remaining appearance knobs beyond the shipped set (workspace/tab label
   position, frame and margin-line color, per-surface background opacity, blur)
   are adopted, and under what render/compositor contract?
   (OQ-036/OQ-037/OQ-038;
-  [Appearance Configuration RFC](../../../decisions/rfcs/RFC-0001-appearance-configuration.md);
+  [Appearance Configuration RFC](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/rfcs/RFC-0001-appearance-configuration.md);
   OQ-039 focused/idle outline colors is accepted and shipped.)
 - Which panel transitions animate, with what bounded durations/easings and
-  reduced-motion behavior? ([OQ-040](../../../decisions/open-questions.md);
-  [Panel Animations and Effects RFC](../../../decisions/rfcs/RFC-0002-panel-animations.md);
+  reduced-motion behavior? ([OQ-040](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md);
+  [Panel Animations and Effects RFC](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/rfcs/RFC-0002-panel-animations.md);
   accepted and shipped in `bitty` `3c5878e`; `appearance.animations.*` is a
   supported `init.lua` key.)
 - The per-View/per-panel appearance override contract (selector grammar,
   precedence, inheritance, reload, fail-closed validation, safe mode, and
   per-View contrast) and the focus/idle outline-width contract are accepted
-  ([OQ-041/OQ-045](../../../decisions/open-questions.md), resolved 2026-09-12, docs
+  ([OQ-041/OQ-045](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md), resolved 2026-09-12, docs
   CTX-0163;
-  [Appearance Configuration RFC](../../../decisions/rfcs/RFC-0001-appearance-configuration.md)).
+  [Appearance Configuration RFC](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/rfcs/RFC-0001-appearance-configuration.md)).
   What remains open is the per-panel animation override field set
-  ([OQ-043](../../../decisions/open-questions.md), narrowed) and plugin-supplied
-  appearance ([OQ-044](../../../decisions/open-questions.md)), with plugin-supplied
-  images under [OQ-049](../../../decisions/open-questions.md);
-  [UI Extensibility Architecture](../specifications/ui-extensibility-architecture.md).
+  ([OQ-043](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md), narrowed) and plugin-supplied
+  appearance ([OQ-044](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md)), with plugin-supplied
+  images under [OQ-049](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md);
+  [UI Extensibility Architecture](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/architecture/ui-extensibility-architecture.md).
   Accepted-but-unshipped, not a supported `init.lua` key yet.
 - The per-panel background-image contract is accepted
-  ([OQ-042](../../../decisions/open-questions.md), resolved 2026-09-12); the
+  ([OQ-042](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md), resolved 2026-09-12); the
   plugin-supplied-image path remains open as
-  [OQ-049](../../../decisions/open-questions.md), and no image key is supported yet.
+  [OQ-049](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md), and no image key is supported yet.
 - What are the final manifest/lock names, and how do they coexist with Lua
   plugin specifications or distribution imports?

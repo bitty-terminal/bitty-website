@@ -4,14 +4,25 @@ description: Research draft surveying Generic Panel Runtime and Event Bus as Pan
 category: specifications
 audience: contributor
 document_type: specification
-status: draft
+status: archived
 website_publish: false
 sidebar_order: 27
 ---
 
 # Panel Runtime and Event Bus Pre-Study
 
-> Status: **draft** research pre-study — not **Accepted**, not **Verified**, not
+> Superseded: this research pre-study is **archived** historical provenance and
+> is superseded by the accepted [Panel Runtime RFC](panel-runtime-rfc.md)
+> (docs `CTX-0181`, 2026-09-14), which promotes its contract content. Do not
+> treat this document as current advice; the RFC is authoritative and the open
+> questions below are carried forward there as `RFC-OQ-1` through `RFC-OQ-9`.
+> The text is retained unchanged for provenance except this banner and the
+> frontmatter `status`. Example owner handles and placeholder home paths in the
+> retained body are historical and were not rewritten; the accepted RFC carries
+> the current neutralized examples.
+>
+> Archived status: this document was published as a **draft** research pre-study,
+> and it is not **Accepted**, not **Verified**, not
 > **normative**, and not **Compatible**. This document surveys a candidate Generic
 > Panel Runtime and Event Bus contract as a prerequisite for a future Panel
 > Platform, reconciled with the accepted
@@ -22,8 +33,8 @@ sidebar_order: 27
 > (CTX-0118, `c3a2928`, Accepted, no experimental implementation). It proposes no
 > implementation, authorizes no shipped, stable, or compatibility-guaranteed
 > behavior, and does not weaken any normative control in the
-> [Security Overview](../../../security/overview.md), [Threat Model](../../../security/threat-model.md),
-> [Isolation Resource RFC](isolation-resource-rfc.md), or [Plugin Platform RFC](plugin-platform-rfc.md).
+> [Security Overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md), [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md),
+> [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md), or [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md).
 > The lifecycle is `Draft -> experimental review evidence -> Accepted -> Verified -> Compatible`
 > (spec) and `Draft -> experimental review evidence -> Accepted -> normative` (document);
 > only `Accepted` or `normative` documents authorize shipped behavior. All thresholds
@@ -61,40 +72,40 @@ Out of scope and owned elsewhere:
 - Platform adapter ownership, `winit`/`winit` key and pointer normalization
   ([Input and Pointer Contract](input-pointer-rfc.md), draft);
 - Plugin API v1, capability grammar, manifest, and three-level queue budgets
-  (OQ-011/012/013, [Plugin Platform RFC](plugin-platform-rfc.md));
+  (OQ-011/012/013, [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md));
 - per-plugin VM, instruction, memory, task, and queue enforcement (OQ-014,
-  [Isolation Resource RFC](isolation-resource-rfc.md));
+  [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md));
 - IPC wire framing, discovery, auth, and per-connection rate limits RC-9/RC-10
-  ([IPC and Agent RFC](ipc-agent-rfc.md));
+  ([IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md));
 - daemon, session persistence, and remote UI trust boundaries
-  ([ADR 0008 - Headless](../../../decisions/adrs/ADR-0008-headless.md), post-v1.0).
+  ([ADR 0008 - Headless](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0008-headless.md), post-v1.0).
 
 This document is the research deposit for CTX-0119 (`Priority: P2 | Area: product | Labels: docs,area:product,P2 | Milestone: v0.1.0 | RFC: OQ-014 | Task: CTX-0119`)
 and does not close an open question on its own.
 
 ## Relationship to accepted sources
 
-| Area                 | Accepted fact (cite)                                                                                                                                                                                                                                               | How this research reconciles (candidate)                                                                                                                                                                                                             |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Topology             | One-way DAG, `Terminal -> Snapshot` only, 16-crate workspace per [ADR 0003](../../../decisions/adrs/ADR-0003-core-workspace-topology.md) (OQ-005)                                                                                                                  | Panel Runtime would live in `bitty-runtime`/`bitty-ui` boundary without reversing DAG edges; `bitty-vt`/`bitty-term-state`/`bitty-pty` stay dependency-free                                                                                          |
-| Terminal lifecycle   | `TerminalRegistry` as single owner of PTY handles, `TerminalId != ViewId`, `RuntimeId`/`PersistentId`/`Generation`, bounded `64`/`32`/`16`, single view per terminal per [TerminalRegistry and View Lifecycle Contract](terminal-registry-view-lifecycle-rfc.md)   | Panel proposes `PanelId` as a fourth incompatible newtype, at most one panel host per panel, no panel holds PTY fd, panel generation mirrors registry generation, reuse of resize routing `cols = floor(rect.width / cell_width)` via `LogicalRect`  |
-| Workspace compositor | `Instance -> Window -> Workspace -> LayoutTree -> View` with `H`/`V` `ratio [0.1,0.9]`, Core-owned `gaps_in 4`/`gaps_out 6`/`border 2`/`radius 6`, `LayoutProvider` pure deterministic `propose` per [Workspace Compositor Specification](workspace-compositor.md) | Panel as candidate extension of `View` content (`Empty`, `Terminal(TerminalId)`, `Rich`, `Browser`, `Panel(PanelId)`) without adding a new tiling primitive; `LayoutTree` and decoration stay Core-owned; `LayoutProvider` never mutates panel state |
-| Input                | Hot path `Platform -> Router -> focused View -> keymap -> encoder -> PTY` with no Lua per [Input and Pointer Contract](input-pointer-rfc.md) (draft)                                                                                                               | Focus routing for panels reuses the same router with `focused Panel` as an alternative routing target; overlay capture is presentation-only; no `input.pre-encode` plugin hook                                                                       |
-| Plugin platform      | One VM per `(PluginId, generation)`, deny-by-default capabilities, observation versus interception, four interception points, `DropOldest` default per [Plugin Platform RFC](plugin-platform-rfc.md)                                                               | Panel lifecycle follows the same generation rule; panel-contributed UI is declarative; Event Bus reuses observation queues, not interception                                                                                                         |
-| Isolation            | Per-subscription `64`, per-plugin `1024`/`256 KiB`, global `8192`/`2 MiB` with `DropOldest`, RC-1 `10^7`/`50 ms`/`8 ms`, RC-2 `32 MiB` per [Isolation Resource RFC](isolation-resource-rfc.md)                                                                     | Panel and bus budgets are sized to fit inside the same three-level envelope without borrowing                                                                                                                                                        |
-| IPC                  | Bounded `256 KiB` frame, `512 KiB` in-flight, `64` pending, scopes per request per [IPC and Agent RFC](ipc-agent-rfc.md)                                                                                                                                           | Cross-process bus, if ever needed, would reuse the same framing and scope model, not a new TCP surface                                                                                                                                               |
+| Area                 | Accepted fact (cite)                                                                                                                                                                                                                                                               | How this research reconciles (candidate)                                                                                                                                                                                                             |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Topology             | One-way DAG, `Terminal -> Snapshot` only, 16-crate workspace per [ADR 0003](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0003-core-workspace-topology.md) (OQ-005)                                                                               | Panel Runtime would live in `bitty-runtime`/`bitty-ui` boundary without reversing DAG edges; `bitty-vt`/`bitty-term-state`/`bitty-pty` stay dependency-free                                                                                          |
+| Terminal lifecycle   | `TerminalRegistry` as single owner of PTY handles, `TerminalId != ViewId`, `RuntimeId`/`PersistentId`/`Generation`, bounded `64`/`32`/`16`, single view per terminal per [TerminalRegistry and View Lifecycle Contract](terminal-registry-view-lifecycle-rfc.md)                   | Panel proposes `PanelId` as a fourth incompatible newtype, at most one panel host per panel, no panel holds PTY fd, panel generation mirrors registry generation, reuse of resize routing `cols = floor(rect.width / cell_width)` via `LogicalRect`  |
+| Workspace compositor | `Instance -> Window -> Workspace -> LayoutTree -> View` with `H`/`V` `ratio [0.1,0.9]`, Core-owned `gaps_in 4`/`gaps_out 6`/`border 2`/`radius 6`, `LayoutProvider` pure deterministic `propose` per [Workspace Compositor Specification](workspace-compositor.md)                 | Panel as candidate extension of `View` content (`Empty`, `Terminal(TerminalId)`, `Rich`, `Browser`, `Panel(PanelId)`) without adding a new tiling primitive; `LayoutTree` and decoration stay Core-owned; `LayoutProvider` never mutates panel state |
+| Input                | Hot path `Platform -> Router -> focused View -> keymap -> encoder -> PTY` with no Lua per [Input and Pointer Contract](input-pointer-rfc.md) (draft)                                                                                                                               | Focus routing for panels reuses the same router with `focused Panel` as an alternative routing target; overlay capture is presentation-only; no `input.pre-encode` plugin hook                                                                       |
+| Plugin platform      | One VM per `(PluginId, generation)`, deny-by-default capabilities, observation versus interception, four interception points, `DropOldest` default per [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md) | Panel lifecycle follows the same generation rule; panel-contributed UI is declarative; Event Bus reuses observation queues, not interception                                                                                                         |
+| Isolation            | Per-subscription `64`, per-plugin `1024`/`256 KiB`, global `8192`/`2 MiB` with `DropOldest`, RC-1 `10^7`/`50 ms`/`8 ms`, RC-2 `32 MiB` per [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md)              | Panel and bus budgets are sized to fit inside the same three-level envelope without borrowing                                                                                                                                                        |
+| IPC                  | Bounded `256 KiB` frame, `512 KiB` in-flight, `64` pending, scopes per request per [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md)                                                                                  | Cross-process bus, if ever needed, would reuse the same framing and scope model, not a new TCP surface                                                                                                                                               |
 
 Where this research selects a threshold it refines those sources; it does not move
 a requirement between owners and does not create a bypass.
 
 ## Normative sources this pre-study does not weaken
 
-- [Security Overview](../../../security/overview.md) (invariants 1-10, especially 3 presentation never Terminal Truth, 4 no hot-path Lua, 7 bounded inputs).
-- [Threat Model](../../../security/threat-model.md) (T-01 parser wedge, T-06 plugin escape, T-07 starvation, T-09 IPC takeover, T-13 Terminal Truth).
+- [Security Overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md) (invariants 1-10, especially 3 presentation never Terminal Truth, 4 no hot-path Lua, 7 bounded inputs).
+- [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md) (T-01 parser wedge, T-06 plugin escape, T-07 starvation, T-09 IPC takeover, T-13 Terminal Truth).
 - [Core and Plugin Boundaries](../architecture/core-boundaries.md) and [Architecture Overview](../architecture/overview.md).
 - [Terminal State RFC](terminal-state-rfc.md), [Rich Presentation RFC](rich-presentation-rfc.md), [Configuration Model RFC](configuration-model-rfc.md).
-- [Plugin Platform RFC](plugin-platform-rfc.md) (OQ-011/012/013) and [Isolation Resource RFC](isolation-resource-rfc.md) (OQ-014).
-- [IPC and Agent RFC](ipc-agent-rfc.md) (OQ-018) and [ADR 0008 Headless](../../../decisions/adrs/ADR-0008-headless.md).
+- [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md) (OQ-011/012/013) and [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md) (OQ-014).
+- [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md) (OQ-018) and [ADR 0008 Headless](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0008-headless.md).
 
 ## Terminology
 
@@ -220,7 +231,7 @@ must state the migration of `ViewId` versus `PanelId` naming explicitly.
 ### Command registry (candidate research)
 
 The command registry remains Core-owned and generation-aware per the accepted
-[Plugin Platform RFC](plugin-platform-rfc.md) and
+[Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md) and
 [CLI Contract RFC](cli-contract-rfc.md) direction:
 
 1. Panels contribute commands as qualified names `owner.name:command`, for
@@ -582,16 +593,16 @@ authorized as shipped, stable, or compatibility-guaranteed behavior by this
 draft. Each requires its own RFC or ADR with independent architecture, security,
 and performance review before it can be claimed.
 
-| Excluded                                                                                       | Why deferred                                                                                                                                          | What this research does instead                                                                                                     |
-| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Daemon `bittyd` and session persistence across reboots                                         | Post-v1.0 per [ADR 0008](../../../decisions/adrs/ADR-0008-headless.md); trust boundary not reviewed here                                              | Process-scoped runtime only; persistence is at most `PersistentId` scrollback rehydration per terminal rules                        |
-| Remote UI and cross-host transport                                                             | New trust boundary with cross-machine auth (`mTLS` or SSH tunnel) not evaluated                                                                       | No remote wire format, no network port, no remote capability mapping                                                                |
-| Multi-window as global server                                                                  | Window stays native OS object per [Workspace Compositor](workspace-compositor.md); orchestrating many windows adds focus, DPI, and lifetime questions | One `Instance` owns `Window`s; panel work is single-window first; cross-window topics deferred                                      |
-| WASM or helper-process strong isolation for panels                                             | Native in-process plugins remain rejected per [Threat Model](../../../security/threat-model.md); WASM/helper design needs its own RFC                 | In-process Lua VM isolation per OQ-014 remains the only in-process boundary; helper-process reuse is candidate only via IPC framing |
-| Browser embed per-window process budget beyond isolation ceilings                              | `browser.embed` is high-risk capability plus `Browser` view type already requires dedicated isolation                                                 | Panels that need a browser surface reuse `browser.embed` gate and existing RC-3 aggregate; no new process-budget ceiling here       |
-| Panel distribution preset or marketplace ownership (`bitty-dev`, `LazyBitty`, `awesome-bitty`) | Owned by [Default Distribution RFC](default-distribution-rfc.md) and future panel distribution RFC                                                    | Research notes presets as configuration composition, not as a new bundled-enabled set                                               |
-| New global file, network, or process ambient for Lua                                           | Violates [Security Overview](../../../security/overview.md) invariant 2                                                                               | Panels obtain those only via explicit `fs.*`/`network.*`/`process.spawn:CONSTRAINT` capabilities                                    |
-| New hot-path `input.pre-encode` interception point                                             | Would put Lua on the hot path per [Input and Pointer Contract](input-pointer-rfc.md)                                                                  | Panels observe via commands and `focus.changed` observation only                                                                    |
+| Excluded                                                                                       | Why deferred                                                                                                                                                                             | What this research does instead                                                                                                     |
+| ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Daemon `bittyd` and session persistence across reboots                                         | Post-v1.0 per [ADR 0008](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0008-headless.md); trust boundary not reviewed here                              | Process-scoped runtime only; persistence is at most `PersistentId` scrollback rehydration per terminal rules                        |
+| Remote UI and cross-host transport                                                             | New trust boundary with cross-machine auth (`mTLS` or SSH tunnel) not evaluated                                                                                                          | No remote wire format, no network port, no remote capability mapping                                                                |
+| Multi-window as global server                                                                  | Window stays native OS object per [Workspace Compositor](workspace-compositor.md); orchestrating many windows adds focus, DPI, and lifetime questions                                    | One `Instance` owns `Window`s; panel work is single-window first; cross-window topics deferred                                      |
+| WASM or helper-process strong isolation for panels                                             | Native in-process plugins remain rejected per [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md); WASM/helper design needs its own RFC | In-process Lua VM isolation per OQ-014 remains the only in-process boundary; helper-process reuse is candidate only via IPC framing |
+| Browser embed per-window process budget beyond isolation ceilings                              | `browser.embed` is high-risk capability plus `Browser` view type already requires dedicated isolation                                                                                    | Panels that need a browser surface reuse `browser.embed` gate and existing RC-3 aggregate; no new process-budget ceiling here       |
+| Panel distribution preset or marketplace ownership (`bitty-dev`, `LazyBitty`, `awesome-bitty`) | Owned by [Default Distribution RFC](default-distribution-rfc.md) and future panel distribution RFC                                                                                       | Research notes presets as configuration composition, not as a new bundled-enabled set                                               |
+| New global file, network, or process ambient for Lua                                           | Violates [Security Overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md) invariant 2                                                               | Panels obtain those only via explicit `fs.*`/`network.*`/`process.spawn:CONSTRAINT` capabilities                                    |
+| New hot-path `input.pre-encode` interception point                                             | Would put Lua on the hot path per [Input and Pointer Contract](input-pointer-rfc.md)                                                                                                     | Panels observe via commands and `focus.changed` observation only                                                                    |
 
 Claiming any excluded behavior by citing this pre-study is a documentation
 hygiene violation. Cross-document references must preserve the deferred status.
@@ -622,7 +633,7 @@ This research creates no ambient authority and does not weaken any P0 gate:
 
 All controls above are candidate until the implementing tasks deliver focused
 tests, fuzz corpora, and independent security-auditor review per
-[P0 Acceptance Criteria](../../../security/p0-acceptance-criteria.md) and the
+[P0 Acceptance Criteria](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/p0-acceptance-criteria.md) and the
 [Risk Evidence RFC](risk-evidence-rfc.md).
 
 ## Reconciliation with TerminalRegistry/View and Workspace Compositor
@@ -665,7 +676,7 @@ Panel RFC would sit on them without revising them:
   `max_panels_per_workspace 32` and `max_panels_per_window 64` as sibling ceilings
   that fit inside the same validation and do not silently clamp.
 - **Exclusions**: daemon, remote UI, and live PTY migration remain deferred per
-  [ADR 0008](../../../decisions/adrs/ADR-0008-headless.md) and per the explicit
+  [ADR 0008](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0008-headless.md) and per the explicit
   exclusion tables of both accepted contracts; this research preserves those
   deferrals and introduces no cross-process or cross-window panel transfer.
 
@@ -744,13 +755,13 @@ These require an RFC or ADR before any implementation may claim them:
 ## Synchronization notes
 
 This pre-study does not close an open question on its own, does not track to a
-new OQ until recorded in the [Open-question register](../../../decisions/open-questions.md),
+new OQ until recorded in the [Open-question register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md),
 and does not change the machine-readable
-[`project-state.json`](../../../project/project-state.json) or any `Verified`/`Compatible`
+[`project-state.json`](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/project/project-state.json) or any `Verified`/`Compatible`
 claim. Future acceptance would update the
 [Specifications index](README.md) accepted versus draft tables, the
-[Documentation map](../../../README.md) product table, the root
-[TODO.md](../../../../TODO.md), the decision register, and the snapshot under the same
+[Documentation map](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/README.md) product table, the root
+[TODO.md](https://github.com/bitty-terminal/bitty-docs/blob/main/TODO.md), the decision register, and the snapshot under the same
 change. The document remains **Draft** (not `Accepted`/`Verified`) with no
 experimental implementation; code at `c0aadd2`/`7e3104d`/`a8735d0` remains
 `Implemented` (experimental, not `Verified`) and does not imply bus or panel
@@ -760,12 +771,12 @@ support.
 
 - [TerminalRegistry and View Lifecycle Contract](terminal-registry-view-lifecycle-rfc.md) (CTX-0117, Accepted, `6f30c2f`)
 - [Workspace Compositor Specification](workspace-compositor.md) (CTX-0118, Accepted, `c3a2928`)
-- [Plugin Platform RFC](plugin-platform-rfc.md) (OQ-011/012/013)
-- [Isolation Resource RFC](isolation-resource-rfc.md) (OQ-014, RC-1..RC-10, FS-1..FS-9)
-- [IPC and Agent RFC](ipc-agent-rfc.md) (OQ-018, RC-9/RC-10, scopes, framing)
+- [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md) (OQ-011/012/013)
+- [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md) (OQ-014, RC-1..RC-10, FS-1..FS-9)
+- [IPC and Agent RFC](https://github.com/bitty-terminal/bitty-ai-docs/blob/main/specifications/ipc-agent-rfc.md) (OQ-018, RC-9/RC-10, scopes, framing)
 - [Configuration Model RFC](configuration-model-rfc.md) (OQ-010)
-- [Lua Runtime RFC](lua-runtime-rfc.md) (OQ-009) plus ADR 0005/0006/0007 (OQ-030/031/032)
+- [Lua Runtime RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/lua-runtime-rfc.md) (OQ-009) plus ADR 0005/0006/0007 (OQ-030/031/032)
 - [Panel Extensibility Vision](../product/panel-vision.md) (draft precedents only)
 - [Architecture Overview](../architecture/overview.md), [Core and Plugin Boundaries](../architecture/core-boundaries.md)
-- [Security Overview](../../../security/overview.md), [Threat Model](../../../security/threat-model.md), [Risk Register](../../../security/risk-register.md)
-- [ADR 0003 - Core Workspace Topology](../../../decisions/adrs/ADR-0003-core-workspace-topology.md), [ADR 0008 - Headless](../../../decisions/adrs/ADR-0008-headless.md)
+- [Security Overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md), [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md), [Risk Register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/risk-register.md)
+- [ADR 0003 - Core Workspace Topology](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0003-core-workspace-topology.md), [ADR 0008 - Headless](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/adrs/ADR-0008-headless.md)

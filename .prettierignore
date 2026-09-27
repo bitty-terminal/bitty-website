@@ -6,3 +6,11 @@ node_modules/
 bun.lock
 AGENTS.md
 justfile
+# Sync-owned provenance data (bitty-website#98): `serializeJson` in
+# scripts/lib/docs-source.mjs is their writer and `JSON.stringify(…, 2)`
+# expands a short scalar array (`"exclude": ["docs/projects/"]`) that prettier
+# collapses onto one line, so the two writers cannot both own these files. The
+# pin's shape is validated by parseDocsPinSet/parseDocsManifest, not by
+# prettier.
+src/content/docs-manifest.json
+src/content/docs-revision.json

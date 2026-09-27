@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="650" viewBox="0 0 1180 650">
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="830" viewBox="0 0 1180 830">
   <defs>
     <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
       <polygon points="0 0, 8 3, 0 6" fill="#38bdf8" />
@@ -15,7 +15,6 @@
   <style>
     .title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 18px; font-weight: 700; fill: #f8fafc; }
     .subtitle { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; fill: #94a3b8; }
-    .badge { font-family: "JetBrains Mono", monospace; font-size: 11px; font-weight: 600; fill: #38bdf8; }
     .group-label { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; }
     .node-title { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; font-size: 12px; font-weight: 700; fill: #f8fafc; text-anchor: middle; }
     .node-sub { font-family: "JetBrains Mono", monospace; font-size: 10px; fill: #94a3b8; text-anchor: middle; }
@@ -31,7 +30,7 @@
   <!-- Header Bar -->
   <rect x="0" y="0" width="1180" height="65" fill="#1e293b" />
   <text x="30" y="32" class="title">L1 Workspace Compositor &amp; Panel Architecture</text>
-  <text x="30" y="52" class="subtitle">Hierarchy of Instance, Window, Workspace, LayoutTree, and View containers. Separates terminal state from view presentation and dynamic layout providers.</text>
+  <text x="30" y="52" class="subtitle">Instance, Window, Workspace, LayoutTree, and View containers with the accepted Panel Runtime binding and the Candidate Event-Sourced panel model.</text>
 
   <!-- Interactive Link Banner -->
   <a href="../interactive/03-panel-system.html" target="_blank">
@@ -39,132 +38,189 @@
     <text x="1020" y="38" class="btn-link" text-anchor="middle">⚡ Open Interactive HTML Model ↗</text>
   </a>
   <g id="group-identity_hierarchy">
-    <rect x="50" y="100" width="320" height="320" rx="10" fill="rgba(100, 116, 139, 0.05)" stroke="#64748b" stroke-width="1.5" stroke-dasharray="none" />
-    <text x="64" y="124" class="group-label">Container &amp; Window Hierarchy</text>
+    <rect x="40" y="50" width="310" height="330" rx="10" fill="rgba(100, 116, 139, 0.05)" stroke="#64748b" stroke-width="1.5" stroke-dasharray="6,4" />
+    <text x="54" y="74" class="group-label">Container &amp; Window Hierarchy</text>
   </g>
   <g id="group-workspace_box">
-    <rect x="410" y="100" width="360" height="490" rx="10" fill="rgba(5, 150, 105, 0.05)" stroke="#059669" stroke-width="1.5" stroke-dasharray="6,4" />
-    <text x="424" y="124" class="group-label">Workspace Compositor Internals</text>
+    <rect x="390" y="50" width="350" height="730" rx="10" fill="rgba(5, 150, 105, 0.05)" stroke="#059669" stroke-width="1.5" stroke-dasharray="6,4" />
+    <text x="404" y="74" class="group-label">Workspace Compositor Internals + Event Log</text>
   </g>
   <g id="group-views_box">
-    <rect x="810" y="100" width="320" height="490" rx="10" fill="rgba(37, 99, 235, 0.05)" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="6,4" />
-    <text x="824" y="124" class="group-label">View Leaves &amp; Panel Candidates</text>
+    <rect x="780" y="50" width="340" height="730" rx="10" fill="rgba(37, 99, 235, 0.05)" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="6,4" />
+    <text x="794" y="74" class="group-label">View Leaves &amp; Panel Containers</text>
   </g>
-  <line x1="210" y1="170" x2="210" y2="226" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
-  <rect x="165" y="184" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
-  <text x="210" y="194" class="edge-label">owns 1..N</text>
-  <line x1="210" y1="260" x2="210" y2="316" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
-  <rect x="165" y="274" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
-  <text x="210" y="284" class="edge-label">active workspace</text>
-  <line x1="210" y1="352.5" x2="521.3888888888889" y2="209" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
-  <rect x="320.69444444444446" y="266.75" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
-  <text x="365.69444444444446" y="276.75" class="edge-label">owns 1</text>
-  <line x1="590" y1="172.5" x2="590" y2="231" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
-  <rect x="545" y="187.75" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
-  <text x="590" y="197.75" class="edge-label">applies</text>
-  <line x1="590" y1="362.5" x2="590" y2="209" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrow-dashed)" />
-  <rect x="545" y="271.75" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
-  <text x="590" y="281.75" class="edge-label">proposes layout</text>
-  <line x1="590" y1="172.5" x2="826" y2="172.5" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
-  <rect x="663" y="158.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
-  <text x="708" y="168.5" class="edge-label">leaf</text>
-  <line x1="590" y1="172.5" x2="832.7777777777778" y2="226" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
-  <rect x="666.3888888888889" y="185.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
-  <text x="711.3888888888889" y="195.25" class="edge-label">leaf</text>
-  <line x1="590" y1="172.5" x2="901.3888888888889" y2="316" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
-  <rect x="700.6944444444445" y="230.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
-  <text x="745.6944444444445" y="240.25" class="edge-label">leaf</text>
-  <line x1="590" y1="172.5" x2="927.3831775700935" y2="406" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
-  <rect x="713.6915887850467" y="275.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
-  <text x="758.6915887850467" y="285.25" class="edge-label">leaf</text>
-  <line x1="970" y1="527.5" x2="970" y2="209" stroke="#64748b" stroke-width="1.5" stroke-dasharray="5,4" marker-end="url(#arrow-dashed)" />
-  <rect x="925" y="354.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
-  <text x="970" y="364.25" class="edge-label">generalizes</text>
-  <line x1="590" y1="455" x2="590" y2="209" stroke="#38bdf8" stroke-width="1.5"  marker-end="url(#arrow)" />
-  <rect x="545" y="318" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
-  <text x="590" y="328" class="edge-label">updates focus</text>
+  <line x1="195" y1="125" x2="195" y2="220" stroke-width="1.5" stroke="#38bdf8" marker-end="url(#arrow)" />
+  <rect x="150" y="158.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="195" y="168.5" class="edge-label">owns 1..N</text>
+  <line x1="195" y1="220" x2="195" y2="317.5" stroke-width="1.5" stroke="#38bdf8" marker-end="url(#arrow)" />
+  <rect x="150" y="254.75" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="195" y="264.75" class="edge-label">active workspace</text>
+  <line x1="195" y1="317.5" x2="565" y2="127.5" stroke-width="1.5" stroke="#38bdf8" marker-end="url(#arrow)" />
+  <rect x="335" y="208.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="380" y="218.5" class="edge-label">owns 1</text>
+  <line x1="565" y1="127.5" x2="565" y2="222.5" stroke-width="1.5" stroke="#38bdf8" marker-end="url(#arrow)" />
+  <rect x="520" y="161" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="565" y="171" class="edge-label">applies</text>
+  <line x1="565" y1="317.5" x2="565" y2="127.5" stroke-width="1.5" stroke-dasharray="5,4" stroke="#94a3b8" marker-end="url(#arrow-dashed)" />
+  <rect x="520" y="208.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="565" y="218.5" class="edge-label">proposes layout</text>
+  <line x1="565" y1="127.5" x2="950" y2="125" stroke-width="1.5" stroke="#38bdf8" marker-end="url(#arrow)" />
+  <rect x="712.5" y="112.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="757.5" y="122.25" class="edge-label">terminal leaf</text>
+  <line x1="565" y1="127.5" x2="950" y2="205" stroke-width="1.5" stroke="#38bdf8" marker-end="url(#arrow)" />
+  <rect x="712.5" y="152.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="757.5" y="162.25" class="edge-label">rich leaf</text>
+  <line x1="565" y1="127.5" x2="950" y2="285" stroke-width="1.5" stroke="#38bdf8" marker-end="url(#arrow)" />
+  <rect x="712.5" y="192.25" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="757.5" y="202.25" class="edge-label">browser leaf</text>
+  <line x1="565" y1="127.5" x2="950" y2="362.5" stroke-width="1.5" stroke="#38bdf8" marker-end="url(#arrow)" />
+  <rect x="712.5" y="231" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="757.5" y="241" class="edge-label">empty leaf</text>
+  <line x1="950" y1="445" x2="950" y2="362.5" stroke-width="1.5" stroke="#38bdf8" marker-end="url(#arrow)" />
+  <rect x="905" y="389.75" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="950" y="399.75" class="edge-label">accepted binding</text>
+  <line x1="565" y1="410" x2="565" y2="127.5" stroke-width="1.5" stroke="#38bdf8" marker-end="url(#arrow)" />
+  <rect x="520" y="254.75" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="565" y="264.75" class="edge-label">updates focus</text>
+  <line x1="950" y1="520" x2="950" y2="670" stroke-width="1.5" stroke-dasharray="5,4" stroke="#94a3b8" marker-end="url(#arrow-dashed)" />
+  <rect x="905" y="581" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="950" y="591" class="edge-label">fork, never type in</text>
+  <line x1="950" y1="670" x2="950" y2="595" stroke-width="1.5" stroke-dasharray="5,4" stroke="#94a3b8" marker-end="url(#arrow-dashed)" />
+  <rect x="905" y="618.5" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="950" y="628.5" class="edge-label">executes headless</text>
+  <line x1="950" y1="595" x2="565" y2="502.5" stroke-width="1.5" stroke-dasharray="5,4" stroke="#94a3b8" marker-end="url(#arrow-dashed)" />
+  <rect x="712.5" y="534.75" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="757.5" y="544.75" class="edge-label">appends facts</text>
+  <line x1="565" y1="502.5" x2="565" y2="587.5" stroke-width="1.5" stroke-dasharray="5,4" stroke="#94a3b8" marker-end="url(#arrow-dashed)" />
+  <rect x="520" y="531" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="565" y="541" class="edge-label">index vs bytes</text>
+  <line x1="565" y1="587.5" x2="565" y2="672.5" stroke-width="1.5" stroke-dasharray="5,4" stroke="#94a3b8" marker-end="url(#arrow-dashed)" />
+  <rect x="520" y="616" width="90" height="14" rx="3" fill="#0f172a" fill-opacity="0.8" />
+  <text x="565" y="626" class="edge-label">fold + inspect</text>
   <g id="node-instance" filter="url(#shadow)">
     <a href="../interactive/03-panel-system.html" target="_blank">
-      <rect x="70" y="140" width="280" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+      <rect x="60" y="95" width="270" height="60" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
     </a>
-    <text x="210" y="167" class="node-title">Instance (InstanceId)</text>
-    <text x="210" y="181" class="node-sub">Process Boundary</text>
+    <text x="195" y="122" class="node-title">Instance (InstanceId)</text>
+    <text x="195" y="136" class="node-sub">Process Boundary</text>
   </g>
   <g id="node-window" filter="url(#shadow)">
     <a href="../interactive/03-panel-system.html" target="_blank">
-      <rect x="70" y="230" width="280" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+      <rect x="60" y="190" width="270" height="60" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
     </a>
-    <text x="210" y="257" class="node-title">Window (WindowId)</text>
-    <text x="210" y="271" class="node-sub">Native OS Window</text>
+    <text x="195" y="217" class="node-title">Window (WindowId)</text>
+    <text x="195" y="231" class="node-sub">Native OS Window</text>
   </g>
   <g id="node-workspace" filter="url(#shadow)">
     <a href="../interactive/03-panel-system.html" target="_blank">
-      <rect x="70" y="320" width="280" height="65" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5" />
+      <rect x="60" y="285" width="270" height="65" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5" />
     </a>
-    <text x="210" y="349.5" class="node-title-dark">Workspace (WorkspaceId)</text>
-    <text x="210" y="363.5" class="node-sub-dark">Tiling Plane</text>
+    <text x="195" y="314.5" class="node-title-dark">Workspace (WorkspaceId)</text>
+    <text x="195" y="328.5" class="node-sub-dark">Tiling Plane</text>
   </g>
   <g id="node-layout_tree" filter="url(#shadow)">
     <a href="../interactive/03-panel-system.html" target="_blank">
-      <rect x="440" y="140" width="300" height="65" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+      <rect x="415" y="95" width="300" height="65" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
     </a>
-    <text x="590" y="169.5" class="node-title">LayoutTree</text>
-    <text x="590" y="183.5" class="node-sub">Binary H | V | Leaf</text>
+    <text x="565" y="124.5" class="node-title">LayoutTree</text>
+    <text x="565" y="138.5" class="node-sub">Binary H | V | Leaf</text>
   </g>
   <g id="node-decoration" filter="url(#shadow)">
     <a href="../interactive/03-panel-system.html" target="_blank">
-      <rect x="440" y="235" width="300" height="65" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+      <rect x="415" y="190" width="300" height="65" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
     </a>
-    <text x="590" y="264.5" class="node-title">Decoration (Core-Owned)</text>
-    <text x="590" y="278.5" class="node-sub">Gaps / Borders / Radius</text>
+    <text x="565" y="219.5" class="node-title">Decoration (Core-Owned)</text>
+    <text x="565" y="233.5" class="node-sub">Gaps / Borders / Radius</text>
   </g>
   <g id="node-layout_provider" filter="url(#shadow)">
     <a href="../interactive/03-panel-system.html" target="_blank">
-      <rect x="440" y="330" width="300" height="65" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5" />
+      <rect x="415" y="285" width="300" height="65" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5" />
     </a>
-    <text x="590" y="359.5" class="node-title-dark">LayoutProvider Plugin</text>
-    <text x="590" y="373.5" class="node-sub-dark">Dwindle / Master / Grid</text>
+    <text x="565" y="314.5" class="node-title-dark">LayoutProvider Plugin</text>
+    <text x="565" y="328.5" class="node-sub-dark">Dwindle / Master / Grid</text>
   </g>
   <g id="node-focus_mgr" filter="url(#shadow)">
     <a href="../interactive/03-panel-system.html" target="_blank">
-      <rect x="440" y="425" width="300" height="60" rx="4" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+      <rect x="415" y="380" width="300" height="60" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
     </a>
-    <text x="590" y="452" class="node-title">Focus Stack &amp; Navigation</text>
-    <text x="590" y="466" class="node-sub">Directional (L/R/U/D)</text>
+    <text x="565" y="407" class="node-title">Focus Stack &amp; Navigation</text>
+    <text x="565" y="421" class="node-sub">Directional (L/R/U/D)</text>
   </g>
   <g id="node-view_term" filter="url(#shadow)">
     <a href="../interactive/03-panel-system.html" target="_blank">
-      <rect x="830" y="140" width="280" height="65" rx="8" fill="#fefce8" stroke="#ca8a04" stroke-width="1.5" />
+      <rect x="805" y="95" width="290" height="60" rx="8" fill="#fefce8" stroke="#ca8a04" stroke-width="1.5" />
     </a>
-    <text x="970" y="169.5" class="node-title-dark">View (Terminal)</text>
-    <text x="970" y="183.5" class="node-sub-dark">TerminalId Binding</text>
+    <text x="950" y="122" class="node-title-dark">View (Terminal)</text>
+    <text x="950" y="136" class="node-sub-dark">TerminalId Binding</text>
   </g>
   <g id="node-view_rich" filter="url(#shadow)">
     <a href="../interactive/03-panel-system.html" target="_blank">
-      <rect x="830" y="230" width="280" height="65" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5" />
+      <rect x="805" y="175" width="290" height="60" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5" />
     </a>
-    <text x="970" y="259.5" class="node-title-dark">View (Rich Content)</text>
-    <text x="970" y="273.5" class="node-sub-dark">RichBlock / Media</text>
+    <text x="950" y="202" class="node-title-dark">View (Rich Content)</text>
+    <text x="950" y="216" class="node-sub-dark">RichBlock / Media</text>
   </g>
   <g id="node-view_browser" filter="url(#shadow)">
     <a href="../interactive/03-panel-system.html" target="_blank">
-      <rect x="830" y="320" width="280" height="65" rx="8" fill="#fdf2f8" stroke="#db2777" stroke-width="1.5" />
+      <rect x="805" y="255" width="290" height="60" rx="8" fill="#fdf2f8" stroke="#db2777" stroke-width="1.5" />
     </a>
-    <text x="970" y="349.5" class="node-title-dark">View (Browser Surface)</text>
-    <text x="970" y="363.5" class="node-sub-dark">Offscreen Web</text>
+    <text x="950" y="282" class="node-title-dark">View (Browser Surface)</text>
+    <text x="950" y="296" class="node-sub-dark">Offscreen Web</text>
   </g>
   <g id="node-view_empty" filter="url(#shadow)">
     <a href="../interactive/03-panel-system.html" target="_blank">
-      <rect x="830" y="410" width="280" height="60" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
+      <rect x="805" y="335" width="290" height="55" rx="8" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" />
     </a>
-    <text x="970" y="437" class="node-title">View (Empty)</text>
-    <text x="970" y="451" class="node-sub">Placeholder Leaf</text>
+    <text x="950" y="359.5" class="node-title">View (Empty)</text>
+    <text x="950" y="373.5" class="node-sub">Placeholder Leaf</text>
   </g>
   <g id="node-panel_candidate" filter="url(#shadow)">
     <a href="../interactive/03-panel-system.html" target="_blank">
-      <rect x="830" y="495" width="280" height="65" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5" />
+      <rect x="805" y="415" width="290" height="60" rx="8" fill="#f8fafc" stroke="#059669" stroke-width="1.5" />
     </a>
-    <text x="970" y="524.5" class="node-title-dark">Panel System (Candidate)</text>
-    <text x="970" y="538.5" class="node-sub-dark">Generalized Container</text>
+    <text x="950" y="442" class="node-title-dark">Panel (Accepted)</text>
+    <text x="950" y="456" class="node-sub-dark">ViewContent::Panel(PanelId)</text>
+  </g>
+  <g id="node-headed_panel" filter="url(#shadow)">
+    <a href="../interactive/03-panel-system.html" target="_blank">
+      <rect x="805" y="490" width="290" height="60" rx="8" fill="#fefce8" stroke="#ca8a04" stroke-width="1.5" />
+    </a>
+    <text x="950" y="517" class="node-title-dark">Headed Panel (Candidate)</text>
+    <text x="950" y="531" class="node-sub-dark">Human-Owned</text>
+  </g>
+  <g id="node-headless_panel" filter="url(#shadow)">
+    <a href="../interactive/03-panel-system.html" target="_blank">
+      <rect x="805" y="565" width="290" height="60" rx="8" fill="#eff6ff" stroke="#3b82f6" stroke-width="1.5" />
+    </a>
+    <text x="950" y="592" class="node-title-dark">Headless Panel (Candidate)</text>
+    <text x="950" y="606" class="node-sub-dark">Agent-Owned</text>
+  </g>
+  <g id="node-fork_snapshot" filter="url(#shadow)">
+    <a href="../interactive/03-panel-system.html" target="_blank">
+      <rect x="805" y="640" width="290" height="60" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5" />
+    </a>
+    <text x="950" y="667" class="node-title-dark">Fork Snapshot (Candidate)</text>
+    <text x="950" y="681" class="node-sub-dark">Snapshot Fork Path</text>
+  </g>
+  <g id="node-panel_event_log" filter="url(#shadow)">
+    <a href="../interactive/03-panel-system.html" target="_blank">
+      <rect x="415" y="470" width="300" height="65" rx="8" fill="#ecfdf5" stroke="#059669" stroke-width="1.5" />
+    </a>
+    <text x="565" y="499.5" class="node-title-dark">Panel Event Log (Candidate)</text>
+    <text x="565" y="513.5" class="node-sub-dark">Immutable Append-Only</text>
+  </g>
+  <g id="node-event_store" filter="url(#shadow)">
+    <a href="../interactive/03-panel-system.html" target="_blank">
+      <rect x="415" y="555" width="300" height="65" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5" />
+    </a>
+    <text x="565" y="584.5" class="node-title-dark">Hybrid Store (Candidate)</text>
+    <text x="565" y="598.5" class="node-sub-dark">Index vs Object Bytes</text>
+  </g>
+  <g id="node-fold_inspect" filter="url(#shadow)">
+    <a href="../interactive/03-panel-system.html" target="_blank">
+      <rect x="415" y="640" width="300" height="65" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1.5" />
+    </a>
+    <text x="565" y="669.5" class="node-title-dark">Folding + Inspect (Candidate)</text>
+    <text x="565" y="683.5" class="node-sub-dark">Decoupled</text>
   </g>
 </svg>

@@ -29,7 +29,8 @@ type HomeDoc = {
 };
 
 // Canonical source paths (relative to src/content/docs) surfaced on the
-// home page. Single pinned bitty-docs revision; no mirror edits.
+// home page. Every list entry must be published by the publication policy at
+// the pinned revisions (bitty-docs + bitty-terminal-docs); no mirror edits.
 const USAGE_SOURCES = [
   "docs/projects/bitty/user-guide/README.md",
   "docs/projects/bitty/how-to/README.md",
@@ -46,7 +47,10 @@ const CONFIGURATION_SOURCES = [
 const ARCHITECTURE_SOURCES = [
   "docs/projects/bitty/architecture/overview.md",
   "docs/projects/bitty/architecture/core-boundaries.md",
-  "docs/projects/bitty/extensibility/plugin-system.md",
+  // Was `docs/projects/bitty/extensibility/plugin-system.md`: that tree belongs
+  // to the bitty-plugins-docs corpus (bitty-website#98 T6) and the bitty-docs
+  // copy is carved out, so the surviving published extension surface stands in.
+  "docs/projects/bitty/interfaces/rich-content.md",
 ];
 
 const ALSO_SOURCES = [

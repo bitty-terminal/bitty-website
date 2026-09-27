@@ -3,13 +3,15 @@
 # Visual rules: rect=module/crate, rounded=panel/capability, dashed=boundary/sandbox, solid=call/depends, dashed=event/async
 # Levels: L0 overview, L1 subsystem, L2 flow, L3 relation
 schema_version: 1
-updated: "2026-08-31"
-synchronized_revision: "7a4ee41"
-synchronized_short: "7a4ee41"
+updated: "2026-09-20"
+synchronized_revision: "eb321f7fcfca24008630bee477650528cc11d876"
+synchronized_short: "eb321f7"
 baseline_revision: "de134ec"
-maturity: "Pre-alpha / M1 Hardening (2026-08-29, 16 crates, 32 OQs Accepted)"
+maturity: "Pre-alpha / Engineering Milestones M1-M8 (21 crates at bitty eb321f7, 40 OQs Accepted)"
 description: Canonical node and edge inventory for Bitty architecture diagrams
-provenance: CTX-0115
+provenance: CTX-0035
+revision_note: "21-crate count is pinned to bitty origin/main eb321f7 (2026-09-17): Phase A sixteen plus bitty-compat-lab, bitty-perf, bitty-test-support, plus bitty-panels (CTX-0438 extraction wave, 74361aa) and bitty-test-vm (CTX-0507 VM-tier first slice, ae094b7). ADR-0003 stays the accepted topology contract (amended 2026-09-16 to nineteen); project-state.json (bea338d, 2026-09-14, 19 crates) predates the two additions. Event-Sourced panel additions are Candidate terminal-slice direction from the Event-Sourced Panel Model candidate (specifications/event-sourced-panel-model-candidate.md); Agent Graph halves stay owner-pending pointers to bitty-ai-docs."
+event_sourced_status: "Candidate terminal slice (T-1..T-5) from the Event-Sourced Panel Model candidate; not Accepted, not Verified, not normative. Reconciles with the accepted Panel Runtime RFC, Terminal State RFC, core boundaries, and the Panel History candidate open items; never rewrites the append-only history guarantee."
 
 visual_rules:
   rect: "module / crate — D2 rectangle"
@@ -108,7 +110,7 @@ nodes:
     kind: crate
     shape: rect
     level: L1
-    description: Deterministic Lua VM — piccolo 0.3.3, Fuel budgets, per-plugin VMs
+    description: Deterministic Lua VM — current pin piccolo 0.3.3 with Fuel budgets and per-plugin VMs; accepted successor direction is Phodopus (ADR 0012), migration deferred and not landed
     crate_path: crates/bitty-lua
   - id: bitty-rich
     label: bitty-rich
@@ -138,6 +140,41 @@ nodes:
     level: L1
     description: Bootstrap seed to be retired — migration target bitty-vt, term-state, pty
     crate_path: crates/bitty-core
+  - id: bitty-compat-lab
+    label: bitty-compat-lab
+    kind: crate
+    shape: rect
+    level: L1
+    description: Headless bounded vttest and terminal state differential test harness
+    crate_path: crates/bitty-compat-lab
+  - id: bitty-perf
+    label: bitty-perf
+    kind: crate
+    shape: rect
+    level: L1
+    description: Performance baseline harness for throughput, latency, and reflow benches
+    crate_path: crates/bitty-perf
+  - id: bitty-test-support
+    label: bitty-test-support
+    kind: crate
+    shape: rect
+    level: L1
+    description: Shared test harness helpers and live-PTY gating macros (dev-dependency helper only, no product edges)
+    crate_path: crates/bitty-test-support
+  - id: bitty-panels
+    label: bitty-panels
+    kind: crate
+    shape: rect
+    level: L1
+    description: Staged first-party panel experience implementations (CTX-0438 extraction wave 74361aa) — ai/mail panels consume only the accepted public Panel Runtime path (registry + bitty-ui primitives); split to independent packages stays gated on the panel-provider contract (OQ-058) and bitty-ai surfaces
+    crate_path: crates/bitty-panels
+  - id: bitty-test-vm
+    label: bitty-test-vm
+    kind: crate
+    shape: rect
+    level: L1
+    description: VM test-tier controller (CTX-0507 first slice ae094b7) — base-image plus qcow2 overlay policy, gated libvirt/QEMU KVM smoke via bitty-vm binary; std-only library, harness tier, never product hot path
+    crate_path: crates/bitty-test-vm
 
   # --- Logical components (overview) ---
   - id: terminal-truth
@@ -299,7 +336,85 @@ nodes:
     kind: capability
     shape: rounded
     level: L1
-    description: Candidate workspace-managed application container generalizing View content
+    description: Accepted generic workspace-managed application container (Panel Runtime RFC) generalizing View content via ViewContent::Panel(PanelId); PanelId is a distinct newtype from ViewId and TerminalId, addressed as (PanelId, generation); at most one panel host per panel
+  - id: headed-panel
+    label: Headed Panel
+    kind: capability
+    shape: rounded
+    level: L1
+    description: Candidate (Event-Sourced T-1) — human-owned panel; agent read and observe only; touching user work means forking an execution snapshot, never typing into the headed panel. Illustrative-only snapshot field list; shape undecided
+  - id: headless-panel
+    label: Headless Panel
+    kind: capability
+    shape: rounded
+    level: L1
+    description: Candidate (Event-Sourced T-1) — agent-owned panel (read, write, execute); agents act only here; shared headless panels gate on lease or capability; detached panels keep history only. Lease semantics stay defined by the Terminal Platform Boundaries candidate; agent attachment and replacement are owner-pending (bitty-ai-docs)
+  - id: fork-snapshot
+    label: Fork Snapshot
+    kind: capability
+    shape: rounded
+    level: L2
+    description: Candidate (Event-Sourced T-1) — terminal-surface guarantee offering a snapshot fork path (working directory, worktree, environment, recent commands, outputs, context references) so agents never need keystroke access to headed panels. Field list illustrative-only; composition with Panel Environment State inheritance undecided
+  - id: panel-event-log
+    label: Panel Event Log
+    kind: data
+    shape: rounded
+    level: L1
+    description: Candidate (Event-Sourced T-2) — panel history as an immutable append-only Event Log instead of a chat log; aligns with Panel History PH-4 (past appended, never mutated); a future History RFC input, not a replacement of PH-1 through PH-12; vocabulary reconciliation is an open item. Never replaces or mutates Core scrollback (Terminal State RFC)
+  - id: workspace-event
+    label: Workspace Event
+    kind: data
+    shape: rounded
+    level: L2
+    description: "Candidate (Event-Sourced T-2) — illustrative-only vocabulary: task.created, agent.attached, tool.started, tool.progress, tool.finished, artifact.created, decision.recorded, context.shared, agent.message, checkpoint.created. Spellings and record fields (including the durable reason shape) undecided"
+  - id: tool-run-record
+    label: Tool Run Record
+    kind: data
+    shape: rounded
+    level: L2
+    description: Candidate (Event-Sourced T-2) — per-tool-run record shape (input, reason, status, duration, structured summary plus blob references) keeping raw output out of normal model context. Direction, not schema; settled by a future History RFC or RFC amendment
+  - id: event-index
+    label: Event Index
+    kind: data
+    shape: rounded
+    level: L2
+    description: Candidate (Event-Sourced T-3) — SQLite as the queryable index and metadata database (events, tasks, messages, relations, full-text search) in the hybrid storage direction. In open conflict with Panel History PH-3/PH-5 (no SQLite in Core; index rebuildable under the cache home); reconciled by an owning RFC, never chosen here
+  - id: content-object-store
+    label: Content Object Store
+    kind: data
+    shape: rounded
+    level: L2
+    description: Candidate (Event-Sourced T-3) — content-addressed object store (hash-addressed, compressed) for outputs, patches, and snapshots; index versus bytes division of labor with the event index; export and debug formats stay JSON/JSONL interchange, never stores of record
+  - id: output-pipeline
+    label: Output Pipeline Prefix
+    kind: capability
+    shape: rounded
+    level: L2
+    description: Candidate (Event-Sourced T-3) — terminal-owned prefix Raw Output, Blob Store, Structured Parser, Result Summary shrinking tens of kilobytes of logs to tens of tokens of findings with stable hashed context blocks. Context Compiler and LLM stages are owner-pending (bitty-ai-docs)
+  - id: output-folding
+    label: Output Folding
+    kind: capability
+    shape: rounded
+    level: L2
+    description: Candidate (Event-Sourced T-4) — UI collapse (whether the user expands logs) and context materialization (whether logs enter LLM context) are decoupled concepts that must never be coupled. Future consumer of Semantic Terminal CommandBlock anchors (P1 gates folding P2); fold state stays per-view presentation
+  - id: inspect-surface
+    label: Inspect Surface
+    kind: capability
+    shape: rounded
+    level: L2
+    description: Candidate (Event-Sourced T-4) — running tasks expose only status, elapsed time, and parsed progress; full logs load on demand via bounded selectors (tail, errors-only, ranges). Minimal-by-default display contract; spellings and bounds undecided
+  - id: history-retention
+    label: History Retention
+    kind: capability
+    shape: rounded
+    level: L2
+    description: "Candidate (Event-Sourced T-5) — terminal-side retention for the Hot/Warm/Cold divergence: the event log is immutable until GC, so expiry removes via tombstone or segment expiry plus provenance-preserving compression, never in-place edits. Model-context membership never decides persistence; defaults, thresholds, and triggers undecided"
+  - id: agent-graph-pointer
+    label: Agent Graph (owner-pending)
+    kind: capability
+    shape: rounded
+    level: L1
+    description: Owner-pending pointer (bitty-ai-docs) — agent team communication graph, dynamic roles, mailbox IPC, lazy ContextBundles, context manifest/tree/compiler, Git-operation analogues, and task-as-issue semantics are NOT terminal content. Recorded only so readers know what was set aside; transport, identity, and consent stay with the IPC and Agent RFC
   - id: layout-provider
     label: LayoutProvider
     kind: capability
@@ -755,7 +870,32 @@ edges:
     style: dashed
     level: L2
 
-  # --- Panel system ---
+  - from: bitty-panels
+    to: bitty-runtime
+    kind: depends
+    style: solid
+    level: L3
+    description: Staged experiences consume only the accepted public Panel Runtime path (registry + bitty-ui primitives); no private channel, no first-party bypass
+  - from: bitty-panels
+    to: bitty-ui
+    kind: depends
+    style: solid
+    level: L3
+    description: Tiled panels reuse LayoutNode H/V primitives and ViewContent::Panel(PanelId)
+  - from: bitty-panels
+    to: bitty-agent
+    kind: depends
+    style: solid
+    level: L3
+    description: AI panel agent surface (AgentId/AgentWorkspace, bounded memory) via the accepted Panel Runtime types
+  - from: bitty-panels
+    to: bitty-ipc
+    kind: depends
+    style: solid
+    level: L3
+    description: Panel tool bus via the bounded MCP adapter framing; no new supply-chain surface
+
+  # --- Panel system (accepted) ---
   - from: instance
     to: window
     kind: contains
@@ -776,6 +916,86 @@ edges:
     kind: contains
     style: solid
     level: L1
+  - from: view
+    to: panel
+    kind: hosts
+    style: solid
+    level: L1
+    description: Accepted Panel Runtime binding ViewContent::Panel(PanelId); at most one panel host per panel; panels never hold PTY fd, GPU handle, or window handle
+
+  # --- Event-Sourced panel model (Candidate terminal slice, T-1..T-5) ---
+  - from: headed-panel
+    to: fork-snapshot
+    kind: event
+    style: dashed
+    level: L1
+    description: Candidate (T-1) fork-instead-of-entering — touching user work forks an execution snapshot, never keystroke injection
+  - from: fork-snapshot
+    to: headless-panel
+    kind: event
+    style: dashed
+    level: L1
+    description: Candidate (T-1) forked snapshot executes in a headless panel under lease or capability gating
+  - from: headless-panel
+    to: panel-event-log
+    kind: event
+    style: dashed
+    level: L1
+    description: Candidate (T-2) agent execution facts append to the immutable panel Event Log
+  - from: workspace-event
+    to: panel-event-log
+    kind: event
+    style: dashed
+    level: L2
+    description: Candidate (T-2) illustrative-only vocabulary appends facts; never rewrites recorded history
+  - from: tool-run-record
+    to: panel-event-log
+    kind: event
+    style: dashed
+    level: L2
+    description: Candidate (T-2) per-tool-run record (input, reason, status, duration, summary plus blob references)
+  - from: panel-event-log
+    to: event-index
+    kind: event
+    style: dashed
+    level: L2
+    description: Candidate (T-3) index direction — structured queries run against the index; open conflict with PH-3/PH-5 awaits an owning RFC
+  - from: panel-event-log
+    to: content-object-store
+    kind: event
+    style: dashed
+    level: L2
+    description: Candidate (T-3) outputs, patches, and snapshots live as addressed objects; interchange stays JSON/JSONL
+  - from: content-object-store
+    to: output-pipeline
+    kind: call
+    style: solid
+    level: L2
+    description: Candidate (T-3) Raw Output, Blob Store, Structured Parser, Result Summary prefix before model context
+  - from: output-pipeline
+    to: output-folding
+    kind: event
+    style: dashed
+    level: L2
+    description: Candidate (T-4) folded summaries feed the running-task display; UI collapse and context materialization stay decoupled
+  - from: inspect-surface
+    to: output-folding
+    kind: call
+    style: solid
+    level: L2
+    description: Candidate (T-4) on-demand inspect (tail, errors-only, ranges) consumes CommandBlock anchors; expanding a fold loses no data
+  - from: panel-event-log
+    to: history-retention
+    kind: event
+    style: dashed
+    level: L2
+    description: Candidate (T-5) retention via tombstone or segment expiry plus provenance-preserving compression; storage lifetimes and context lifetimes governed separately
+  - from: agent-graph-pointer
+    to: headless-panel
+    kind: event
+    style: dashed
+    level: L1
+    description: Owner-pending pointer — agent-graph, mailbox, context-compiler, and orchestration conclusions belong to bitty-ai-docs; no normative edge here
   - from: view
     to: view-type-terminal
     kind: hosts

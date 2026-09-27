@@ -53,20 +53,20 @@ Out of scope (owned elsewhere):
 - image, rich-block, scene, zone, and structured transport contracts (OQ-008/
   OQ-015/OQ-016, [Rich Presentation RFC](rich-presentation-rfc.md));
 - Plugin API v1, capability families, manifest, and event pipeline classes
-  (OQ-011/OQ-012/OQ-013, [Plugin Platform RFC](plugin-platform-rfc.md));
+  (OQ-011/OQ-012/OQ-013, [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md));
 - per-plugin budgets, queue ceilings, and adversarial isolation tests (OQ-014,
-  [Isolation Resource RFC](isolation-resource-rfc.md));
+  [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md));
 - Lua runtime, standard-library subset, and module search rules (OQ-009,
-  [Lua Runtime RFC](lua-runtime-rfc.md)) and configuration layering (OQ-010,
+  [Lua Runtime RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/lua-runtime-rfc.md)) and configuration layering (OQ-010,
   [Configuration Model RFC](configuration-model-rfc.md));
 - CLI grammar and exit codes (OQ-017) and IPC wire format (OQ-018).
 
 ## Normative sources this specification must not weaken
 
-- [Security Overview](../../../security/overview.md): untrusted-by-default posture,
+- [Security Overview](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/overview.md): untrusted-by-default posture,
   invariants 3 (presentation never Terminal Truth), 4 (no hot-path execution),
   7 (bounded inputs), and the P0 resource and capability rows.
-- [Threat Model](../../../security/threat-model.md): untrusted PTY/plugin/MCP
+- [Threat Model](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/security/threat-model.md): untrusted PTY/plugin/MCP
   content, presentation-only plugin influence, resource exhaustion (T-01),
   and terminal-to-desktop capability gates (T-13).
 - [Core and Plugin Boundaries](../architecture/core-boundaries.md):
@@ -320,7 +320,7 @@ status modules, composed by the Registry as values, not as code hooks:
    diagnostic that names the provider and component.
 3. **Isolation**: a panicking or budget-exceeded provider cannot crash the
    bar; its segment renders as `—` or is hidden per priority, and the
-   isolation budgets in the [Isolation Resource RFC](isolation-resource-rfc.md)
+   isolation budgets in the [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md)
    remain the enforcement mechanism.
 4. **No direct mutation**: providers never receive a mutable `StatusBar`
    handle; they emit new declarative values and the bar recomposes.
@@ -330,7 +330,7 @@ status modules, composed by the Registry as values, not as code hooks:
 ```lua
 -- Illustrative provider contribution; not an implemented API.
 return {
-  id = "xuepoo.example",
+  id = "example.example",
   status_components = {
     {
       name = "build",
@@ -342,9 +342,9 @@ return {
 }
 ```
 
-The host validates the descriptor, registers `xuepoo.example:build` as a
+The host validates the descriptor, registers `example.example:build` as a
 registry identifier, and allows slot placement like
-`right = { "cpu", "xuepoo.example:build", "clock" }`.
+`right = { "cpu", "example.example:build", "clock" }`.
 
 ## Configuration and lifecycle
 
@@ -409,14 +409,14 @@ registry identifier, and allows slot placement like
 
 This draft does not close an open question on its own; it will track to the
 owning status-system question once that question is recorded in the
-[open-question register](../../../decisions/open-questions.md) or close directly as
-a standalone specification per the [documentation workflow](../../../development/documentation-workflow.md).
+[open-question register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) or close directly as
+a standalone specification per the [documentation workflow](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/development/documentation-workflow.md).
 
 ## References
 
 - Waybar: highly customizable Wayland bar with composable modules and
   `modules-left`/`modules-center`/`modules-right` slot composition.
 - [Configuration Model RFC](configuration-model-rfc.md)
-- [Plugin Platform RFC](plugin-platform-rfc.md)
-- [Isolation Resource RFC](isolation-resource-rfc.md)
-- [Lua Runtime RFC](lua-runtime-rfc.md)
+- [Plugin Platform RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/specifications/plugin-platform-rfc.md)
+- [Isolation Resource RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/isolation-resource-rfc.md)
+- [Lua Runtime RFC](https://github.com/bitty-terminal/bitty-plugins-docs/blob/main/runtime/lua-runtime-rfc.md)

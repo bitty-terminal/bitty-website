@@ -22,9 +22,10 @@
   },
   {
     "old": "/docs/extensibility/",
-    "new": "/docs/projects/bitty/extensibility/",
+    "new": "/docs/",
     "status": 301,
-    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/extensibility/ -> docs/projects/bitty/extensibility/",
+    "descendants": false,
+    "reason": "bitty-website#98 multi-source move: docs/extensibility/ -> docs/projects/plugins/extensibility/ (bitty-plugins-docs); the bitty-docs copy of the tree is carved out and the plugins source has not landed, so /docs/ (nearest published ancestor) is the interim target and T6 rewrites it to the exact target. Exact-only: the wildcard would map flat descendants under the wrong prefix",
     "effective_version": "0.1.0"
   },
   {
@@ -127,9 +128,10 @@
   },
   {
     "old": "/docs/specifications/",
-    "new": "/docs/projects/bitty/specifications/",
+    "new": "/docs/",
     "status": 301,
-    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/specifications/ -> docs/projects/bitty/specifications/",
+    "descendants": false,
+    "reason": "bitty-website#98 multi-source move: the docs/projects/bitty/specifications/ tree no longer publishes a page at this step (17 demoted, 14 withheld) and its moved pages land in bitty-plugins-docs/bitty-ai-docs, so /docs/ (nearest published ancestor) is the interim target; exact-only because the flat descendants have no single new prefix yet",
     "effective_version": "0.1.0"
   },
   {

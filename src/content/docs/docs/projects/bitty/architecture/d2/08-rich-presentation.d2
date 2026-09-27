@@ -1,0 +1,72 @@
+# docs/projects/bitty/architecture/d2/08-rich-presentation.d2 — L1 Rich Presentation Protocol & Terminal Truth
+# Source of truth: ../glossary.yaml
+# Visual rules: rect=module/crate, rounded=panel/capability, dashed=boundary/sandbox, solid=call/depends
+# Levels: L1 subsystem — terminal truth, rich scene graph, GPU compositor
+
+direction: right
+
+# --- Terminal Truth ---
+truth_domain: {
+  label: "Terminal Truth (Canonical State)"
+  style.fill: "#ecfdf5"
+  vt_parser: {
+    label: "bitty-vt Parser\ndetects escapes"
+    shape: rectangle
+  }
+  cell_grid: {
+    label: "Terminal Grid\ncells + attributes"
+    shape: rectangle
+  }
+  scrollback: {
+    label: "Scrollback Ring Buffer\nbounded capacity"
+    shape: rectangle
+  }
+}
+
+# --- Rich Presentation Layer ---
+rich_domain: {
+  label: "Rich Presentation Layer (bitty-rich)"
+  style.stroke-dash: 3
+  style.fill: "#eff6ff"
+  rich_registry: {
+    label: "RichBlock Registry\nBlockId to geometry map"
+    shape: rectangle
+  }
+  image_store: {
+    label: "Image Store\nshared GPU textures"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  inline_widgets: {
+    label: "Inline Widgets\nprogress / tables / trees"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+# --- Renderer Pass ---
+renderer_domain: {
+  label: "GPU Compositor Pass"
+  style.stroke-dash: 3
+  style.fill: "#faf5ff"
+  text_quads: {
+    label: "Text Glyph Pass\nGPU glyph atlas"
+    shape: rectangle
+  }
+  rich_quads: {
+    label: "Overlay Quad Pass\ntextures & meshes"
+    shape: rectangle
+  }
+}
+
+# --- Edges ---
+truth_domain.vt_parser -> truth_domain.cell_grid: "character action"
+truth_domain.cell_grid -> truth_domain.scrollback: "scroll eviction"
+truth_domain.vt_parser -> rich_domain.rich_registry: "OSC 133 / Kitty image" {
+  style.stroke-dash: 3
+}
+rich_domain.rich_registry -> rich_domain.image_store: "allocate texture"
+rich_domain.rich_registry -> rich_domain.inline_widgets: "register widget"
+truth_domain.cell_grid -> renderer_domain.text_quads: "render text"
+rich_domain.image_store -> renderer_domain.rich_quads: "bind texture"
+rich_domain.inline_widgets -> renderer_domain.rich_quads: "draw overlays"

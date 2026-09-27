@@ -22,7 +22,7 @@ sidebar_order: 11
 > loading, and custom/user themes remain unsupported and open (OQ-047). The
 > owning configuration contract remains the
 > [Configuration Model RFC](../specifications/configuration-model-rfc.md) and
-> the accepted [Appearance Configuration RFC](../../../decisions/rfcs/RFC-0001-appearance-configuration.md)
+> the accepted [Appearance Configuration RFC](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/rfcs/RFC-0001-appearance-configuration.md)
 > (OQ-039); the catalog adds documented data, not new configuration semantics.
 
 Bitty resolves terminal colors from a **built-in preset registry**. A preset is
@@ -181,7 +181,7 @@ a reviewed contract defines its schema, load path, and trust model.
 
 This catalog is a reference for shipped data. It ratifies no configuration
 semantics beyond the accepted
-[Appearance Configuration RFC](../../../decisions/rfcs/RFC-0001-appearance-configuration.md)
+[Appearance Configuration RFC](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/rfcs/RFC-0001-appearance-configuration.md)
 and its `appearance.theme` / `theme` alias contract. The following are genuine
 open questions and are registered rather than decided in this page:
 
@@ -193,7 +193,7 @@ open questions and are registered rather than decided in this page:
 - **OQ-048 — automatic light/dark switching.** Is following the OS appearance
   or a schedule in scope, and which key or mechanism owns it?
 
-See the [open-question register](../../../decisions/open-questions.md) for the
+See the [open-question register](https://github.com/bitty-terminal/bitty-docs/blob/main/docs/decisions/open-questions.md) for the
 authoritative state. The catalog is `stable` reference data because the shipped
 preset set is pinned by `bitty` catalog tests; the open questions above are
 about additional surfaces, not about the shipped set.

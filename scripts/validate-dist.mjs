@@ -6,8 +6,13 @@ import { flipListEntries } from "../src/lib/publicationPolicy.ts";
 import { loadPublicationCorpus } from "../src/lib/publicationCorpus.ts";
 import {
   assertPublishedUnderMounts,
+  parseDocsManifest,
   parseDocsPinSet,
 } from "../src/lib/docsPins.ts";
+import {
+  DOCS_PROVENANCE_FILENAME,
+  assertDocsProvenanceMatches,
+} from "../src/lib/docsProvenance.ts";
 import {
   CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT,
   CLOUDFLARE_TOTAL_REDIRECT_LIMIT,
@@ -175,13 +180,6 @@ if (policyRules.length === 0) {
     "redirects.json holds no publication-policy redirect: an excluded page would 404",
   );
 }
-const expectedPolicyRules =
-  flipListEntries().length * evidence.hosted_versions.length;
-if (policyRules.length !== expectedPolicyRules) {
-  throw new Error(
-    `redirects.json holds ${policyRules.length} publication redirect(s); expected ${flipListEntries().length} excluded page(s) x ${evidence.hosted_versions.length} hosted version(s) = ${expectedPolicyRules}`,
-  );
-}
 
 const edgeRedirects = await readFile(new URL("_redirects", dist), "utf8");
 for (const rule of policyRules) {
@@ -258,6 +256,61 @@ for (const id of Object.keys(docsRevisions)) {
       `dist/redirects.json docs_revisions holds unknown source "${id}"; expected exactly the pinned source(s) ${[...pinnedIds].join(", ")}`,
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Deployed provenance evidence (bitty-website#98, task T9). The artifact the
+// build emitted is re-derived from the pins and the committed manifest and
+// checked against EACH OTHER — and against the redirect evidence and the
+// version record — so a deploy cannot claim a corpus set the build did not
+// consume.
+// ---------------------------------------------------------------------------
+await requireFile(new URL(DOCS_PROVENANCE_FILENAME, dist), { nonEmpty: true });
+const manifest = parseDocsManifest(
+  JSON.parse(
+    await readFile(
+      new URL("../src/content/docs-manifest.json", import.meta.url),
+      "utf8",
+    ),
+  ),
+);
+const provenance = assertDocsProvenanceMatches(
+  JSON.parse(await readFile(new URL(DOCS_PROVENANCE_FILENAME, dist), "utf8")),
+  pinSet,
+  manifest,
+);
+// The artifact and dist/redirects.json must name the same revisions: the
+// redirect evidence is what the edge serves, the artifact is the audit trail.
+for (const source of provenance.sources) {
+  if (docsRevisions[source.id] !== source.revision) {
+    throw new Error(
+      `dist/docs-provenance.json source "${source.id}" must carry revision ${source.revision}, but dist/redirects.json docs_revisions says ${docsRevisions[source.id] ?? "missing"}`,
+    );
+  }
+}
+// The expected publication-redirect count is COMPUTED as the sum over sources
+// (each source's demoted count times the hosted segments), never a hardcoded
+// number or a per-source literal. The artifact is the authority; the policy
+// flip list is cross-checked against it so the artifact cannot describe a
+// demotion set the policy does not ship.
+const demotedTotal = provenance.sources.reduce(
+  (sum, source) => sum + source.counts.demoted,
+  0,
+);
+if (demotedTotal !== flipListEntries().length) {
+  throw new Error(
+    `dist/docs-provenance.json sums ${demotedTotal} demoted page(s) across ${provenance.sources.length} source(s); the publication flip list holds ${flipListEntries().length}`,
+  );
+}
+const expectedPolicyRules = demotedTotal * evidence.hosted_versions.length;
+if (policyRules.length !== expectedPolicyRules) {
+  throw new Error(
+    `redirects.json holds ${policyRules.length} publication redirect(s); expected ${provenance.sources
+      .map((source) => `"${source.id}"=${source.counts.demoted}`)
+      .join(
+        " + ",
+      )} = ${demotedTotal} demoted page(s) x ${evidence.hosted_versions.length} hosted version(s) = ${expectedPolicyRules}`,
+  );
 }
 
 const edgeRuleLines = edgeRedirects

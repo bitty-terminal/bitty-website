@@ -8,7 +8,7 @@
 /* Typeface roles, self-hosted from versioned packages. Each face is
  * `unicode-range` scoped, so a reader downloads only the ranges a page uses;
  * CJK and symbol families stay as fallbacks on the stacks in `:root`. */
-@import "@fontsource-variable/literata/standard.css";
+@import "@fontsource-variable/literata/index.css";
 @import "@fontsource-variable/inter/index.css";
 @import "@fontsource-variable/jetbrains-mono/index.css";
 
@@ -301,6 +301,20 @@ body > .version-selector {
 
 #main-content:focus {
   outline: none;
+}
+
+/* Screen-reader-only text: keeps a status region in the accessibility tree
+ * without adding visual noise (used by the code-block copy control). */
+.visually-hidden {
+  position: absolute;
+  overflow: hidden;
+  clip-path: inset(50%);
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  white-space: nowrap;
 }
 
 .home-hero {
@@ -751,6 +765,7 @@ body > .version-selector {
  * contrast guard keeps reading one light/contrast/dark sequence. */
 .prose pre.astro-code span {
   font-style: var(--shiki-light-font-style);
+  text-decoration: var(--shiki-light-text-decoration);
 }
 
 /* Code block chrome. The framed wrapper, language label, and copy control are
@@ -1137,6 +1152,7 @@ footer.site-footer p {
 
   .prose pre.astro-code span {
     font-style: var(--shiki-dark-font-style);
+    text-decoration: var(--shiki-dark-text-decoration);
   }
 }
 

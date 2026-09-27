@@ -12,6 +12,8 @@
   const COPY_LABEL = "Copy code";
   const COPIED_LABEL = "Copied";
   const FAILED_LABEL = "Copy failed";
+  const COPIED_ANNOUNCEMENT = "Code copied to clipboard";
+  const FAILED_ANNOUNCEMENT = "Copy failed";
   const REVERT_MS = 2000;
 
   type CopyState = "idle" | "copied" | "failed";
@@ -22,12 +24,23 @@
     return COPY_LABEL;
   }
 
-  function createControl(pre: HTMLPreElement): HTMLButtonElement {
+  function announcementFor(state: CopyState): string {
+    if (state === "copied") return COPIED_ANNOUNCEMENT;
+    if (state === "failed") return FAILED_ANNOUNCEMENT;
+    return "";
+  }
+
+  // The control carries no aria-label: its visible text is its accessible name
+  // in every state, so label and name can never disagree (WCAG 2.5.3). The
+  // copy result is announced through a separate status region.
+  function createControl(
+    pre: HTMLPreElement,
+    status: HTMLElement,
+  ): HTMLButtonElement {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "code-copy";
     button.textContent = COPY_LABEL;
-    button.setAttribute("aria-label", COPY_LABEL);
 
     let timer: number | undefined;
 
@@ -35,6 +48,7 @@
       const text = pre.textContent ?? "";
       const settle = (state: CopyState): void => {
         button.textContent = labelFor(state);
+        status.textContent = announcementFor(state);
         if (state === "idle") {
           button.removeAttribute("data-copied");
         } else {
@@ -74,7 +88,11 @@
     label.className = "code-block-language";
     label.textContent = language.length > 0 ? language : "text";
 
-    header.append(label, createControl(pre));
+    const status = document.createElement("span");
+    status.className = "visually-hidden";
+    status.setAttribute("role", "status");
+
+    header.append(label, createControl(pre, status), status);
     pre.replaceWith(wrapper);
     wrapper.append(header, pre);
   }

@@ -19,9 +19,14 @@ name: Docs freshness
 # - Body carries a machine marker
 #   `<!-- docs-freshness:v2 status=<status> head=<sha> pins=<id>:<sha>,...
 #   heads=<id>:<sha>,... -->` that lists every pin and every resolved HEAD,
-#   plus a human summary, one row per pinned source (revision, HEAD, compare
-#   status, compare link), and the per-source `just docs-sync --source <id>
-#   --pin <head>` fix.
+#   plus a human summary, one row per pinned source (revision, published page
+#   count, HEAD, compare status, compare link), and the per-source
+#   `just docs-sync --source <id> --pin <head>` fix.
+# - The published page count in each row is read from the committed
+#   `src/content/docs-manifest.json` (the same numbers `docs:check` gates); an
+#   absent or stale manifest entry fails the job naming the source, exactly
+#   like a missing pin revision, so the report can never disagree with the
+#   gate.
 # - Behind (or ahead/diverged): create the issue, or reopen and update the
 #   closed one when the recorded marker moved; comment only when any pin or
 #   HEAD changed, so weekly runs do not spam.
@@ -88,8 +93,10 @@ jobs:
 
           # Read every pinned source (schema 2). A bare `jq -r .revision` on the
           # schema-2 object yields the literal string "null", which then slipped
-          # past the guard; a missing file, a non-array/empty `sources`, or a
-          # source without a non-empty id/source/revision now fails the job.
+          # past the guard, and the pre-#98 scalar `revision` no longer exists
+          # at all. A missing file, a non-array/empty `sources`, or any source
+          # without a non-empty id/source/revision fails the job and names every
+          # offending source, so freshness tracking can never stop silently.
           if [ ! -f "$pin_file" ]; then
             echo "::error::$pin_file is missing"
             exit 1
@@ -97,22 +104,51 @@ jobs:
           if ! jq -e '
               .schema == 2
               and (.sources | type == "array")
-              and (.sources | length > 0)
-              and ([.sources[] | (.id | type == "string")
-                              and (.source | type == "string")
-                              and (.revision | type == "string")
-                              and (.revision | length > 0)] | all)
             ' "$pin_file" >/dev/null; then
-            echo "::error::$pin_file must be a schema-2 pin whose sources each carry a non-empty id, source, and revision"
+            echo "::error::$pin_file must be a schema-2 pin with a sources[] array (the pre-#98 scalar revision is retired)"
+            exit 1
+          fi
+          if ! jq -e '(.sources | length > 0)' "$pin_file" >/dev/null; then
+            echo "::error::$pin_file pins no source: sources[] is empty"
+            exit 1
+          fi
+          bad_sources="$(jq -r '
+              .sources[]
+              | select((.id | type) != "string" or (.id | length) == 0
+                       or (.source | type) != "string" or (.source | length) == 0
+                       or (.revision | type) != "string"
+                       or (.revision | length) == 0)
+              | (.id // "(entry without an id)")
+            ' "$pin_file")"
+          if [ -n "$bad_sources" ]; then
+            while IFS= read -r bad_source; do
+              echo "::error::source \"$bad_source\" in $pin_file has no usable id, source or revision (each schema-2 sources[] entry needs a non-empty id, source, and revision string; a scalar read returns null)"
+            done <<<"$bad_sources"
             exit 1
           fi
           source_rows="$(jq -r '.sources[] | [.id, .source, .revision] | @tsv' "$pin_file")"
+
+          # The published page count in each row comes from the committed
+          # manifest — the same numbers `docs:check` gates. A missing file, a
+          # non-schema-2 manifest, a pinned source absent from it, or an entry
+          # that lags the pin would make the row a guess, so each fails the job
+          # naming the source.
+          manifest_file="src/content/docs-manifest.json"
+          if [ ! -f "$manifest_file" ]; then
+            echo "::error::$manifest_file is missing; run \`just docs-sync\`"
+            exit 1
+          fi
+          if ! jq -e '.schema == 2 and (.sources | type == "array")' "$manifest_file" >/dev/null; then
+            echo "::error::$manifest_file must be a schema-2 manifest with a sources[] array; run \`just docs-sync\`"
+            exit 1
+          fi
 
           # One row per pinned source: resolve that source's default-branch HEAD
           # and compare the pinned revision against it. The issue body, the
           # marker, the title, and the close/reopen verdict all come from these
           # rows; exactly one tracking issue carries the label.
           n_sources=0
+          total_published=0
           first_head=""
           first_short=""
           overall="identical"
@@ -129,6 +165,29 @@ jobs:
                 exit 1
                 ;;
             esac
+
+            # The row reports the published page count exactly as the committed
+            # manifest records it, so the report and `docs:check` cannot
+            # disagree; a source the manifest does not know, a non-numeric
+            # count, or an entry that lags the pin fails loudly.
+            manifest_row="$(jq -r --arg id "$id" '
+                .sources[] | select(.id == $id)
+                | [.revision, (.counts.published | tostring)] | @tsv
+              ' "$manifest_file")"
+            if [ -z "$manifest_row" ]; then
+              echo "::error::source \"$id\" is pinned in $pin_file but absent from $manifest_file; run \`just docs-sync\`"
+              exit 1
+            fi
+            IFS=$'\t' read -r manifest_revision published <<<"$manifest_row"
+            if ! printf '%s' "$published" | grep -Eq '^[0-9]+$'; then
+              echo "::error::source \"$id\" in $manifest_file has no numeric published count (read \"$published\")"
+              exit 1
+            fi
+            if [ "$manifest_revision" != "$revision" ]; then
+              echo "::error::source \"$id\" manifest revision ${manifest_revision} is stale vs the pin ${revision}; run \`just docs-sync\`"
+              exit 1
+            fi
+            total_published=$((total_published + published))
             # `source` is a host/owner/repo slug; the compare API and the git
             # remote both want owner/repo.
             repo="${slug#https://}"
@@ -171,7 +230,7 @@ jobs:
                 ;;
             esac
 
-            detail_rows="${detail_rows}- \`${id}\` (${repo}): pin \`${revision}\` ${verdict} \`${head}\`; compare https://github.com/${repo}/compare/${revision}...${head}${nl}"
+            detail_rows="${detail_rows}- \`${id}\` (${repo}): pin \`${revision}\` publishes ${published} page(s), ${verdict} \`${head}\`; compare https://github.com/${repo}/compare/${revision}...${head}${nl}"
             marker_pins="${marker_pins}${marker_pins:+,}${id}:${revision}"
             marker_heads="${marker_heads}${marker_heads:+,}${id}:${head}"
             title_ids="${title_ids}${title_ids:+ }${id}"
@@ -210,7 +269,7 @@ jobs:
 
           ${summary}
 
-          - Sources pinned in \`${pin_file}\`: ${n_sources}
+          - Sources pinned in \`${pin_file}\`: ${n_sources} (published ${total_published})
           ${detail_rows}
           To resolve: run \`just docs-sync --source <id> --pin <head>\` for the source(s) behind (equivalently \`bun run sync:docs --source <id> --pin <head>\`), then \`just docs-check && just check\`, and open the website pull request linked to this issue.
 

@@ -452,11 +452,12 @@ describe("interim redirect continuity for moved routes (#98)", () => {
  * each route below was answered by a 301 before T7 and its post-migration page
  * lives in the AI corpus, so it is the only candidate for a retarget; the
  * plan's expectation is zero. The AI corpus publishes 0 pages under the
- * unchanged #97 rule — all 11 of its declaring pages are
- * `contributor`/`mixed`/`security-reviewer` and are recorded in
- * `publication-withhold-list.json` — so each successor exists in the mirror but
- * is withheld, i.e. it has no route and is not a legal target. Retargeting here
- * would point a 301 at a route with no page, the class of loss §3.3 forbids.
+ * unchanged #97 rule — the 11 pages it declares (`8x mixed/index`,
+ * `2x contributor/specification`, `1x security-reviewer/specification`) are
+ * either recorded in `publication-withhold-list.json` or, for the one page that
+ * declares `website_publish: false`, excluded — so each successor exists in the
+ * mirror but ships no route and is not a legal target. Retargeting here would
+ * point a 301 at a route with no page, the class of loss §3.3 forbids.
  *
  * Pinned as a test so the day the corpus flips a page on, this fails and the
  * entry must move to `RETARGETED_ROUTES` (or be dropped) in the same reviewed

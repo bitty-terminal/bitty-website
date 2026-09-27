@@ -11,6 +11,8 @@ import { describe, expect, test } from "bun:test";
 import { nearestPublishedAncestor } from "./docsRoutes.ts";
 import {
   CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT,
+  CLOUDFLARE_STATIC_REDIRECT_LIMIT,
+  CLOUDFLARE_TOTAL_REDIRECT_LIMIT,
   PUBLICATION_REDIRECT_REASON,
   buildPublicationRedirectEntries,
   lowestVersion,
@@ -132,6 +134,46 @@ describe("renderEdgeRedirects (Cloudflare _redirects budget)", () => {
     ]);
     // A subtree move still needs the wildcard form: it carries descendants.
     expect(lines.filter((line) => line.includes("legacy-2/*"))).toHaveLength(1);
+  });
+
+  test("the static budget is 2,000, not the 2,100 combined ceiling", () => {
+    const staticRules = (count: number) =>
+      Array.from({ length: count }, (_, i) =>
+        expanded(PUBLICATION_REDIRECT_REASON, i),
+      );
+    expect(CLOUDFLARE_STATIC_REDIRECT_LIMIT).toBe(2000);
+    expect(() => renderEdgeRedirects(staticRules(2000), {})).not.toThrow();
+    expect(() => renderEdgeRedirects(staticRules(2001), {})).toThrow(
+      /2001 static rules, above Cloudflare's limit of 2000/,
+    );
+    // 2,001-2,100 static-only rules used to pass the guard while the API rejects them.
+    expect(() => renderEdgeRedirects(staticRules(2100), {})).toThrow(
+      /static rules/,
+    );
+  });
+
+  test("the combined ceiling is 2,100 rules and is reachable exactly", () => {
+    expect(CLOUDFLARE_TOTAL_REDIRECT_LIMIT).toBe(2100);
+    // A wildcard rule contributes one dynamic rule and one exact (static)
+    // sibling, so a tree at both per-kind limits (100 dynamic + 2,000 static)
+    // is 1,900 publication rules plus 100 subtree moves: exactly 2,100 lines.
+    const mixed = [
+      ...Array.from({ length: CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT }, (_, i) =>
+        expanded("legacy subtree move", i),
+      ),
+      ...Array.from({ length: 1900 }, (_, i) =>
+        expanded(PUBLICATION_REDIRECT_REASON, i + 1000),
+      ),
+    ];
+    expect(() => renderEdgeRedirects(mixed, {})).not.toThrow();
+    // One more rule breaks the static budget, and the total ceiling is the
+    // backstop for any future accounting that stops being exhaustive.
+    expect(() =>
+      renderEdgeRedirects(
+        [...mixed, expanded(PUBLICATION_REDIRECT_REASON, 99_999)],
+        {},
+      ),
+    ).toThrow(/static rules/);
   });
 
   test("fails closed when the dynamic budget would be exceeded", () => {

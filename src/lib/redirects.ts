@@ -235,15 +235,22 @@ export function lowestVersion(versions: readonly string[]): string {
 }
 
 /**
- * Cloudflare's `_redirects` budget, per the Pages/Workers documentation: a
- * deployment may carry 2100 static rules but only 100 dynamic (wildcard)
- * rules, and exceeding the dynamic budget fails deployment with code 100324.
- * `wrangler pages deploy --dry-run` does not evaluate this limit, so the
- * mechanism checks it itself and fails the build closed instead of shipping a
- * tree the API will reject.
+ * Cloudflare's `_redirects` budget, per the Workers static-assets redirect
+ * documentation: a file may carry 2,000 static rules and 100 dynamic
+ * (wildcard) rules, for a combined total of 2,100. Exceeding either per-kind
+ * budget fails deployment (code 100324 for the dynamic one). `wrangler deploy
+ * --dry-run` — the command this repository's gates run — does not evaluate
+ * these limits, so the mechanism checks them itself and fails the build closed
+ * instead of shipping a tree the API will reject.
+ *
+ * The static budget is 2,000, not 2,100: 2,100 is the combined ceiling, so a
+ * guard that only compared the total would let a static-only tree of
+ * 2,001-2,100 rules build green and fail in production — the failure this
+ * guard exists to prevent.
  */
 export const CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT = 100;
-export const CLOUDFLARE_STATIC_REDIRECT_LIMIT = 2100;
+export const CLOUDFLARE_STATIC_REDIRECT_LIMIT = 2000;
+export const CLOUDFLARE_TOTAL_REDIRECT_LIMIT = 2100;
 
 /** A rule is dynamic when its pattern carries a wildcard or a placeholder. */
 function isDynamicRedirectLine(line: string): boolean {
@@ -439,17 +446,18 @@ export function renderEdgeRedirects(
     lines.push(`${rule.from} ${rule.to} ${rule.status}`);
   }
   for (const rule of table) {
-    // Cloudflare counts a rule with a wildcard as *dynamic* and caps dynamic
-    // rules at 100 (static ones at 2100). A publication demotion targets a leaf
-    // page that has no descendants, so the exact rule above is the whole rule;
-    // emitting the wildcard form as well spent 156 of the 100 dynamic slots and
-    // made the production deploy fail (code 100324). Legacy subtree moves keep
-    // the wildcard form because they do carry descendants.
+    // Cloudflare counts a rule with a wildcard as *dynamic*: 100 dynamic and
+    // 2,000 static rules per file, 2,100 in total. A publication demotion
+    // targets a leaf page that has no descendants, so the exact rule above is
+    // the whole rule; emitting the wildcard form as well spent 156 of the 100
+    // dynamic slots and made the production deploy fail (code 100324). Legacy
+    // subtree moves keep the wildcard form because they carry descendants.
     if (rule.reason === PUBLICATION_REDIRECT_REASON) continue;
     lines.push(`${rule.from}* ${rule.to}:splat ${rule.status}`);
   }
   const ruleLines = lines.filter((line) => !line.startsWith("#"));
   const dynamicRules = ruleLines.filter(isDynamicRedirectLine);
+  const staticRuleCount = ruleLines.length - dynamicRules.length;
   if (dynamicRules.length > CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT) {
     throw new Error(
       `_redirects uses ${dynamicRules.length} dynamic rules, above Cloudflare's limit of ${CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT} (deployment code 100324): ${dynamicRules
@@ -458,9 +466,14 @@ export function renderEdgeRedirects(
         .join(", ")} ...`,
     );
   }
-  if (ruleLines.length > CLOUDFLARE_STATIC_REDIRECT_LIMIT) {
+  if (staticRuleCount > CLOUDFLARE_STATIC_REDIRECT_LIMIT) {
     throw new Error(
-      `_redirects uses ${ruleLines.length} rules, above Cloudflare's limit of ${CLOUDFLARE_STATIC_REDIRECT_LIMIT}`,
+      `_redirects uses ${staticRuleCount} static rules, above Cloudflare's limit of ${CLOUDFLARE_STATIC_REDIRECT_LIMIT} (2,100 is the combined ceiling, not the per-kind one)`,
+    );
+  }
+  if (ruleLines.length > CLOUDFLARE_TOTAL_REDIRECT_LIMIT) {
+    throw new Error(
+      `_redirects uses ${ruleLines.length} rules, above Cloudflare's combined limit of ${CLOUDFLARE_TOTAL_REDIRECT_LIMIT}`,
     );
   }
   return `${lines.join("\n")}\n`;

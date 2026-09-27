@@ -41,7 +41,7 @@ import allowListData from "./publication-allow-list.json" with { type: "json" };
 import flipListData from "./publication-flip-list.json" with { type: "json" };
 
 /** Policy revision, bumped whenever the rule, the data files, or a bound moves. */
-export const PUBLICATION_POLICY_VERSION = "2026-09-27.1";
+export const PUBLICATION_POLICY_VERSION = "2026-09-27.2";
 
 /** Date the owner decision behind this policy was recorded. */
 export const PUBLICATION_POLICY_DATE = "2026-09-27";
@@ -58,6 +58,30 @@ export const EXCLUDED_DOCUMENT_TYPES: readonly string[] = [
   "register",
   "research",
   "specification",
+];
+
+/**
+ * Type/audience pairs where the type exclusion must not also exclude the
+ * audience's own reader-facing documentation.
+ *
+ * Owner decision on issue #97 (2026-09-27): a `specification` whose audience is
+ * `plugin-author` IS reader-facing — it is the plugin API surface that audience
+ * is published for — so it is published by rule rather than by a per-path
+ * allow-list entry. The exclusion still fails closed for every other audience
+ * (`contributor`, `maintainer`, `security-reviewer`, `mixed`), and `register`,
+ * `policy` and `research` have no exception at all.
+ */
+export const TYPE_AUDIENCE_EXCEPTIONS: readonly {
+  readonly document_type: string;
+  readonly audience: string;
+  readonly reason: string;
+}[] = [
+  {
+    document_type: "specification",
+    audience: "plugin-author",
+    reason:
+      "plugin-author specification: the audience's own API surface (owner decision, issue #97)",
+  },
 ];
 
 /**
@@ -202,9 +226,12 @@ export function isForbiddenAllowListPath(sourcePath: string): boolean {
 
 /** Rule 2 + 3, without the allow-list. */
 export function meetsEligibilityRule(meta: PublicationMetadata): boolean {
-  return (
-    ALLOWED_AUDIENCES.includes(meta.audience) &&
-    !EXCLUDED_DOCUMENT_TYPES.includes(meta.document_type)
+  if (!ALLOWED_AUDIENCES.includes(meta.audience)) return false;
+  if (!EXCLUDED_DOCUMENT_TYPES.includes(meta.document_type)) return true;
+  return TYPE_AUDIENCE_EXCEPTIONS.some(
+    (exception) =>
+      exception.document_type === meta.document_type &&
+      exception.audience === meta.audience,
   );
 }
 

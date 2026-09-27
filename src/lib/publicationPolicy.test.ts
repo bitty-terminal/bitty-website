@@ -36,6 +36,8 @@ import {
   flipListEntries,
   isForbiddenAllowListPath,
   isPublished,
+  meetsEligibilityRule,
+  TYPE_AUDIENCE_EXCEPTIONS,
   type PublicationMetadata,
 } from "./publicationPolicy.ts";
 
@@ -52,27 +54,64 @@ const MIRROR_ROOT = fileURLToPath(new URL("../content/docs", import.meta.url));
 const EXPECTED_ALLOW_LIST_PATHS: readonly string[] = [
   "docs/README.md",
   "docs/projects/bitty/architecture/README.md",
-  "docs/projects/bitty/architecture/core-boundaries.md",
   "docs/projects/bitty/architecture/final/README.md",
   "docs/projects/bitty/architecture/overview.md",
   "docs/projects/bitty/configuration/lua-and-xdg.md",
   "docs/projects/bitty/examples/README.md",
-  "docs/projects/bitty/extensibility/package-management.md",
-  "docs/projects/bitty/extensibility/plugin-system.md",
-  "docs/projects/bitty/interfaces/rich-content.md",
   "docs/projects/bitty/product/vision.md",
   "docs/projects/bitty/reference/README.md",
   "docs/projects/bitty/requirements/README.md",
-  "docs/projects/bitty/specifications/plugin-api-v1-lua-surface-rfc.md",
-  "docs/projects/bitty/specifications/plugin-host-runtime-rfc.md",
-  "docs/projects/bitty/specifications/plugin-platform-rfc.md",
-  "docs/projects/bitty/specifications/plugin-reuse-and-providers.md",
-  "docs/projects/bitty/specifications/ui-extensibility-architecture.md",
   "docs/roadmap/README.md",
 ];
 
 /** Demoted pages still awaiting the docs-side frontmatter flip (#98 owns it). */
-const EXPECTED_FLIP_LIST_COUNT = 52;
+const EXPECTED_FLIP_LIST_COUNT = 50;
+
+/**
+ * The type exclusion has exactly one audience exception (owner decision on
+ * issue #97): a plugin-author specification is the audience's own API surface.
+ * Every other audience keeps failing closed, and register/policy/research have
+ * no exception at all.
+ */
+test("a plugin-author specification publishes by rule; other audiences fail closed", () => {
+  expect(TYPE_AUDIENCE_EXCEPTIONS).toHaveLength(1);
+  expect(
+    meetsEligibilityRule(
+      metadata({
+        sourcePath: "docs/projects/bitty/specifications/thing.md",
+        audience: "plugin-author",
+        document_type: "specification",
+      }),
+    ),
+  ).toBe(true);
+  for (const audience of [
+    "contributor",
+    "maintainer",
+    "security-reviewer",
+    "mixed",
+  ]) {
+    expect(
+      meetsEligibilityRule(
+        metadata({
+          sourcePath: "docs/projects/bitty/specifications/thing.md",
+          audience,
+          document_type: "specification",
+        }),
+      ),
+    ).toBe(false);
+  }
+  for (const document_type of ["register", "policy", "research"]) {
+    expect(
+      meetsEligibilityRule(
+        metadata({
+          sourcePath: "docs/projects/bitty/specifications/thing.md",
+          audience: "plugin-author",
+          document_type,
+        }),
+      ),
+    ).toBe(false);
+  }
+});
 
 function metadata(
   overrides: Pick<PublicationMetadata, "sourcePath"> &

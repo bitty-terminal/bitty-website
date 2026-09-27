@@ -1,13 +1,7 @@
 {
-  "policy_version": "2026-09-27.1",
-  "note": "Publication allow-list (website#97). Shrink-only: every entry needs an explicit reviewed change. Governance corpora may never be added; see src/lib/publicationPolicy.ts.",
+  "policy_version": "2026-09-27.2",
+  "note": "Publication allow-list (website#97). Shrink-only: every entry needs an explicit reviewed change. Governance corpora may never be added; see src/lib/publicationPolicy.ts. 2026-09-27.2: plugin-author `specification` pages left this list because the rule now treats the audience's own specification type as reader-facing (owner decision on #97).",
   "entries": [
-    {
-      "path": "docs/projects/bitty/architecture/core-boundaries.md",
-      "audience": "plugin-author",
-      "document_type": "specification",
-      "reason": "Plugin-author specification: ownership boundary between core and plugins, including the normative P0 security gates (audience plugin-author, document_type specification)"
-    },
     {
       "path": "docs/projects/bitty/architecture/final/README.md",
       "audience": "contributor",
@@ -39,24 +33,6 @@
       "reason": "Reader-facing section index: examples tree entry point (audience mixed, document_type index)"
     },
     {
-      "path": "docs/projects/bitty/extensibility/package-management.md",
-      "audience": "plugin-author",
-      "document_type": "specification",
-      "reason": "Plugin-author specification: package workflow and normative supply-chain constraints (audience plugin-author, document_type specification)"
-    },
-    {
-      "path": "docs/projects/bitty/extensibility/plugin-system.md",
-      "audience": "plugin-author",
-      "document_type": "specification",
-      "reason": "Plugin-author specification: extension surfaces, lifecycle, isolation, and capabilities (audience plugin-author, document_type specification)"
-    },
-    {
-      "path": "docs/projects/bitty/interfaces/rich-content.md",
-      "audience": "plugin-author",
-      "document_type": "specification",
-      "reason": "Plugin-author specification: the rich-content and presentation interface a plugin author uses (audience plugin-author, document_type specification)"
-    },
-    {
       "path": "docs/projects/bitty/product/vision.md",
       "audience": "mixed",
       "document_type": "overview",
@@ -73,36 +49,6 @@
       "audience": "mixed",
       "document_type": "index",
       "reason": "Reader-facing section index: requirements tree entry point (audience mixed, document_type index)"
-    },
-    {
-      "path": "docs/projects/bitty/specifications/plugin-api-v1-lua-surface-rfc.md",
-      "audience": "plugin-author",
-      "document_type": "specification",
-      "reason": "Plugin-author contract: the accepted Lua surface a plugin author programs against (audience plugin-author, document_type specification)"
-    },
-    {
-      "path": "docs/projects/bitty/specifications/plugin-host-runtime-rfc.md",
-      "audience": "plugin-author",
-      "document_type": "specification",
-      "reason": "Plugin-author contract: accepted plugin host runtime, isolation, and lifecycle contract (audience plugin-author, document_type specification)"
-    },
-    {
-      "path": "docs/projects/bitty/specifications/plugin-platform-rfc.md",
-      "audience": "plugin-author",
-      "document_type": "specification",
-      "reason": "Plugin-author contract: accepted Plugin API v1 surface, capability/manifest model, and event pipeline (audience plugin-author, document_type specification)"
-    },
-    {
-      "path": "docs/projects/bitty/specifications/plugin-reuse-and-providers.md",
-      "audience": "plugin-author",
-      "document_type": "specification",
-      "reason": "Plugin-author specification: reuse principle and provider ecology for the plugin platform (audience plugin-author, document_type specification)"
-    },
-    {
-      "path": "docs/projects/bitty/specifications/ui-extensibility-architecture.md",
-      "audience": "plugin-author",
-      "document_type": "specification",
-      "reason": "Plugin-author specification: extension-point inventory and Core/plugin/Lua ownership boundaries (audience plugin-author, document_type specification)"
     },
     {
       "path": "docs/README.md",

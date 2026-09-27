@@ -12,6 +12,7 @@ import {
 import {
   DOCS_PROVENANCE_FILENAME,
   assertDocsProvenanceMatches,
+  assertVersionsCorpusSet,
 } from "../src/lib/docsProvenance.ts";
 import {
   CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT,
@@ -312,6 +313,18 @@ if (policyRules.length !== expectedPolicyRules) {
       )} = ${demotedTotal} demoted page(s) x ${evidence.hosted_versions.length} hosted version(s) = ${expectedPolicyRules}`,
   );
 }
+// The version record names the corpus set the build consumed; a pin advance
+// changes the derived id, so a stale version record fails the deploy gate
+// (`assertVersionsCorpusSet` carries the message).
+assertVersionsCorpusSet(
+  JSON.parse(
+    await readFile(
+      new URL("../src/content/versions.json", import.meta.url),
+      "utf8",
+    ),
+  ).versions,
+  pinSet,
+);
 
 const edgeRuleLines = edgeRedirects
   .split(/\r?\n/u)

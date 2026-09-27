@@ -11,7 +11,13 @@ import { assertVersionsShape } from "./docsValidation.ts";
 
 export type VersionEntry = {
   readonly version: string;
-  readonly revision: string;
+  /**
+   * Derived identity of the pinned docs corpus set this version hosts
+   * (bitty-website#98, OQ-11). Replaces the retired single `revision`: four
+   * sources are consumed, so one SHA cannot describe the set. Recomputed from
+   * the pins and checked in the build and in `scripts/validate-dist.mjs`.
+   */
+  readonly docs_corpus: string;
   readonly label: string;
   readonly prerelease: boolean;
 };

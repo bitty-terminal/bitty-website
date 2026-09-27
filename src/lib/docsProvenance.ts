@@ -38,6 +38,9 @@ export const DOCS_PROVENANCE_FILENAME = "docs-provenance.json";
 /** Repository-relative path of the artifact (also used in messages). */
 export const DOCS_PROVENANCE_FILE = `dist/${DOCS_PROVENANCE_FILENAME}`;
 
+/** Algorithm prefix of {@link corpusSetId}; the id is `<prefix><64-hex>`. */
+export const DOCS_CORPUS_ID_PREFIX = "sha256:";
+
 /**
  * Stable identity of the pinned source set: `sha256:<64-hex>` over the sorted
  * `id@revision` lines of every consumed source.
@@ -53,7 +56,7 @@ export function corpusSetId(pins: DocsPinSet): string {
     .map((source) => `${source.id}@${source.revision}`)
     .sort()
     .join("\n");
-  return `sha256:${createHash("sha256").update(canonical).digest("hex")}`;
+  return `${DOCS_CORPUS_ID_PREFIX}${createHash("sha256").update(canonical).digest("hex")}`;
 }
 
 /** Per-source counts the artifact carries (the manifest's count shape). */

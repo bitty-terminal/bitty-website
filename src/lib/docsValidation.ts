@@ -45,6 +45,16 @@ export function assertNoCjk(body: string, file: string): void {
   }
 }
 
+/**
+ * Validate `src/content/versions.json` at build time (RS-1/RS-4).
+ *
+ * Since bitty-website#98 a version no longer records one docs `revision`: the
+ * site aggregates several pinned sources, so the version record carries a
+ * derived corpus-set identity (`docs_corpus`, `sha256:<64-hex>`) instead. The
+ * identity is recomputed from the pins and cross-checked in the build and by
+ * `scripts/validate-dist.mjs` (`assertVersionsCorpusSet`), so a pin advance
+ * cannot leave the version evidence claiming an older corpus set.
+ */
 export function assertVersionsShape(): typeof versionsJson {
   const raw = versionsJson as unknown as Record<string, unknown>;
   if (typeof raw.latest !== "string" || typeof raw.stable !== "string") {
@@ -60,12 +70,12 @@ export function assertVersionsShape(): typeof versionsJson {
   for (const v of raw.versions as Array<Record<string, unknown>>) {
     if (
       typeof v.version !== "string" ||
-      typeof v.revision !== "string" ||
+      typeof v.docs_corpus !== "string" ||
       typeof v.label !== "string" ||
       typeof v.prerelease !== "boolean"
     ) {
       throw new Error(
-        `Invalid version entry ${JSON.stringify(v)} — must have version/revision/label/prerelease`,
+        `Invalid version entry ${JSON.stringify(v)} — must have version/docs_corpus/label/prerelease (RS-4; the retired single revision is replaced by the derived corpus-set identity, bitty-website#98)`,
       );
     }
     if (v.version.startsWith("v")) {
@@ -74,7 +84,7 @@ export function assertVersionsShape(): typeof versionsJson {
       );
     }
     const extraVersionKeys = Object.keys(v).filter(
-      (k) => !["version", "revision", "label", "prerelease"].includes(k),
+      (k) => !["version", "docs_corpus", "label", "prerelease"].includes(k),
     );
     if (extraVersionKeys.length > 0) {
       throw new Error(

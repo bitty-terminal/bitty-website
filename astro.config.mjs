@@ -15,6 +15,7 @@ import {
 } from "./src/lib/docsPins.ts";
 import {
   DOCS_PROVENANCE_FILENAME,
+  assertVersionsCorpusSet,
   buildDocsProvenance,
 } from "./src/lib/docsProvenance.ts";
 import { docsLinksMdastPlugin } from "./src/lib/docsLinksPlugin.ts";
@@ -241,6 +242,10 @@ function docsProvenanceArtifacts() {
       "astro:build:done": async ({ dir, logger }) => {
         const pins = parseDocsPinSet(docsRevision);
         const manifest = parseDocsManifest(docsManifest);
+        // The version record names the corpus set the build consumed; a pin
+        // advance changes the derived id, so the build fails closed until the
+        // version record moves with it.
+        assertVersionsCorpusSet(versions.versions, pins);
         const artifact = buildDocsProvenance(
           pins,
           manifest,

@@ -152,6 +152,21 @@ export async function readRawPinFile(root) {
   }
 }
 
+/**
+ * Read the raw provenance manifest without schema validation. Used by the
+ * regression gate in `sync-docs.mjs` to read the committed baseline; `null`
+ * when the file is absent or the legacy shape.
+ */
+export async function readRawManifest(root) {
+  const { manifestFile } = repoPaths(root);
+  if (!existsSync(manifestFile)) return null;
+  try {
+    return JSON.parse(await readFile(manifestFile, "utf8"));
+  } catch (error) {
+    throw new SyncError(`malformed provenance manifest: ${error.message}`);
+  }
+}
+
 /** `true` when `raw` is the pre-#98 flat `{revision, source, synced_at}`. */
 export function isLegacyPin(raw) {
   if (raw === null || typeof raw !== "object" || Array.isArray(raw))

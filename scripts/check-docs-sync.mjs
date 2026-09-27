@@ -37,6 +37,8 @@ import {
   parseDocsManifest,
   sourceIdForMirrorPath,
 } from "../src/lib/docsPins.ts";
+import { assertNoPublishedRouteLoss } from "../src/lib/docsAggregation.ts";
+import { loadMergedRedirects } from "../src/lib/redirects.ts";
 import {
   sourcePathToRouteIdentity,
   validateRouteCollisions,
@@ -111,6 +113,7 @@ function assertFileParity({ pin, entry, expected, mirrorSlice }) {
 async function main() {
   const pins = await readPinFile(ROOT);
   const manifest = await readCommittedManifest();
+  const redirectEntries = await loadMergedRedirects(ROOT);
   const entryById = new Map(manifest.sources.map((entry) => [entry.id, entry]));
   const failures = [];
 
@@ -206,6 +209,13 @@ async function main() {
         const added = routes.filter((route) => !manifestRoutes.has(route));
         const removed = entry.published_routes.filter(
           (route) => !routes.includes(route),
+        );
+        // #98 §3.3: no published route may disappear without a published
+        // redirect target, compared on route identity (not count).
+        assertNoPublishedRouteLoss(
+          entry.published_routes,
+          routes,
+          redirectEntries,
         );
         assertSourcePublishedBand(pin, routes.length, { added, removed });
       } catch (error) {

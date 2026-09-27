@@ -35,6 +35,10 @@ docs-sync *args:
 docs-check:
     bun run docs:check
 
+# Print the machine-derived old -> new route table for the change (T4, #98).
+docs-route-moves *args:
+    bun run report:route-moves {{args}}
+
 commit-lint FILE:
     command -v commitlint >/dev/null || { echo "commitlint missing; install it globally" >&2; exit 1; }
     commitlint < "{{FILE}}"

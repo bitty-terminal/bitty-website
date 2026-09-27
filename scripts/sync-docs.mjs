@@ -36,6 +36,7 @@ import {
   nowIso,
   parseSyncArgs,
   parityReport,
+  readRawManifest,
   readRawPinFile,
   repoPaths,
   replaceMirror,
@@ -48,10 +49,14 @@ import {
   DOCS_MANIFEST_SCHEMA,
   DOCS_PIN_SCHEMA,
   assertNoDuplicateMirrorPaths,
+  assertNoSourceFailures,
   assertPublishedUnderMounts,
   mountForMirrorPath,
+  parseDocsManifest,
   parseDocsPinSet,
 } from "../src/lib/docsPins.ts";
+import { assertNoPublishedRouteLoss } from "../src/lib/docsAggregation.ts";
+import { loadMergedRedirects } from "../src/lib/redirects.ts";
 import {
   sourcePathToRouteIdentity,
   validateRouteCollisions,
@@ -237,6 +242,31 @@ async function main() {
         };
       })
       .sort((left, right) => left.id.localeCompare(right.id));
+
+    // #98 §3.3 / T4: the published-route regression gate runs BEFORE anything
+    // is written. The committed manifest is the baseline; every route it
+    // published that the new set drops must be covered by a redirect to a
+    // published target, and the gate compares route identities, not counts.
+    const redirectEntries = await loadMergedRedirects(ROOT);
+    const previousRaw = await readRawManifest(ROOT);
+    const previousBySource = new Map();
+    if (previousRaw !== null && previousRaw.schema === DOCS_MANIFEST_SCHEMA) {
+      for (const entry of parseDocsManifest(previousRaw).sources) {
+        previousBySource.set(entry.id, entry.published_routes);
+      }
+    }
+    const lossFailures = [];
+    for (const [id, previousRoutes] of previousBySource) {
+      const nextRoutes =
+        manifestSources.find((source) => source.id === id)?.published_routes ??
+        [];
+      try {
+        assertNoPublishedRouteLoss(previousRoutes, nextRoutes, redirectEntries);
+      } catch (error) {
+        lossFailures.push({ source: id, message: error.message });
+      }
+    }
+    assertNoSourceFailures(lossFailures);
 
     await replaceMirror(staging, paths.mirrorRoot);
     const manifestChanged = await writeFileIfChanged(

@@ -35,13 +35,21 @@
  *
  * Both data files are pinned by `./publicationPolicy.test.ts` (exact path set
  * and count), so adding or removing an entry needs an explicit reviewed edit.
+ *
+ * Multi-source aggregation (bitty-website#98) makes the lists source-aware:
+ * every entry records the pinned `source` that owns its path, and a third
+ * shrink-only file — `./publication-withhold-list.json` — records the
+ * declared-but-ineligible pages with the corpus `owner` that must fix them.
+ * A withheld page ships no route (it never had one), unlike a flip-listed
+ * demotion, which ships a 301 because it was published once.
  */
 
 import allowListData from "./publication-allow-list.json" with { type: "json" };
 import flipListData from "./publication-flip-list.json" with { type: "json" };
+import withholdListData from "./publication-withhold-list.json" with { type: "json" };
 
 /** Policy revision, bumped whenever the rule, the data files, or a bound moves. */
-export const PUBLICATION_POLICY_VERSION = "2026-09-27.3";
+export const PUBLICATION_POLICY_VERSION = "2026-09-28.4";
 
 /** Date the owner decision behind this policy was recorded. */
 export const PUBLICATION_POLICY_DATE = "2026-09-27";
@@ -144,7 +152,7 @@ export type PublicationMetadata = {
 };
 
 export type PublicationDecisionKind =
-  "publish" | "demote" | "exclude" | "violation";
+  "publish" | "demote" | "withhold" | "exclude" | "violation";
 
 export type PublicationDecision = {
   readonly kind: PublicationDecisionKind;
@@ -153,45 +161,137 @@ export type PublicationDecision = {
   readonly reason: string;
 };
 
-/** One entry of `./publication-allow-list.json` or the flip list. */
+/**
+ * One entry of `./publication-allow-list.json`, the flip list, or the withhold
+ * list.
+ *
+ * `source` attributes the entry to the pinned source that owns `path`
+ * (`src/content/docs-revision.json`); `owner` names the corpus repository that
+ * owns the fix and is required on withhold entries. Both are cross-checked
+ * against the pin set by `./publicationPolicy.test.ts`, so attribution cannot
+ * drift from the mounts.
+ */
 export type PolicyListEntry = {
+  /** Pinned source id that owns `path` (bitty-website#98). */
+  readonly source: string;
   readonly path: string;
   readonly audience: string;
   readonly document_type: string;
   readonly reason: string;
+  /** Corpus repository that owns the fix (withhold entries only). */
+  readonly owner?: string;
 };
 
 type AllowListEntry = PolicyListEntry;
 type FlipListEntry = PolicyListEntry;
+/** A declared-but-ineligible page: `{source, path, audience, document_type, owner, reason}`. */
+export type WithholdListEntry = PolicyListEntry & { readonly owner: string };
 
-type PolicyDataFile = {
-  readonly policy_version: string;
-  readonly entries: readonly AllowListEntry[];
-};
+/** Fields every policy-list entry must carry. */
+const REQUIRED_ENTRY_FIELDS = [
+  "source",
+  "path",
+  "audience",
+  "document_type",
+  "reason",
+] as const;
 
-function policyEntries(
-  data: PolicyDataFile,
+function parsePolicyEntries(
+  entries: unknown,
   fileName: string,
-): readonly AllowListEntry[] {
-  if (data.policy_version !== PUBLICATION_POLICY_VERSION) {
+): readonly PolicyListEntry[] {
+  if (!Array.isArray(entries)) {
+    throw new Error(`${fileName} entries must be an array`);
+  }
+  return entries.map((raw, index) => {
+    const what = `${fileName} entries[${index}]`;
+    if (raw === null || typeof raw !== "object" || Array.isArray(raw)) {
+      throw new Error(`${what} must be a JSON object`);
+    }
+    const record = raw as Record<string, unknown>;
+    for (const field of REQUIRED_ENTRY_FIELDS) {
+      const value = record[field];
+      if (typeof value !== "string" || value.length === 0) {
+        throw new Error(`${what}.${field} must be a non-empty string`);
+      }
+    }
+    if (record.owner !== undefined && typeof record.owner !== "string") {
+      throw new Error(`${what}.owner must be a string when present`);
+    }
+    return {
+      source: record.source as string,
+      path: record.path as string,
+      audience: record.audience as string,
+      document_type: record.document_type as string,
+      reason: record.reason as string,
+      ...(record.owner === undefined ? {} : { owner: record.owner as string }),
+    };
+  });
+}
+
+/** Parse and version-check one policy data file's entry list. */
+function policyEntries(
+  data: unknown,
+  fileName: string,
+): readonly PolicyListEntry[] {
+  if (data === null || typeof data !== "object" || Array.isArray(data)) {
+    throw new Error(`${fileName} must be a JSON object`);
+  }
+  const record = data as Record<string, unknown>;
+  if (record.policy_version !== PUBLICATION_POLICY_VERSION) {
     throw new Error(
-      `${fileName} declares policy_version ${data.policy_version} but the policy module is ${PUBLICATION_POLICY_VERSION}; bump both together`,
+      `${fileName} declares policy_version ${record.policy_version} but the policy module is ${PUBLICATION_POLICY_VERSION}; bump both together`,
     );
   }
-  return data.entries;
+  return parsePolicyEntries(record.entries, fileName);
+}
+
+/** Parse the withhold list, which requires an `owner` on every entry. */
+function withholdEntries(
+  data: unknown,
+  fileName: string,
+): readonly WithholdListEntry[] {
+  return policyEntries(data, fileName).map((entry, index) => {
+    if (entry.owner === undefined || entry.owner.length === 0) {
+      throw new Error(
+        `${fileName} entries[${index}] must record an owner repository (bitty-website#98)`,
+      );
+    }
+    return {
+      source: entry.source,
+      path: entry.path,
+      audience: entry.audience,
+      document_type: entry.document_type,
+      reason: entry.reason,
+      owner: entry.owner,
+    };
+  });
 }
 
 const ALLOW_LIST: readonly AllowListEntry[] = policyEntries(
-  allowListData as PolicyDataFile,
+  allowListData,
   "publication-allow-list.json",
 );
 const FLIP_LIST: readonly FlipListEntry[] = policyEntries(
-  flipListData as PolicyDataFile,
+  flipListData,
   "publication-flip-list.json",
+);
+/**
+ * Declared-but-ineligible pages: `website_publish: true` under the unchanged
+ * #97 rule, ineligible and not allow-listed. They never had a published route,
+ * so they ship no redirect; a declared page that is ineligible and listed in
+ * neither list keeps failing the build. Count-pinned, shrink-only.
+ */
+const WITHHOLD_LIST: readonly WithholdListEntry[] = withholdEntries(
+  withholdListData,
+  "publication-withhold-list.json",
 );
 
 const ALLOW_BY_PATH = new Map(ALLOW_LIST.map((entry) => [entry.path, entry]));
 const FLIP_BY_PATH = new Map(FLIP_LIST.map((entry) => [entry.path, entry]));
+const WITHHOLD_BY_PATH = new Map(
+  WITHHOLD_LIST.map((entry) => [entry.path, entry]),
+);
 
 /** Allow-list entries, for the pinning test and reviewers. */
 export function allowListEntries(): readonly AllowListEntry[] {
@@ -201,6 +301,11 @@ export function allowListEntries(): readonly AllowListEntry[] {
 /** Demotion (docs-side flip) entries, for the pinning test and reviewers. */
 export function flipListEntries(): readonly FlipListEntry[] {
   return FLIP_LIST;
+}
+
+/** Declared-but-ineligible entries, for the pinning test and reviewers. */
+export function withholdListEntries(): readonly WithholdListEntry[] {
+  return WITHHOLD_LIST;
 }
 
 export function allowListEntryFor(
@@ -213,6 +318,12 @@ export function flipListEntryFor(
   sourcePath: string,
 ): FlipListEntry | undefined {
   return FLIP_BY_PATH.get(sourcePath);
+}
+
+export function withholdListEntryFor(
+  sourcePath: string,
+): WithholdListEntry | undefined {
+  return WITHHOLD_BY_PATH.get(sourcePath);
 }
 
 /**
@@ -311,6 +422,14 @@ export function decidePublication(
       reason: `allow-listed (audience ${meta.audience}, document_type ${meta.document_type}): ${allowed.reason}`,
     };
   }
+  const withheld = WITHHOLD_BY_PATH.get(sourcePath);
+  if (withheld !== undefined) {
+    return {
+      kind: "withhold",
+      sourcePath,
+      reason: `withheld for ${withheld.owner} (${withheld.source}): ${withheld.reason}`,
+    };
+  }
   const flip = FLIP_BY_PATH.get(sourcePath);
   if (flip !== undefined) {
     return {
@@ -346,6 +465,7 @@ export type PublicationPolicyProblem = {
     | "violation"
     | "stale-allow-list"
     | "stale-flip-list"
+    | "stale-withhold-list"
     | "forbidden-allow-list"
     | "policy-version"
     | "published-band";
@@ -355,6 +475,8 @@ export type PublicationPolicyProblem = {
 export type PublicationPolicyReport = {
   readonly published: readonly PublicationMetadata[];
   readonly demoted: readonly PublicationMetadata[];
+  /** Declared-but-ineligible pages (they never had a route, so no 301). */
+  readonly withheld: readonly PublicationMetadata[];
   readonly excluded: readonly PublicationMetadata[];
   readonly problems: readonly PublicationPolicyProblem[];
 };
@@ -369,6 +491,7 @@ export function evaluatePublicationPolicy(
   const problems: PublicationPolicyProblem[] = [];
   const published: PublicationMetadata[] = [];
   const demoted: PublicationMetadata[] = [];
+  const withheld: PublicationMetadata[] = [];
   const excluded: PublicationMetadata[] = [];
   const seen = new Map<string, PublicationMetadata>();
 
@@ -384,6 +507,7 @@ export function evaluatePublicationPolicy(
     const decision = decidePublication(meta);
     if (decision.kind === "publish") published.push(meta);
     else if (decision.kind === "demote") demoted.push(meta);
+    else if (decision.kind === "withhold") withheld.push(meta);
     else if (decision.kind === "exclude") excluded.push(meta);
     else {
       problems.push({
@@ -434,6 +558,62 @@ export function evaluatePublicationPolicy(
   checkList(ALLOW_LIST, "stale-allow-list", "publication-allow-list.json");
   checkList(FLIP_LIST, "stale-flip-list", "publication-flip-list.json");
 
+  // The withhold list may only shrink with the corpus too (bitty-website#98):
+  // an entry whose page is gone, unpublished, or now eligible / allow-listed /
+  // demoted must be removed in the same change, so a withheld page cannot stay
+  // silently withheld after the corpus fixed it.
+  for (const entry of WITHHOLD_LIST) {
+    const meta = seen.get(entry.path);
+    if (meta === undefined) {
+      problems.push({
+        kind: "stale-withhold-list",
+        detail: `publication-withhold-list.json lists ${entry.path}, which is not in the corpus at this revision`,
+      });
+      continue;
+    }
+    if (meta.website_publish !== true) {
+      problems.push({
+        kind: "stale-withhold-list",
+        detail: `publication-withhold-list.json lists ${entry.path}, which no longer sets website_publish: true; remove the entry`,
+      });
+      continue;
+    }
+    if (meta.audience !== entry.audience) {
+      problems.push({
+        kind: "stale-withhold-list",
+        detail: `publication-withhold-list.json records audience ${entry.audience} for ${entry.path}, but the corpus says ${meta.audience}`,
+      });
+    }
+    if (meta.document_type !== entry.document_type) {
+      problems.push({
+        kind: "stale-withhold-list",
+        detail: `publication-withhold-list.json records document_type ${entry.document_type} for ${entry.path}, but the corpus says ${meta.document_type}`,
+      });
+    }
+    const decision = decidePublication(meta);
+    if (decision.kind !== "withhold") {
+      problems.push({
+        kind: "stale-withhold-list",
+        detail: `publication-withhold-list.json lists ${entry.path}, which is now ${decision.kind}; remove the entry`,
+      });
+    }
+  }
+
+  for (const entry of WITHHOLD_LIST) {
+    if (FLIP_BY_PATH.has(entry.path)) {
+      problems.push({
+        kind: "violation",
+        detail: `${entry.path} is both withheld and demoted`,
+      });
+    }
+    if (ALLOW_BY_PATH.has(entry.path)) {
+      problems.push({
+        kind: "violation",
+        detail: `${entry.path} is both withheld and allow-listed`,
+      });
+    }
+  }
+
   for (const entry of ALLOW_LIST) {
     if (FLIP_BY_PATH.has(entry.path)) {
       problems.push({
@@ -462,7 +642,7 @@ export function evaluatePublicationPolicy(
     });
   }
 
-  return { published, demoted, excluded, problems };
+  return { published, demoted, withheld, excluded, problems };
 }
 
 /** Error thrown by {@link assertPublicationPolicy}, listing every problem. */

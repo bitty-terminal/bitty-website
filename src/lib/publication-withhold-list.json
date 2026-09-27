@@ -1,0 +1,5 @@
+{
+  "policy_version": "2026-09-28.4",
+  "note": "Declared-but-ineligible pages (bitty-website#98): each page sets website_publish: true but is not reader-facing under the unchanged #97 rule, is not allow-listed, and is not a demotion (a flip-list entry ships a 301 because the page was published once; a withheld page never had a route, so it ships none). Shrink-only: the fix belongs to the owning corpus (owner), which must flip website_publish, change the audience/document_type, or move the page; the entry is deleted here in the same coordinated change. A declared page that is ineligible, not allow-listed and not withheld keeps failing the build.",
+  "entries": []
+}

@@ -20,7 +20,9 @@
 import { describe, expect, test } from "bun:test";
 import { fileURLToPath } from "node:url";
 
+import docsRevision from "../content/docs-revision.json" with { type: "json" };
 import { readPublicationCorpus } from "./publicationCorpus.ts";
+import { mountForMirrorPath, parseDocsPinSet } from "./docsPins.ts";
 import {
   ALLOWED_AUDIENCES,
   EXCLUDED_DOCUMENT_TYPES,
@@ -41,6 +43,7 @@ import {
   meetsEligibilityRule,
   TYPE_AUDIENCE_EXCEPTIONS,
   type PublicationMetadata,
+  withholdListEntries,
 } from "./publicationPolicy.ts";
 
 /** The pinned corpus mirror, resolved without embedding a checkout path. */
@@ -68,6 +71,14 @@ const EXPECTED_ALLOW_LIST_PATHS: readonly string[] = [
 
 /** Demoted pages still awaiting the docs-side frontmatter flip (#98 owns it). */
 const EXPECTED_FLIP_LIST_COUNT = 52;
+
+/**
+ * Shrink-only pin of the withhold list (bitty-website#98): declared-but-
+ * ineligible pages, exact path set. Adding or removing an entry fails this
+ * test until the expectation below is updated in the same reviewed change.
+ */
+const EXPECTED_WITHHOLD_PATHS: readonly string[] = [];
+const EXPECTED_WITHHOLD_COUNT = 0;
 
 /**
  * The governance-path rule outranks the eligibility rule (review of #103, P1):
@@ -416,6 +427,9 @@ describe("pinned corpus", () => {
     // requests publication is a recorded, shrink-only demotion.
     expect(report.demoted.length).toBe(EXPECTED_FLIP_LIST_COUNT);
     expect(report.demoted.length).toBe(flipListEntries().length);
+    // Declared-but-ineligible pages ship no route; the count is pinned too.
+    expect(report.withheld.length).toBe(withholdListEntries().length);
+    expect(report.withheld.length).toBe(EXPECTED_WITHHOLD_COUNT);
   });
 
   test("the flip list is unique and matches the demoted set", async () => {
@@ -432,6 +446,75 @@ describe("pinned corpus", () => {
     const allowed = new Set(allowListEntries().map((entry) => entry.path));
     for (const entry of flipListEntries()) {
       expect(allowed.has(entry.path)).toBe(false);
+    }
+  });
+});
+
+describe("policy list source attribution (bitty-website#98)", () => {
+  const allEntries = () => [
+    ...allowListEntries(),
+    ...flipListEntries(),
+    ...withholdListEntries(),
+  ];
+
+  test("every entry names the pinned source that owns its path", () => {
+    const pins = parseDocsPinSet(docsRevision);
+    for (const entry of allEntries()) {
+      const owner = mountForMirrorPath(entry.path, pins);
+      expect({ path: entry.path, owner: owner?.id }).toEqual({
+        path: entry.path,
+        owner: entry.source,
+      });
+    }
+  });
+
+  test("every entry records a source id, never a repository URL", () => {
+    for (const entry of allEntries()) {
+      expect(entry.source).toMatch(/^[a-z][a-z0-9-]*$/u);
+    }
+  });
+});
+
+describe("withhold list (bitty-website#98)", () => {
+  test("the path set is pinned (shrink-only, reviewed)", () => {
+    expect(
+      [...withholdListEntries()].map((entry) => entry.path).sort(),
+    ).toEqual([...EXPECTED_WITHHOLD_PATHS]);
+    expect(withholdListEntries().length).toBe(EXPECTED_WITHHOLD_COUNT);
+  });
+
+  test("every entry records its owner repository and a reason", () => {
+    for (const entry of withholdListEntries()) {
+      expect(entry.owner.length).toBeGreaterThan(0);
+      expect(entry.reason.length).toBeGreaterThan(0);
+    }
+  });
+
+  test("a declared-but-ineligible page that is neither allow-listed nor withheld still fails closed", () => {
+    const pages = [
+      ...eligibleCorpus(),
+      metadata({
+        sourcePath: "docs/projects/bitty/security/README.md",
+        audience: "security-reviewer",
+        document_type: "index",
+      }),
+    ];
+    const report = evaluatePublicationPolicy(pages);
+    const violation = report.problems.find(
+      (problem) =>
+        problem.kind === "violation" &&
+        problem.detail.includes("docs/projects/bitty/security/README.md"),
+    );
+    expect(violation).toBeDefined();
+    expect(() => assertPublicationPolicy(pages)).toThrow(
+      PublicationPolicyError,
+    );
+  });
+
+  test("a withhold entry may not also be allow-listed or demoted", () => {
+    const withheld = new Set(withholdListEntries().map((entry) => entry.path));
+    for (const entry of [...allowListEntries(), ...flipListEntries()]) {
+      expect(withheld.has(entry.path)).toBe(false);
     }
   });
 });

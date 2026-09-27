@@ -194,6 +194,9 @@ async function main() {
     const demotedBySource = countBy(
       corpus.report.demoted.map((meta) => ownerOf(meta.sourcePath)),
     );
+    const withheldBySource = countBy(
+      corpus.report.withheld.map((meta) => ownerOf(meta.sourcePath)),
+    );
     const excludedBySource = countBy(
       corpus.report.excluded.map((meta) => ownerOf(meta.sourcePath)),
     );
@@ -216,7 +219,7 @@ async function main() {
             ).length,
             published: routes.length,
             demoted: demotedBySource.get(source.pin.id) ?? 0,
-            withheld: 0,
+            withheld: withheldBySource.get(source.pin.id) ?? 0,
             excluded: excludedBySource.get(source.pin.id) ?? 0,
           },
           files: hashMapOf(source.files),

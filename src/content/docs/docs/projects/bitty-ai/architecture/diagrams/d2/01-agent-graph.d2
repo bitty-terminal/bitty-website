@@ -1,0 +1,96 @@
+# architecture/diagrams/d2/01-agent-graph.d2 — L1 Agent Graph vs Task DAG, mailbox, context share
+# Source of truth: ../glossary.yaml (CTX-0077)
+# Statuses: solid = accepted/draft/implemented; dashed = candidate discussion input
+
+direction: right
+
+agents: {
+  label: "Agent Graph (candidate: cyclic, uniform agents, dynamic roles)"
+  style.stroke-dash: 4
+  style.fill: "#faf5ff"
+  leader: {
+    label: "Agent\nrole: leader"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  worker: {
+    label: "Agent\nrole: worker"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  reviewer: {
+    label: "Agent\nrole: reviewer"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+tasks: {
+  label: "Task DAG (candidate: acyclic) + draft authority"
+  style.stroke-dash: 4
+  style.fill: "#eff6ff"
+  t1: {
+    label: "Task T1"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  t2: {
+    label: "Task T2"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  authority: {
+    label: "Product Task\nsingle authority (draft R5)"
+  }
+}
+
+mailbox_layer: {
+  label: "Mailbox + share"
+  style.stroke-dash: 3
+  style.fill: "#ecfdf5"
+  mailbox: {
+    label: "Mailbox\naccepted / delivered / processed (draft)"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  bundle: {
+    label: "Context Bundle\nsummary first, lazy expand (candidate)"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+accepted: {
+  label: "Accepted floor"
+  style.fill: "#fef3c7"
+  channel: {
+    label: "IPC Channel\nlocal-user scopes"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  message: {
+    label: "AgentMessage\nbounded, labeled"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+agents.leader -> agents.worker: "message (candidate)" {
+  style.stroke-dash: 3
+}
+agents.worker -> agents.reviewer: "message (candidate)" {
+  style.stroke-dash: 3
+}
+agents.reviewer -> agents.leader: "review (candidate, cyclic OK)" {
+  style.stroke-dash: 3
+}
+tasks.t1 -> tasks.t2: "depends (candidate, acyclic)"
+tasks.t2 -> tasks.authority: "refines toward draft"
+agents.leader -> mailbox_layer.mailbox: "sends over graph (candidate)" {
+  style.stroke-dash: 3
+}
+mailbox_layer.mailbox -> mailbox_layer.bundle: "carries base + refs (candidate)" {
+  style.stroke-dash: 3
+}
+mailbox_layer.mailbox -> accepted.channel: "rides accepted transport"
+accepted.message -> mailbox_layer.mailbox: "conforms vocabulary"

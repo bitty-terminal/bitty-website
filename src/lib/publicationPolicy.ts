@@ -49,7 +49,7 @@ import flipListData from "./publication-flip-list.json" with { type: "json" };
 import withholdListData from "./publication-withhold-list.json" with { type: "json" };
 
 /** Policy revision, bumped whenever the rule, the data files, or a bound moves. */
-export const PUBLICATION_POLICY_VERSION = "2026-09-28.5";
+export const PUBLICATION_POLICY_VERSION = "2026-09-28.6";
 
 /** Date the owner decision behind this policy was recorded. */
 export const PUBLICATION_POLICY_DATE = "2026-09-27";

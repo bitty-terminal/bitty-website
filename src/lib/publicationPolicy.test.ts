@@ -105,9 +105,24 @@ const EXPECTED_FLIP_LIST_COUNT = 46;
  * ineligible pages, exact path set. Adding or removing an entry fails this
  * test until the expectation below is updated in the same reviewed change.
  * 14 are `bitty-terminal-docs` pages owned by `bitty-core`; 8 are
- * `bitty-plugins-docs` pages owned by `bitty-plugins` (T6 onboarding).
+ * `bitty-plugins-docs` pages owned by `bitty-plugins` (T6 onboarding); 11 are
+ * `bitty-ai-docs` pages owned by `bitty-ai` (T7 onboarding) — every page the AI
+ * corpus declares for publication. The AI corpus publishes 0 pages under the
+ * unchanged #97 rule (all 11 are `contributor`/`mixed`/`security-reviewer`),
+ * and this list is the only reason they do not fail the build.
  */
 const EXPECTED_WITHHOLD_PATHS: readonly string[] = [
+  "docs/projects/bitty-ai/agent/README.md",
+  "docs/projects/bitty-ai/architecture/ai-architecture.md",
+  "docs/projects/bitty-ai/context/README.md",
+  "docs/projects/bitty-ai/integration/README.md",
+  "docs/projects/bitty-ai/interfaces/README.md",
+  "docs/projects/bitty-ai/persistence/README.md",
+  "docs/projects/bitty-ai/product/README.md",
+  "docs/projects/bitty-ai/product/ai-vertical-slice-pressure-test.md",
+  "docs/projects/bitty-ai/providers/README.md",
+  "docs/projects/bitty-ai/specifications/README.md",
+  "docs/projects/bitty-ai/specifications/ipc-agent-rfc.md",
   "docs/projects/bitty/configuration/README.md",
   "docs/projects/bitty/development/README.md",
   "docs/projects/bitty/interfaces/README.md",
@@ -131,7 +146,7 @@ const EXPECTED_WITHHOLD_PATHS: readonly string[] = [
   "docs/projects/plugins/specifications/README.md",
   "docs/projects/plugins/specifications/manifest-capability-authority.md",
 ];
-const EXPECTED_WITHHOLD_COUNT = 22;
+const EXPECTED_WITHHOLD_COUNT = 33;
 
 /**
  * The governance-path rule outranks the eligibility rule (review of #103, P1):
@@ -470,7 +485,8 @@ describe("fail closed", () => {
     // legitimate aggregate (21 published after onboarding
     // `bitty-terminal-docs`) and the measured state once `bitty-plugins-docs`
     // lands (47 = bitty-docs 3 + bitty-terminal-docs 18 + bitty-plugins-docs
-    // 26), so a shrink or a re-tightening here is a reviewed change.
+    // 26 + bitty-ai-docs 0), so a shrink or a re-tightening here is a reviewed
+    // change.
     expect(PUBLISHED_PAGE_MIN).toBeLessThanOrEqual(21);
     expect(PUBLISHED_PAGE_MAX).toBeGreaterThanOrEqual(47);
   });
@@ -519,13 +535,18 @@ describe("pinned corpus", () => {
       (sum, pin) => sum + pin.published.min,
       0,
     );
-    // 3 (bitty-docs) + 18 (bitty-terminal-docs) + 26 (bitty-plugins-docs) = 47
-    // after the T6 onboarding. The plan's "44" counts only the three pinned
-    // project corpora and omits the 3 governance pages the reduced bitty-docs
-    // source still owns (the revision index, the roadmap index, and its
-    // remaining published page); the measured aggregate is 47.
+    // 3 (bitty-docs) + 18 (bitty-terminal-docs) + 26 (bitty-plugins-docs) + 0
+    // (bitty-ai-docs) = 47 after the T7 onboarding. The plan's "44" counts only
+    // the three pinned project corpora and omits the 3 governance pages the
+    // reduced bitty-docs source still owns (the revision index, the roadmap
+    // index, and its remaining published page); the measured aggregate is 47.
+    // The AI source contributes zero: all 11 of its declared pages are
+    // `contributor`/`mixed`/`security-reviewer` and are withheld (T7).
     expect(report.published.length).toBe(expected);
     expect(report.published.length).toBe(47);
+    expect(
+      pins.sources.find((pin) => pin.id === "bitty-ai-docs"),
+    ).toMatchObject({ published: { min: 0, max: 0 } });
   });
 
   test("the flip list is unique and matches the demoted set", async () => {
@@ -649,6 +670,8 @@ describe("withhold list (bitty-website#98)", () => {
         expect(entry.owner).toBe("bitty-core");
       } else if (entry.source === "bitty-plugins-docs") {
         expect(entry.owner).toBe("bitty-plugins");
+      } else if (entry.source === "bitty-ai-docs") {
+        expect(entry.owner).toBe("bitty-ai");
       } else {
         throw new Error(`unexpected withhold source "${entry.source}"`);
       }
@@ -656,6 +679,11 @@ describe("withhold list (bitty-website#98)", () => {
     expect(
       listed.filter((entry) => entry.source === "bitty-plugins-docs").length,
     ).toBe(8);
+    // T7: every page the AI corpus declares for publication is withheld, so the
+    // AI source's published set is empty by measurement, not by omission.
+    expect(
+      listed.filter((entry) => entry.source === "bitty-ai-docs").length,
+    ).toBe(11);
   });
 
   test("a withhold entry may not also be allow-listed or demoted", () => {

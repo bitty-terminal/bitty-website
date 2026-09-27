@@ -65,6 +65,15 @@ export const NAV_GROUPS: readonly NavGroup[] = [
       // Plugin host runtime topics (`projects/plugins/runtime/...`): how the
       // platform executes plugins is design, not a reference lookup.
       "runtime",
+      // AI-core design topics (`projects/bitty-ai/<topic>/...`): agent
+      // coordination, context assembly, cross-repository integration,
+      // persistence and provider boundaries are architecture-level design,
+      // like `architecture/` itself.
+      "agent",
+      "context",
+      "integration",
+      "persistence",
+      "providers",
     ],
   },
   {

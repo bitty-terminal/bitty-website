@@ -10,7 +10,11 @@ import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { nearestPublishedAncestor } from "./docsRoutes.ts";
+import {
+  nearestPublishedAncestor,
+  sourcePathToRouteIdentity,
+} from "./docsRoutes.ts";
+import { withholdListEntries } from "./publicationPolicy.ts";
 import {
   CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT,
   CLOUDFLARE_STATIC_REDIRECT_LIMIT,
@@ -274,7 +278,7 @@ describe("renderRedirectEvidence (deployed provenance key set, #98)", () => {
  * demoted (its post-migration page ships a policy 301 of its own) or absent
  * because the source that owns the page has not landed yet; in both cases the
  * route is a leaf whose single correct interim target is `/docs/`, the nearest
- * published ancestor. The 22 pages of `publication-withhold-list.json` are not
+ * published ancestor. The 33 pages of `publication-withhold-list.json` are not
  * here: they are withheld precisely because they never had a route.
  *
  *   - the 28 remaining flat CTX-0185 aliases: `docs/specifications/*.md`
@@ -435,6 +439,127 @@ describe("interim redirect continuity for moved routes (#98)", () => {
       // The reason names the exact target, not the interim ancestor.
       expect(entry?.reason).toContain(target);
       expect(entry?.reason).not.toContain("interim target /docs/");
+    }
+  });
+});
+
+/**
+ * T7 `bitty-ai-docs` onboarding: the determination, with evidence, that NO
+ * route which answered a redirect before the change gains a published target
+ * from the AI corpus — so every interim `/docs/` entry stays exactly as it was.
+ *
+ * This is what the plan's T7 line "the remaining moved-route redirects" means:
+ * each route below was answered by a 301 before T7 and its post-migration page
+ * lives in the AI corpus, so it is the only candidate for a retarget; the
+ * plan's expectation is zero. The AI corpus publishes 0 pages under the
+ * unchanged #97 rule — the 11 pages it declares (`8x mixed/index`,
+ * `2x contributor/specification`, `1x security-reviewer/specification`) are
+ * either recorded in `publication-withhold-list.json` or, for the one page that
+ * declares `website_publish: false`, excluded — so each successor exists in the
+ * mirror but ships no route and is not a legal target. Retargeting here would
+ * point a 301 at a route with no page, the class of loss §3.3 forbids.
+ *
+ * Pinned as a test so the day the corpus flips a page on, this fails and the
+ * entry must move to `RETARGETED_ROUTES` (or be dropped) in the same reviewed
+ * change. Do not "fix" it by editing `src/redirects.json` without that evidence.
+ */
+const AI_MOVED_ROUTES: readonly (readonly [string, string])[] = [
+  // [route answered by a 301 today, successor mirror path in the AI corpus]
+  [
+    "/docs/specifications/ai-architecture/",
+    "docs/projects/bitty-ai/architecture/ai-architecture.md",
+  ],
+  [
+    "/docs/specifications/browser-agent-pre-study/",
+    "docs/projects/bitty-ai/interfaces/browser-agent-pre-study.md",
+  ],
+  [
+    "/docs/specifications/ipc-agent-rfc/",
+    "docs/projects/bitty-ai/specifications/ipc-agent-rfc.md",
+  ],
+  [
+    "/docs/projects/bitty/specifications/ai-architecture/",
+    "docs/projects/bitty-ai/architecture/ai-architecture.md",
+  ],
+  [
+    "/docs/projects/bitty/specifications/ipc-agent-rfc/",
+    "docs/projects/bitty-ai/specifications/ipc-agent-rfc.md",
+  ],
+] as const;
+
+describe("AI moved-route redirect determination (#98 T7)", () => {
+  const entries = JSON.parse(
+    readFileSync(join(import.meta.dir, "..", "redirects.json"), "utf8"),
+  ) as readonly RedirectEntry[];
+  const manifest = JSON.parse(
+    readFileSync(
+      join(import.meta.dir, "..", "content", "docs-manifest.json"),
+      "utf8",
+    ),
+  ) as {
+    readonly sources: readonly {
+      readonly id: string;
+      readonly files: Readonly<Record<string, string>>;
+      readonly published_routes: readonly string[];
+    }[];
+  };
+  const published = new Set(
+    manifest.sources.flatMap((source) => source.published_routes),
+  );
+  const withheld = new Set(withholdListEntries().map((entry) => entry.path));
+  const aiFiles = new Set(
+    Object.keys(
+      manifest.sources.find((source) => source.id === "bitty-ai-docs")?.files ??
+        {},
+    ),
+  );
+
+  test("the AI source publishes zero routes at its pinned revision", () => {
+    const ai = manifest.sources.find((source) => source.id === "bitty-ai-docs");
+    expect(ai).toBeDefined();
+    expect(ai?.published_routes).toEqual([]);
+  });
+
+  test("every candidate successor is consumed but publishes no route", () => {
+    for (const [, successor] of AI_MOVED_ROUTES) {
+      expect(aiFiles.has(successor), `${successor} is not consumed`).toBe(true);
+      const route = sourcePathToRouteIdentity(successor).routeWithoutVersion;
+      expect(
+        published.has(route),
+        `${successor} is published; a retarget may now be required`,
+      ).toBe(false);
+      // Either the corpus declares it for publication and the unchanged #97
+      // rule withholds it, or it does not request publication at all
+      // (`interfaces/browser-agent-pre-study.md`). In both cases it has no
+      // route, so the interim `/docs/` target is the only legal one.
+      const declares = /^website_publish:\s*true$/mu.test(
+        readFileSync(
+          join(import.meta.dir, "..", "content", "docs", successor),
+          "utf8",
+        ),
+      );
+      expect(
+        declares,
+        `${successor} declares website_publish: true but is not withheld`,
+      ).toBe(withheld.has(successor));
+    }
+  });
+
+  test("every candidate route keeps its interim /docs/ target (no retarget)", () => {
+    for (const [old] of AI_MOVED_ROUTES) {
+      const entry = entries.find((candidate) => candidate.old === old);
+      expect(entry, `no redirect entry for ${old}`).toBeDefined();
+      expect(entry?.status).toBe(301);
+      expect(entry?.new).toBe("/docs/");
+      expect(entry?.descendants).toBe(false);
+    }
+  });
+
+  test("no AI successor route is a redirect target and none is published", () => {
+    for (const [, successor] of AI_MOVED_ROUTES) {
+      const route = sourcePathToRouteIdentity(successor).routeWithoutVersion;
+      expect(published.has(route)).toBe(false);
+      expect(entries.some((candidate) => candidate.new === route)).toBe(false);
     }
   });
 });

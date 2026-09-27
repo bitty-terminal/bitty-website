@@ -1,0 +1,112 @@
+# architecture/diagrams/d2/00-overview.d2 — L0 AI overview: six objects, graph split, compile
+# Source of truth: ../glossary.yaml (CTX-0077)
+# Statuses: solid = accepted/draft/implemented; dashed = candidate discussion input
+
+direction: right
+
+six_objects: {
+  label: "Six objects (candidate)"
+  style.stroke-dash: 4
+  style.fill: "#faf5ff"
+  agent: {
+    label: "Agent\nactor, mobile"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  panel: {
+    label: "Panel\nworkspace, may sit agentless"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  event_log: {
+    label: "Event Log\nimmutable facts"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  context_view: {
+    label: "Context\nrecompilable view"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  task: {
+    label: "Task\ngoal and state"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  artifact: {
+    label: "Artifact\ncontent-addressed"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+graphs: {
+  label: "Two graphs, kept apart (candidate)"
+  style.stroke-dash: 4
+  style.fill: "#eff6ff"
+  agent_graph: {
+    label: "Agent Graph\ncyclic OK"
+  }
+  task_dag: {
+    label: "Task DAG\nacyclic"
+  }
+}
+
+compile: {
+  label: "Compile pipeline"
+  style.stroke-dash: 3
+  style.fill: "#ecfdf5"
+  journal: {
+    label: "Session Journal\ndraft"
+    shape: rectangle
+    style.border-radius: 8
+  }
+  compiler: {
+    label: "Context Compiler\ncandidate"
+  }
+  hot: {
+    label: "Hot view\nbudgeted prompt"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+rfc: {
+  label: "Accepted floor (IPC and Agent RFC)"
+  style.fill: "#fef3c7"
+  ipc: {
+    label: "IPC Channel\nlocal-user scopes"
+    shape: rectangle
+    style.border-radius: 8
+  }
+}
+
+six_objects.agent -> six_objects.panel: "is not (candidate)" {
+  style.stroke-dash: 3
+}
+six_objects.panel -> six_objects.context_view: "is not (candidate)" {
+  style.stroke-dash: 3
+}
+six_objects.context_view -> six_objects.event_log: "projection of (candidate)" {
+  style.stroke-dash: 3
+}
+six_objects.task -> six_objects.agent: "survives turnover (candidate)" {
+  style.stroke-dash: 3
+}
+graphs.agent_graph -> six_objects.agent: "organizes (candidate)" {
+  style.stroke-dash: 3
+}
+graphs.task_dag -> six_objects.task: "orders (candidate)" {
+  style.stroke-dash: 3
+}
+six_objects.event_log -> compile.journal: "informs (candidate)" {
+  style.stroke-dash: 3
+}
+compile.journal -> compile.compiler: "feeds"
+compile.compiler -> compile.hot: "compiles (candidate)" {
+  style.stroke-dash: 3
+}
+six_objects.artifact -> compile.hot: "externalized refs (candidate)" {
+  style.stroke-dash: 3
+}
+rfc.ipc -> six_objects.agent: "gates agent effects (accepted)"

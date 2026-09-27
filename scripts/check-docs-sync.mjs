@@ -18,13 +18,13 @@ import {
   diffHashMaps,
   docsOnly,
   hashTree,
-  listEligibleSourcePaths,
   materializeSnapshot,
   readPinFile,
   repoPaths,
   runParityGates,
 } from "./lib/docs-source.mjs";
 import { validateRouteCollisions } from "../src/lib/docsRoutes.ts";
+import { loadPublicationCorpus } from "../src/lib/publicationCorpus.ts";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const paths = repoPaths(ROOT);
@@ -83,10 +83,16 @@ async function main() {
     }
     runParityGates(snapshot.dir);
 
+    // The publication policy is the gate's first fail-closed check: the
+    // mirror must only publish reader-facing pages, and the count below is
+    // exactly the set the build publishes (website#97, closing website#102
+    // D2/D6). Runs on the committed mirror, before the staleness report, so a
+    // governance page on the site is never masked by mirror diff noise.
+    const corpus = await loadPublicationCorpus(paths.mirrorRoot);
+    validateRouteCollisions(corpus.publishedSources);
+
     const expectedFiles = docsOnly(await hashTree(snapshot.dir));
     const mirrorFiles = await hashTree(paths.mirrorRoot);
-    const eligible = await listEligibleSourcePaths(paths.mirrorRoot);
-    validateRouteCollisions(eligible);
 
     if (committed.revision !== snapshot.sha) {
       fail(
@@ -139,7 +145,7 @@ async function main() {
     }
 
     console.log(
-      `docs mirror current at ${snapshot.sha} (${Object.keys(expectedFiles).length} files, ${eligible.length} publishable, parity green)`,
+      `docs mirror current at ${snapshot.sha} (${Object.keys(expectedFiles).length} files, ${corpus.report.published.length} publishable, ${corpus.redirects.length} excluded page(s) redirect, parity green)`,
     );
   } finally {
     if (snapshot) await cleanupSnapshot(snapshot.dir);

@@ -245,3 +245,27 @@ export function validateRouteCollisions(sourcePaths: readonly string[]): void {
     byRoute.set(normalized, sp);
   }
 }
+
+/**
+ * Nearest ancestor route of `route` that is part of `publishedRoutes`.
+ *
+ * The publication policy (`./publicationPolicy.ts`, website#97) excludes
+ * pages from the site; each excluded route redirects to the closest surviving
+ * page above it instead of 404ing. `/docs/` (the revision index) is the last
+ * candidate, so the caller learns about an unpublished index by getting
+ * `null` and can fail closed rather than emit a redirect onto a dead route.
+ *
+ * @returns the ancestor route ending with `/`, or `null` when no ancestor is
+ *   published
+ */
+export function nearestPublishedAncestor(
+  route: string,
+  publishedRoutes: ReadonlySet<string>,
+): string | null {
+  const segments = route.split("/").filter((segment) => segment.length > 0);
+  for (let end = segments.length - 1; end >= 1; end -= 1) {
+    const candidate = `/${segments.slice(0, end).join("/")}/`;
+    if (publishedRoutes.has(candidate)) return candidate;
+  }
+  return null;
+}

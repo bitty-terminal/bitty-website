@@ -10,6 +10,7 @@ import { describe, expect, test } from "bun:test";
 
 import {
   MIRROR_MARKER,
+  publishedEntriesFrom,
   sidebarEntriesFrom,
   slugFromSourceFile,
   sourcePathFromFilePath,
@@ -79,24 +80,34 @@ describe("slugFromSourceFile", () => {
 describe("sidebarEntriesFrom", () => {
   const entries: DocsEntryLike[] = [
     {
-      id: "decisions/index",
-      filePath: mirror("docs/decisions/index.md"),
+      id: "roadmap/README",
+      filePath: mirror("docs/roadmap/README.md"),
       data: {
-        title: "Decision register",
+        title: "Roadmap",
         sidebar_order: 1,
+        audience: "user",
+        document_type: "index",
+        status: "accepted",
         website_publish: true,
       },
     },
     {
       id: "handoff/README",
       filePath: mirror("docs/handoff/README.md"),
-      data: { title: "Handoff", sidebar_order: 2, website_publish: false },
+      data: {
+        title: "Handoff",
+        sidebar_order: 2,
+        audience: "user",
+        document_type: "index",
+        status: "accepted",
+        website_publish: false,
+      },
     },
   ];
 
   test("keeps published entries with their canonical slug, title, and order", () => {
     expect(sidebarEntriesFrom(entries)).toEqual([
-      { slug: "decisions", title: "Decision register", order: 1 },
+      { slug: "roadmap/readme", title: "Roadmap", order: 1 },
     ]);
   });
 
@@ -109,5 +120,60 @@ describe("sidebarEntriesFrom", () => {
         })),
       ),
     ).toEqual([]);
+  });
+
+  test("drops a page that requests publication without being eligible", () => {
+    // website#97: `website_publish: true` alone no longer routes a page. The
+    // demotion is recorded in the docs-side flip list, so the content layer
+    // filters it out exactly like the route page does.
+    const demoted: DocsEntryLike = {
+      id: "decisions/index",
+      filePath: mirror("docs/decisions/index.md"),
+      data: {
+        title: "Decision register",
+        sidebar_order: 3,
+        audience: "maintainer",
+        document_type: "register",
+        status: "accepted",
+        website_publish: true,
+      },
+    };
+    expect(sidebarEntriesFrom([...entries, demoted])).toEqual([
+      { slug: "roadmap/readme", title: "Roadmap", order: 1 },
+    ]);
+  });
+});
+
+describe("publishedEntriesFrom", () => {
+  test("derives the published set from the shared publication policy", () => {
+    const entries: DocsEntryLike[] = [
+      {
+        id: "roadmap/README",
+        filePath: mirror("docs/roadmap/README.md"),
+        data: {
+          title: "Roadmap",
+          sidebar_order: 1,
+          audience: "mixed",
+          document_type: "index",
+          status: "accepted",
+          website_publish: true,
+        },
+      },
+      {
+        id: "security/overview",
+        filePath: mirror("docs/security/overview.md"),
+        data: {
+          title: "Security overview",
+          sidebar_order: 2,
+          audience: "security-reviewer",
+          document_type: "policy",
+          status: "normative",
+          website_publish: true,
+        },
+      },
+    ];
+    expect(publishedEntriesFrom(entries).map((entry) => entry.id)).toEqual([
+      "roadmap/README",
+    ]);
   });
 });

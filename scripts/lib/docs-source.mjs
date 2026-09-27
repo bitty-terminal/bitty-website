@@ -323,29 +323,14 @@ export async function hashTree(dir) {
 }
 
 /**
- * `docs/...` paths whose frontmatter sets `website_publish: true`.
- * `dirWithDocs` is a tree that contains a top-level `docs/` directory.
+ * Publication eligibility is NOT defined here.
+ *
+ * The published set — and therefore the `N publishable` count the sync/check
+ * pipeline prints — comes from the one policy module
+ * (`src/lib/publicationCorpus.ts` over `src/lib/publicationPolicy.ts`,
+ * website#97). This module keeps only the pinned-source boundary (pin file,
+ * isolated snapshot, parity gates, mirror + manifest hashing).
  */
-export async function listEligibleSourcePaths(dirWithDocs) {
-  const found = [];
-  async function walk(dir, rel) {
-    const entries = await readdir(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const full = join(dir, entry.name);
-      const next = rel ? `${rel}/${entry.name}` : entry.name;
-      if (entry.isDirectory()) {
-        await walk(full, next);
-      } else if (entry.isFile() && next.endsWith(".md")) {
-        const body = await readFile(full, "utf8");
-        if (/^website_publish:\s*true\s*$/m.test(body)) {
-          found.push(`docs/${next}`);
-        }
-      }
-    }
-  }
-  await walk(join(dirWithDocs, "docs"), "");
-  return found.sort();
-}
 
 /** Only the `docs/...` entries of a whole-tree hash map. */
 export function docsOnly(hashes) {

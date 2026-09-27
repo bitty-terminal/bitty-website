@@ -307,11 +307,15 @@ describe("a11y docs shell audit", () => {
     );
   });
 
-  // Invariant for the comparison text (CTX-0050): the tag removal is a
-  // fixed-point loop, because CodeQL's js/incomplete-multi-character-sanitization
+  // Invariant for the comparison text (CTX-0050): the tag removal runs to a
+  // fixed point, because CodeQL's js/incomplete-multi-character-sanitization
   // (high) fires on the single-pass form and that alert fails the required
-  // CodeQL check. There is no `<`-shaped residue left, and re-applying the
-  // removal changes nothing.
+  // CodeQL check. This test documents the invariant; it is NOT a guard that
+  // fails when the loop is reverted — measured, the single pass and the loop
+  // agree on every input tried ({a,<,>} strings up to length 8, and the 422
+  // built HTML files), so the CI CodeQL check is what actually pins the loop.
+  // A lone `<` with no `>` also survives; the value is only ever compared as
+  // text and never inserted into a document.
   test("removes nested angle brackets to a fixed point", () => {
     const nested = "<<script>alert(1)<</script>";
     expect(normalizedText(nested)).toBe("alert(1)");

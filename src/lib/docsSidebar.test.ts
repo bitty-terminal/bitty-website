@@ -301,6 +301,19 @@ describe("buildBreadcrumbs", () => {
       { label: "Overview", href: null },
     ]);
   });
+
+  // The docs index is a published page, not a constant: a corpus revision that
+  // stops publishing it must not leave the trail pointing at the old route.
+  test("does not link the docs index when no page is published there", () => {
+    const withoutIndex = new Map(titles);
+    withoutIndex.delete("");
+    const crumbs = buildBreadcrumbs({
+      version: "latest",
+      slug: "decisions/adrs/adr-0003-core-workspace-topology",
+      titles: withoutIndex,
+    });
+    expect(crumbs[0]).toEqual({ label: DOCS_ROOT_LABEL, href: null });
+  });
 });
 
 describe("hrefFor", () => {

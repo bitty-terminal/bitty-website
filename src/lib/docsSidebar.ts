@@ -189,10 +189,11 @@ export function pagerFor(
 /**
  * Breadcrumb trail for a canonical docs slug, derived from the route (never
  * from corpus frontmatter): the docs index, the reader-intent group, then
- * every route prefix up to the current page. Intermediate steps link only
- * when a published page exists at that route, so a trail can never point at a
- * 404; the current step is always plain text, and labels use the same
- * render-time display rule as the sidebar.
+ * every route prefix up to the current page. Every step links only when a
+ * published page exists at that route — including the docs index, which is a
+ * published page rather than a constant — so a trail can never point at a 404;
+ * the current step is always plain text, and labels use the same render-time
+ * display rule as the sidebar.
  */
 export function buildBreadcrumbs(options: {
   readonly version: string;
@@ -203,7 +204,7 @@ export function buildBreadcrumbs(options: {
   const items: BreadcrumbItem[] = [
     {
       label: DOCS_ROOT_LABEL,
-      href: slug === "" ? null : hrefFor(version, ""),
+      href: slug === "" || !titles.has("") ? null : hrefFor(version, ""),
     },
     { label: navGroupLabel(groupForRoute(slug)), href: null },
   ];

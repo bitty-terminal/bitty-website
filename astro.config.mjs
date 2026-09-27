@@ -9,18 +9,26 @@ import versions from "./src/content/versions.json" with { type: "json" };
 import { CDN_BASE_URL } from "./src/lib/cdn.ts";
 import { docsLinksMdastPlugin } from "./src/lib/docsLinksPlugin.ts";
 import { docsHeadingsMdastPlugin } from "./src/lib/docsHeadings.ts";
+import { loadPublicationCorpus } from "./src/lib/publicationCorpus.ts";
 import { sourceDirToRouteDir } from "./src/lib/docsRoutes.ts";
 import {
   SEARCH_INDEX_FILENAME,
   writeSearchIndex,
 } from "./src/lib/searchIndex.ts";
+import { SITEMAP_FILENAME, writeSitemaps } from "./src/lib/sitemap.ts";
 import {
   BASE_REDIRECTS,
   buildExpandedRedirectTable,
+  buildPublicationRedirectEntries,
   loadMergedRedirects,
+  lowestVersion,
+  mergeRedirectEntries,
   renderEdgeRedirects,
   renderRedirectEvidence,
 } from "./src/lib/redirects.ts";
+
+/** Single deployment origin: the canonical URL of every emitted sitemap. */
+const SITE_URL = "https://bitty.run";
 
 const mirrorRoot = fileURLToPath(
   new URL("./src/content/docs", import.meta.url),
@@ -51,7 +59,22 @@ function resolveVersion(segment) {
 }
 
 async function writeRedirectArtifacts(outDir) {
-  const entries = await loadMergedRedirects();
+  // RD-3/RD-6 plus the publication policy (website#97): the legacy alias
+  // manifest and the 301s for every page the policy excludes are merged into
+  // one expanded table, so an excluded route leaves the site as a redirect
+  // instead of a 404. The plan comes from the policy, never from a second
+  // eligibility rule here.
+  const corpus = await loadPublicationCorpus(mirrorRoot);
+  const publicationEntries = buildPublicationRedirectEntries(
+    corpus.redirects,
+    // An exclusion applies to every hosted segment, so the entries take
+    // effect from the lowest hosted version onward (RD-4).
+    lowestVersion(hostedVersionSegments.map(resolveVersion)),
+  );
+  const entries = mergeRedirectEntries(
+    await loadMergedRedirects(),
+    publicationEntries,
+  );
   const table = buildExpandedRedirectTable(
     entries,
     hostedVersionSegments,
@@ -183,8 +206,30 @@ function searchIndexArtifacts() {
   };
 }
 
+// Website Delivery RFC MV-6: the sitemap is emitted from the built output, so
+// it can only list pages the build published (the publication policy's
+// excluded routes emit no page and ship a 301 instead). The global sitemap
+// lists the `latest` routes as canonical; each hosted segment gets its own.
+function sitemapArtifacts() {
+  return {
+    name: "bitty-sitemap",
+    hooks: {
+      "astro:build:done": async ({ dir, logger }) => {
+        const counts = await writeSitemaps(fileURLToPath(dir), {
+          origin: SITE_URL,
+          hostedVersions: hostedVersionSegments,
+          canonicalVersion: "latest",
+        });
+        logger.info(
+          `wrote ${SITEMAP_FILENAME} with ${counts.canonical} canonical url(s); per-version sitemaps: ${hostedVersionSegments.map((segment) => `${segment}=${counts.perVersion[segment] ?? 0}`).join(", ")}`,
+        );
+      },
+    },
+  };
+}
+
 export default defineConfig({
-  site: "https://bitty.run",
+  site: SITE_URL,
   output: "static",
   outDir: "./dist",
   redirects: { ...BASE_REDIRECTS },
@@ -212,5 +257,10 @@ export default defineConfig({
       ],
     }),
   },
-  integrations: [redirectArtifacts(), docsAssets(), searchIndexArtifacts()],
+  integrations: [
+    redirectArtifacts(),
+    docsAssets(),
+    searchIndexArtifacts(),
+    sitemapArtifacts(),
+  ],
 });

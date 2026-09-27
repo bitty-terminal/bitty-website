@@ -8,10 +8,14 @@ import {
   validateRouteCollisions,
 } from "../../../lib/docsRoutes.ts";
 import {
+  assertCollectionPublicationPolicy,
+  publicationMetadataFromEntry,
+  publishedEntriesFrom,
   sidebarEntriesFrom,
   slugFromSourceFile,
   sourcePathFromFilePath,
 } from "../../../lib/docsEntries.ts";
+import { pageBadges } from "../../../lib/pageBadges.ts";
 import {
   buildLegacyAliases,
   loadMergedRedirects,
@@ -45,8 +49,16 @@ export async function getStaticPaths() {
   const versions = getVersions();
   const docs = await getCollection("docs");
 
-  // Only eligible entries (website_publish:true after validation per LD-3)
-  const eligible = docs.filter((e) => e.data.website_publish === true);
+  // One eligibility definition (website#97, closing website#102 D2/D6): the
+  // published set is what `../../../lib/publicationPolicy.ts` publishes, and
+  // the same assertion the sync/check pipeline runs fails this build when a
+  // page requests publication without being eligible, allow-listed, or
+  // recorded in the docs-side flip list. An excluded route emits no page at
+  // all; the build's redirect table sends it to its nearest surviving
+  // ancestor, so the pinned corpus cannot leak governance pages onto the
+  // public site.
+  assertCollectionPublicationPolicy(docs);
+  const eligible = publishedEntriesFrom(docs);
 
   // RM-4: two distinct eligible sources sharing one public route fail the
   // build here as well as in sync/check (same mapper, same rule).
@@ -174,6 +186,13 @@ if (isLegacy) {
   );
 }
 
+// Page-level status presentation (website#97): the page's own `status`, its
+// `audience`, and — when the metadata states a contract that is not
+// implemented — a `Contract not implemented` badge. Every value comes from
+// frontmatter through `../../../lib/pageBadges.ts`; the canonical document is
+// rendered unchanged and no prose state sentence is parsed or rewritten.
+const badges = pageBadges(publicationMetadataFromEntry(entry));
+
 const { Content, headings } = await render(entry);
 const versions = getVersions();
 const versionLabels = new Map(
@@ -248,10 +267,17 @@ const navTitles = new Map(navEntries.map((entry) => [entry.slug, entry.title]));
               {entry.data.category} · {versionLabels.get(version) ?? version}
             </p>
             <h1>{entry.data.title}</h1>
-            <p class="route-meta">
-              {entry.data.category} · {entry.data.document_type} ·{" "}
-              {entry.data.status}
-            </p>
+            <ul class="page-badges">
+              {badges.map((badge) => (
+                <li
+                  class="page-badge"
+                  data-badge={badge.id}
+                  data-value={badge.value}
+                >
+                  {badge.label}
+                </li>
+              ))}
+            </ul>
           </header>
           <DocsToc headings={headings} />
           <article class="prose">

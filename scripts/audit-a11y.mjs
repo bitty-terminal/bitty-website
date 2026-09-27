@@ -55,6 +55,28 @@ async function exists(path) {
   }
 }
 
+/**
+ * Dist-relative HTML paths covered by an exact rule in `dist/redirects.json`.
+ *
+ * A redirected route is a shipped route: the publication policy (website#97)
+ * excludes pages from the site and every excluded route 301s to its nearest
+ * surviving ancestor, so a link to one resolves instead of 404ing. Redirect
+ * stubs are covered on their own by the collected HTML paths.
+ */
+async function redirectCoveredRoutes() {
+  const file = join(dist, "redirects.json");
+  if (!(await exists(file))) return [];
+  const parsed = JSON.parse(await readFile(file, "utf8"));
+  const rules = Array.isArray(parsed?.redirects) ? parsed.redirects : [];
+  const covered = [];
+  for (const rule of rules) {
+    const from = typeof rule?.from === "string" ? rule.from : "";
+    if (!from.startsWith("/docs/") || !from.endsWith("/")) continue;
+    covered.push(`${from.slice(1)}index.html`);
+  }
+  return covered;
+}
+
 function checkHeadingOrder(html) {
   const levels = [];
   const pattern = /<h([1-6])\b[^>]*>/gi;
@@ -255,6 +277,9 @@ if (!(await exists(dist))) {
     `audited ${renderedPages.length} rendered page(s) from ${pages.length} HTML file(s); skipped ${redirectStubs} redirect stub(s)`,
   );
   const knownPages = new Set(pages.map((entry) => entry.relativePath));
+  for (const covered of await redirectCoveredRoutes()) {
+    knownPages.add(covered);
+  }
   for (const page of renderedPages) {
     const name =
       page.path === join(dist, "index.html")

@@ -104,9 +104,12 @@ jobs:
           if ! jq -e '
               .schema == 2
               and (.sources | type == "array")
-              and (.sources | length > 0)
             ' "$pin_file" >/dev/null; then
-            echo "::error::$pin_file must be a schema-2 pin with a non-empty sources[] array (the pre-#98 scalar revision is retired)"
+            echo "::error::$pin_file must be a schema-2 pin with a sources[] array (the pre-#98 scalar revision is retired)"
+            exit 1
+          fi
+          if ! jq -e '(.sources | length > 0)' "$pin_file" >/dev/null; then
+            echo "::error::$pin_file pins no source: sources[] is empty"
             exit 1
           fi
           bad_sources="$(jq -r '
@@ -119,7 +122,7 @@ jobs:
             ' "$pin_file")"
           if [ -n "$bad_sources" ]; then
             while IFS= read -r bad_source; do
-              echo "::error::source \"$bad_source\" in $pin_file has no usable revision (each schema-2 sources[] entry needs a non-empty id, source, and revision string; a scalar read returns null)"
+              echo "::error::source \"$bad_source\" in $pin_file has no usable id, source or revision (each schema-2 sources[] entry needs a non-empty id, source, and revision string; a scalar read returns null)"
             done <<<"$bad_sources"
             exit 1
           fi

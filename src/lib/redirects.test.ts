@@ -72,16 +72,44 @@ describe("assertSectionRootsRender (bitty-website#137)", () => {
     expect(assertSectionRootsRender(pages, [])).toBe(2);
   });
 
-  test("accepts a root the redirect table resolves, both exact and by splat", () => {
+  test("accepts a root a rule resolves in both forms, and a splat descendant", () => {
+    const pages = new Set([
+      "docs/latest/architecture/readme/index.html",
+      "docs/latest/architecture/final/readme/index.html",
+    ]);
+    const rules = [
+      // Both URL forms, the shape #140 requires: the exact rule answers the
+      // slash form, the slash-less twin answers the bare one.
+      { from: "/docs/latest/architecture/", to: "/docs/latest/x/" },
+      { from: "/docs/latest/architecture", to: "/docs/latest/x/" },
+      // A wildcard base also covers the descendants, in both forms.
+      { from: "/docs/latest/architecture/*", to: "/docs/latest/x/:splat" },
+    ];
+    expect(assertSectionRootsRender(pages, rules)).toBe(2);
+  });
+
+  test("fails closed when only the slash form resolves (bitty-website#140)", () => {
     const pages = new Set([
       "docs/latest/architecture/readme/index.html",
       "docs/latest/user-guide/readme/index.html",
     ]);
     const rules = [
       { from: "/docs/latest/architecture/", to: "/docs/latest/x/" },
+      // A wildcard base carries the trailing slash, so it never answers the
+      // bare root.
       { from: "/docs/latest/user-guide/*", to: "/docs/latest/x/:splat" },
     ];
-    expect(assertSectionRootsRender(pages, rules)).toBe(2);
+    expect(() => assertSectionRootsRender(pages, rules)).toThrow(
+      /does not resolve in both URL forms/u,
+    );
+  });
+
+  test("a rendered root satisfies both forms", () => {
+    const pages = new Set([
+      "docs/latest/architecture/index.html",
+      "docs/latest/architecture/readme/index.html",
+    ]);
+    expect(assertSectionRootsRender(pages, [])).toBe(1);
   });
 
   test("fails closed when a section index renders and its root does not resolve", () => {
@@ -1204,5 +1232,54 @@ describe("assertRedirectStubsLandOnPages (bitty-website#141)", () => {
         pages,
       ),
     ).toThrow(/lands on another stub/u);
+  });
+});
+
+describe("buildLegacyAliases: the legacy root form (bitty-website#140)", () => {
+  const entries: readonly RedirectEntry[] = [
+    {
+      old: "/docs/architecture/",
+      new: "/docs/projects/bitty/architecture/",
+      index_new: "/docs/projects/bitty/architecture/readme/",
+      status: 301,
+      reason: "partition migration",
+      effective_version: "0.1.0",
+    },
+  ];
+
+  test("gives the legacy root a stub so its bare form resolves", () => {
+    expect([
+      ...buildLegacyAliases(["projects/bitty/architecture/readme"], entries),
+    ]).toEqual([
+      ["architecture/readme", "projects/bitty/architecture/readme"],
+      ["architecture", "projects/bitty/architecture/readme"],
+    ]);
+  });
+
+  test("leaves a legacy base that renders canonically on its own", () => {
+    expect([
+      ...buildLegacyAliases(["projects/bitty/architecture"], entries),
+    ]).toEqual([["architecture", "projects/bitty/architecture"]]);
+  });
+
+  test("fails closed when the curated landing is not a published route", () => {
+    expect(() =>
+      buildLegacyAliases(["projects/bitty/architecture/other"], entries),
+    ).toThrow(/would land on/u);
+  });
+
+  test("skips an entry that names no landing at all", () => {
+    const noLanding: readonly RedirectEntry[] = [
+      {
+        old: "/docs/guides/",
+        new: "/docs/projects/bitty/guides/",
+        status: 301,
+        reason: "subtree move",
+        effective_version: "0.1.0",
+      },
+    ];
+    expect([
+      ...buildLegacyAliases(["projects/bitty/guides/one"], noLanding),
+    ]).toEqual([["guides/one", "projects/bitty/guides/one"]]);
   });
 });

@@ -610,6 +610,32 @@ export function buildLegacyAliases(
         `Redirect target "${entry.new}" has no currently published route (RD-4)`,
       );
     }
+    // The directory root itself. The slash form is served by the exact rule,
+    // but a slash-less `/docs/<v>/<old>` matches no rule (a wildcard base
+    // carries the trailing slash) and would land on the 404 document
+    // (bitty-website#140). The landing is the entry's curated target - the same
+    // page the exact rule sends the slash form to.
+    const indexNew = entry.index_new;
+    if (!canonical.has(newBase) && indexNew !== undefined) {
+      const target = toSlug(indexNew);
+      if (canonical.has(oldBase)) {
+        throw new Error(
+          `Legacy root alias "${oldBase}" collides with a canonical route`,
+        );
+      }
+      if (!canonical.has(target)) {
+        throw new Error(
+          `Legacy root alias "${oldBase}" would land on "${target}", which no published route renders (bitty-website#140)`,
+        );
+      }
+      const existing = aliases.get(oldBase);
+      if (existing !== undefined && existing !== target) {
+        throw new Error(
+          `Legacy root alias "${oldBase}" maps to both "${existing}" and "${target}"`,
+        );
+      }
+      aliases.set(oldBase, target);
+    }
   }
   return aliases;
 }
@@ -685,10 +711,12 @@ export function buildSectionRootAliases(
  * root (`<dir>/`), or a reader reaching the section root gets the 404 document
  * even though the section page exists one level down.
  *
- * Reachable means any of the three ways the deployed URL space serves a root:
- * the build renders it (the derived section-root alias, which is what a
- * canonical section gets), an exact redirect rule names it (a legacy partition
- * root), or a wildcard rule covers it (the legacy namespace's descendants).
+ * Reachable means, in **both** URL forms (`<dir>/` and `<dir>`), any of the
+ * three ways the deployed URL space serves a root: the build renders it (the
+ * derived section-root alias, which is what a canonical section gets), an exact
+ * redirect rule names it (a legacy partition root, slash form and slash-less
+ * twin), or a wildcard rule covers it (the legacy namespace's descendants - a
+ * wildcard base carries its trailing slash, so it never answers the bare root).
  * All three are read from the artifacts the deploy uploads, so a root that no
  * artifact serves fails instead of being assumed reachable.
  *
@@ -728,19 +756,18 @@ export function assertSectionRootsRender(
       continue;
     }
     const root = `${dir}/`;
-    const reachable =
-      routes.has(root) ||
-      exactSources.has(dir) ||
-      exactSources.has(root) ||
-      // A `*` matches an empty splat, so a wildcard base covers the root it
-      // sits on as well as its descendants - production answers the legacy
-      // partition roots with exactly that rule shape, and a reader following it
-      // lands on the section index (verified live for all twelve before this
-      // gate was written).
-      wildcardBases.some((base) => root.startsWith(base));
-    if (!reachable) {
+    const rendered = routes.has(root);
+    // A wildcard base carries its trailing slash, so the rule answers the slash
+    // form and the descendants, but never the bare root (that URL is shorter
+    // than the base); the bare form needs a page or a slash-less exact rule
+    // (bitty-website#140).
+    const wildcardSlash = wildcardBases.some((base) => root.startsWith(base));
+    const wildcardBare = wildcardBases.some((base) => dir.startsWith(base));
+    const slashReachable = rendered || exactSources.has(root) || wildcardSlash;
+    const bareReachable = rendered || exactSources.has(dir) || wildcardBare;
+    if (!slashReachable || !bareReachable) {
       throw new Error(
-        `Section root does not resolve: ${root} (its index ${route} renders, so a reader reaching the section root gets the 404 document; bitty-website#137)`,
+        `Section root does not resolve in both URL forms: ${root} (rendered ${rendered}, exact slash ${exactSources.has(root)}, exact bare ${exactSources.has(dir)}, wildcard slash ${wildcardSlash}, wildcard bare ${wildcardBare}; its index ${route} renders, so a reader reaching the unresolved form gets the 404 document; bitty-website#137/#140)`,
       );
     }
     roots += 1;

@@ -764,7 +764,16 @@ export function assertRedirectStubsLandOnPages(
   knownPages: ReadonlySet<string>,
 ): number {
   const routes = publishedRoutePaths(knownPages);
+  // A stub's own route is emitted HTML, so membership in `routes` alone cannot
+  // tell a landing from a hop: exclude the stub routes themselves, or a chain
+  // would satisfy the very gate meant to fail it.
+  const stubRoutes = new Set(stubs.map((stub) => stub.route));
   for (const stub of stubs) {
+    if (stubRoutes.has(stub.target)) {
+      throw new Error(
+        `Redirect stub ${stub.route} lands on another stub (${stub.target}); a stub must land on a page (bitty-website#141)`,
+      );
+    }
     if (!routes.has(stub.target)) {
       throw new Error(
         `Redirect stub ${stub.route} points at ${stub.target}, which no page renders (a stub must land on a page; bitty-website#141)`,

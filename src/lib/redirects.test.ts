@@ -1189,4 +1189,20 @@ describe("assertRedirectStubsLandOnPages (bitty-website#141)", () => {
       ),
     ).toThrow(/which no page renders/u);
   });
+
+  test("fails closed on a chain: a stub may not land on another stub", () => {
+    const pages = new Set([
+      "docs/latest/a/index.html",
+      "docs/latest/b/index.html",
+    ]);
+    expect(() =>
+      assertRedirectStubsLandOnPages(
+        [
+          { route: "/docs/latest/a/", target: "/docs/latest/b/" },
+          { route: "/docs/latest/b/", target: "/docs/latest/a/" },
+        ],
+        pages,
+      ),
+    ).toThrow(/lands on another stub/u);
+  });
 });

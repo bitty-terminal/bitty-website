@@ -302,11 +302,17 @@ export default defineConfig({
   markdown: {
     // Dual code theme (CTX-0049, website#95): Shiki emits both palettes as
     // custom properties and global.css picks the one that matches the
-    // document colour scheme. `one-light`/`one-dark-pro` sit closest to the
-    // cool neutral + vermilion palette; the previous single `github-dark`
-    // theme painted a dark block onto the pale page.
+    // document colour scheme; the previous single `github-dark` theme painted
+    // a dark block onto the pale page.
+    //
+    // Light palette (CTX-0057, website#129): `one-light` painted comments at
+    // 2.30:1, strings 2.86, keywords 3.28 and builtins 3.73 on the light code
+    // background -- all below the WCAG AA 4.5 threshold that axe flagged at
+    // "serious" across 296 nodes. `github-light` keeps a restrained neutral
+    // palette and clears the threshold on every token role, measured on the
+    // built artefact rather than assumed.
     shikiConfig: {
-      themes: { light: "one-light", dark: "one-dark-pro" },
+      themes: { light: "github-light", dark: "one-dark-pro" },
     },
     processor: satteri({
       mdastPlugins: [

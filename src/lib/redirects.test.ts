@@ -20,6 +20,7 @@ import {
   CLOUDFLARE_STATIC_REDIRECT_LIMIT,
   CLOUDFLARE_TOTAL_REDIRECT_LIMIT,
   PUBLICATION_REDIRECT_REASON,
+  assertRedirectStubsLandOnPages,
   assertRedirectTargetsRender,
   assertSectionRootsRender,
   buildExpandedRedirectTable,
@@ -1041,5 +1042,151 @@ describe("assertRedirectTargetsRender (dist two-arm gate, bitty-website#104)", (
         pages,
       ),
     ).toEqual({ exactTargets: 0, wildcardBases: 0, skipped: 1 });
+  });
+});
+
+describe("buildSectionRootAliases: withheld index (bitty-website#141)", () => {
+  // The publication policy withholds a section *index* whose directory also
+  // holds published pages (#97), so no `<dir>/readme/` exists to derive a root
+  // alias from. The manifest already names where such a root must land.
+  const withheld: readonly RedirectEntry[] = [
+    {
+      old: "/docs/configuration/",
+      new: "/docs/projects/bitty/configuration/",
+      index_new: "/docs/projects/bitty/configuration/lua-and-xdg/",
+      status: 301,
+      reason: "partition migration",
+      effective_version: "0.1.0",
+    },
+  ];
+
+  test("lands the root on the manifest index_new target", () => {
+    expect([
+      ...buildSectionRootAliases(
+        [
+          "projects/bitty/configuration/lua-and-xdg",
+          "projects/bitty/configuration/interfaces",
+        ],
+        withheld,
+      ),
+    ]).toEqual([
+      [
+        "projects/bitty/configuration",
+        "projects/bitty/configuration/lua-and-xdg",
+      ],
+    ]);
+  });
+
+  test("skips an entry that names no landing at all", () => {
+    const noLanding: readonly RedirectEntry[] = [
+      {
+        old: "/docs/guides/",
+        new: "/docs/projects/bitty/guides/",
+        status: 301,
+        reason: "subtree move",
+        effective_version: "0.1.0",
+      },
+    ];
+    expect([
+      ...buildSectionRootAliases(["projects/bitty/guides/one"], noLanding),
+    ]).toEqual([]);
+  });
+
+  test("fails closed when the named landing is not a published route", () => {
+    expect(() =>
+      buildSectionRootAliases(["projects/bitty/configuration/other"], withheld),
+    ).toThrow(/which no published route renders/u);
+  });
+
+  test("leaves a directory that already renders untouched", () => {
+    expect([
+      ...buildSectionRootAliases(
+        [
+          "projects/bitty/configuration",
+          "projects/bitty/configuration/lua-and-xdg",
+        ],
+        withheld,
+      ),
+    ]).toEqual([]);
+  });
+
+  test("accepts both arms agreeing, and rejects a conflicting target", () => {
+    const agreeing: readonly RedirectEntry[] = [
+      {
+        old: "/docs/architecture/",
+        new: "/docs/projects/bitty/architecture/",
+        index_new: "/docs/projects/bitty/architecture/readme/",
+        status: 301,
+        reason: "partition migration",
+        effective_version: "0.1.0",
+      },
+    ];
+    expect([
+      ...buildSectionRootAliases(
+        ["projects/bitty/architecture/readme"],
+        agreeing,
+      ),
+    ]).toEqual([
+      ["projects/bitty/architecture", "projects/bitty/architecture/readme"],
+    ]);
+
+    const conflicting: readonly RedirectEntry[] = [
+      {
+        old: "/docs/architecture/",
+        new: "/docs/projects/bitty/architecture/",
+        index_new: "/docs/projects/bitty/architecture/overview/",
+        status: 301,
+        reason: "partition migration",
+        effective_version: "0.1.0",
+      },
+    ];
+    expect(() =>
+      buildSectionRootAliases(
+        [
+          "projects/bitty/architecture/readme",
+          "projects/bitty/architecture/overview",
+        ],
+        conflicting,
+      ),
+    ).toThrow(/maps to both/u);
+  });
+});
+
+describe("assertRedirectStubsLandOnPages (bitty-website#141)", () => {
+  // A root may be served by a stub (#137). A stub whose target renders nothing
+  // is a chain that ends on the 404 document, which a reader cannot tell from
+  // having no route at all.
+  test("counts stubs whose target renders a page", () => {
+    const pages = new Set([
+      "docs/latest/projects/bitty/configuration/readme/index.html",
+    ]);
+    expect(
+      assertRedirectStubsLandOnPages(
+        [
+          {
+            route: "/docs/latest/projects/bitty/configuration/",
+            target: "/docs/latest/projects/bitty/configuration/readme/",
+          },
+        ],
+        pages,
+      ),
+    ).toBe(1);
+  });
+
+  test("fails closed when a stub points at a route no page serves", () => {
+    const pages = new Set([
+      "docs/latest/projects/bitty/configuration/readme/index.html",
+    ]);
+    expect(() =>
+      assertRedirectStubsLandOnPages(
+        [
+          {
+            route: "/docs/latest/configuration/",
+            target: "/docs/latest/projects/bitty/configuration/",
+          },
+        ],
+        pages,
+      ),
+    ).toThrow(/which no page renders/u);
   });
 });

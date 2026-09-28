@@ -7,7 +7,7 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 import {
@@ -21,8 +21,10 @@ import {
   CLOUDFLARE_TOTAL_REDIRECT_LIMIT,
   PUBLICATION_REDIRECT_REASON,
   buildExpandedRedirectTable,
+  buildLegacyAliases,
   buildPublicationRedirectEntries,
   lowestVersion,
+  mergeRedirectEntries,
   renderEdgeRedirects,
   renderRedirectEvidence,
   type RedirectEntry,
@@ -562,5 +564,321 @@ describe("AI moved-route redirect determination (#98 T7)", () => {
       expect(published.has(route)).toBe(false);
       expect(entries.some((candidate) => candidate.new === route)).toBe(false);
     }
+  });
+});
+
+/**
+ * bitty-website#104: the 12 bitty-docs#257 (`CTX-0185`) partition-migration
+ * aliases are subtree moves, so each carries TWO targets rather than one
+ * overloaded `new`:
+ *
+ * - `new` is the descendants prefix (`/docs/projects/bitty/<dir>/`): the base
+ *   of the edge `:splat` rule and the pattern the static legacy alias stub
+ *   pages are derived from, so every descendant URL keeps its page;
+ * - `index_new` is the exact-rule target: a route the mirror renders, which
+ *   the subtree root itself 301s onto. The bare prefix renders no page
+ *   (`README.md` maps to `<dir>/readme/`), so nine subtrees name that index
+ *   route; the remaining three have their index withheld by the unchanged #97
+ *   rule (mixed audience + `index` document type, owner `bitty-core`), so
+ *   their exact target is the first published child by `sidebar_order`.
+ *
+ * Pinned as a fixture: a target may only change here together with evidence
+ * that the mirror renders it at the pinned revision.
+ */
+const PARTITION_MIGRATION_ALIASES: readonly {
+  readonly old: string;
+  readonly prefix: string;
+  readonly index: string;
+  readonly kind: "subtree-index" | "first-published-child";
+}[] = [
+  {
+    old: "/docs/architecture/",
+    prefix: "/docs/projects/bitty/architecture/",
+    index: "/docs/projects/bitty/architecture/readme/",
+    kind: "subtree-index",
+  },
+  {
+    old: "/docs/configuration/",
+    prefix: "/docs/projects/bitty/configuration/",
+    index: "/docs/projects/bitty/configuration/lua-and-xdg/",
+    kind: "first-published-child",
+  },
+  {
+    old: "/docs/examples/",
+    prefix: "/docs/projects/bitty/examples/",
+    index: "/docs/projects/bitty/examples/readme/",
+    kind: "subtree-index",
+  },
+  {
+    old: "/docs/how-to/",
+    prefix: "/docs/projects/bitty/how-to/",
+    index: "/docs/projects/bitty/how-to/readme/",
+    kind: "subtree-index",
+  },
+  {
+    old: "/docs/interfaces/",
+    prefix: "/docs/projects/bitty/interfaces/",
+    index: "/docs/projects/bitty/interfaces/cli/",
+    kind: "first-published-child",
+  },
+  {
+    old: "/docs/migrations/",
+    prefix: "/docs/projects/bitty/migrations/",
+    index: "/docs/projects/bitty/migrations/readme/",
+    kind: "subtree-index",
+  },
+  {
+    old: "/docs/product/",
+    prefix: "/docs/projects/bitty/product/",
+    index: "/docs/projects/bitty/product/vision/",
+    kind: "first-published-child",
+  },
+  {
+    old: "/docs/reference/",
+    prefix: "/docs/projects/bitty/reference/",
+    index: "/docs/projects/bitty/reference/readme/",
+    kind: "subtree-index",
+  },
+  {
+    old: "/docs/requirements/",
+    prefix: "/docs/projects/bitty/requirements/",
+    index: "/docs/projects/bitty/requirements/readme/",
+    kind: "subtree-index",
+  },
+  {
+    old: "/docs/troubleshooting/",
+    prefix: "/docs/projects/bitty/troubleshooting/",
+    index: "/docs/projects/bitty/troubleshooting/readme/",
+    kind: "subtree-index",
+  },
+  {
+    old: "/docs/tutorials/",
+    prefix: "/docs/projects/bitty/tutorials/",
+    index: "/docs/projects/bitty/tutorials/readme/",
+    kind: "subtree-index",
+  },
+  {
+    old: "/docs/user-guide/",
+    prefix: "/docs/projects/bitty/user-guide/",
+    index: "/docs/projects/bitty/user-guide/readme/",
+    kind: "subtree-index",
+  },
+] as const;
+
+/** `/docs/projects/bitty/<dir>/<child>/` -> captures `<dir>`. */
+const CHILD_TARGET_MATCH = /^\/docs\/projects\/bitty\/([^/]+)\/[^/]+\/$/u;
+
+describe("partition-migration aliases keep descendants and render (bitty-website#104)", () => {
+  const entries = JSON.parse(
+    readFileSync(join(import.meta.dir, "..", "redirects.json"), "utf8"),
+  ) as readonly RedirectEntry[];
+  const manifest = JSON.parse(
+    readFileSync(
+      join(import.meta.dir, "..", "content", "docs-manifest.json"),
+      "utf8",
+    ),
+  ) as {
+    readonly sources: readonly {
+      readonly published_routes: readonly string[];
+    }[];
+  };
+  const published = new Set(
+    manifest.sources.flatMap((source) => source.published_routes),
+  );
+  const docsRoot = join(import.meta.dir, "..", "content", "docs");
+
+  const frontmatter = (file: string): ReadonlyMap<string, string> => {
+    const match = /^---\r?\n([\s\S]*?)\r?\n---/u.exec(
+      readFileSync(file, "utf8"),
+    );
+    const fields = new Map<string, string>();
+    for (const line of (match?.[1] ?? "").split(/\r?\n/u)) {
+      const pair = /^([A-Za-z0-9_]+):\s*(.*)$/u.exec(line);
+      if (pair?.[1] !== undefined) fields.set(pair[1], (pair[2] ?? "").trim());
+    }
+    return fields;
+  };
+
+  test("the fixture is exactly the 12 partition-migration entries", () => {
+    const olds = PARTITION_MIGRATION_ALIASES.map((alias) => alias.old);
+    expect(new Set(olds).size).toBe(12);
+    const real = entries.filter((entry) =>
+      entry.reason.includes("partition migration"),
+    );
+    expect(real.map((entry) => entry.old).sort()).toEqual([...olds].sort());
+  });
+
+  test("each alias records the descendants prefix in new and a rendered index_new", () => {
+    for (const { old, prefix, index } of PARTITION_MIGRATION_ALIASES) {
+      const entry = entries.find((candidate) => candidate.old === old);
+      expect(entry, `no redirect entry for ${old}`).toBeDefined();
+      expect(entry?.status).toBe(301);
+      expect(entry?.effective_version).toBe("0.1.0");
+      // `new` is the descendants prefix the wildcard rule and the static alias
+      // stubs are built from.
+      expect(entry?.new).toBe(prefix);
+      // `index_new` is the exact-rule target: a route the mirror renders.
+      expect(entry?.index_new).toBe(index);
+      // The reason records the split and its cause, in source-relative form.
+      expect(entry?.reason).toContain(prefix.slice(1));
+      expect(entry?.reason).toContain(index.slice(1));
+      expect(entry?.reason).toContain("bitty-website#104");
+      expect(published.has(index), `${index} is not a published route`).toBe(
+        true,
+      );
+      // The prefix must have a real published descendant, or the wildcard rule
+      // and the descendant stub pages would both be dead.
+      expect(
+        [...published].some(
+          (route) => route.startsWith(prefix) && route.length > prefix.length,
+        ),
+        `${prefix} has no published descendant`,
+      ).toBe(true);
+    }
+  });
+
+  test("the nine subtree-index aliases target <dir>/readme/", () => {
+    const index = PARTITION_MIGRATION_ALIASES.filter(
+      (alias) => alias.kind === "subtree-index",
+    );
+    expect(index).toHaveLength(9);
+    for (const { index: target } of index) {
+      expect(target.endsWith("/readme/")).toBe(true);
+    }
+  });
+
+  test("the three withheld subtrees target their first published child by sidebar_order", () => {
+    const child = PARTITION_MIGRATION_ALIASES.filter(
+      (alias) => alias.kind === "first-published-child",
+    );
+    expect(child).toHaveLength(3);
+    for (const { old, index: target } of child) {
+      const match = CHILD_TARGET_MATCH.exec(target);
+      expect(match, `target is not a child route: ${target}`).not.toBeNull();
+      const dir = match?.[1] as string;
+      const dirRoot = join(docsRoot, "docs", "projects", "bitty", dir);
+      const publishedChildren = readdirSync(dirRoot, { recursive: true })
+        .map((name) => String(name).split("\\").join("/"))
+        .filter((name) => name.endsWith(".md"))
+        .map((name) => {
+          const route = sourcePathToRouteIdentity(
+            `docs/projects/bitty/${dir}/${name}`,
+          ).routeWithoutVersion;
+          const order = Number(
+            frontmatter(join(dirRoot, name)).get("sidebar_order"),
+          );
+          return { route, order };
+        })
+        .filter((candidate) => published.has(candidate.route))
+        .sort((a, b) => a.order - b.order);
+      expect(publishedChildren.length).toBeGreaterThan(0);
+      expect(
+        publishedChildren[0]?.route,
+        `first published child of ${old}`,
+      ).toBe(target);
+      // The subtree index is not published — the reason the alias names a
+      // child at all (the #97 rule withholds it).
+      expect(published.has(old)).toBe(false);
+      expect(published.has(`${old}readme/`)).toBe(false);
+    }
+  });
+
+  test("the split cannot shrink the legacy descendant stub set", () => {
+    // buildLegacyAliases derives aliases from `new` (the descendants prefix),
+    // never from `index_new`, so every published descendant still gets a stub.
+    const subtreeMoves = entries.filter(
+      (entry) =>
+        entry.old === "/docs/architecture/" ||
+        entry.old === "/docs/configuration/",
+    );
+    const slugs = [
+      "projects/bitty/architecture/core-boundaries",
+      "projects/bitty/architecture/readme",
+      "projects/bitty/configuration/lua-and-xdg",
+    ];
+    const aliases = buildLegacyAliases(slugs, subtreeMoves);
+    expect(aliases.get("architecture/core-boundaries")).toBe(
+      "projects/bitty/architecture/core-boundaries",
+    );
+    expect(aliases.get("architecture/readme")).toBe(
+      "projects/bitty/architecture/readme",
+    );
+    expect(aliases.get("configuration/lua-and-xdg")).toBe(
+      "projects/bitty/configuration/lua-and-xdg",
+    );
+  });
+});
+
+describe("subtree-move target split (bitty-website#104)", () => {
+  const versions = ["latest", "0.1.0"];
+  const split: readonly RedirectEntry[] = [
+    {
+      old: "/docs/architecture/",
+      new: "/docs/projects/bitty/architecture/",
+      index_new: "/docs/projects/bitty/architecture/readme/",
+      status: 301,
+      reason: "subtree move",
+      effective_version: "0.1.0",
+    },
+  ];
+  const plain: readonly RedirectEntry[] = [
+    {
+      old: "/docs/guides/",
+      new: "/docs/projects/bitty/guides/",
+      status: 301,
+      reason: "subtree move",
+      effective_version: "0.1.0",
+    },
+  ];
+
+  test("absent index_new: the exact rule uses new and no splat split exists", () => {
+    const table = buildExpandedRedirectTable(plain, versions);
+    expect(table[0]?.to).toBe("/docs/0.1.0/projects/bitty/guides/");
+    expect(table[0]?.splat_to).toBeUndefined();
+  });
+
+  test("present index_new: the exact rule uses it and the wildcard keeps new", () => {
+    const table = buildExpandedRedirectTable(split, versions);
+    const latest = table.find((rule) => rule.version === "latest");
+    expect(latest?.to).toBe("/docs/latest/projects/bitty/architecture/readme/");
+    expect(latest?.splat_to).toBe("/docs/latest/projects/bitty/architecture/");
+    const lines = renderEdgeRedirects(table, {}).split("\n");
+    expect(lines).toContain(
+      "/docs/latest/architecture/ /docs/latest/projects/bitty/architecture/readme/ 301",
+    );
+    expect(lines).toContain(
+      "/docs/latest/architecture/* /docs/latest/projects/bitty/architecture/:splat 301",
+    );
+  });
+
+  test("evidence records both targets, so the dist gate can check both arms", () => {
+    const payload = JSON.parse(
+      renderRedirectEvidence(
+        buildExpandedRedirectTable([...split, ...plain], versions),
+        { docsRevisions: {}, hostedVersions: versions },
+      ),
+    );
+    const splitRow = payload.redirects.find(
+      (rule: { from: string }) => rule.from === "/docs/latest/architecture/",
+    );
+    expect(splitRow.to).toBe(
+      "/docs/latest/projects/bitty/architecture/readme/",
+    );
+    expect(splitRow.splat_to).toBe("/docs/latest/projects/bitty/architecture/");
+    const plainRow = payload.redirects.find(
+      (rule: { from: string }) => rule.from === "/docs/latest/guides/",
+    );
+    expect(plainRow.splat_to).toBe("/docs/latest/projects/bitty/guides/");
+  });
+
+  test("conflicting index_new between sources fails closed", () => {
+    expect(() =>
+      mergeRedirectEntries(split, [
+        {
+          ...(split[0] as RedirectEntry),
+          index_new: "/docs/projects/bitty/architecture/overview/",
+        },
+      ]),
+    ).toThrow(/Conflicting redirect targets for \/docs\/architecture\//u);
   });
 });

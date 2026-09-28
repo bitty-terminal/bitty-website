@@ -21,9 +21,11 @@ import {
   CLOUDFLARE_TOTAL_REDIRECT_LIMIT,
   PUBLICATION_REDIRECT_REASON,
   assertRedirectTargetsRender,
+  assertSectionRootsRender,
   buildExpandedRedirectTable,
   buildLegacyAliases,
   buildPublicationRedirectEntries,
+  buildSectionRootAliases,
   isWildcardRedirectTarget,
   lowestVersion,
   mergeRedirectEntries,
@@ -31,6 +33,65 @@ import {
   renderRedirectEvidence,
   type RedirectEntry,
 } from "./redirects.ts";
+
+describe("buildSectionRootAliases (bitty-website#137)", () => {
+  test("aliases a section root to the index route it renders at", () => {
+    const aliases = buildSectionRootAliases([
+      "projects/bitty/architecture/readme",
+      "projects/bitty/architecture/overview",
+      "projects/bitty/configuration/lua-and-xdg",
+    ]);
+    expect([...aliases]).toEqual([
+      ["projects/bitty/architecture", "projects/bitty/architecture/readme"],
+    ]);
+  });
+
+  test("leaves a directory that already renders on its own alone", () => {
+    expect([
+      ...buildSectionRootAliases([
+        "projects/bitty/architecture",
+        "projects/bitty/architecture/readme",
+      ]),
+    ]).toEqual([]);
+  });
+
+  test("leaves the revision index (the corpus root) alone", () => {
+    expect([...buildSectionRootAliases(["readme"])]).toEqual([]);
+  });
+});
+
+describe("assertSectionRootsRender (bitty-website#137)", () => {
+  test("counts every section root that renders beside its index", () => {
+    const pages = new Set([
+      "docs/latest/projects/bitty/architecture/index.html",
+      "docs/latest/projects/bitty/architecture/readme/index.html",
+      "docs/0.1.0/projects/bitty/architecture/index.html",
+      "docs/0.1.0/projects/bitty/architecture/readme/index.html",
+    ]);
+    expect(assertSectionRootsRender(pages, [])).toBe(2);
+  });
+
+  test("accepts a root the redirect table resolves, both exact and by splat", () => {
+    const pages = new Set([
+      "docs/latest/architecture/readme/index.html",
+      "docs/latest/user-guide/readme/index.html",
+    ]);
+    const rules = [
+      { from: "/docs/latest/architecture/", to: "/docs/latest/x/" },
+      { from: "/docs/latest/user-guide/*", to: "/docs/latest/x/:splat" },
+    ];
+    expect(assertSectionRootsRender(pages, rules)).toBe(2);
+  });
+
+  test("fails closed when a section index renders and its root does not resolve", () => {
+    const pages = new Set([
+      "docs/latest/projects/bitty/architecture/readme/index.html",
+    ]);
+    expect(() => assertSectionRootsRender(pages, [])).toThrow(
+      /Section root does not resolve/,
+    );
+  });
+});
 
 describe("nearestPublishedAncestor", () => {
   const published = new Set<string>([

@@ -609,6 +609,109 @@ export function buildLegacyAliases(
   return aliases;
 }
 
+/** Route segment the route mapper gives a corpus directory's index file
+ * (`README.md`), see `src/lib/docsRoutes.ts` (`<dir>/README.md` ->
+ * `<dir>/readme/`). */
+const SECTION_INDEX_SLUG = "readme";
+
+/**
+ * Section-root aliases (bitty-website#137). A corpus directory's index page is
+ * its `README.md`, which the route mapper renders at `<dir>/readme/`, so the
+ * directory root itself renders nothing. A reader who types the section name,
+ * follows a stale bookmark, or follows a relative link one level up from a
+ * child page therefore landed on the 404 document - which is how the gap
+ * surfaced (bitty-terminal-docs#134 had to name `../readme/` instead of `../`).
+ *
+ * The alias is derived from the published route identity already in hand, so no
+ * second route mapper is introduced (RM-6), and the docs route renders it as
+ * the same 301 stub a legacy alias gets: the section keeps exactly one
+ * canonical route and the sitemap keeps skipping stubs. A directory that
+ * already renders is left alone, as is the revision index (the corpus root).
+ */
+export function buildSectionRootAliases(
+  canonicalSlugs: readonly string[],
+): Map<string, string> {
+  const canonical = new Set(canonicalSlugs);
+  const aliases = new Map<string, string>();
+  const suffix = `/${SECTION_INDEX_SLUG}`;
+  for (const slug of canonicalSlugs) {
+    if (!slug.endsWith(suffix)) continue;
+    const dir = slug.slice(0, -suffix.length);
+    if (dir.length === 0 || canonical.has(dir)) continue;
+    aliases.set(dir, slug);
+  }
+  return aliases;
+}
+
+/**
+ * Dist render assertion for the same invariant (bitty-website#137). Every
+ * rendered section index (`<dir>/readme/`) must be reachable at its section
+ * root (`<dir>/`), or a reader reaching the section root gets the 404 document
+ * even though the section page exists one level down.
+ *
+ * Reachable means any of the three ways the deployed URL space serves a root:
+ * the build renders it (the derived section-root alias, which is what a
+ * canonical section gets), an exact redirect rule names it (a legacy partition
+ * root), or a wildcard rule covers it (the legacy namespace's descendants).
+ * All three are read from the artifacts the deploy uploads, so a root that no
+ * artifact serves fails instead of being assumed reachable.
+ *
+ * @param knownPages - dist-relative HTML paths (`docs/<version>/<slug>/index.html`)
+ * @param redirects - the `redirects` array of `dist/redirects.json`
+ * @returns the number of section indexes proved to be reachable
+ * @throws when a section index renders and its root is unreachable
+ */
+export function assertSectionRootsRender(
+  knownPages: ReadonlySet<string>,
+  redirects: ReadonlyArray<{
+    readonly from: string;
+    readonly to: string;
+    readonly splat_to?: string;
+  }>,
+): number {
+  const routes = publishedRoutePaths(knownPages);
+  const exactSources = new Set<string>();
+  const wildcardBases: string[] = [];
+  for (const rule of redirects) {
+    // `dist/redirects.json` records the wildcard arm as `splat_to` and keeps
+    // `from` wildcard-free; `_redirects` writes the `*` itself. Accept either
+    // spelling so the two artifacts cannot disagree here.
+    if (rule.from.endsWith("*")) wildcardBases.push(rule.from.slice(0, -1));
+    else if (rule.splat_to !== undefined) wildcardBases.push(rule.from);
+    else exactSources.add(rule.from);
+  }
+  const suffix = `/${SECTION_INDEX_SLUG}/`;
+  let roots = 0;
+  for (const route of routes) {
+    if (!route.endsWith(suffix)) continue;
+    const dir = route.slice(0, -suffix.length);
+    // A version root renders at `/docs/<version>/` itself; there is no section
+    // root above it to resolve.
+    if (dir === "") {
+      roots += 1;
+      continue;
+    }
+    const root = `${dir}/`;
+    const reachable =
+      routes.has(root) ||
+      exactSources.has(dir) ||
+      exactSources.has(root) ||
+      // A `*` matches an empty splat, so a wildcard base covers the root it
+      // sits on as well as its descendants - production answers the legacy
+      // partition roots with exactly that rule shape, and a reader following it
+      // lands on the section index (verified live for all twelve before this
+      // gate was written).
+      wildcardBases.some((base) => root.startsWith(base));
+    if (!reachable) {
+      throw new Error(
+        `Section root does not resolve: ${root} (its index ${route} renders, so a reader reaching the section root gets the 404 document; bitty-website#137)`,
+      );
+    }
+    roots += 1;
+  }
+  return roots;
+}
+
 /**
  * Whether the emitter writes a `:splat` wildcard rule for this entry: a
  * subtree move carries descendants, a publication demotion and any entry

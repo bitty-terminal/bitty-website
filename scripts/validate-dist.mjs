@@ -19,6 +19,7 @@ import {
   CLOUDFLARE_TOTAL_REDIRECT_LIMIT,
   PUBLICATION_REDIRECT_REASON,
   assertRedirectTargetsRender,
+  assertSectionRootsRender,
 } from "../src/lib/redirects.ts";
 import { sitemapRoutes } from "../src/lib/sitemap.ts";
 
@@ -226,6 +227,16 @@ for (const rule of policyRules) {
 const targetAssertion = assertRedirectTargetsRender(allRules, knownPages);
 
 // ---------------------------------------------------------------------------
+// Section-root render assertion (bitty-website#137): a corpus directory's index
+// page is its `README.md`, which routes to `<dir>/readme/`, so the directory
+// root rendered nothing and every section root URL - both the bare form and the
+// slash-less form the edge serves for it - answered 404 even though the section
+// page existed one level down. Every rendered section index must have its root
+// stub beside it in the build this gate inspects.
+// ---------------------------------------------------------------------------
+const sectionRoots = assertSectionRootsRender(knownPages, allRules);
+
+// ---------------------------------------------------------------------------
 // Multi-source aggregation gates (bitty-website#98 §3.2 / task T4). The
 // deployed artifacts must prove that the declared mounts cover every published
 // page, that the redirect evidence names every pinned revision, and that the
@@ -406,5 +417,5 @@ for (const record of records) {
 }
 
 console.log(
-  `Static output and cache-header validation passed (${records.length} search record(s), ${policyRules.length} publication redirect(s), ${targetAssertion.exactTargets} exact redirect target(s) rendered, ${targetAssertion.wildcardBases} wildcard base(s) prefix a published route (${targetAssertion.skipped} wildcard target(s) skipped), sitemaps ${sitemapCounts.join(", ")}).`,
+  `Static output and cache-header validation passed (${records.length} search record(s), ${policyRules.length} publication redirect(s), ${targetAssertion.exactTargets} exact redirect target(s) rendered, ${targetAssertion.wildcardBases} wildcard base(s) prefix a published route (${targetAssertion.skipped} wildcard target(s) skipped), ${sectionRoots} section root(s) render, sitemaps ${sitemapCounts.join(", ")}).`,
 );

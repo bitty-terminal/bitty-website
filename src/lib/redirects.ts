@@ -78,6 +78,11 @@ export const BASE_REDIRECTS: Readonly<Record<string, string>> = {
 const DOCS_INTENT_RELATIVE = "src/content/docs/docs/project/redirects.json";
 const SEMVER = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 
+/** Strip the `/docs/` mount prefix and any trailing slash, leaving a route slug. */
+function toSlug(value: string): string {
+  return value.slice("/docs/".length).replace(/\/$/, "");
+}
+
 function isExactPathPrefix(value: string): boolean {
   // Must be absolute, start with /docs/, end with /, no wildcards/globs/regex.
   if (!value.startsWith("/docs/") || !value.endsWith("/")) return false;
@@ -574,8 +579,8 @@ export function buildLegacyAliases(
   const canonical = new Set(canonicalSlugs);
   const aliases = new Map<string, string>();
   for (const entry of entries) {
-    const oldBase = entry.old.slice("/docs/".length).replace(/\/$/, "");
-    const newBase = entry.new.slice("/docs/".length).replace(/\/$/, "");
+    const oldBase = toSlug(entry.old);
+    const newBase = toSlug(entry.new);
     if (newBase.length === 0) continue;
     let matched = false;
     for (const slug of canonicalSlugs) {
@@ -630,15 +635,46 @@ const SECTION_INDEX_SLUG = "readme";
  */
 export function buildSectionRootAliases(
   canonicalSlugs: readonly string[],
+  entries: readonly RedirectEntry[] = [],
 ): Map<string, string> {
   const canonical = new Set(canonicalSlugs);
   const aliases = new Map<string, string>();
+  const add = (alias: string, target: string): void => {
+    const existing = aliases.get(alias);
+    if (existing !== undefined && existing !== target) {
+      throw new Error(
+        `Section-root alias "${alias}" maps to both "${existing}" and "${target}"`,
+      );
+    }
+    aliases.set(alias, target);
+  };
   const suffix = `/${SECTION_INDEX_SLUG}`;
+  // An ordinary directory: its own index renders, so the root lands on it.
   for (const slug of canonicalSlugs) {
     if (!slug.endsWith(suffix)) continue;
     const dir = slug.slice(0, -suffix.length);
     if (dir.length === 0 || canonical.has(dir)) continue;
-    aliases.set(dir, slug);
+    add(dir, slug);
+  }
+  // A partition whose index the publication policy withholds (#97): no
+  // `<dir>/readme/` exists to derive from, but the manifest already names where
+  // the directory root must land - `index_new`, the same target the legacy
+  // exact rule uses - so both namespaces land on one page instead of a second,
+  // invented "first child" rule (bitty-website#141).
+  for (const entry of entries) {
+    // An entry without `index_new` names no curated landing for its root (the
+    // legacy exact rule uses `new` in that case, which is the very directory
+    // root this alias would itself serve). Skip rather than invent one.
+    if (entry.index_new === undefined) continue;
+    const base = toSlug(entry.new);
+    const target = toSlug(entry.index_new);
+    if (base.length === 0 || canonical.has(base)) continue;
+    if (!canonical.has(target)) {
+      throw new Error(
+        `Section-root alias "${base}" would land on "${target}", which no published route renders (bitty-website#141)`,
+      );
+    }
+    add(base, target);
   }
   return aliases;
 }
@@ -710,6 +746,41 @@ export function assertSectionRootsRender(
     roots += 1;
   }
   return roots;
+}
+
+/**
+ * A redirect stub must land on a page. A root that resolves to another stub is
+ * a chain, and a chain that ends nowhere is indistinguishable to a reader from
+ * no route at all (bitty-website#141).
+ *
+ * @param stubs - parsed stubs: the route that serves the stub, and the path its
+ *   refresh points at
+ * @param knownPages - dist-relative HTML paths (`docs/<version>/<slug>/index.html`)
+ * @returns the number of stubs proved to land on a rendered page
+ * @throws when a stub's target is not a rendered page
+ */
+export function assertRedirectStubsLandOnPages(
+  stubs: ReadonlyArray<{ readonly route: string; readonly target: string }>,
+  knownPages: ReadonlySet<string>,
+): number {
+  const routes = publishedRoutePaths(knownPages);
+  // A stub's own route is emitted HTML, so membership in `routes` alone cannot
+  // tell a landing from a hop: exclude the stub routes themselves, or a chain
+  // would satisfy the very gate meant to fail it.
+  const stubRoutes = new Set(stubs.map((stub) => stub.route));
+  for (const stub of stubs) {
+    if (stubRoutes.has(stub.target)) {
+      throw new Error(
+        `Redirect stub ${stub.route} lands on another stub (${stub.target}); a stub must land on a page (bitty-website#141)`,
+      );
+    }
+    if (!routes.has(stub.target)) {
+      throw new Error(
+        `Redirect stub ${stub.route} points at ${stub.target}, which no page renders (a stub must land on a page; bitty-website#141)`,
+      );
+    }
+  }
+  return stubs.length;
 }
 
 /**

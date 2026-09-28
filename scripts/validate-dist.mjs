@@ -18,6 +18,7 @@ import {
   CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT,
   CLOUDFLARE_TOTAL_REDIRECT_LIMIT,
   PUBLICATION_REDIRECT_REASON,
+  assertRedirectStubsLandOnPages,
   assertRedirectTargetsRender,
   assertSectionRootsRender,
 } from "../src/lib/redirects.ts";
@@ -98,6 +99,23 @@ async function collectDistPages(root) {
   }
   await walk(root);
   return pages;
+}
+
+/** Every emitted redirect stub, with the path it points at (bitty-website#141). */
+async function collectRedirectStubs(pages) {
+  const stubs = [];
+  for (const page of pages) {
+    const html = await readFile(new URL(page, dist), "utf8");
+    const match = /<meta http-equiv="refresh" content="0;url=([^"]*)">/.exec(
+      html,
+    );
+    if (match === null) continue;
+    stubs.push({
+      route: `/${page.slice(0, -"index.html".length)}`,
+      target: match[1],
+    });
+  }
+  return stubs;
 }
 
 const distDir = fileURLToPath(dist).replace(/\/+$/u, "");
@@ -235,6 +253,15 @@ const targetAssertion = assertRedirectTargetsRender(allRules, knownPages);
 // stub beside it in the build this gate inspects.
 // ---------------------------------------------------------------------------
 const sectionRoots = assertSectionRootsRender(knownPages, allRules);
+
+// A section root may be served by a redirect stub instead of a page (#137), and
+// a stub whose target renders nothing - a chain ending on the 404 document - is
+// indistinguishable to a reader from no route at all. Read what the build emits
+// rather than what the derivation intended (bitty-website#141).
+const redirectStubs = assertRedirectStubsLandOnPages(
+  await collectRedirectStubs(knownPages),
+  knownPages,
+);
 
 // ---------------------------------------------------------------------------
 // Multi-source aggregation gates (bitty-website#98 §3.2 / task T4). The
@@ -417,5 +444,5 @@ for (const record of records) {
 }
 
 console.log(
-  `Static output and cache-header validation passed (${records.length} search record(s), ${policyRules.length} publication redirect(s), ${targetAssertion.exactTargets} exact redirect target(s) rendered, ${targetAssertion.wildcardBases} wildcard base(s) prefix a published route (${targetAssertion.skipped} wildcard target(s) skipped), ${sectionRoots} section root(s) render, sitemaps ${sitemapCounts.join(", ")}).`,
+  `Static output and cache-header validation passed (${records.length} search record(s), ${policyRules.length} publication redirect(s), ${targetAssertion.exactTargets} exact redirect target(s) rendered, ${targetAssertion.wildcardBases} wildcard base(s) prefix a published route (${targetAssertion.skipped} wildcard target(s) skipped), ${sectionRoots} section root(s) render, ${redirectStubs} redirect stub(s) land on a page, sitemaps ${sitemapCounts.join(", ")}).`,
 );

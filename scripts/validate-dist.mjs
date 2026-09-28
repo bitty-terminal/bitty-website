@@ -18,6 +18,7 @@ import {
   CLOUDFLARE_DYNAMIC_REDIRECT_LIMIT,
   CLOUDFLARE_TOTAL_REDIRECT_LIMIT,
   PUBLICATION_REDIRECT_REASON,
+  assertRedirectTargetsRender,
 } from "../src/lib/redirects.ts";
 import { sitemapRoutes } from "../src/lib/sitemap.ts";
 
@@ -206,6 +207,25 @@ for (const rule of policyRules) {
 }
 
 // ---------------------------------------------------------------------------
+// Redirect target render assertion (bitty-website#104): every rule in
+// dist/redirects.json must land on a page in the very artifact the deploy
+// uploads. The publication-policy block above asserted only its own targets,
+// so a prefix whose directory root the mirror never renders (README.md routes
+// to `<dir>/readme/`) shipped as a 301 into a 404 — the 36 bitty-docs#257
+// partition-migration rules.
+//
+// A subtree move emits two rules with two targets, so the assertion checks
+// both arms: the exact rule target (`to`) must be a page in the build, and the
+// wildcard base (`splat_to`, the descendants prefix) must be a *proper*
+// prefix of at least one published route, so every descendant URL keeps
+// resolving. A bare-directory exact target and a `.../readme/` splat base both
+// fail. Rules whose exact target still carries a wildcard token are skipped
+// precisely and counted, so the assertion stays exclusive of what it cannot
+// resolve statically instead of being loosened.
+// ---------------------------------------------------------------------------
+const targetAssertion = assertRedirectTargetsRender(allRules, knownPages);
+
+// ---------------------------------------------------------------------------
 // Multi-source aggregation gates (bitty-website#98 §3.2 / task T4). The
 // deployed artifacts must prove that the declared mounts cover every published
 // page, that the redirect evidence names every pinned revision, and that the
@@ -386,5 +406,5 @@ for (const record of records) {
 }
 
 console.log(
-  `Static output and cache-header validation passed (${records.length} search record(s), ${policyRules.length} publication redirect(s), sitemaps ${sitemapCounts.join(", ")}).`,
+  `Static output and cache-header validation passed (${records.length} search record(s), ${policyRules.length} publication redirect(s), ${targetAssertion.exactTargets} exact redirect target(s) rendered, ${targetAssertion.wildcardBases} wildcard base(s) prefix a published route (${targetAssertion.skipped} wildcard target(s) skipped), sitemaps ${sitemapCounts.join(", ")}).`,
 );

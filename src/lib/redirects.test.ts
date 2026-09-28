@@ -20,9 +20,11 @@ import {
   CLOUDFLARE_STATIC_REDIRECT_LIMIT,
   CLOUDFLARE_TOTAL_REDIRECT_LIMIT,
   PUBLICATION_REDIRECT_REASON,
+  assertRedirectTargetsRender,
   buildExpandedRedirectTable,
   buildLegacyAliases,
   buildPublicationRedirectEntries,
+  isWildcardRedirectTarget,
   lowestVersion,
   mergeRedirectEntries,
   renderEdgeRedirects,
@@ -880,5 +882,103 @@ describe("subtree-move target split (bitty-website#104)", () => {
         },
       ]),
     ).toThrow(/Conflicting redirect targets for \/docs\/architecture\//u);
+  });
+});
+
+describe("assertRedirectTargetsRender (dist two-arm gate, bitty-website#104)", () => {
+  const pages = new Set([
+    "docs/latest/a/index.html",
+    "docs/latest/a/child/index.html",
+    "docs/latest/b/index.html",
+  ]);
+
+  test("accepts an exact target that renders and a splat base with a descendant", () => {
+    expect(
+      assertRedirectTargetsRender(
+        [
+          {
+            from: "/docs/latest/a/",
+            to: "/docs/latest/b/",
+            splat_to: "/docs/latest/a/",
+          },
+        ],
+        pages,
+      ),
+    ).toEqual({ exactTargets: 1, wildcardBases: 1, skipped: 0 });
+  });
+
+  test("fails on a directory target the mirror never renders, naming rule and target", () => {
+    expect(() =>
+      assertRedirectTargetsRender(
+        [
+          {
+            from: "/docs/0.1.0/architecture/",
+            to: "/docs/0.1.0/projects/bitty/architecture/",
+          },
+        ],
+        pages,
+      ),
+    ).toThrow(
+      /does not render a page: \/docs\/0\.1\.0\/architecture\/ -> \/docs\/0\.1\.0\/projects\/bitty\/architecture\//u,
+    );
+  });
+
+  test("fails on a splat base that is itself a leaf, naming rule and base", () => {
+    // `.../readme/` (the shape the broken #104 fix produced) is a page but has
+    // no descendant route, so a wildcard onto it sends every child to a 404.
+    expect(() =>
+      assertRedirectTargetsRender(
+        [
+          {
+            from: "/docs/latest/architecture/",
+            to: "/docs/latest/a/child/",
+            splat_to: "/docs/latest/a/child/",
+          },
+        ],
+        pages,
+      ),
+    ).toThrow(
+      /wildcard base prefixes no published route: \/docs\/latest\/architecture\/ -> \/docs\/latest\/a\/child\/:splat/u,
+    );
+  });
+
+  test("a splat base need not itself render a page", () => {
+    // The architecture prefix renders no index page (README.md maps to
+    // <dir>/readme/), yet the wildcard is useful because a route lives under
+    // it — exactly the partition-migration shape.
+    const noIndex = new Set(["docs/latest/a/child/index.html"]);
+    expect(
+      assertRedirectTargetsRender(
+        [
+          {
+            from: "/docs/latest/a/",
+            to: "/docs/latest/a/child/",
+            splat_to: "/docs/latest/a/",
+          },
+        ],
+        noIndex,
+      ),
+    ).toEqual({ exactTargets: 1, wildcardBases: 1, skipped: 0 });
+  });
+
+  test("fails on a target outside the /docs/ route space", () => {
+    expect(() =>
+      assertRedirectTargetsRender(
+        [{ from: "/docs/a/", to: "/elsewhere/" }],
+        pages,
+      ),
+    ).toThrow(/exact \/docs\/ route prefix/u);
+  });
+
+  test("skips a wildcard target precisely and counts it", () => {
+    expect(isWildcardRedirectTarget("/docs/latest/a/*")).toBe(true);
+    expect(isWildcardRedirectTarget("/docs/latest/a/:splat")).toBe(true);
+    expect(isWildcardRedirectTarget("/docs/latest/a/")).toBe(false);
+    expect(
+      assertRedirectTargetsRender(
+        [{ from: "/docs/latest/a/", to: "/docs/latest/b/:splat" }],
+        pages,
+      ),
+    ).toEqual({ exactTargets: 0, wildcardBases: 0, skipped: 1 });
   });
 });

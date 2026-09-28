@@ -446,6 +446,118 @@ export function expandRedirectsForVersions(
 }
 
 /**
+ * A redirect target is a wildcard when it still carries an unresolved
+ * wildcard (`*`) or placeholder (`:name`) token. The deployed evidence
+ * artifact (`renderRedirectEvidence`) records only resolved
+ * `/docs/<version>/...` prefixes for every rule — a subtree move's
+ * `:splat` form is synthesized solely into `dist/_redirects` — so no target
+ * in `dist/redirects.json` is a wildcard today. The predicate keeps the
+ * render assertion below from ever statically resolving such a token.
+ */
+export function isWildcardRedirectTarget(target: string): boolean {
+  return target.includes("*") || /(?:^|\/):[A-Za-z]/u.test(target);
+}
+
+/** Outcome of `assertRedirectTargetsRender`, reported by the dist gate. */
+export type RedirectTargetAssertion = {
+  /** Rules whose exact target was proved to render a page. */
+  readonly exactTargets: number;
+  /** Wildcard bases proved to prefix at least one published route. */
+  readonly wildcardBases: number;
+  /** Rules skipped because their target still carries a wildcard token. */
+  readonly skipped: number;
+};
+
+/** Published route paths (`/docs/<version>/<slug>/`) of a dist page set. */
+function publishedRoutePaths(
+  knownPages: ReadonlySet<string>,
+): ReadonlySet<string> {
+  const routes = new Set<string>();
+  for (const page of knownPages) {
+    if (!page.endsWith("index.html")) continue;
+    routes.add(`/${page.slice(0, -"index.html".length)}`);
+  }
+  return routes;
+}
+
+/**
+ * Dist render assertion (bitty-website#104). RD-4 requires every `new` to
+ * resolve to a currently published route, but the deploy gate asserted only
+ * the publication-policy targets, so a target whose directory root the mirror
+ * never renders (`README.md` routes to `<dir>/readme/`) shipped as a 301 into
+ * a 404 — the 36 bitty-docs#257 partition-migration rules.
+ *
+ * A subtree move emits two rules with two different targets (the split
+ * `index_new` / `new`), so the assertion checks both arms against the same
+ * `dist/` the deploy uploads:
+ *
+ * - exact arm: the exact rule target must be a page in the build. A bare
+ *   directory prefix that renders nothing fails, naming rule and target.
+ * - wildcard arm: the splat base must be a *proper* prefix of at least one
+ *   published route, i.e. a real route must live strictly under it. A base
+ *   that is itself a leaf (`.../readme/`, the shape the broken #104 fix
+ *   produced) has no descendant routes and fails, naming rule and base.
+ *
+ * Rules whose exact target still carries a wildcard token are skipped
+ * (unresolvable statically) and counted, so the caller reports the exemption
+ * instead of the assertion silently narrowing.
+ *
+ * @param redirects - the `redirects` array of `dist/redirects.json`
+ * @param knownPages - dist-relative HTML paths (`docs/<version>/<slug>/index.html`)
+ * @returns per-arm counts and the number of wildcard-target skips
+ * @throws when a target is malformed, an exact target has no page, or a splat
+ *   base has no published route strictly beneath it
+ */
+export function assertRedirectTargetsRender(
+  redirects: ReadonlyArray<{
+    readonly from: string;
+    readonly to: string;
+    readonly splat_to?: string;
+  }>,
+  knownPages: ReadonlySet<string>,
+): RedirectTargetAssertion {
+  const routes = publishedRoutePaths(knownPages);
+  let exactTargets = 0;
+  let wildcardBases = 0;
+  let skipped = 0;
+  for (const rule of redirects) {
+    if (isWildcardRedirectTarget(rule.to)) {
+      skipped += 1;
+      continue;
+    }
+    if (!rule.to.startsWith("/docs/") || !rule.to.endsWith("/")) {
+      throw new Error(
+        `Redirect target must be an exact /docs/ route prefix ending with /: ${rule.from} -> ${rule.to}`,
+      );
+    }
+    const page = `${rule.to.slice(1)}index.html`;
+    if (!knownPages.has(page)) {
+      throw new Error(
+        `Redirect target does not render a page: ${rule.from} -> ${rule.to} (no ${page} in the build); the deploy would serve a 301 into a 404 (bitty-website#104)`,
+      );
+    }
+    exactTargets += 1;
+    if (rule.splat_to === undefined) continue;
+    if (!rule.splat_to.startsWith("/docs/") || !rule.splat_to.endsWith("/")) {
+      throw new Error(
+        `Redirect wildcard base must be an exact /docs/ route prefix ending with /: ${rule.from} -> ${rule.splat_to}:splat`,
+      );
+    }
+    const base = rule.splat_to;
+    const hasDescendant = [...routes].some(
+      (route) => route.startsWith(base) && route.length > base.length,
+    );
+    if (!hasDescendant) {
+      throw new Error(
+        `Redirect wildcard base prefixes no published route: ${rule.from} -> ${base}:splat (no published route lives under ${base}); every descendant URL would 301 into a 404 (bitty-website#104)`,
+      );
+    }
+    wildcardBases += 1;
+  }
+  return { exactTargets, wildcardBases, skipped };
+}
+
+/**
  * Map each eligible canonical route slug to the legacy route slug it moved
  * from, using the manifest prefixes. Slugs are route paths without the leading
  * `/docs/` or trailing `/` (for example `projects/bitty/specifications/readme`).

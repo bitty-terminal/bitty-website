@@ -2,22 +2,25 @@
   {
     "old": "/docs/architecture/",
     "new": "/docs/projects/bitty/architecture/",
+    "index_new": "/docs/projects/bitty/architecture/readme/",
     "status": 301,
-    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/architecture/ -> docs/projects/bitty/architecture/",
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: descendants prefix docs/architecture/ -> docs/projects/bitty/architecture/; exact target /docs/projects/bitty/architecture/readme/ (the subtree index route that renders - README.md maps to <dir>/readme/, so the bare directory prefix renders no page; bitty-website#104)",
     "effective_version": "0.1.0"
   },
   {
     "old": "/docs/configuration/",
     "new": "/docs/projects/bitty/configuration/",
+    "index_new": "/docs/projects/bitty/configuration/lua-and-xdg/",
     "status": 301,
-    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/configuration/ -> docs/projects/bitty/configuration/",
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: descendants prefix docs/configuration/ -> docs/projects/bitty/configuration/; exact target /docs/projects/bitty/configuration/lua-and-xdg/ (the subtree index is withheld by the #97 rule - mixed audience + index type, owner bitty-core - so the exact rule names the first published child by sidebar_order; bitty-website#104)",
     "effective_version": "0.1.0"
   },
   {
     "old": "/docs/examples/",
     "new": "/docs/projects/bitty/examples/",
+    "index_new": "/docs/projects/bitty/examples/readme/",
     "status": 301,
-    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/examples/ -> docs/projects/bitty/examples/",
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: descendants prefix docs/examples/ -> docs/projects/bitty/examples/; exact target /docs/projects/bitty/examples/readme/ (the subtree index route that renders - README.md maps to <dir>/readme/, so the bare directory prefix renders no page; bitty-website#104)",
     "effective_version": "0.1.0"
   },
   {
@@ -31,29 +34,33 @@
   {
     "old": "/docs/how-to/",
     "new": "/docs/projects/bitty/how-to/",
+    "index_new": "/docs/projects/bitty/how-to/readme/",
     "status": 301,
-    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/how-to/ -> docs/projects/bitty/how-to/",
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: descendants prefix docs/how-to/ -> docs/projects/bitty/how-to/; exact target /docs/projects/bitty/how-to/readme/ (the subtree index route that renders - README.md maps to <dir>/readme/, so the bare directory prefix renders no page; bitty-website#104)",
     "effective_version": "0.1.0"
   },
   {
     "old": "/docs/interfaces/",
     "new": "/docs/projects/bitty/interfaces/",
+    "index_new": "/docs/projects/bitty/interfaces/cli/",
     "status": 301,
-    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/interfaces/ -> docs/projects/bitty/interfaces/",
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: descendants prefix docs/interfaces/ -> docs/projects/bitty/interfaces/; exact target /docs/projects/bitty/interfaces/cli/ (the subtree index is withheld by the #97 rule - mixed audience + index type, owner bitty-core - so the exact rule names the first published child by sidebar_order; bitty-website#104)",
     "effective_version": "0.1.0"
   },
   {
     "old": "/docs/migrations/",
     "new": "/docs/projects/bitty/migrations/",
+    "index_new": "/docs/projects/bitty/migrations/readme/",
     "status": 301,
-    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/migrations/ -> docs/projects/bitty/migrations/",
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: descendants prefix docs/migrations/ -> docs/projects/bitty/migrations/; exact target /docs/projects/bitty/migrations/readme/ (the subtree index route that renders - README.md maps to <dir>/readme/, so the bare directory prefix renders no page; bitty-website#104)",
     "effective_version": "0.1.0"
   },
   {
     "old": "/docs/product/",
     "new": "/docs/projects/bitty/product/",
+    "index_new": "/docs/projects/bitty/product/vision/",
     "status": 301,
-    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/product/ -> docs/projects/bitty/product/",
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: descendants prefix docs/product/ -> docs/projects/bitty/product/; exact target /docs/projects/bitty/product/vision/ (the subtree index is withheld by the #97 rule - mixed audience + index type, owner bitty-core - so the exact rule names the first published child by sidebar_order; bitty-website#104)",
     "effective_version": "0.1.0"
   },
   {
@@ -163,15 +170,17 @@
   {
     "old": "/docs/reference/",
     "new": "/docs/projects/bitty/reference/",
+    "index_new": "/docs/projects/bitty/reference/readme/",
     "status": 301,
-    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/reference/ -> docs/projects/bitty/reference/",
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: descendants prefix docs/reference/ -> docs/projects/bitty/reference/; exact target /docs/projects/bitty/reference/readme/ (the subtree index route that renders - README.md maps to <dir>/readme/, so the bare directory prefix renders no page; bitty-website#104)",
     "effective_version": "0.1.0"
   },
   {
     "old": "/docs/requirements/",
     "new": "/docs/projects/bitty/requirements/",
+    "index_new": "/docs/projects/bitty/requirements/readme/",
     "status": 301,
-    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/requirements/ -> docs/projects/bitty/requirements/",
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: descendants prefix docs/requirements/ -> docs/projects/bitty/requirements/; exact target /docs/projects/bitty/requirements/readme/ (the subtree index route that renders - README.md maps to <dir>/readme/, so the bare directory prefix renders no page; bitty-website#104)",
     "effective_version": "0.1.0"
   },
   {
@@ -185,22 +194,25 @@
   {
     "old": "/docs/troubleshooting/",
     "new": "/docs/projects/bitty/troubleshooting/",
+    "index_new": "/docs/projects/bitty/troubleshooting/readme/",
     "status": 301,
-    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/troubleshooting/ -> docs/projects/bitty/troubleshooting/",
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: descendants prefix docs/troubleshooting/ -> docs/projects/bitty/troubleshooting/; exact target /docs/projects/bitty/troubleshooting/readme/ (the subtree index route that renders - README.md maps to <dir>/readme/, so the bare directory prefix renders no page; bitty-website#104)",
     "effective_version": "0.1.0"
   },
   {
     "old": "/docs/tutorials/",
     "new": "/docs/projects/bitty/tutorials/",
+    "index_new": "/docs/projects/bitty/tutorials/readme/",
     "status": 301,
-    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/tutorials/ -> docs/projects/bitty/tutorials/",
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: descendants prefix docs/tutorials/ -> docs/projects/bitty/tutorials/; exact target /docs/projects/bitty/tutorials/readme/ (the subtree index route that renders - README.md maps to <dir>/readme/, so the bare directory prefix renders no page; bitty-website#104)",
     "effective_version": "0.1.0"
   },
   {
     "old": "/docs/user-guide/",
     "new": "/docs/projects/bitty/user-guide/",
+    "index_new": "/docs/projects/bitty/user-guide/readme/",
     "status": 301,
-    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: docs/user-guide/ -> docs/projects/bitty/user-guide/",
+    "reason": "bitty-docs PR #257 (CTX-0185) partition migration: descendants prefix docs/user-guide/ -> docs/projects/bitty/user-guide/; exact target /docs/projects/bitty/user-guide/readme/ (the subtree index route that renders - README.md maps to <dir>/readme/, so the bare directory prefix renders no page; bitty-website#104)",
     "effective_version": "0.1.0"
   },
   {

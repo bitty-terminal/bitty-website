@@ -31,6 +31,20 @@ export type RedirectEntry = {
   readonly reason: string;
   readonly effective_version: string;
   /**
+   * Optional exact-rule target: the rendered route the exact rule (and so a
+   * reader hitting the subtree root itself) lands on. Absent on a leaf/subtree
+   * entry whose `new` already renders.
+   *
+   * A subtree move needs two different targets (bitty-website#104): `new`
+   * stays the descendants prefix — the wildcard base and the pattern the
+   * static alias stubs are derived from — while the exact rule must land on a
+   * page the mirror renders. For the partition-migration subtrees the bare
+   * prefix renders nothing (`README.md` maps to `<dir>/readme/`), so the exact
+   * target is that index route (or, where the #97 rule withholds it, the first
+   * published child). Semantics: exact rule target = `index_new ?? new`.
+   */
+  readonly index_new?: string;
+  /**
    * `false` when the redirect describes a leaf page with no descendants: the
    * emitter then writes the exact rule only. Defaults to `true` (a subtree
    * move needs the wildcard form). bitty-website#98 §5.
@@ -40,7 +54,15 @@ export type RedirectEntry = {
 
 export type ExpandedRedirectRule = {
   readonly from: string;
+  /** Exact-rule target: `index_new ?? new`, versioned. */
   readonly to: string;
+  /**
+   * Descendants prefix (`new`, versioned): the base of the wildcard rule the
+   * emitter writes, when the entry carries descendants. Present only when it
+   * differs from `to`, i.e. when the exact rule and the wildcard rule land in
+   * different places.
+   */
+  readonly splat_to?: string;
   readonly status: 301 | 302;
   readonly reason: string;
   readonly effective_version: string;
@@ -103,12 +125,21 @@ function validateEntries(
         `${origin}: redirect descendants must be a boolean when present: ${JSON.stringify(raw)}`,
       );
     }
+    if (
+      raw.index_new !== undefined &&
+      (typeof raw.index_new !== "string" || !isExactPathPrefix(raw.index_new))
+    ) {
+      throw new Error(
+        `${origin}: redirect index_new must be an exact /docs/ prefix ending with /: ${JSON.stringify(raw)}`,
+      );
+    }
     entries.push({
       old: raw.old,
       new: raw.new,
       status: raw.status,
       reason: raw.reason,
       effective_version: raw.effective_version,
+      ...(raw.index_new === undefined ? {} : { index_new: raw.index_new }),
       ...(raw.descendants === undefined
         ? {}
         : { descendants: raw.descendants }),
@@ -156,11 +187,12 @@ export function mergeRedirectEntries(
       if (
         existing !== undefined &&
         (existing.new !== entry.new ||
+          existing.index_new !== entry.index_new ||
           existing.status !== entry.status ||
           (existing.descendants ?? true) !== (entry.descendants ?? true))
       ) {
         throw new Error(
-          `Conflicting redirect targets for ${entry.old}: ${existing.new} (${existing.status}, descendants ${existing.descendants ?? true}) vs ${entry.new} (${entry.status}, descendants ${entry.descendants ?? true})`,
+          `Conflicting redirect targets for ${entry.old}: ${existing.new}${existing.index_new === undefined ? "" : ` (exact ${existing.index_new})`} (${existing.status}, descendants ${existing.descendants ?? true}) vs ${entry.new}${entry.index_new === undefined ? "" : ` (exact ${entry.index_new})`} (${entry.status}, descendants ${entry.descendants ?? true})`,
         );
       }
       byOld.set(entry.old, entry);
@@ -328,14 +360,25 @@ export function buildExpandedRedirectTable(
         continue;
       }
       const from = `/docs/${version}${entry.old.slice("/docs".length)}`;
-      const to = `/docs/${version}${entry.new.slice("/docs".length)}`;
+      // `new` is the descendants prefix (the wildcard base and the pattern the
+      // static alias stubs derive from); the exact rule uses `index_new` when
+      // the entry names a separate rendered route (bitty-website#104).
+      const splatTo = `/docs/${version}${entry.new.slice("/docs".length)}`;
+      const to =
+        entry.index_new === undefined
+          ? splatTo
+          : `/docs/${version}${entry.index_new.slice("/docs".length)}`;
       if (!isExactPathPrefix(from) || !isExactPathPrefix(to)) {
         throw new Error(
           `Expanded redirect is not an exact prefix: ${from} -> ${to}`,
         );
       }
       const existing = byFrom.get(from);
-      if (existing !== undefined && existing.to !== to) {
+      const nextSplat = entry.index_new === undefined ? undefined : splatTo;
+      if (
+        existing !== undefined &&
+        (existing.to !== to || existing.splat_to !== nextSplat)
+      ) {
         throw new Error(
           `Conflicting redirect targets for ${from}: ${existing.to} vs ${to}`,
         );
@@ -343,6 +386,7 @@ export function buildExpandedRedirectTable(
       byFrom.set(from, {
         from,
         to,
+        ...(nextSplat === undefined ? {} : { splat_to: nextSplat }),
         status: entry.status,
         reason: entry.reason,
         effective_version: entry.effective_version,
@@ -402,6 +446,118 @@ export function expandRedirectsForVersions(
 }
 
 /**
+ * A redirect target is a wildcard when it still carries an unresolved
+ * wildcard (`*`) or placeholder (`:name`) token. The deployed evidence
+ * artifact (`renderRedirectEvidence`) records only resolved
+ * `/docs/<version>/...` prefixes for every rule — a subtree move's
+ * `:splat` form is synthesized solely into `dist/_redirects` — so no target
+ * in `dist/redirects.json` is a wildcard today. The predicate keeps the
+ * render assertion below from ever statically resolving such a token.
+ */
+export function isWildcardRedirectTarget(target: string): boolean {
+  return target.includes("*") || /(?:^|\/):[A-Za-z]/u.test(target);
+}
+
+/** Outcome of `assertRedirectTargetsRender`, reported by the dist gate. */
+export type RedirectTargetAssertion = {
+  /** Rules whose exact target was proved to render a page. */
+  readonly exactTargets: number;
+  /** Wildcard bases proved to prefix at least one published route. */
+  readonly wildcardBases: number;
+  /** Rules skipped because their target still carries a wildcard token. */
+  readonly skipped: number;
+};
+
+/** Published route paths (`/docs/<version>/<slug>/`) of a dist page set. */
+function publishedRoutePaths(
+  knownPages: ReadonlySet<string>,
+): ReadonlySet<string> {
+  const routes = new Set<string>();
+  for (const page of knownPages) {
+    if (!page.endsWith("index.html")) continue;
+    routes.add(`/${page.slice(0, -"index.html".length)}`);
+  }
+  return routes;
+}
+
+/**
+ * Dist render assertion (bitty-website#104). RD-4 requires every `new` to
+ * resolve to a currently published route, but the deploy gate asserted only
+ * the publication-policy targets, so a target whose directory root the mirror
+ * never renders (`README.md` routes to `<dir>/readme/`) shipped as a 301 into
+ * a 404 — the 36 bitty-docs#257 partition-migration rules.
+ *
+ * A subtree move emits two rules with two different targets (the split
+ * `index_new` / `new`), so the assertion checks both arms against the same
+ * `dist/` the deploy uploads:
+ *
+ * - exact arm: the exact rule target must be a page in the build. A bare
+ *   directory prefix that renders nothing fails, naming rule and target.
+ * - wildcard arm: the splat base must be a *proper* prefix of at least one
+ *   published route, i.e. a real route must live strictly under it. A base
+ *   that is itself a leaf (`.../readme/`, the shape the broken #104 fix
+ *   produced) has no descendant routes and fails, naming rule and base.
+ *
+ * Rules whose exact target still carries a wildcard token are skipped
+ * (unresolvable statically) and counted, so the caller reports the exemption
+ * instead of the assertion silently narrowing.
+ *
+ * @param redirects - the `redirects` array of `dist/redirects.json`
+ * @param knownPages - dist-relative HTML paths (`docs/<version>/<slug>/index.html`)
+ * @returns per-arm counts and the number of wildcard-target skips
+ * @throws when a target is malformed, an exact target has no page, or a splat
+ *   base has no published route strictly beneath it
+ */
+export function assertRedirectTargetsRender(
+  redirects: ReadonlyArray<{
+    readonly from: string;
+    readonly to: string;
+    readonly splat_to?: string;
+  }>,
+  knownPages: ReadonlySet<string>,
+): RedirectTargetAssertion {
+  const routes = publishedRoutePaths(knownPages);
+  let exactTargets = 0;
+  let wildcardBases = 0;
+  let skipped = 0;
+  for (const rule of redirects) {
+    if (isWildcardRedirectTarget(rule.to)) {
+      skipped += 1;
+      continue;
+    }
+    if (!rule.to.startsWith("/docs/") || !rule.to.endsWith("/")) {
+      throw new Error(
+        `Redirect target must be an exact /docs/ route prefix ending with /: ${rule.from} -> ${rule.to}`,
+      );
+    }
+    const page = `${rule.to.slice(1)}index.html`;
+    if (!knownPages.has(page)) {
+      throw new Error(
+        `Redirect target does not render a page: ${rule.from} -> ${rule.to} (no ${page} in the build); the deploy would serve a 301 into a 404 (bitty-website#104)`,
+      );
+    }
+    exactTargets += 1;
+    if (rule.splat_to === undefined) continue;
+    if (!rule.splat_to.startsWith("/docs/") || !rule.splat_to.endsWith("/")) {
+      throw new Error(
+        `Redirect wildcard base must be an exact /docs/ route prefix ending with /: ${rule.from} -> ${rule.splat_to}:splat`,
+      );
+    }
+    const base = rule.splat_to;
+    const hasDescendant = [...routes].some(
+      (route) => route.startsWith(base) && route.length > base.length,
+    );
+    if (!hasDescendant) {
+      throw new Error(
+        `Redirect wildcard base prefixes no published route: ${rule.from} -> ${base}:splat (no published route lives under ${base}); every descendant URL would 301 into a 404 (bitty-website#104)`,
+      );
+    }
+    wildcardBases += 1;
+  }
+  return { exactTargets, wildcardBases, skipped };
+}
+
+/**
  * Map each eligible canonical route slug to the legacy route slug it moved
  * from, using the manifest prefixes. Slugs are route paths without the leading
  * `/docs/` or trailing `/` (for example `projects/bitty/specifications/readme`).
@@ -453,6 +609,19 @@ export function buildLegacyAliases(
   return aliases;
 }
 
+/**
+ * Whether the emitter writes a `:splat` wildcard rule for this entry: a
+ * subtree move carries descendants, a publication demotion and any entry
+ * explicitly marked `descendants: false` (leaf route moves, #98 §5) do not.
+ * The dist assertion reads the same predicate through the evidence artifact,
+ * so `dist/_redirects` and `dist/redirects.json` cannot describe different
+ * rule sets.
+ */
+function emitsDescendantsWildcard(rule: ExpandedRedirectRule): boolean {
+  if (rule.reason === PUBLICATION_REDIRECT_REASON) return false;
+  return rule.descendants !== false;
+}
+
 /** Cloudflare Workers Static Assets `_redirects` content (RD-3). */
 export function renderEdgeRedirects(
   table: readonly ExpandedRedirectRule[],
@@ -476,10 +645,13 @@ export function renderEdgeRedirects(
     // dynamic slots and made the production deploy fail (code 100324). The
     // same applies to any entry explicitly marked `descendants: false` (leaf
     // route moves, #98 §5); subtree moves keep the wildcard form because they
-    // carry descendants.
-    if (rule.reason === PUBLICATION_REDIRECT_REASON) continue;
-    if (rule.descendants === false) continue;
-    lines.push(`${rule.from}* ${rule.to}:splat ${rule.status}`);
+    // carry descendants. The wildcard base is the descendants prefix
+    // (`splat_to`), which for a split entry differs from the exact target
+    // (`to`, bitty-website#104).
+    if (!emitsDescendantsWildcard(rule)) continue;
+    lines.push(
+      `${rule.from}* ${rule.splat_to ?? rule.to}:splat ${rule.status}`,
+    );
   }
   const ruleLines = lines.filter((line) => !line.startsWith("#"));
   const dynamicRules = ruleLines.filter(isDynamicRedirectLine);
@@ -505,7 +677,16 @@ export function renderEdgeRedirects(
   return `${lines.join("\n")}\n`;
 }
 
-/** `dist/redirects.json` per-deployment evidence (RD-6). */
+/**
+ * `dist/redirects.json` per-deployment evidence (RD-6).
+ *
+ * Each row mirrors the rules the deploy emits for one entry: `to` is the
+ * exact rule target, and `splat_to` (present exactly when a `:splat` wildcard
+ * rule is emitted) is the descendants prefix that wildcard rebases onto —
+ * `new` for the bitty-website#104 split entries. Keeping `splat_to` beside
+ * `to` lets the dist assertion check both arms against the artifact the
+ * deploy uploads.
+ */
 export function renderRedirectEvidence(
   table: readonly ExpandedRedirectRule[],
   meta: {
@@ -521,6 +702,9 @@ export function renderRedirectEvidence(
     redirects: table.map((rule) => ({
       from: rule.from,
       to: rule.to,
+      ...(emitsDescendantsWildcard(rule)
+        ? { splat_to: rule.splat_to ?? rule.to }
+        : {}),
       status: rule.status,
       reason: rule.reason,
       effective_version: rule.effective_version,

@@ -1282,4 +1282,44 @@ describe("buildLegacyAliases: the legacy root form (bitty-website#140)", () => {
       ...buildLegacyAliases(["projects/bitty/guides/one"], noLanding),
     ]).toEqual([["guides/one", "projects/bitty/guides/one"]]);
   });
+
+  test("fails closed when the legacy base is already a canonical route", () => {
+    // An alias at that slug would shadow a published page.
+    expect(() =>
+      buildLegacyAliases(
+        ["architecture", "projects/bitty/architecture/readme"],
+        entries,
+      ),
+    ).toThrow(/collides with a canonical route/u);
+  });
+
+  test("fails closed when two entries claim one root with different landings", () => {
+    const conflicting: readonly RedirectEntry[] = [
+      {
+        old: "/docs/architecture/",
+        new: "/docs/projects/bitty/architecture/",
+        index_new: "/docs/projects/bitty/architecture/readme/",
+        status: 301,
+        reason: "partition migration",
+        effective_version: "0.1.0",
+      },
+      {
+        old: "/docs/architecture/",
+        new: "/docs/projects/bitty/architecture/",
+        index_new: "/docs/projects/bitty/architecture/overview/",
+        status: 301,
+        reason: "partition migration",
+        effective_version: "0.1.0",
+      },
+    ];
+    expect(() =>
+      buildLegacyAliases(
+        [
+          "projects/bitty/architecture/readme",
+          "projects/bitty/architecture/overview",
+        ],
+        conflicting,
+      ),
+    ).toThrow(/maps to both/u);
+  });
 });

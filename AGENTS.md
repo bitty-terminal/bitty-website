@@ -26,14 +26,20 @@
   <https://plugins.bitty.run>), `/ai/`, and `/blog/`, `/changelog/`.
 - The plugin store at <https://plugins.bitty.run> is a separate Vite
   application; it is never built or deployed from this repository.
-- `i18n/` and `content-sources/` are documented placeholders. Canonical
-  content is planned to be aggregated at build time from three pinned sources
-  ([bitty-terminal-docs](https://github.com/bitty-terminal/bitty-terminal-docs),
-  [bitty-plugins-docs](https://github.com/bitty-terminal/bitty-plugins-docs),
-  [bitty-ai-docs](https://github.com/bitty-terminal/bitty-ai-docs)); only the
-  single pinned `bitty-docs` revision is consumed today. Canonical content
-  stays English-only until an accepted cross-repository decision, and source
-  naming or aggregation changes need one as well.
+- `i18n/` is a documented placeholder. Canonical content is aggregated at
+  build time from four independently pinned sources, each with its own mount
+  into the aggregate mirror: the mirror root carries
+  [bitty-docs](https://github.com/bitty-terminal/bitty-docs) (`docs/`), and
+  [bitty-terminal-docs](https://github.com/bitty-terminal/bitty-terminal-docs)
+  lands at `projects/bitty`,
+  [bitty-plugins-docs](https://github.com/bitty-terminal/bitty-plugins-docs) at
+  `projects/plugins`, and
+  [bitty-ai-docs](https://github.com/bitty-terminal/bitty-ai-docs) at
+  `projects/bitty-ai`. The revisions, mounts and published bands live in
+  `src/content/docs-revision.json`; `content-sources/README.md` describes the
+  model, its gates and where the evidence is written. Canonical content stays
+  English-only until an accepted cross-repository decision, and source naming or
+  aggregation changes need one as well.
 - `astro.config.mjs` records `https://bitty.run` as the canonical Astro
   `site`. Cloudflare domain verification is pending and deployment automation
   is deferred. Do not add or modify deploy or release workflows without a
@@ -84,10 +90,12 @@
 ## Documentation and content
 
 - Repository documentation is written in English only.
-- `bitty-docs` Markdown and validated metadata are the canonical source for
-  publishable technical content.
-- Consume a pinned `bitty-docs` revision and only content explicitly eligible
-  for website publication.
+- The pinned documentation corpora's Markdown and validated metadata are the
+  canonical source for publishable technical content.
+- Consume only the pinned revisions (all four, from
+  `src/content/docs-revision.json`) and only content explicitly eligible for
+  website publication. A source's mount is its route prefix, and the generated
+  mirror under `src/content/docs/` is never hand-edited.
 - Website framing may improve presentation but must not silently rewrite,
   duplicate, or weaken canonical meaning.
 - Public route moves require reviewed redirect requirements and coordinated

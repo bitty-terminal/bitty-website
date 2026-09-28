@@ -37,6 +37,23 @@ type Props = {
 
 const { currentRoute, currentVersion, targetIdentities } = Astro.props as Props;
 
+/** Reader-facing version label: the pinned corpus keeps its machine
+ * timestamp in `versions.json`, but milliseconds are data, not copy
+ * (website#134). Render the date a reader can scan. */
+const humaniseLabel = (label: string): string => {
+  const iso = label.match(/\d{4}-\d{2}-\d{2}T[\d:.]+Z/);
+  if (!iso) return label;
+  const date = new Date(iso[0]);
+  if (Number.isNaN(date.getTime())) return label;
+  const readable = date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+  return label.replace(iso[0], readable);
+};
+
 const entries = versions.versions.map((entry) =>
   versionEntryPresentation({
     currentRoute,
@@ -61,7 +78,7 @@ const entries = versions.versions.map((entry) =>
           href={entry.href}
           data-current={entry.isCurrent ? "true" : undefined}
         >
-          {entry.label}
+          {humaniseLabel(entry.label)}
           {entry.suffix}
           {entry.isCurrent && (
             <span class="visually-hidden"> (current version)</span>

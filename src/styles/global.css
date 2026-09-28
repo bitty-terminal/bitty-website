@@ -756,6 +756,27 @@ body > .version-selector {
   border-radius: var(--radius-sm);
   background: var(--paper-deep);
   font-size: 0.9em;
+  /* Long identifiers, paths and signatures are normal in this corpus
+   * (website#130): without a break opportunity the line box grew past the
+   * viewport and 16 published pages scrolled horizontally at 390px. */
+  overflow-wrap: anywhere;
+}
+
+/* website#129: Shiki renders `<pre class="astro-code"><code>`; the inline-code
+ * chrome used to paint that inner `<code>` with the pale paper tint, so every
+ * syntax token sat on a tinted surface instead of the theme's own background
+ * and the red/comment roles measured 4.09/4.30 against the 4.5 AA threshold.
+ * Inside a code block the surface belongs to the block, not the inline style. */
+@media (prefers-color-scheme: light) {
+  /* website#129: the light fix below is scoped to the light scheme on purpose:
+   * the dark palette was measured AA-clean against the surface it already
+   * had, and re-painting it there moved the comment role to 3.73. */
+  .prose pre code {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: inherit;
+  }
 }
 
 .prose pre {
@@ -763,9 +784,22 @@ body > .version-selector {
   overflow-x: auto;
   border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: var(--card);
+  /* website#129: the light code surface is the theme's own background.
+   * The pale paper tint cost the red and comment tokens ~0.5 and pushed
+   * github-light just under the AA 4.5 threshold. Dark keeps its own block
+   * via the --shiki-dark-bg override in the palette media block. */
+  background: #fff;
   font-size: var(--text-sm);
   line-height: var(--leading-code);
+}
+
+/* website#129: the light code surface is the syntax theme's own background.
+ * The pale paper tint cost the red and comment tokens ~0.5 and left
+ * github-light just under the AA 4.5 threshold; dark keeps its own block via
+ * the --shiki-dark-bg override in the palette media block. */
+.prose pre.astro-code,
+.code-block pre.astro-code {
+  background: #fff;
 }
 
 /* Shiki dual theme (CTX-0049): Astro inlines the light palette (`color`) and

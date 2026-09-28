@@ -5,7 +5,10 @@
  *   bun run sync:docs                       # re-materialize every source at
  *                                           # its committed pin (no-op when
  *                                           # the mirror already matches)
- *   bun run sync:docs [--source <id>] --pin <40-char-sha|immutable-tag>
+ *   bun run sync:docs --source <id> --pin <40-char-sha|immutable-tag>
+ *                                           # advance one source; `--pin`
+ *                                           # requires `--source` when more
+ *                                           # than one source is pinned
  *
  * Pin file (schema 2): src/content/docs-revision.json — one entry per source,
  * each with its mounts into the aggregate mirror and its published band.

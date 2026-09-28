@@ -15,10 +15,11 @@ entry per consumed source, each with the same shape:
 - `bitty-plugins-docs` — mounted at `projects/plugins`.
 - `bitty-ai-docs` — mounted at `projects/bitty-ai`.
 
-Every entry carries `source` (the slug the pin resolves against), `revision`
-(the immutable revision that source is materialized at), `mounts` (the
-source-relative subtree and the mirror prefix it lands under), and `published`
-(the band the source's published-page count must stay inside).
+Every entry carries `id` (the handle `--source` takes), `source` (the slug the
+pin resolves against), `revision` (the immutable revision that source is
+materialized at), `mounts` (the source-relative subtree and the mirror prefix it
+lands under), `published` (the band the source's published-page count must stay
+inside), and `synced_at` (when the mirror last matched the pin).
 
 A source's mount **is** its route prefix: `projects/bitty/architecture/x.md`
 publishes at `/docs/<version>/projects/bitty/architecture/x/`. No other docs
@@ -26,9 +27,10 @@ route prefix exists.
 
 Read the pin file for the current revisions, mounts, and bands — they advance
 per source and are not restated here. `src/lib/docsPins.ts` is the schema and
-mount-mapping authority; its unit tests are what reject a malformed pin set,
-an overlapping mount, a missing revision-index owner, or a published band that
-no longer holds.
+mount-mapping authority: the parser and `assertSourcePublishedBand` reject a
+malformed pin set, an overlapping mount, a missing revision-index owner, or a
+published band that no longer holds, and the unit tests assert exactly those
+rejections.
 
 ## Gates and how to run them
 

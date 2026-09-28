@@ -116,7 +116,7 @@ the four pinned corpus revisions. The pins live in
 and published band); `src/content/docs-manifest.json` records the per-source
 parity results, counts, per-file provenance (source path, SHA-256, revision),
 and the routes each source publishes. `content-sources/README.md` describes the
-model and every gate.
+model and the documentation gates (`docs-check`, `docs-sync`, `validate:dist`).
 
 Advance one source to a merged, reviewed commit, or re-materialize every source
 at its committed pin:

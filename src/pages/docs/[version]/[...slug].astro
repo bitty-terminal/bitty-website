@@ -18,6 +18,7 @@ import {
 import { pageBadges } from "../../../lib/pageBadges.ts";
 import {
   buildLegacyAliases,
+  buildSectionRootAliases,
   loadMergedRedirects,
 } from "../../../lib/redirects.ts";
 import VersionSelector from "../../../components/VersionSelector.astro";
@@ -94,10 +95,25 @@ export async function getStaticPaths() {
 
   // RD-3: legacy aliases from the merged website + docs-owned redirect manifest.
   // Every alias 301s to the canonical route of the same version (see below).
-  const aliases = buildLegacyAliases(
-    [...canonical.keys()],
-    await loadMergedRedirects(),
+  const aliases = new Map(
+    buildLegacyAliases([...canonical.keys()], await loadMergedRedirects()),
   );
+  // bitty-website#137: a corpus directory's index is its `README.md`, so the
+  // directory root renders nothing of its own. The derived alias gives it the
+  // same 301 stub a legacy alias gets, which keeps the bare section URL (and
+  // the edge's slash-less form of it) off the 404 document. A collision fails
+  // closed instead of silently picking one target.
+  for (const [alias, target] of buildSectionRootAliases([
+    ...canonical.keys(),
+  ])) {
+    const existing = aliases.get(alias);
+    if (existing !== undefined && existing !== target) {
+      throw new Error(
+        `Section-root alias "${alias}" collides with an alias already pointing at "${existing}"`,
+      );
+    }
+    aliases.set(alias, target);
+  }
 
   const versionSegments = [
     "latest",

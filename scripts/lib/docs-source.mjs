@@ -13,7 +13,8 @@
  *    the single authority `../../src/lib/docsPins.ts`;
  *  - the mirror and its provenance manifest are compared byte-for-byte.
  *
- * Only the scripts in this repository import this module. It has no network
+ * This module is imported by the sync/check scripts and by their unit tests;
+ * nothing else in the repository should depend on it. It has no network
  * access of its own; cloning uses the git CLI against a derived or configured
  * remote.
  */

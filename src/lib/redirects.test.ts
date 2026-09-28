@@ -275,8 +275,9 @@ describe("renderRedirectEvidence (deployed provenance key set, #98)", () => {
  * keep answering one (#98 §5: no URL 404s).
  *
  * Two groups. In the pinned aggregated corpus every route here is either
- * demoted (its post-migration page ships a policy 301 of its own) or absent
- * because the source that owns the page has not landed yet; in both cases the
+ * demoted (its post-migration page ships a policy 301 of its own) or
+ * present-but-unpublished (the pinned corpora carry the page, but it publishes
+ * no route — excluded or withheld); in both cases the
  * route is a leaf whose single correct interim target is `/docs/`, the nearest
  * published ancestor. The 33 pages of `publication-withhold-list.json` are not
  * here: they are withheld precisely because they never had a route.
@@ -289,11 +290,11 @@ describe("renderRedirectEvidence (deployed provenance key set, #98)", () => {
  *     drops their wildcard, so without a per-route entry 28 routes x 3 hosted
  *     versions turn from 301 into 404 — the same class of loss as the entries
  *     above, one level down;
- *   - the 6 routes carved out of the pinned bitty-docs revision
- *     whose owning corpus has not landed yet.
+ *   - the 6 routes carved out of the retired bitty-docs pin, whose successors
+ *     live in the pinned corpora but publish no route (excluded or withheld).
  *
- * Shrink-only: an entry leaves this list when the owning corpus lands and
- * publishes the page (then the entry moves to `RETARGETED_ROUTES` with the
+ * Shrink-only: an entry leaves this list when the corpus that owns the page
+ * publishes it (then the entry moves to `RETARGETED_ROUTES` with the
  * exact target, or is dropped when the page publishes at its old URL again).
  */
 const INTERIM_CONTINUITY_ROUTES = [

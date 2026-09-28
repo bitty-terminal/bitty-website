@@ -98,10 +98,9 @@ audit.
   `/docs/<version>/projects/bitty/architecture/interactive/` (the `0.1.0`,
   `latest`, and `stable` aliases). Its source lives in
   `bitty-terminal-docs/architecture/interactive/`; this repository consumes it
-  through the mirror pin in `src/content/docs-revision.json`, which currently
-  materialises `bitty-terminal/bitty-docs@9891949c` — the revision that still
-  carries the terminal-platform corpus, later split out to
-  `bitty-terminal-docs`. The mirror file is
+  through the `bitty-terminal-docs` entry of `src/content/docs-revision.json`,
+  whose mount `projects/bitty` carries the terminal-platform corpus. The mirror
+  file is
   `src/content/docs/docs/projects/bitty/architecture/interactive/index.html`.
 - **Accepted references**: two bundled PNGs reached by relative `src`:
   `assets/bitty-icon.png` (23,391 bytes, line 23) and `assets/hero.png`

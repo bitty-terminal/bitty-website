@@ -24,8 +24,9 @@
  * 5. Fail closed: `website_publish: true` that satisfies neither the rule, the
  *    allow-list, nor the demotion list below aborts the build and the gate.
  *
- * The pinned mirror is consumed byte-for-byte and its frontmatter is owned by
- * bitty-docs, so the frontmatter flip that removes `website_publish: true` from
+ * The pinned mirror is consumed byte-for-byte and each page's frontmatter is
+ * owned by the corpus that declares it — bitty-website#98 pins four sources —
+ * so the frontmatter flip that removes `website_publish: true` from
  * a demoted page is a coordinated cross-repository change. Until it lands, a
  * demoted page must be recorded in `./publication-flip-list.json` — that file
  * is the docs-side flip list handed to the owning corpus. A page that requests
@@ -97,11 +98,11 @@ export const TYPE_AUDIENCE_EXCEPTIONS: readonly {
  * decision OQ-2).
  *
  * The pre-#98 `25-35` band was a single-source target and it cannot hold once
- * the site aggregates more than one corpus: onboarding `bitty-terminal-docs`
- * alone re-homes 7 published routes to a source that has not landed yet, so
- * the aggregate legitimately reads 21 (bitty-website#98 T5), and it reads 47
- * once the plugin source lands (T6): bitty-docs 3 + bitty-terminal-docs 18 +
- * bitty-plugins-docs 26. The band is therefore re-based to a
+ * the site aggregates more than one corpus: with all four sources pinned the
+ * aggregate reads 47 — bitty-docs 3 + bitty-terminal-docs 18 +
+ * bitty-plugins-docs 26 + bitty-ai-docs 0 (bitty-website#98; the per-source
+ * counts are the ones `just docs-check` prints and
+ * `src/content/docs-manifest.json` records). The band is therefore re-based to a
  * coarse "the site is neither empty nor a corpus dump" bound; the reviewed,
  * attributable gate is the per-source `published.min`/`published.max` band in
  * `src/content/docs-revision.json` (checked by `assertSourcePublishedBand` in

@@ -122,13 +122,19 @@ const { version = "latest" } = Astro.props as Props;
     display: none;
   }
 
+  /* The panel scrolls internally instead of growing past the viewport
+   * (CTX-0046): a ten-hit list measured 946px tall in a 633px-tall window,
+   * which dropped the tail below the fold with no way to reach it. */
   .site-search-results {
     position: absolute;
     inset-inline: 0;
     inset-block-start: 100%;
     z-index: var(--layer-sticky);
+    max-block-size: min(70vh, 28rem);
     margin: 0.25rem 0 0;
     padding: 0.25rem;
+    overflow-block: auto;
+    overscroll-behavior: contain;
     list-style: none;
     border: 1px solid var(--line);
     border-radius: var(--radius);

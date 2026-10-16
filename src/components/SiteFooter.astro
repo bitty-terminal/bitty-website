@@ -1,6 +1,6 @@
 ---
 /**
- * Site footer — presentation-only provenance strip.
+ * Site footer — presentation-only provenance strip with Blueprint aesthetics.
  * The docs pin and the corpus-set identity are rendered from
  * src/content/docs-revision.json so the published corpus stays reproducible
  * without hand-maintained copies.
@@ -12,20 +12,130 @@ import { parseDocsPinSet, revisionIndexOwner } from "../lib/docsPins.ts";
 const pins = parseDocsPinSet(docsRevision);
 const owner = revisionIndexOwner(pins);
 const shortRevision = owner.revision.slice(0, 7);
-// Short form of the derived corpus-set identity; the full value is the
-// artifact key and is carried in dist/docs-provenance.json.
 const corpusSet = corpusSetId(pins);
 const shortCorpusSet = corpusSet.slice(0, DOCS_CORPUS_ID_PREFIX.length + 12);
 ---
 
-<footer class="site-footer">
-  <p>
-    Bitty website v1 · English only · Text only until the 0.1.0 release — no
-    screenshots or videos yet.
-  </p>
-  <p>
-    Canonical documentation is owned by {owner.id} and consumed from the pinned
-    revision <code>{shortRevision}</code>; this site only presents it. The
-    deployed corpus set is <code>{shortCorpusSet}</code>.
-  </p>
+<footer class="site-footer border-t border-[var(--border-subtle)] font-mono-tech text-xs">
+  <div class="footer-container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="footer-logo font-display">bitty</span>
+        <span class="footer-tagline">Microkernel GPU Terminal Emulator</span>
+      </div>
+      <div class="footer-links">
+        <a
+          href="https://github.com/bitty-terminal/bitty"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub
+        </a>
+        <span>·</span>
+        <a
+          href="https://cdn.bitty.run/manual/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Manual CDN (R2)
+        </a>
+        <span>·</span>
+        <a href="/docs/latest/">Documentation</a>
+      </div>
+    </div>
+
+    <div class="footer-provenance">
+      <p>
+        Bitty Terminal · Microkernel Architecture · Pure-Rust Stackless Lua
+        Sandbox (Phodopus/Piccolo).
+      </p>
+      <p class="provenance-detail">
+        Canonical docs owned by <strong>{owner.id}</strong> (pinned{" "}
+        <code>{shortRevision}</code>). Corpus set: <code>{shortCorpusSet}</code>
+        . Rendered at Edge via Cloudflare Workers.
+      </p>
+    </div>
+  </div>
 </footer>
+
+<style>
+  .site-footer {
+    background: var(--bg-surface);
+    color: var(--fg-muted);
+    padding-block: 2.5rem 3rem;
+  }
+
+  .footer-container {
+    max-width: var(--docs-content-width);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .footer-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .footer-brand {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+
+  .footer-logo {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--fg-primary);
+  }
+
+  .footer-tagline {
+    font-size: 0.75rem;
+    color: var(--fg-secondary);
+  }
+
+  .footer-links {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .footer-links a {
+    color: var(--fg-secondary);
+    text-decoration: none;
+  }
+
+  .footer-links a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .footer-provenance {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    font-size: 0.72rem;
+    line-height: 1.6;
+    color: var(--fg-muted);
+  }
+
+  .footer-provenance p {
+    margin: 0;
+  }
+
+  .provenance-detail code {
+    font-family: var(--font-mono);
+    color: var(--fg-secondary);
+    background: var(--bg-elevated);
+    padding: 0.1rem 0.3rem;
+    border-radius: 3px;
+    border: 1px solid var(--border-subtle);
+  }
+</style>

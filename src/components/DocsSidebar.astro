@@ -70,8 +70,12 @@ const groups = getManualNavGroups(currentSlug, version);
   const drawer = document.querySelector("details.docs-nav-drawer");
   const narrow = window.matchMedia("(max-width: 49.9375rem)");
   const syncDrawer = () => {
-    if (drawer instanceof HTMLDetailsElement && narrow.matches) {
-      drawer.removeAttribute("open");
+    if (drawer instanceof HTMLDetailsElement) {
+      if (narrow.matches) {
+        drawer.removeAttribute("open");
+      } else {
+        drawer.setAttribute("open", "");
+      }
     }
   };
   syncDrawer();

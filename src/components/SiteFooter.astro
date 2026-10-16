@@ -60,9 +60,12 @@ const shortCorpusSet = corpusSet.slice(0, DOCS_CORPUS_ID_PREFIX.length + 12);
 
 <style>
   .site-footer {
+    position: relative;
+    z-index: 10;
     background: var(--bg-surface);
     color: var(--fg-muted);
-    padding-block: 2.5rem 3rem;
+    padding-block: 2rem 2.5rem;
+    border-top: 2px solid var(--card-border);
   }
 
   .footer-container {
@@ -71,7 +74,7 @@ const shortCorpusSet = corpusSet.slice(0, DOCS_CORPUS_ID_PREFIX.length + 12);
     padding: 0 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1.25rem;
   }
 
   .footer-top {
@@ -81,7 +84,7 @@ const shortCorpusSet = corpusSet.slice(0, DOCS_CORPUS_ID_PREFIX.length + 12);
     justify-content: space-between;
     gap: 1rem;
     padding-bottom: 1.25rem;
-    border-bottom: 1px solid var(--border-subtle);
+    border-bottom: 2px dashed var(--card-border);
   }
 
   .footer-brand {

@@ -131,7 +131,7 @@ for (const v of versions.versions) {
 ---
 
 <!doctype html>
-<html lang={locale === "zh-CN" ? "zh-CN" : "en"} data-theme="bitty-dark">
+<html lang={locale === "zh-CN" ? "zh-CN" : "en"} data-theme="shibuya-pop">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -159,26 +159,23 @@ for (const v of versions.versions) {
 
     <script is:inline>
       (() => {
-        const VALID_THEMES = [
-          "bitty-dark",
-          "tokyo-night",
-          "catppuccin-mocha",
-          "gruvbox-dark",
-          "paper-light",
-        ];
-        let theme = "bitty-dark";
+        let theme = "shibuya-pop";
         try {
           const params = new URLSearchParams(window.location.search);
           const urlTheme = params.get("theme");
-          if (urlTheme && VALID_THEMES.includes(urlTheme)) {
-            theme = urlTheme;
+          if (urlTheme === "akiba-cyber" || urlTheme === "dark") {
+            theme = "akiba-cyber";
+          } else if (urlTheme === "shibuya-pop" || urlTheme === "light") {
+            theme = "shibuya-pop";
           } else {
             let savedTheme = null;
             try {
               savedTheme = localStorage.getItem("bitty-theme");
             } catch {}
-            if (savedTheme && VALID_THEMES.includes(savedTheme)) {
-              theme = savedTheme;
+            if (savedTheme === "akiba-cyber" || savedTheme === "dark") {
+              theme = "akiba-cyber";
+            } else if (savedTheme === "shibuya-pop" || savedTheme === "light") {
+              theme = "shibuya-pop";
             }
           }
         } catch {}

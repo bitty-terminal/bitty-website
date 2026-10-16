@@ -188,15 +188,16 @@ const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
       }
     }
 
-    let initialTheme = "shibuya-pop";
-    try {
-      const stored = localStorage.getItem("bitty-theme");
-      if (stored === "akiba-cyber" || stored === "dark") {
-        initialTheme = "akiba-cyber";
-      } else if (stored === "shibuya-pop" || stored === "light") {
-        initialTheme = "shibuya-pop";
-      }
-    } catch {}
+    let initialTheme =
+      document.documentElement.getAttribute("data-theme") || "shibuya-pop";
+    if (
+      initialTheme !== "akiba-cyber" &&
+      initialTheme !== "dark" &&
+      initialTheme !== "shibuya-pop" &&
+      initialTheme !== "light"
+    ) {
+      initialTheme = "shibuya-pop";
+    }
 
     applyTheme(initialTheme);
 

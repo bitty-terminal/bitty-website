@@ -1,59 +1,447 @@
 ---
 /**
- * Site header — ghostty-style three-zone navigation bar.
+ * Site header — Blueprint & Terminal Native navigation bar.
  *
- * Left: the brand lockup (window-mark logo plus the Bitty word). Center:
- * the docs search box. Right: Docs, GitHub, and Download links. Link targets
- * are pinned canonical routes or external product URLs; no canonical prose is
- * copied here. The word beside the logo names the brand, so the image itself
- * is decorative.
- *
- * The Download link points at the GitHub releases page until the dedicated
- * download page lands (website#83).
+ * Left: Brand lockup (SVG terminal favicon + Bitty title + version pill).
+ * Center: Site search trigger.
+ * Right: Docs, Install, Theme Switcher, i18n Switcher, and GitHub.
  */
 import BittyLogo from "./BittyLogo.astro";
 import SiteSearch from "./SiteSearch.astro";
 
 type Props = {
-  /**
-   * Raw version route segment of the rendering page (`latest`, `stable`, or
-   * `x.y.z`). The search box resolves result links against it; pages without
-   * a version context (home) use the `latest` default.
-   */
   version?: string;
+  showSearch?: boolean;
 };
 
-const { version = "latest" } = Astro.props as Props;
-
+const { version = "latest", showSearch = true } = Astro.props as Props;
 const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
-const GITHUB_RELEASES_URL = `${GITHUB_REPO_URL}/releases`;
 ---
 
-<header class="site-header">
-  <nav aria-label="Primary">
-    <a class="brand" href="/" aria-label="Bitty home">
-      <BittyLogo />
-      <span class="brand-word">Bitty</span>
-    </a>
-    <div class="header-search">
-      <SiteSearch version={version} />
+<header class="site-header sticky top-0 z-40 backdrop-blur-xl border-b border-[var(--border-subtle)]">
+  <nav
+    class="header-nav max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4"
+    aria-label="Primary Navigation"
+  >
+    <!-- Left: Brand Lockup -->
+    <div class="header-brand-group flex items-center gap-3">
+      <a
+        href="/"
+        class="brand-link flex items-center gap-2.5 group focus:outline-none"
+        aria-label="Bitty Home"
+      >
+        <div class="logo-box w-8 h-8 rounded-md flex items-center justify-center border border-[var(--border-focus)]/60 bg-[var(--bg-elevated)] shadow-sm group-hover:scale-105 transition-transform">
+          <BittyLogo />
+        </div>
+        <span class="font-display font-bold text-lg tracking-tight text-[var(--fg-primary)]">
+          bitty
+        </span>
+      </a>
+      <span class="version-badge font-mono-tech text-[11px] px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--fg-secondary)]">
+        0.0.23
+      </span>
     </div>
-    <ul class="header-links">
-      <li>
-        <a class="header-link" href="/docs/latest/">
-          Docs
-        </a>
-      </li>
-      <li>
-        <a class="header-github" href={GITHUB_REPO_URL}>
-          GitHub
-        </a>
-      </li>
-      <li>
-        <a class="header-download" href={GITHUB_RELEASES_URL}>
-          Download
-        </a>
-      </li>
-    </ul>
+
+    <!-- Center: Search Box -->
+    {showSearch && (
+      <div class="header-search flex-1 max-w-md mx-2">
+        <SiteSearch version={version} />
+      </div>
+    )}
+
+    <!-- Right Controls: Docs, Install, Theme, i18n, GitHub -->
+    <div class="header-actions flex items-center gap-2 font-mono-tech text-xs">
+      <!-- Docs Link -->
+      <a href="/docs/latest/" class="nav-btn nav-btn-docs">
+        <span>Docs</span>
+      </a>
+
+      <!-- Install Anchor -->
+      <a href="/#download" class="nav-btn nav-btn-install">
+        <span>Install</span>
+      </a>
+
+      <div class="nav-divider" aria-hidden="true"></div>
+
+      <!-- Theme Switcher -->
+      <div class="theme-switcher relative">
+        <button
+          type="button"
+          id="theme-menu-btn"
+          class="theme-toggle-btn"
+          aria-haspopup="true"
+          aria-expanded="false"
+          title="Switch theme"
+        >
+          <span class="theme-color-dot" id="theme-color-indicator"></span>
+          <span id="current-theme-label" class="hidden sm:inline">
+            tokyo-night
+          </span>
+          <span class="chevron-icon">▾</span>
+        </button>
+
+        <div id="theme-dropdown" class="theme-dropdown-menu hidden" role="menu">
+          <button
+            type="button"
+            data-set-theme="tokyo-night"
+            class="theme-opt"
+            role="menuitem"
+          >
+            <span>tokyo-night</span>
+            <span class="w-2 h-2 rounded-full bg-[#7aa2f7]"></span>
+          </button>
+          <button
+            type="button"
+            data-set-theme="catppuccin-mocha"
+            class="theme-opt"
+            role="menuitem"
+          >
+            <span>catppuccin-mocha</span>
+            <span class="w-2 h-2 rounded-full bg-[#cba6f7]"></span>
+          </button>
+          <button
+            type="button"
+            data-set-theme="gruvbox-dark"
+            class="theme-opt"
+            role="menuitem"
+          >
+            <span>gruvbox-dark</span>
+            <span class="w-2 h-2 rounded-full bg-[#fabd2f]"></span>
+          </button>
+          <div class="dropdown-divider"></div>
+          <button
+            type="button"
+            data-set-theme="paper-light"
+            class="theme-opt"
+            role="menuitem"
+          >
+            <span>paper-light</span>
+            <span class="w-2 h-2 rounded-full bg-[#2554d8]"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- i18n Switcher -->
+      <div class="lang-switcher relative">
+        <button
+          type="button"
+          id="lang-menu-btn"
+          class="lang-toggle-btn"
+          aria-haspopup="true"
+          aria-expanded="false"
+          title="Switch language"
+        >
+          <span class="globe-icon">🌐</span>
+          <span id="current-lang-label">EN</span>
+          <span class="chevron-icon">▾</span>
+        </button>
+
+        <div id="lang-dropdown" class="lang-dropdown-menu hidden" role="menu">
+          <button
+            type="button"
+            data-set-lang="en"
+            class="lang-opt"
+            role="menuitem"
+          >
+            <span>English</span>
+            <span class="lang-path">/en</span>
+          </button>
+          <button
+            type="button"
+            data-set-lang="zh-CN"
+            class="lang-opt"
+            role="menuitem"
+          >
+            <span>简体中文</span>
+            <span class="lang-path">/zh-CN</span>
+          </button>
+          <button
+            type="button"
+            data-set-lang="ja"
+            class="lang-opt"
+            role="menuitem"
+          >
+            <span>日本語</span>
+            <span class="lang-path">/ja</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- GitHub Link -->
+      <a
+        href={GITHUB_REPO_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="github-btn"
+        title="GitHub Repository"
+      >
+        <svg
+          class="github-svg"
+          viewBox="0 0 24 24"
+          width="14"
+          height="14"
+          fill="currentColor"
+        >
+          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+        </svg>
+        <span class="hidden md:inline">GitHub</span>
+      </a>
+    </div>
   </nav>
 </header>
+
+<script>
+  (() => {
+    // Theme switcher behavior
+    const themeBtn = document.getElementById("theme-menu-btn");
+    const themeDropdown = document.getElementById("theme-dropdown");
+    const themeLabel = document.getElementById("current-theme-label");
+    const themeDot = document.getElementById("theme-color-indicator");
+
+    const themeColors: Record<string, string> = {
+      "tokyo-night": "#7aa2f7",
+      "catppuccin-mocha": "#cba6f7",
+      "gruvbox-dark": "#fabd2f",
+      "paper-light": "#2554d8",
+    };
+
+    const setTheme = (theme: string) => {
+      document.documentElement.setAttribute("data-theme", theme);
+      try {
+        localStorage.setItem("bitty-theme", theme);
+      } catch {}
+      if (themeLabel) themeLabel.textContent = theme;
+      if (themeDot && themeColors[theme]) {
+        themeDot.style.backgroundColor = themeColors[theme];
+      }
+    };
+
+    const currentTheme =
+      document.documentElement.getAttribute("data-theme") ||
+      localStorage.getItem("bitty-theme") ||
+      "tokyo-night";
+    setTheme(currentTheme);
+
+    themeBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      themeDropdown?.classList.toggle("hidden");
+    });
+
+    document.querySelectorAll("[data-set-theme]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const theme = btn.getAttribute("data-set-theme");
+        if (theme) setTheme(theme);
+        themeDropdown?.classList.add("hidden");
+      });
+    });
+
+    // Language switcher behavior
+    const langBtn = document.getElementById("lang-menu-btn");
+    const langDropdown = document.getElementById("lang-dropdown");
+    const langLabel = document.getElementById("current-lang-label");
+
+    langBtn?.addEventListener("click", (e) => {
+      e.stopPropagation();
+      langDropdown?.classList.toggle("hidden");
+    });
+
+    document.querySelectorAll("[data-set-lang]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const lang = btn.getAttribute("data-set-lang");
+        if (lang) {
+          if (langLabel) langLabel.textContent = lang.toUpperCase();
+          window.dispatchEvent(
+            new CustomEvent("bitty-lang-changed", { detail: { lang } }),
+          );
+        }
+        langDropdown?.classList.add("hidden");
+      });
+    });
+
+    document.addEventListener("click", () => {
+      themeDropdown?.classList.add("hidden");
+      langDropdown?.classList.add("hidden");
+    });
+  })();
+</script>
+
+<style>
+  .site-header {
+    background-color: var(--bg-glass);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .header-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 3.75rem;
+    max-width: var(--docs-content-width);
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  .brand-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+  }
+
+  .logo-box {
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-focus);
+    background: var(--bg-elevated);
+  }
+
+  .version-badge {
+    font-size: 0.68rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    color: var(--fg-secondary);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .nav-btn {
+    padding: 0.35rem 0.75rem;
+    border-radius: var(--radius-sm);
+    color: var(--fg-secondary);
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+
+  .nav-btn:hover {
+    color: var(--fg-primary);
+    background: var(--bg-elevated);
+  }
+
+  .nav-btn-docs {
+    color: var(--fg-primary);
+    font-weight: 600;
+  }
+
+  .nav-divider {
+    width: 1px;
+    height: 1rem;
+    background: var(--border-subtle);
+    margin: 0 0.25rem;
+  }
+
+  .theme-toggle-btn,
+  .lang-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    color: var(--fg-primary);
+    font-size: 0.75rem;
+    cursor: pointer;
+  }
+
+  .theme-toggle-btn:hover,
+  .lang-toggle-btn:hover {
+    border-color: var(--border-focus);
+  }
+
+  .theme-color-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background-color: var(--accent);
+  }
+
+  .chevron-icon {
+    font-size: 0.6rem;
+    color: var(--fg-muted);
+  }
+
+  .theme-dropdown-menu,
+  .lang-dropdown-menu {
+    position: absolute;
+    right: 0;
+    margin-top: 0.35rem;
+    width: 11rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    box-shadow: var(--shadow-ambient);
+    padding: 0.25rem;
+    z-index: 50;
+  }
+
+  .theme-dropdown-menu.hidden,
+  .lang-dropdown-menu.hidden {
+    display: none;
+  }
+
+  .theme-opt,
+  .lang-opt {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.35rem 0.65rem;
+    border: none;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--fg-primary);
+    font-size: 0.72rem;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .theme-opt:hover,
+  .lang-opt:hover {
+    background: var(--bg-elevated);
+  }
+
+  .dropdown-divider {
+    height: 1px;
+    background: var(--border-subtle);
+    margin: 0.25rem 0;
+  }
+
+  .lang-path {
+    font-size: 0.65rem;
+    color: var(--fg-muted);
+  }
+
+  .github-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.65rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    color: var(--fg-primary);
+    text-decoration: none;
+  }
+
+  .github-btn:hover {
+    border-color: var(--border-focus);
+  }
+
+  @media (max-width: 48rem) {
+    .header-nav {
+      flex-wrap: wrap;
+      height: auto;
+      padding-block: 0.5rem;
+    }
+  }
+</style>

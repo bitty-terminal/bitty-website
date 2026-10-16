@@ -1,24 +1,23 @@
 ---
 /**
- * Bitty website v1 home page.
+ * Bitty website home page — Blueprint & High-Precision Terminal Native Design.
  *
- * Presentation only: section framing is website-owned copy, while every
- * linked title, description, and status badge is rendered verbatim from the
- * pinned canonical frontmatter at build time. If a pinned entry below is
- * missing or no longer published by the shared publication policy (website#97),
- * the build fails closed instead of rendering a stale or governance link.
- * Text only: no screenshots, no video, no raster assets.
+ * 1. Editorial Systems Headline + Dual CTAs + Microkernel Badge.
+ * 2. Multi-platform OS install box (#download) with Unix sh, pwsh, Packages, Cargo.
+ * 3. 16:10 Interactive Showcase Stage (<ShowcaseStage />) featuring Hyprland-style
+ *    dwindle tiling, declarative Lua GUI panels, Composer modal, architecture topology,
+ *    and media slot placeholders for videos/GIFs/screenshots.
+ * 4. Architectural Pillars: Microkernel, Two-Tier Ext, GUI Panels, Security.
+ * 5. Canonical Documentation Directory: build-time validated links to published docs.
  */
 import { getCollection } from "astro:content";
 import { sep } from "node:path";
-import ArchitectureDiagram from "../components/ArchitectureDiagram.astro";
-import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
-import TerminalIllustration from "../components/TerminalIllustration.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import ShowcaseStage from "../components/ShowcaseStage.astro";
 import { sourcePathToRouteIdentity } from "../lib/docsRoutes.ts";
 import { publicationMetadataFromEntry } from "../lib/docsEntries.ts";
 import { isPublished } from "../lib/publicationPolicy.ts";
-import { PILLARS } from "../lib/pillars.ts";
 import "../styles/global.css";
 
 type HomeDoc = {
@@ -28,10 +27,7 @@ type HomeDoc = {
   href: string;
 };
 
-// Canonical source paths (relative to src/content/docs) surfaced on the
-// home page. Every entry is published by bitty-docs or bitty-terminal-docs at
-// the pinned revisions; none come from the plugins or AI corpora, and there are
-// no mirror edits.
+// Canonical source paths surfaced on the home page (build-time validated).
 const USAGE_SOURCES = [
   "docs/projects/bitty/user-guide/README.md",
   "docs/projects/bitty/how-to/README.md",
@@ -48,9 +44,6 @@ const CONFIGURATION_SOURCES = [
 const ARCHITECTURE_SOURCES = [
   "docs/projects/bitty/architecture/overview.md",
   "docs/projects/bitty/architecture/core-boundaries.md",
-  // Was `docs/projects/bitty/extensibility/plugin-system.md`: that tree belongs
-  // to the bitty-plugins-docs corpus (bitty-website#98 T6) and the bitty-docs
-  // copy is carved out, so the surviving published extension surface stands in.
   "docs/projects/bitty/interfaces/rich-content.md",
 ];
 
@@ -84,9 +77,6 @@ async function resolveHomeDocs(sources: string[]): Promise<HomeDoc[]> {
       );
     }
     const entry = matches[0] as (typeof matches)[number];
-    // One eligibility definition (website#97): the home page advertises what
-    // the publication policy publishes, so a governance page can never be
-    // linked from a published, indexed page.
     if (!isPublished(publicationMetadataFromEntry(entry))) {
       throw new Error(
         `Home page entry "${sourcePath}" is not published by the publication policy (website#97)`,
@@ -108,13 +98,13 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="tokyo-night">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Bitty is a small, extensible terminal in pre-implementation. Read the published usage, configuration, and architecture notes."
+      content="Bitty — High-performance, programmable GPU-accelerated terminal emulator pairing a lightweight Rust microkernel with an isolated Lua sandbox and Hyprland-style tiling."
     />
     <link rel="canonical" href="https://bitty.run/" />
     <link rel="icon" type="image/x-icon" href="/icons/favicon.ico" />
@@ -135,201 +125,719 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
       sizes="180x180"
       href="/icons/apple-touch-icon.png"
     />
-    <title>Bitty | Small terminal, serious workspace</title>
+    <title>Bitty — Programmable GPU Terminal Emulator</title>
+
+    <script is:inline>
+      (() => {
+        const params = new URLSearchParams(window.location.search);
+        const urlTheme = params.get("theme");
+        const savedTheme = localStorage.getItem("bitty-theme");
+        const theme = urlTheme || savedTheme || "tokyo-night";
+        document.documentElement.setAttribute("data-theme", theme);
+      })();
+    </script>
   </head>
   <body>
-    <a class="skip-link" href="#main-content">
-      Skip to content
+    <a href="#main-content" class="skip-link">
+      Skip to main content
     </a>
-    <SiteHeader />
-    <main id="main-content" class="home-shell" tabindex="-1">
-      <section class="home-hero" aria-labelledby="home-title">
-        <div class="home-hero-copy">
-          <p class="eyebrow">Pre-implementation. No public release.</p>
-          <h1 id="home-title">
-            A small terminal for a workspace that grows with you.
-          </h1>
-          <p class="home-lede">
-            A Rust terminal is planned with separate PTY, VT, terminal-state,
-            and rendering layers. Bitty aims to make panels and workspaces
-            native concepts, with Lua configuration and plugin capabilities
-            planned as host-enforced boundaries.
-          </p>
-          <ul class="home-hero-actions">
-            <li>
-              <a class="button" href="#pillars">
-                See what makes it different
-              </a>
-            </li>
-            <li>
-              <a class="button button--ghost" href="/docs/latest/">
-                Read the documentation
-              </a>
-            </li>
-          </ul>
-          <p class="home-status">
-            Bitty is pre-implementation: nothing below is installable yet. Every
-            document carries its own status, so draft contracts are never
-            mistaken for stable behavior.
-          </p>
-        </div>
-      </section>
+    <SiteHeader version="latest" />
 
-      <section
-        class="home-pillars"
-        id="pillars"
-        aria-labelledby="pillars-title"
-      >
-        <h2 id="pillars-title">Three ideas, in order</h2>
-        <ol class="pillar-list">
-          {PILLARS.map((pillar) => (
-            <li class="pillar">
-              <h3 class="pillar-name">{pillar.name}</h3>
-              <p class="pillar-claim">{pillar.claim}</p>
-              <p class="pillar-detail">{pillar.detail}</p>
-              <a class="pillar-link" href={pillar.href}>
-                {pillar.linkText}
-              </a>
-            </li>
-          ))}
-        </ol>
-      </section>
+    <main id="main-content" class="home-main" tabindex="-1">
+      <div class="content-container">
+        <!-- 1. HERO HEADER + DOWNLOAD BOX -->
+        <section class="hero-section" aria-labelledby="hero-title">
+          <div class="hero-grid">
+            <!-- Left: Headline & Subtitle -->
+            <div class="hero-content space-y-5">
+              <div class="badge-row font-mono-tech">
+                <span class="badge-microkernel">MICROKERNEL</span>
+                <span class="badge-meta">
+                  Rust Core · Piccolo Lua Sandbox · Hyprland-Style Tiling
+                </span>
+              </div>
 
-      <section class="home-stage" aria-labelledby="stage-title">
-        <div>
-          <h2 id="stage-title">Choose a starting point</h2>
-          <ul class="home-section-index">
-            <li>
-              <a href="#usage">
-                <span>Usage</span>
-                <small>Learn one supported task at a time.</small>
-              </a>
-            </li>
-            <li>
-              <a href="#configuration">
-                <span>Configuration</span>
-                <small>Shape Bitty with Lua and XDG layers.</small>
-              </a>
-            </li>
-            <li>
-              <a href="#architecture">
-                <span>Architecture</span>
-                <small>
-                  See how the core, plugins, and config fit together.
-                </small>
-              </a>
-            </li>
-          </ul>
-        </div>
-        <TerminalIllustration />
-      </section>
+              <h1 id="hero-title" class="hero-title font-display">
+                A tiling compositor inside your GPU terminal.
+              </h1>
 
-      <section
-        class="home-documentation"
-        id="usage"
-        aria-labelledby="documentation-title"
-      >
-        <div class="home-documentation-intro">
-          <h2 id="documentation-title">Published documentation</h2>
-          <p>
-            Read the canonical pages in context. Every description and status
-            below is rendered from the pinned documentation source.
-          </p>
-        </div>
-        <dl class="doc-ledger">
-          <div class="doc-ledger-item" id="usage-docs">
-            <dt class="doc-group-name">Usage</dt>
-            <dd>
-              <ul class="doc-links">
-                {usageDocs.map((doc) => (
-                  <li>
-                    <a class="doc-link" href={doc.href}>
-                      <span class="doc-link-title">{doc.title}</span>
-                      <span class="doc-link-description">
-                        {doc.description}
-                      </span>
-                      <span class="doc-status" data-status={doc.status}>
-                        {doc.status}
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </dd>
+              <p class="hero-lede">
+                Bitty decouples window containers from raw PTY streams. Tile
+                shells alongside declarative Lua GUI panels in a fuel-metered
+                Piccolo sandbox, backed by zero-daemon Rust stdio coprocesses.
+              </p>
+
+              <!-- Dual CTAs -->
+              <div class="hero-actions font-mono-tech">
+                <a href="#download" class="cta-primary">
+                  <span>Install Bitty 0.0.23</span>
+                  <span class="cta-arrow" aria-hidden="true">
+                    ↘
+                  </span>
+                </a>
+                <a href="/docs/latest/" class="cta-secondary">
+                  <span>Read Documentation</span>
+                  <span class="cta-arrow" aria-hidden="true">
+                    →
+                  </span>
+                </a>
+              </div>
+            </div>
+
+            <!-- Right: Interactive One-Liner Box -->
+            <div id="download" class="download-box-col">
+              <div class="blueprint-box download-card shadow-2xl">
+                <!-- OS Selector Tabs -->
+                <div
+                  class="download-tabs font-mono-tech"
+                  role="tablist"
+                  aria-label="Operating System Install Commands"
+                >
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected="true"
+                    data-dl-tab="unix"
+                    class="dl-tab active"
+                  >
+                    sh (Unix)
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                    data-dl-tab="win"
+                    class="dl-tab"
+                  >
+                    pwsh (Win)
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                    data-dl-tab="pkg"
+                    class="dl-tab"
+                  >
+                    Packages
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                    data-dl-tab="cargo"
+                    class="dl-tab"
+                  >
+                    Cargo
+                  </button>
+                </div>
+
+                <!-- Command display & Copy button -->
+                <div class="download-body">
+                  <div class="command-line font-mono-tech">
+                    <span class="prompt-sym select-none">$</span>
+                    <span id="dl-command-text">
+                      curl -fsSL https://cdn.bitty.run/bitty/install/install.sh
+                      | bash
+                    </span>
+                    <button
+                      type="button"
+                      id="copy-dl-btn"
+                      class="copy-btn font-mono-tech"
+                      aria-label="Copy install command"
+                    >
+                      <span id="copy-dl-label">Copy</span>
+                    </button>
+                  </div>
+
+                  <!-- Direct Artifact Downloads from Cloudflare R2 -->
+                  <div class="artifact-row font-mono-tech">
+                    <span class="artifact-label">Direct R2 artifacts:</span>
+                    <div class="artifact-links">
+                      <a
+                        href="https://cdn.bitty.run/bitty/releases/bitty-linux-x86_64.tar.zst"
+                        class="artifact-link"
+                      >
+                        Linux (.tar.zst)
+                      </a>
+                      <span class="sep">·</span>
+                      <a
+                        href="https://cdn.bitty.run/bitty/releases/bitty-macos-universal.dmg"
+                        class="artifact-link"
+                      >
+                        macOS (.dmg)
+                      </a>
+                      <span class="sep">·</span>
+                      <a
+                        href="https://cdn.bitty.run/bitty/releases/bitty-windows-x64.zip"
+                        class="artifact-link"
+                      >
+                        Win64 (.zip)
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="doc-ledger-item" id="configuration">
-            <dt class="doc-group-name">Configuration</dt>
-            <dd>
-              <ul class="doc-links">
-                {configurationDocs.map((doc) => (
-                  <li>
-                    <a class="doc-link" href={doc.href}>
-                      <span class="doc-link-title">{doc.title}</span>
-                      <span class="doc-link-description">
-                        {doc.description}
-                      </span>
-                      <span class="doc-status" data-status={doc.status}>
-                        {doc.status}
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </dd>
-          </div>
-          <div class="doc-ledger-item" id="architecture">
-            <dt class="doc-group-name">Architecture</dt>
-            <dd>
-              <ul class="doc-links">
-                {architectureDocs.map((doc) => (
-                  <li>
-                    <a class="doc-link" href={doc.href}>
-                      <span class="doc-link-title">{doc.title}</span>
-                      <span class="doc-link-description">
-                        {doc.description}
-                      </span>
-                      <span class="doc-status" data-status={doc.status}>
-                        {doc.status}
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </dd>
-          </div>
-        </dl>
-      </section>
+        </section>
 
-      <figure class="home-diagram" aria-labelledby="diagram-title">
-        <h2 id="diagram-title">How Bitty fits together</h2>
-        <div
-          class="diagram-scroll"
-          tabindex="0"
-          role="region"
-          aria-labelledby="diagram-title"
+        <!-- 2. 16:10 INTERACTIVE SHOWCASE STAGE (Media Slot Support) -->
+        <section
+          class="stage-section"
+          aria-label="Terminal Feature Demonstration"
         >
-          <ArchitectureDiagram />
-        </div>
-        <figcaption>
-          Illustration only. The normative boundaries live in the
-          <a href={architectureDocs[0]?.href ?? "/docs/latest/"}>
-            Architecture Overview
-          </a>
-          and its companion contracts.
-        </figcaption>
-      </figure>
+          <ShowcaseStage />
+        </section>
 
-      <section class="home-also" aria-labelledby="also-title">
-        <h2 id="also-title">Also worth reading</h2>
-        <ul>
-          {alsoDocs.map((doc) => (
-            <li>
-              <a href={doc.href}>{doc.title}</a>: {doc.description}
-            </li>
-          ))}
-        </ul>
-      </section>
+        <!-- 3. ARCHITECTURAL PILLARS -->
+        <section class="pillars-section" aria-labelledby="pillars-title">
+          <div class="section-header">
+            <h2 id="pillars-title" class="section-title font-display">
+              Engineered for Composability &amp; Isolation
+            </h2>
+            <p class="section-subtitle">
+              Zero monolithic bloat. Bitty separates terminal mechanics from
+              extension policy.
+            </p>
+          </div>
+
+          <div class="pillars-grid">
+            <!-- Pillar 1 -->
+            <div class="blueprint-box pillar-card">
+              <div class="pillar-tag font-mono-tech">
+                01 // MICROKERNEL ENGINE
+              </div>
+              <h3 class="pillar-heading font-display">
+                Decoupled View &amp; Terminal
+              </h3>
+              <p class="pillar-text">
+                Terminal owns the PTY, VT state machine, grid, and scrollback.
+                View owns presentation, hit testing, and selection. Multiple
+                views can observe a single PTY session without stream
+                corruption.
+              </p>
+            </div>
+
+            <!-- Pillar 2 -->
+            <div class="blueprint-box pillar-card">
+              <div class="pillar-tag font-mono-tech">
+                02 // TWO-TIER EXTENSIONS
+              </div>
+              <h3 class="pillar-heading font-display">
+                Rust Upstream + Lua Downstream
+              </h3>
+              <p class="pillar-text">
+                Heavy lifting (network, audio, storage) lives in native
+                zero-daemon coprocesses behind TOFU-pinned stdio wire protocol
+                boundaries. User customization runs in sandboxed Lua.
+              </p>
+            </div>
+
+            <!-- Pillar 3 -->
+            <div class="blueprint-box pillar-card">
+              <div class="pillar-tag font-mono-tech">
+                03 // TILING COMPOSITOR
+              </div>
+              <h3 class="pillar-heading font-display">Panels Beyond PTYs</h3>
+              <p class="pillar-text">
+                Hyprland-inspired dwindle and master layouts. A panel is not
+                merely a command shell: mount rich, declarative Lua GUI scene
+                trees alongside terminals in the same accelerated viewport.
+              </p>
+            </div>
+
+            <!-- Pillar 4 -->
+            <div class="blueprint-box pillar-card">
+              <div class="pillar-tag font-mono-tech">
+                04 // CAPABILITY SANDBOX
+              </div>
+              <h3 class="pillar-heading font-display">
+                Deny-by-Default Confinement
+              </h3>
+              <p class="pillar-text">
+                Each plugin VM is metered by instruction fuel with a 32 MiB
+                memory ceiling. Invocations of system tools run under Linux
+                Landlock execution confinement with an append-only audit ledger.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- 4. CANONICAL DOCUMENTATION INDEX -->
+        <section
+          class="docs-sources-section"
+          aria-labelledby="docs-index-title"
+        >
+          <div class="section-header">
+            <h2 id="docs-index-title" class="section-title font-display">
+              Published Documentation
+            </h2>
+            <p class="section-subtitle">
+              Canonical technical corpora synchronized and verified across four
+              independent repositories.
+            </p>
+          </div>
+
+          <div class="docs-groups-grid">
+            <!-- Usage & Tour -->
+            <div class="blueprint-box doc-group-card">
+              <h3 class="doc-group-title font-mono-tech">
+                USER GUIDE &amp; TOUR
+              </h3>
+              <ul class="doc-list font-mono-tech">
+                {usageDocs.map((doc) => (
+                  <li class="doc-item">
+                    <a href={doc.href} class="doc-link">
+                      <span class="doc-name">{doc.title}</span>
+                      <span class="doc-status">{doc.status}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <!-- Configuration -->
+            <div class="blueprint-box doc-group-card">
+              <h3 class="doc-group-title font-mono-tech">
+                CONFIGURATION &amp; THEMES
+              </h3>
+              <ul class="doc-list font-mono-tech">
+                {configurationDocs.map((doc) => (
+                  <li class="doc-item">
+                    <a href={doc.href} class="doc-link">
+                      <span class="doc-name">{doc.title}</span>
+                      <span class="doc-status">{doc.status}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <!-- Architecture -->
+            <div class="blueprint-box doc-group-card">
+              <h3 class="doc-group-title font-mono-tech">CORE ARCHITECTURE</h3>
+              <ul class="doc-list font-mono-tech">
+                {architectureDocs.map((doc) => (
+                  <li class="doc-item">
+                    <a href={doc.href} class="doc-link">
+                      <span class="doc-name">{doc.title}</span>
+                      <span class="doc-status">{doc.status}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <!-- Vision & Roadmap -->
+            <div class="blueprint-box doc-group-card">
+              <h3 class="doc-group-title font-mono-tech">
+                VISION &amp; ROADMAP
+              </h3>
+              <ul class="doc-list font-mono-tech">
+                {alsoDocs.map((doc) => (
+                  <li class="doc-item">
+                    <a href={doc.href} class="doc-link">
+                      <span class="doc-name">{doc.title}</span>
+                      <span class="doc-status">{doc.status}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
     </main>
+
     <SiteFooter />
+
+    <script>
+      (() => {
+        // OS Tabs switching logic
+        const dlTabs = document.querySelectorAll<HTMLButtonElement>(".dl-tab");
+        const dlCommandText = document.getElementById("dl-command-text");
+        const copyBtn = document.getElementById("copy-dl-btn");
+        const copyLabel = document.getElementById("copy-dl-label");
+
+        const installCommands: Record<string, string> = {
+          unix: "curl -fsSL https://cdn.bitty.run/bitty/install/install.sh | bash",
+          win: "irm https://cdn.bitty.run/bitty/install/install.ps1 | iex",
+          pkg: "paru -S bitty-bin # or brew install bitty / scoop install bitty",
+          cargo:
+            "cargo +1.98.1 install --git https://github.com/bitty-terminal/bitty.git bitty-terminal --locked",
+        };
+
+        dlTabs.forEach((tab) => {
+          tab.addEventListener("click", () => {
+            const key = tab.getAttribute("data-dl-tab");
+            if (!key) return;
+
+            dlTabs.forEach((t) => {
+              t.classList.remove("active");
+              t.setAttribute("aria-selected", "false");
+            });
+            tab.classList.add("active");
+            tab.setAttribute("aria-selected", "true");
+
+            if (dlCommandText && installCommands[key]) {
+              dlCommandText.textContent = installCommands[key];
+            }
+          });
+        });
+
+        // Copy button behavior
+        copyBtn?.addEventListener("click", async () => {
+          if (!dlCommandText) return;
+          try {
+            await navigator.clipboard.writeText(
+              dlCommandText.textContent || "",
+            );
+            if (copyLabel) {
+              copyLabel.textContent = "Copied ✓";
+              setTimeout(() => {
+                copyLabel.textContent = "Copy";
+              }, 2000);
+            }
+          } catch {}
+        });
+      })();
+    </script>
   </body>
 </html>
+
+<style>
+  .home-main {
+    min-height: 100vh;
+    padding-bottom: 5rem;
+  }
+
+  .content-container {
+    max-width: var(--docs-content-width);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  /* 1. Hero Section */
+  .hero-section {
+    padding-top: 3.5rem;
+    padding-bottom: 2rem;
+  }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    align-items: end;
+  }
+
+  @media (min-width: 64rem) {
+    .hero-grid {
+      grid-template-columns: 7fr 5fr;
+    }
+  }
+
+  .badge-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.75rem;
+    color: var(--fg-secondary);
+  }
+
+  .badge-microkernel {
+    padding: 0.15rem 0.5rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .hero-title {
+    font-size: clamp(2.25rem, 5vw, 4.25rem);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -0.035em;
+    color: var(--fg-primary);
+  }
+
+  .hero-lede {
+    font-size: clamp(1rem, 1.2vw, 1.15rem);
+    line-height: 1.65;
+    color: var(--fg-secondary);
+    max-width: 40rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.85rem;
+    padding-top: 0.5rem;
+  }
+
+  .cta-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.35rem;
+    border-radius: var(--radius-sm);
+    background: var(--accent);
+    color: #090b10;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: transform 0.15s ease;
+  }
+
+  .cta-primary:hover {
+    transform: translateY(-1px);
+  }
+
+  .cta-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.25rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    color: var(--fg-primary);
+    border: 1px solid var(--border-subtle);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: border-color 0.15s ease;
+  }
+
+  .cta-secondary:hover {
+    border-color: var(--border-focus);
+  }
+
+  /* Download Box */
+  .download-card {
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .download-tabs {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    background: var(--bg-elevated);
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 0.72rem;
+  }
+
+  .dl-tab {
+    padding: 0.35rem 0.75rem;
+    border-radius: 4px;
+    border: none;
+    background: transparent;
+    color: var(--fg-secondary);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+
+  .dl-tab.active {
+    background: var(--accent);
+    color: #090b10;
+    font-weight: 700;
+  }
+
+  .download-body {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    background: var(--bg-canvas);
+  }
+
+  .command-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.65rem 0.85rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    font-size: 0.75rem;
+    overflow-x: auto;
+  }
+
+  .prompt-sym {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .copy-btn {
+    padding: 0.25rem 0.65rem;
+    border-radius: 4px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    color: var(--fg-primary);
+    font-size: 0.68rem;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .copy-btn:hover {
+    border-color: var(--border-focus);
+  }
+
+  .artifact-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+    color: var(--fg-muted);
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .artifact-links {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .artifact-link {
+    color: var(--fg-secondary);
+    text-decoration: none;
+  }
+
+  .artifact-link:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .sep {
+    color: var(--border-subtle);
+  }
+
+  /* 3. Pillars Section */
+  .pillars-section {
+    padding-block: 4rem 2rem;
+  }
+
+  .section-header {
+    margin-bottom: 2rem;
+  }
+
+  .section-title {
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    font-weight: 800;
+    color: var(--fg-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .section-subtitle {
+    font-size: 1rem;
+    color: var(--fg-secondary);
+  }
+
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  @media (min-width: 48rem) {
+    .pillars-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .pillar-card {
+    padding: 1.75rem;
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .pillar-tag {
+    font-size: 0.68rem;
+    color: var(--accent);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .pillar-heading {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--fg-primary);
+  }
+
+  .pillar-text {
+    font-size: 0.85rem;
+    color: var(--fg-secondary);
+    line-height: 1.65;
+  }
+
+  /* 4. Docs Sources Section */
+  .docs-sources-section {
+    padding-block: 3rem;
+  }
+
+  .docs-groups-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  @media (min-width: 48rem) {
+    .docs-groups-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .doc-group-card {
+    padding: 1.5rem;
+    border-radius: var(--radius);
+  }
+
+  .doc-group-title {
+    font-size: 0.72rem;
+    color: var(--accent-warm);
+    letter-spacing: 0.06em;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .doc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .doc-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.45rem 0.65rem;
+    border-radius: var(--radius-sm);
+    background: var(--bg-elevated);
+    color: var(--fg-primary);
+    text-decoration: none;
+    font-size: 0.75rem;
+    transition: all 0.15s ease;
+  }
+
+  .doc-link:hover {
+    border: 1px solid var(--border-focus);
+    background: var(--bg-surface);
+  }
+
+  .doc-status {
+    font-size: 0.65rem;
+    color: var(--accent-mint);
+  }
+</style>

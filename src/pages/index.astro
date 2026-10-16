@@ -220,6 +220,7 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
                     role="tab"
                     id="dl-tab-unix"
                     aria-selected="true"
+                    aria-controls="dl-panel"
                     tabindex="0"
                     data-dl-tab="unix"
                     class="dl-tab active"
@@ -231,6 +232,7 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
                     role="tab"
                     id="dl-tab-win"
                     aria-selected="false"
+                    aria-controls="dl-panel"
                     tabindex="-1"
                     data-dl-tab="win"
                     class="dl-tab"
@@ -242,6 +244,7 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
                     role="tab"
                     id="dl-tab-pkg"
                     aria-selected="false"
+                    aria-controls="dl-panel"
                     tabindex="-1"
                     data-dl-tab="pkg"
                     class="dl-tab"
@@ -253,6 +256,7 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
                     role="tab"
                     id="dl-tab-cargo"
                     aria-selected="false"
+                    aria-controls="dl-panel"
                     tabindex="-1"
                     data-dl-tab="cargo"
                     class="dl-tab"
@@ -262,12 +266,18 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
                 </div>
 
                 <!-- Command display & Copy button -->
-                <div class="download-body">
+                <div
+                  id="dl-panel"
+                  class="download-body"
+                  role="tabpanel"
+                  aria-labelledby="dl-tab-unix"
+                >
                   <div class="command-line font-mono-tech">
                     <span class="prompt-sym select-none">$</span>
                     <span id="dl-command-text">
-                      curl -fsSL https://cdn.bitty.run/bitty/install/install.sh
-                      | bash
+                      {
+                        "curl -fsSL https://cdn.bitty.run/bitty/install/install.sh | bash"
+                      }
                     </span>
                     <button
                       type="button"
@@ -511,6 +521,9 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
           tab.setAttribute("aria-selected", "true");
           tab.tabIndex = 0;
           if (focus) tab.focus();
+
+          const dlPanel = document.getElementById("dl-panel");
+          dlPanel?.setAttribute("aria-labelledby", tab.id);
 
           if (dlCommandText && installCommands[key]) {
             dlCommandText.textContent = installCommands[key];

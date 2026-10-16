@@ -116,10 +116,10 @@ function checkSvgBlocks(html) {
 }
 
 function auditPage(name, html, { strictHeadings, passthrough }) {
-  if (/<html[^>]*\blang="en"/.test(html)) {
-    pass(`${name}: <html lang="en">`);
+  if (/<html[^>]*\blang="(?:en|zh-CN|zh)"/.test(html)) {
+    pass(`${name}: valid <html lang> attribute`);
   } else {
-    fail(`${name}: missing <html lang="en">`);
+    fail(`${name}: missing or invalid <html lang> attribute`);
   }
   if (passthrough) {
     // Upstream standalone app mirrored verbatim (architecture/interactive/):

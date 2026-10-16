@@ -1,110 +1,38 @@
 ---
 /**
- * Bitty website home page — Blueprint & High-Precision Terminal Native Design.
+ * Bitty website home page — Cyber-Pop & Cel-Shaded Toon Design.
  *
- * 1. Editorial Systems Headline + Dual CTAs + Microkernel Badge.
- * 2. Multi-platform OS install box (#download) with Unix sh, pwsh, Packages, Cargo.
- * 3. 16:10 Interactive Showcase Stage (<ShowcaseStage />) featuring Hyprland-style
- *    dwindle tiling, declarative Lua GUI panels, Composer modal, architecture topology,
- *    and media slot placeholders for videos/GIFs/screenshots.
- * 4. Architectural Pillars: Microkernel, Two-Tier Ext, GUI Panels, Security.
- * 5. Canonical Documentation Directory: build-time validated links to published docs.
+ * 1. Cyber-Cartoon Headline + Sticker Badges + Interactive Bittie Mascot Card.
+ * 2. Multi-platform Arcade Cartridge Install Deck (#download) with Unix sh, pwsh, Packages, Cargo.
+ * 3. 16:10 Interactive Showcase Stage (<ShowcaseStage />) with Dwindle Tiling, Lua GUI Panels,
+ *    Composer modal, and media slot placeholders.
+ * 4. Three Manga Bento Cards (STAGE 01, 02, 03) linking into canonical docs.
+ * 5. Canonical bitty-manual Documentation Groups: build-time validated links to R2 docs.
  */
-import { getCollection } from "astro:content";
-import { sep } from "node:path";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import ShowcaseStage from "../components/ShowcaseStage.astro";
-import { sourcePathToRouteIdentity } from "../lib/docsRoutes.ts";
-import { publicationMetadataFromEntry } from "../lib/docsEntries.ts";
-import { isPublished } from "../lib/publicationPolicy.ts";
+import BackgroundCanvas from "../components/BackgroundCanvas.astro";
+import { getManualNavGroups } from "../lib/manualDocs.ts";
 import "../styles/global.css";
 
-type HomeDoc = {
-  title: string;
-  description: string;
-  status: string;
-  href: string;
-};
-
-// Canonical source paths surfaced on the home page (build-time validated).
-const USAGE_SOURCES = [
-  "docs/projects/bitty/user-guide/README.md",
-  "docs/projects/bitty/how-to/README.md",
-  "docs/projects/bitty/tutorials/README.md",
-  "docs/projects/bitty/troubleshooting/README.md",
-  "docs/projects/bitty/examples/README.md",
-];
-
-const CONFIGURATION_SOURCES = [
-  "docs/projects/bitty/configuration/lua-and-xdg.md",
-  "docs/projects/bitty/configuration/themes.md",
-];
-
-const ARCHITECTURE_SOURCES = [
-  "docs/projects/bitty/architecture/overview.md",
-  "docs/projects/bitty/architecture/core-boundaries.md",
-  "docs/projects/bitty/interfaces/rich-content.md",
-];
-
-const ALSO_SOURCES = [
-  "docs/projects/bitty/product/vision.md",
-  "docs/roadmap/README.md",
-];
-
-function sourcePathFromFilePath(filePath: string, id: string): string {
-  const posix = filePath.split(sep).join("/");
-  const marker = "src/content/docs/";
-  const index = posix.lastIndexOf(marker);
-  if (index === -1) {
-    throw new Error(`Docs entry "${id}" is outside src/content/docs`);
-  }
-  return posix.slice(index + marker.length);
-}
-
-async function resolveHomeDocs(sources: string[]): Promise<HomeDoc[]> {
-  const docs = await getCollection("docs");
-  return sources.map((sourcePath) => {
-    const matches = docs.filter((entry) => {
-      if (entry.filePath === undefined || entry.filePath.length === 0) {
-        throw new Error(`Docs entry "${entry.id}" has no filePath`);
-      }
-      return sourcePathFromFilePath(entry.filePath, entry.id) === sourcePath;
-    });
-    if (matches.length !== 1) {
-      throw new Error(
-        `Home page expects exactly one docs entry for "${sourcePath}", found ${matches.length}`,
-      );
-    }
-    const entry = matches[0] as (typeof matches)[number];
-    if (!isPublished(publicationMetadataFromEntry(entry))) {
-      throw new Error(
-        `Home page entry "${sourcePath}" is not published by the publication policy (website#97)`,
-      );
-    }
-    return {
-      title: entry.data.title,
-      description: entry.data.description,
-      status: entry.data.status,
-      href: sourcePathToRouteIdentity(sourcePath).versionedRoute("latest"),
-    };
-  });
-}
-
-const usageDocs = await resolveHomeDocs(USAGE_SOURCES);
-const configurationDocs = await resolveHomeDocs(CONFIGURATION_SOURCES);
-const architectureDocs = await resolveHomeDocs(ARCHITECTURE_SOURCES);
-const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
+const manualGroups = getManualNavGroups("", "latest");
+const gettingStartedDocs =
+  manualGroups.find((g) => g.id === "getting-started")?.entries ?? [];
+const configurationDocs =
+  manualGroups.find((g) => g.id === "configuration")?.entries ?? [];
+const pluginDocs = manualGroups.find((g) => g.id === "plugins")?.entries ?? [];
+const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
 ---
 
 <!doctype html>
-<html lang="en" data-theme="tokyo-night">
+<html lang="en" data-theme="shibuya-pop" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Bitty — High-performance, programmable GPU-accelerated terminal emulator pairing a lightweight Rust microkernel with an isolated Lua sandbox and Hyprland-style tiling."
+      content="Bitty — Cyber-Pop high-performance programmable GPU terminal emulator pairing a Rust microkernel with a sandboxed Piccolo Lua engine and Hyprland-style tiling."
     />
     <link rel="canonical" href="https://bitty.run/" />
     <link rel="icon" type="image/x-icon" href="/icons/favicon.ico" />
@@ -125,193 +53,268 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
       sizes="180x180"
       href="/icons/apple-touch-icon.png"
     />
-    <title>Bitty — Programmable GPU Terminal Emulator</title>
+    <title>Bitty (ビッティ) — Cyber-Pop GPU Terminal Emulator</title>
 
     <script is:inline>
       (() => {
-        const VALID_THEMES = [
-          "tokyo-night",
-          "catppuccin-mocha",
-          "gruvbox-dark",
-          "paper-light",
-        ];
-        let theme = "tokyo-night";
+        let theme = "shibuya-pop";
         try {
           const params = new URLSearchParams(window.location.search);
           const urlTheme = params.get("theme");
-          if (urlTheme && VALID_THEMES.includes(urlTheme)) {
-            theme = urlTheme;
+          if (urlTheme === "akiba-cyber" || urlTheme === "dark") {
+            theme = "akiba-cyber";
+          } else if (urlTheme === "shibuya-pop" || urlTheme === "light") {
+            theme = "shibuya-pop";
           } else {
             let savedTheme = null;
             try {
               savedTheme = localStorage.getItem("bitty-theme");
-            } catch {
-              // Blocked storage
-            }
-            if (savedTheme && VALID_THEMES.includes(savedTheme)) {
-              theme = savedTheme;
+            } catch {}
+            if (savedTheme === "akiba-cyber" || savedTheme === "dark") {
+              theme = "akiba-cyber";
+            } else if (savedTheme === "shibuya-pop" || savedTheme === "light") {
+              theme = "shibuya-pop";
             }
           }
-        } catch {
-          // Fall back to default
-        }
+        } catch {}
         document.documentElement.setAttribute("data-theme", theme);
       })();
     </script>
   </head>
-  <body>
+  <body class="bg-manga-halftone min-h-screen flex flex-col justify-between relative selection:bg-[var(--accent-pop)] selection:text-white">
+    <BackgroundCanvas />
     <a href="#main-content" class="skip-link">
       Skip to main content
     </a>
-    <SiteHeader version="latest" />
+    <SiteHeader version="latest" activeNav="hero" />
 
     <main id="main-content" class="home-main" tabindex="-1">
-      <div class="content-container">
-        <!-- 1. HERO HEADER + DOWNLOAD BOX -->
+      <div class="content-container space-y-16">
+        <!-- 1. HERO TOP SPLIT: Pitch & Mascot Left | Arcade Download Deck Right -->
         <section class="hero-section" aria-labelledby="hero-title">
           <div class="hero-grid">
-            <!-- Left: Headline & Subtitle -->
+            <!-- Left 7 Cols: Headline, Leed, Mascot, CTAs -->
             <div class="hero-content space-y-5">
-              <div class="badge-row font-mono-tech">
-                <span class="badge-microkernel">MICROKERNEL</span>
-                <span class="badge-meta">
-                  Rust Core · Piccolo Lua Sandbox · Hyprland-Style Tiling
+              <!-- Sticker Badges -->
+              <div class="flex flex-wrap items-center gap-2.5 font-mono-tech">
+                <span class="sticker-badge" style="color: var(--accent);">
+                  <span>★</span>
+                  <span>超高速 GPU 端末 // MICROKERNEL</span>
+                </span>
+                <span
+                  class="sticker-badge"
+                  style="color: var(--accent-yellow); border-color: var(--accent-yellow);"
+                >
+                  <span>PICCOLO LUA VM · 0B IDLE</span>
                 </span>
               </div>
 
-              <h1 id="hero-title" class="hero-title font-display">
-                A tiling compositor inside your GPU terminal.
+              <!-- Cyber-Pop Headline -->
+              <h1
+                id="hero-title"
+                class="font-cyber-display font-bold hero-pop-title text-[var(--fg-primary)]"
+              >
+                TILE SHELLS &amp; RICH LUA GUIS AT ARCADE SPEED.
               </h1>
 
-              <p class="hero-lede">
-                Bitty decouples window containers from raw PTY streams. Tile
-                shells alongside declarative Lua GUI panels in a fuel-metered
-                Piccolo sandbox, backed by zero-daemon Rust stdio coprocesses.
+              <p class="hero-lede text-[var(--fg-secondary)] leading-relaxed">
+                <strong>Bitty</strong> brings Hyprland-style dwindle tiling into
+                a pure-Rust microkernel terminal. Every panel hosts either a raw
+                PTY stream or a sandboxed Piccolo Lua GUI—backed by zero-daemon
+                native coprocesses.
               </p>
 
-              <!-- Dual CTAs -->
-              <div class="hero-actions font-mono-tech">
-                <a href="#download" class="cta-primary">
-                  <span>Install Bitty 0.0.23</span>
-                  <span class="cta-arrow" aria-hidden="true">
-                    ↘
-                  </span>
+              <!-- Interactive Bittie Mascot Card -->
+              <div class="toon-card p-3.5 sm:p-4 flex items-center gap-4 bg-[var(--bg-elevated)] max-w-xl">
+                <button
+                  type="button"
+                  id="mascot-poke-btn"
+                  class="mascot-bob shrink-0 w-16 h-16 rounded-2xl border-2 border-[var(--ink-border)] bg-[var(--bg-canvas)] flex flex-col items-center justify-center shadow-[3px_3px_0px_var(--toon-shadow)] cursor-pointer group"
+                  title="Poke Bittie! (bitty --mascot)"
+                >
+                  <div
+                    id="mascot-face"
+                    class="font-mono-tech font-bold text-base"
+                    style="color: var(--accent);"
+                  >
+                    ^ω^
+                  </div>
+                  <div class="text-[9px] font-mono-tech text-[var(--accent-pop)] font-bold mt-0.5">
+                    BITTIE
+                  </div>
+                </button>
+                <div class="space-y-1 min-w-0 flex-1">
+                  <div class="flex items-center justify-between gap-2">
+                    <span
+                      class="font-cyber-display font-bold text-xs uppercase tracking-wider"
+                      style="color: var(--accent-yellow);"
+                    >
+                      Bittie Navigator // bitty --mascot
+                    </span>
+                    <button
+                      type="button"
+                      id="mascot-next-tip-btn"
+                      class="font-mono-tech text-[10px] px-2 py-0.5 rounded bg-[var(--bg-surface)] border border-[var(--card-border)] hover:border-[var(--ink-border)] text-[var(--fg-secondary)] cursor-pointer"
+                    >
+                      Poke Mascot ↻
+                    </button>
+                  </div>
+                  <p
+                    id="mascot-speech"
+                    class="font-mono-tech text-xs text-[var(--fg-primary)] leading-snug"
+                  >
+                    "Oha~! Press [Alt+E] to pop open the Composer modal, or
+                    click my face to cycle terminal tips!"
+                  </p>
+                </div>
+              </div>
+
+              <!-- Primary Action Buttons -->
+              <div class="flex flex-wrap items-center gap-3.5 pt-1 font-cyber-display font-bold text-sm">
+                <a
+                  href="#download"
+                  class="arcade-btn px-5 py-2.5 flex items-center gap-2"
+                  style="background: var(--accent); color: #0b0914;"
+                >
+                  <span>Get Bitty 0.0.23 ⚡</span>
                 </a>
-                <a href="/docs/latest/" class="cta-secondary">
-                  <span>Read Documentation</span>
-                  <span class="cta-arrow" aria-hidden="true">
-                    →
-                  </span>
+                <a
+                  href="/docs/latest/"
+                  class="arcade-btn px-5 py-2.5 bg-[var(--bg-surface)] text-[var(--fg-primary)] flex items-center gap-2"
+                >
+                  <span>Explore R2 Docs</span>
+                  <span style="color: var(--accent-pop);">→</span>
                 </a>
               </div>
             </div>
 
-            <!-- Right: Interactive One-Liner Box -->
+            <!-- Right 5 Cols: Arcade Cartridge Install & Download Deck -->
             <div id="download" class="download-box-col">
-              <div class="blueprint-box download-card shadow-2xl">
-                <!-- OS Selector Tabs -->
-                <div
-                  class="download-tabs font-mono-tech"
-                  role="tablist"
-                  aria-label="Operating System Install Commands"
-                >
-                  <button
-                    type="button"
-                    role="tab"
-                    id="dl-tab-unix"
-                    aria-selected="true"
-                    aria-controls="dl-panel"
-                    tabindex="0"
-                    data-dl-tab="unix"
-                    class="dl-tab active"
-                  >
-                    sh (Unix)
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    id="dl-tab-win"
-                    aria-selected="false"
-                    aria-controls="dl-panel"
-                    tabindex="-1"
-                    data-dl-tab="win"
-                    class="dl-tab"
-                  >
-                    pwsh (Win)
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    id="dl-tab-pkg"
-                    aria-selected="false"
-                    aria-controls="dl-panel"
-                    tabindex="-1"
-                    data-dl-tab="pkg"
-                    class="dl-tab"
-                  >
-                    Packages
-                  </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    id="dl-tab-cargo"
-                    aria-selected="false"
-                    aria-controls="dl-panel"
-                    tabindex="-1"
-                    data-dl-tab="cargo"
-                    class="dl-tab"
-                  >
-                    Cargo
-                  </button>
+              <div class="toon-card-cyan overflow-hidden shadow-2xl">
+                <!-- Top Caution Header -->
+                <div class="h-2 hazard-stripe"></div>
+                <div class="px-4 py-2 border-b-2 border-[var(--card-border)] bg-[var(--bg-elevated)] flex items-center justify-between font-cyber-display text-xs font-bold">
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-[var(--accent-yellow)] text-[#0b0914] text-[10px]">
+                      INSTALL DECK
+                    </span>
+                    <span>導入カートリッジ // SHA-256</span>
+                  </div>
+                  <span class="font-mono-tech text-[10px] text-[var(--accent)]">
+                    DPR 2.0x
+                  </span>
                 </div>
 
-                <!-- Command display & Copy button -->
-                <div
-                  id="dl-panel"
-                  class="download-body"
-                  role="tabpanel"
-                  aria-labelledby="dl-tab-unix"
-                >
-                  <div class="command-line font-mono-tech">
-                    <span class="prompt-sym select-none">$</span>
-                    <span id="dl-command-text">
-                      {
-                        "curl -fsSL https://cdn.bitty.run/bitty/install/install.sh | bash"
-                      }
-                    </span>
+                <!-- OS Tabs -->
+                <div class="p-4 space-y-3.5 bg-[var(--bg-surface)]">
+                  <div
+                    class="grid grid-cols-4 gap-1.5 font-mono-tech text-xs font-bold"
+                    role="tablist"
+                    aria-label="Operating System Install Commands"
+                  >
                     <button
                       type="button"
-                      id="copy-dl-btn"
-                      class="copy-btn font-mono-tech"
-                      aria-label="Copy install command"
+                      role="tab"
+                      id="dl-tab-unix"
+                      aria-selected="true"
+                      aria-controls="dl-panel"
+                      tabindex="0"
+                      data-dl-tab="unix"
+                      class="dl-tab py-1.5 px-2 rounded-lg border-2 border-[var(--ink-border)] transition-all active"
+                      style="background: var(--accent); color: #0b0914;"
                     >
-                      <span id="copy-dl-label">Copy</span>
+                      Unix .sh
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      id="dl-tab-win"
+                      aria-selected="false"
+                      aria-controls="dl-panel"
+                      tabindex="-1"
+                      data-dl-tab="win"
+                      class="dl-tab py-1.5 px-2 rounded-lg border-2 border-[var(--card-border)] bg-[var(--bg-canvas)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)]"
+                    >
+                      Win .ps1
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      id="dl-tab-pkg"
+                      aria-selected="false"
+                      aria-controls="dl-panel"
+                      tabindex="-1"
+                      data-dl-tab="pkg"
+                      class="dl-tab py-1.5 px-2 rounded-lg border-2 border-[var(--card-border)] bg-[var(--bg-canvas)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)]"
+                    >
+                      Packages
+                    </button>
+                    <button
+                      type="button"
+                      role="tab"
+                      id="dl-tab-cargo"
+                      aria-selected="false"
+                      aria-controls="dl-panel"
+                      tabindex="-1"
+                      data-dl-tab="cargo"
+                      class="dl-tab py-1.5 px-2 rounded-lg border-2 border-[var(--card-border)] bg-[var(--bg-canvas)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)]"
+                    >
+                      Cargo
                     </button>
                   </div>
 
-                  <!-- Direct Artifact Downloads from Cloudflare R2 -->
-                  <div class="artifact-row font-mono-tech">
-                    <span class="artifact-label">Direct R2 artifacts:</span>
-                    <div class="artifact-links">
+                  <!-- Command Readout Box -->
+                  <div
+                    id="dl-panel"
+                    class="p-3 rounded-xl bg-[var(--bg-code)] border-2 border-[var(--card-border)] flex items-center justify-between gap-2"
+                    role="tabpanel"
+                    aria-labelledby="dl-tab-unix"
+                  >
+                    <div class="font-mono-tech text-xs text-[#f5f3ff] overflow-x-auto whitespace-nowrap py-0.5 flex-1">
+                      <span
+                        class="select-none mr-2 font-bold"
+                        style="color: var(--accent-pop);"
+                      >
+                        ❯
+                      </span>
+                      <span id="dl-command-text">
+                        curl -fsSL
+                        https://cdn.bitty.run/bitty/install/install.sh | bash
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      id="copy-dl-btn"
+                      class="arcade-btn shrink-0 px-3 py-1.5 bg-[var(--bg-elevated)] font-mono-tech text-xs font-bold text-[var(--fg-primary)] flex items-center gap-1"
+                      aria-label="Copy install command"
+                    >
+                      <span id="copy-dl-label">COPY</span>
+                    </button>
+                  </div>
+
+                  <!-- Direct R2 Artifacts -->
+                  <div class="pt-2 border-t-2 border-dashed border-[var(--card-border)] flex flex-wrap items-center justify-between gap-2 font-mono-tech text-[11px]">
+                    <span class="text-[var(--fg-muted)] font-bold">
+                      DIRECT R2 ARTIFACTS:
+                    </span>
+                    <div class="flex flex-wrap items-center gap-1.5">
                       <a
                         href="https://cdn.bitty.run/bitty/releases/bitty-linux-x86_64.tar.zst"
-                        class="artifact-link"
+                        class="px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] border border-[var(--card-border)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] transition-colors"
                       >
-                        Linux (.tar.zst)
+                        .tar.zst
                       </a>
-                      <span class="sep">·</span>
                       <a
                         href="https://cdn.bitty.run/bitty/releases/bitty-macos-universal.dmg"
-                        class="artifact-link"
+                        class="px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] border border-[var(--card-border)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] transition-colors"
                       >
-                        macOS (.dmg)
+                        .dmg
                       </a>
-                      <span class="sep">·</span>
                       <a
                         href="https://cdn.bitty.run/bitty/releases/bitty-windows-x64.zip"
-                        class="artifact-link"
+                        class="px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] border border-[var(--card-border)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] transition-colors"
                       >
-                        Win64 (.zip)
+                        .zip
                       </a>
                     </div>
                   </div>
@@ -329,107 +332,168 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
           <ShowcaseStage />
         </section>
 
-        <!-- 3. ARCHITECTURAL PILLARS -->
-        <section class="pillars-section" aria-labelledby="pillars-title">
+        <!-- 3. THREE CYBER-MANGA BENTO CARDS -->
+        <section
+          class="pillars-section space-y-6"
+          aria-labelledby="pillars-title"
+        >
           <div class="section-header">
-            <h2 id="pillars-title" class="section-title font-display">
+            <h2
+              id="pillars-title"
+              class="font-cyber-display font-bold text-2xl sm:text-3xl text-[var(--fg-primary)] mb-2"
+            >
               Engineered for Composability &amp; Isolation
             </h2>
-            <p class="section-subtitle">
+            <p class="text-sm text-[var(--fg-secondary)]">
               Zero monolithic bloat. Bitty separates terminal mechanics from
               extension policy.
             </p>
           </div>
 
-          <div class="pillars-grid">
-            <!-- Pillar 1 -->
-            <div class="blueprint-box pillar-card">
-              <div class="pillar-tag font-mono-tech">
-                01 // MICROKERNEL ENGINE
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Card 01 -->
+            <article class="toon-card p-5 flex flex-col justify-between space-y-4">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between font-mono-tech text-xs">
+                  <span class="px-2 py-0.5 rounded font-bold bg-[var(--accent)] text-[#0b0914]">
+                    STAGE 01
+                  </span>
+                  <span class="text-[var(--fg-muted)]">画面分割 // TILING</span>
+                </div>
+                <h3 class="font-cyber-display font-bold text-xl text-[var(--fg-primary)]">
+                  Hyprland Tiling × GUI Panels
+                </h3>
+                <p class="text-xs sm:text-sm text-[var(--fg-secondary)] leading-relaxed">
+                  Dwindle &amp; BSP binary trees, floating scratchpads, and
+                  declarative{" "}
+                  <code class="font-mono-tech text-[var(--accent)]">
+                    bitty.ui
+                  </code>{" "}
+                  panels that live side-by-side with PTY shells.
+                </p>
               </div>
-              <h3 class="pillar-heading font-display">
-                Decoupled View &amp; Terminal
-              </h3>
-              <p class="pillar-text">
-                Terminal owns the PTY, VT state machine, grid, and scrollback.
-                View owns presentation, hit testing, and selection. Multiple
-                views can observe a single PTY session without stream
-                corruption.
-              </p>
-            </div>
+              <a
+                href="/docs/latest/configuration/workspaces-panels/"
+                class="arcade-btn w-full py-2 px-3 bg-[var(--bg-elevated)] font-cyber-display font-bold text-xs flex items-center justify-between text-[var(--fg-primary)]"
+              >
+                <span>Read Workspaces Spec</span>
+                <span style="color: var(--accent);">OPEN DOC →</span>
+              </a>
+            </article>
 
-            <!-- Pillar 2 -->
-            <div class="blueprint-box pillar-card">
-              <div class="pillar-tag font-mono-tech">
-                02 // TWO-TIER EXTENSIONS
+            <!-- Card 02 -->
+            <article class="toon-card p-5 flex flex-col justify-between space-y-4">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between font-mono-tech text-xs">
+                  <span class="px-2 py-0.5 rounded font-bold bg-[var(--accent-pop)] text-white">
+                    STAGE 02
+                  </span>
+                  <span class="text-[var(--fg-muted)]">
+                    二重拡張 // EXTENSIONS
+                  </span>
+                </div>
+                <h3 class="font-cyber-display font-bold text-xl text-[var(--fg-primary)]">
+                  Piccolo Lua × Rust Coprocesses
+                </h3>
+                <p class="text-xs sm:text-sm text-[var(--fg-secondary)] leading-relaxed">
+                  Zero-byte idle VMs in a stackless, fuel-metered Piccolo Lua
+                  sandbox, paired with TOFU-pinned upstream Rust binaries over{" "}
+                  <code class="font-mono-tech text-[var(--accent)]">
+                    stdio Wire v1
+                  </code>
+                  .
+                </p>
               </div>
-              <h3 class="pillar-heading font-display">
-                Rust Upstream + Lua Downstream
-              </h3>
-              <p class="pillar-text">
-                Heavy lifting (network, audio, storage) lives in native
-                zero-daemon coprocesses behind TOFU-pinned stdio wire protocol
-                boundaries. User customization runs in sandboxed Lua.
-              </p>
-            </div>
+              <a
+                href="/docs/latest/plugins/upstream-components/"
+                class="arcade-btn w-full py-2 px-3 bg-[var(--bg-elevated)] font-cyber-display font-bold text-xs flex items-center justify-between text-[var(--fg-primary)]"
+              >
+                <span>Read Architecture Spec</span>
+                <span style="color: var(--accent-pop);">OPEN DOC →</span>
+              </a>
+            </article>
 
-            <!-- Pillar 3 -->
-            <div class="blueprint-box pillar-card">
-              <div class="pillar-tag font-mono-tech">
-                03 // TILING COMPOSITOR
+            <!-- Card 03 -->
+            <article class="toon-card p-5 flex flex-col justify-between space-y-4">
+              <div class="space-y-3">
+                <div class="flex items-center justify-between font-mono-tech text-xs">
+                  <span class="px-2 py-0.5 rounded font-bold bg-[var(--accent-yellow)] text-[#0b0914]">
+                    STAGE 03
+                  </span>
+                  <span class="text-[var(--fg-muted)]">
+                    即時反映 // LIVE LUA
+                  </span>
+                </div>
+                <h3 class="font-cyber-display font-bold text-xl text-[var(--fg-primary)]">
+                  Live Config &amp; Safe Recovery
+                </h3>
+                <p class="text-xs sm:text-sm text-[var(--fg-secondary)] leading-relaxed">
+                  Instant{" "}
+                  <code class="font-mono-tech text-[var(--accent)]">
+                    init.lua
+                  </code>{" "}
+                  reconciliation without dropping PTYs, atomic rollback on
+                  invalid fields, and{" "}
+                  <code class="font-mono-tech text-[var(--accent-mint)]">
+                    bitty --safe
+                  </code>{" "}
+                  emergency mode.
+                </p>
               </div>
-              <h3 class="pillar-heading font-display">Panels Beyond PTYs</h3>
-              <p class="pillar-text">
-                Hyprland-inspired dwindle and master layouts. A panel is not
-                merely a command shell: mount rich, declarative Lua GUI scene
-                trees alongside terminals in the same accelerated viewport.
-              </p>
-            </div>
-
-            <!-- Pillar 4 -->
-            <div class="blueprint-box pillar-card">
-              <div class="pillar-tag font-mono-tech">
-                04 // CAPABILITY SANDBOX
-              </div>
-              <h3 class="pillar-heading font-display">
-                Deny-by-Default Confinement
-              </h3>
-              <p class="pillar-text">
-                Each plugin VM is metered by instruction fuel with a 32 MiB
-                memory ceiling. Invocations of system tools run under Linux
-                Landlock execution confinement with an append-only audit ledger.
-              </p>
-            </div>
+              <a
+                href="/docs/latest/configuration/overview/"
+                class="arcade-btn w-full py-2 px-3 bg-[var(--bg-elevated)] font-cyber-display font-bold text-xs flex items-center justify-between text-[var(--fg-primary)]"
+              >
+                <span>Read Config Reference</span>
+                <span style="color: var(--accent-yellow);">OPEN DOC →</span>
+              </a>
+            </article>
           </div>
         </section>
 
-        <!-- 4. CANONICAL DOCUMENTATION INDEX -->
+        <!-- 4. CANONICAL DOCUMENTATION INDEX (bitty-manual) -->
         <section
-          class="docs-sources-section"
+          class="docs-sources-section space-y-6"
           aria-labelledby="docs-index-title"
         >
           <div class="section-header">
-            <h2 id="docs-index-title" class="section-title font-display">
-              Published Documentation
+            <h2
+              id="docs-index-title"
+              class="font-cyber-display font-bold text-2xl sm:text-3xl text-[var(--fg-primary)] mb-2"
+            >
+              Bitty Manual &amp; Guides
             </h2>
-            <p class="section-subtitle">
-              Canonical technical corpora synchronized and verified across four
-              independent repositories.
+            <p class="text-sm text-[var(--fg-secondary)]">
+              Official user manual, configuration reference, and Lua API
+              documentation served directly from Cloudflare R2.
             </p>
           </div>
 
-          <div class="docs-groups-grid">
-            <!-- Usage & Tour -->
-            <div class="blueprint-box doc-group-card">
-              <h3 class="doc-group-title font-mono-tech">
-                USER GUIDE &amp; TOUR
-              </h3>
-              <ul class="doc-list font-mono-tech">
-                {usageDocs.map((doc) => (
-                  <li class="doc-item">
-                    <a href={doc.href} class="doc-link">
-                      <span class="doc-name">{doc.title}</span>
-                      <span class="doc-status">{doc.status}</span>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- Getting Started -->
+            <div class="toon-card p-4 space-y-3">
+              <div class="flex items-center justify-between border-b-2 border-[var(--card-border)] pb-2 font-mono-tech text-xs">
+                <span class="font-bold" style="color: var(--accent);">
+                  GETTING STARTED
+                </span>
+                <span class="text-[10px] text-[var(--fg-muted)] font-bold">
+                  {gettingStartedDocs.length} DOCS
+                </span>
+              </div>
+              <ul class="space-y-1.5 font-mono-tech text-xs">
+                {gettingStartedDocs.map((doc) => (
+                  <li>
+                    <a
+                      href={`/docs/latest/${doc.fullSlug}/`}
+                      class="flex items-center justify-between py-1 px-2 rounded hover:bg-[var(--bg-elevated)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] transition-colors"
+                    >
+                      <span class="truncate">{doc.title}</span>
+                      <span
+                        class="text-[10px] font-bold"
+                        style="color: var(--accent);"
+                      >
+                        →
+                      </span>
                     </a>
                   </li>
                 ))}
@@ -437,16 +501,29 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
             </div>
 
             <!-- Configuration -->
-            <div class="blueprint-box doc-group-card">
-              <h3 class="doc-group-title font-mono-tech">
-                CONFIGURATION &amp; THEMES
-              </h3>
-              <ul class="doc-list font-mono-tech">
+            <div class="toon-card p-4 space-y-3">
+              <div class="flex items-center justify-between border-b-2 border-[var(--card-border)] pb-2 font-mono-tech text-xs">
+                <span class="font-bold" style="color: var(--accent-pop);">
+                  CONFIGURATION
+                </span>
+                <span class="text-[10px] text-[var(--fg-muted)] font-bold">
+                  {configurationDocs.length} DOCS
+                </span>
+              </div>
+              <ul class="space-y-1.5 font-mono-tech text-xs">
                 {configurationDocs.map((doc) => (
-                  <li class="doc-item">
-                    <a href={doc.href} class="doc-link">
-                      <span class="doc-name">{doc.title}</span>
-                      <span class="doc-status">{doc.status}</span>
+                  <li>
+                    <a
+                      href={`/docs/latest/${doc.fullSlug}/`}
+                      class="flex items-center justify-between py-1 px-2 rounded hover:bg-[var(--bg-elevated)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] transition-colors"
+                    >
+                      <span class="truncate">{doc.title}</span>
+                      <span
+                        class="text-[10px] font-bold"
+                        style="color: var(--accent-pop);"
+                      >
+                        →
+                      </span>
                     </a>
                   </li>
                 ))}
@@ -454,31 +531,59 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
             </div>
 
             <!-- Architecture -->
-            <div class="blueprint-box doc-group-card">
-              <h3 class="doc-group-title font-mono-tech">CORE ARCHITECTURE</h3>
-              <ul class="doc-list font-mono-tech">
-                {architectureDocs.map((doc) => (
-                  <li class="doc-item">
-                    <a href={doc.href} class="doc-link">
-                      <span class="doc-name">{doc.title}</span>
-                      <span class="doc-status">{doc.status}</span>
+            <div class="toon-card p-4 space-y-3">
+              <div class="flex items-center justify-between border-b-2 border-[var(--card-border)] pb-2 font-mono-tech text-xs">
+                <span class="font-bold" style="color: var(--accent-yellow);">
+                  PLUGINS &amp; ARCH
+                </span>
+                <span class="text-[10px] text-[var(--fg-muted)] font-bold">
+                  {pluginDocs.length} DOCS
+                </span>
+              </div>
+              <ul class="space-y-1.5 font-mono-tech text-xs">
+                {pluginDocs.slice(0, 6).map((doc) => (
+                  <li>
+                    <a
+                      href={`/docs/latest/${doc.fullSlug}/`}
+                      class="flex items-center justify-between py-1 px-2 rounded hover:bg-[var(--bg-elevated)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] transition-colors"
+                    >
+                      <span class="truncate">{doc.title}</span>
+                      <span
+                        class="text-[10px] font-bold"
+                        style="color: var(--accent-yellow);"
+                      >
+                        →
+                      </span>
                     </a>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <!-- Vision & Roadmap -->
-            <div class="blueprint-box doc-group-card">
-              <h3 class="doc-group-title font-mono-tech">
-                VISION &amp; ROADMAP
-              </h3>
-              <ul class="doc-list font-mono-tech">
-                {alsoDocs.map((doc) => (
-                  <li class="doc-item">
-                    <a href={doc.href} class="doc-link">
-                      <span class="doc-name">{doc.title}</span>
-                      <span class="doc-status">{doc.status}</span>
+            <!-- Lua API -->
+            <div class="toon-card p-4 space-y-3">
+              <div class="flex items-center justify-between border-b-2 border-[var(--card-border)] pb-2 font-mono-tech text-xs">
+                <span class="font-bold" style="color: var(--accent-mint);">
+                  LUA API
+                </span>
+                <span class="text-[10px] text-[var(--fg-muted)] font-bold">
+                  {apiDocs.length} DOCS
+                </span>
+              </div>
+              <ul class="space-y-1.5 font-mono-tech text-xs">
+                {apiDocs.slice(0, 6).map((doc) => (
+                  <li>
+                    <a
+                      href={`/docs/latest/${doc.fullSlug}/`}
+                      class="flex items-center justify-between py-1 px-2 rounded hover:bg-[var(--bg-elevated)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] transition-colors"
+                    >
+                      <span class="truncate">{doc.title}</span>
+                      <span
+                        class="text-[10px] font-bold"
+                        style="color: var(--accent-mint);"
+                      >
+                        →
+                      </span>
                     </a>
                   </li>
                 ))}
@@ -493,7 +598,42 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
 
     <script>
       (() => {
-        // OS Tabs switching logic
+        // 1. Mascot tips and mood cycling
+        const mascotMoods = [
+          {
+            face: "^ω^",
+            text: '"Oha~! Press [Alt+E] to pop open the Composer modal, or click my face to cycle terminal tips!"',
+          },
+          {
+            face: "⌐■_■",
+            text: '"Piccolo Sandbox active! Unauthenticated env reads return desensitized nil—zero token leaks!"',
+          },
+          {
+            face: "★ω★",
+            text: "\"Did you know? A Bitty Panel can mount a declarative Lua GUI (type='rich') instead of a PTY!\"",
+          },
+          {
+            face: "－ω－",
+            text: '"Zzz... Plugins in Installed state spawn 0 Lua VMs and consume 0 bytes of memory until triggered!"',
+          },
+        ];
+        let mascotIdx = 0;
+        function cycleMascot() {
+          mascotIdx = (mascotIdx + 1) % mascotMoods.length;
+          const current = mascotMoods[mascotIdx];
+          const face = document.getElementById("mascot-face");
+          const speech = document.getElementById("mascot-speech");
+          if (face && current) face.textContent = current.face;
+          if (speech && current) speech.textContent = current.text;
+        }
+        document
+          .getElementById("mascot-poke-btn")
+          ?.addEventListener("click", cycleMascot);
+        document
+          .getElementById("mascot-next-tip-btn")
+          ?.addEventListener("click", cycleMascot);
+
+        // 2. OS Tabs switching logic
         const dlTabs = document.querySelectorAll<HTMLButtonElement>(".dl-tab");
         const dlCommandText = document.getElementById("dl-command-text");
         const copyBtn = document.getElementById("copy-dl-btn");
@@ -516,56 +656,58 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
             t.classList.remove("active");
             t.setAttribute("aria-selected", "false");
             t.tabIndex = -1;
+            t.style.background = "var(--bg-canvas)";
+            t.style.color = "var(--fg-secondary)";
+            t.style.borderColor = "var(--card-border)";
           });
           tab.classList.add("active");
           tab.setAttribute("aria-selected", "true");
           tab.tabIndex = 0;
-          if (focus) tab.focus();
+          tab.style.background = "var(--accent)";
+          tab.style.color = "#0b0914";
+          tab.style.borderColor = "var(--ink-border)";
 
-          const dlPanel = document.getElementById("dl-panel");
-          dlPanel?.setAttribute("aria-labelledby", tab.id);
+          if (focus) tab.focus();
 
           if (dlCommandText && installCommands[key]) {
             dlCommandText.textContent = installCommands[key];
           }
         };
 
-        dlTabs.forEach((tab, index) => {
+        dlTabs.forEach((tab) => {
           tab.addEventListener("click", () => activateDlTab(tab, false));
-
           tab.addEventListener("keydown", (e) => {
-            let newIndex = index;
-            if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-              e.preventDefault();
-              newIndex = (index + 1) % dlTabList.length;
-            } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-              e.preventDefault();
-              newIndex = (index - 1 + dlTabList.length) % dlTabList.length;
+            const index = dlTabList.indexOf(tab);
+            if (index === -1) return;
+            let nextIndex = -1;
+
+            if (e.key === "ArrowRight") {
+              nextIndex = (index + 1) % dlTabList.length;
+            } else if (e.key === "ArrowLeft") {
+              nextIndex = (index - 1 + dlTabList.length) % dlTabList.length;
             } else if (e.key === "Home") {
-              e.preventDefault();
-              newIndex = 0;
+              nextIndex = 0;
             } else if (e.key === "End") {
-              e.preventDefault();
-              newIndex = dlTabList.length - 1;
-            } else {
-              return;
+              nextIndex = dlTabList.length - 1;
             }
-            const nextTab = dlTabList[newIndex];
-            if (nextTab) activateDlTab(nextTab, true);
+
+            if (nextIndex !== -1) {
+              e.preventDefault();
+              const nextTab = dlTabList[nextIndex];
+              if (nextTab) activateDlTab(nextTab, true);
+            }
           });
         });
 
-        // Copy button behavior
+        // 3. One-click copy
         copyBtn?.addEventListener("click", async () => {
-          if (!dlCommandText) return;
+          const text = dlCommandText?.textContent?.trim() || "";
           try {
-            await navigator.clipboard.writeText(
-              dlCommandText.textContent || "",
-            );
+            await navigator.clipboard.writeText(text);
             if (copyLabel) {
-              copyLabel.textContent = "Copied ✓";
+              copyLabel.textContent = "COPIED!";
               setTimeout(() => {
-                copyLabel.textContent = "Copy";
+                copyLabel.textContent = "COPY";
               }, 2000);
             }
           } catch {}
@@ -597,39 +739,13 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
     display: grid;
     grid-template-columns: 1fr;
     gap: 2.5rem;
-    align-items: end;
+    align-items: center;
   }
 
   @media (min-width: 64rem) {
     .hero-grid {
       grid-template-columns: 7fr 5fr;
     }
-  }
-
-  .badge-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.65rem;
-    font-size: 0.75rem;
-    color: var(--fg-secondary);
-  }
-
-  .badge-microkernel {
-    padding: 0.15rem 0.5rem;
-    border-radius: var(--radius-sm);
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-subtle);
-    color: var(--accent);
-    font-weight: 700;
-  }
-
-  .hero-title {
-    font-size: clamp(2.25rem, 5vw, 4.25rem);
-    font-weight: 800;
-    line-height: 1.08;
-    letter-spacing: -0.035em;
-    color: var(--fg-primary);
   }
 
   .hero-lede {
@@ -639,281 +755,17 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
     max-width: 40rem;
   }
 
-  .hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.85rem;
-    padding-top: 0.5rem;
-  }
-
-  .cta-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.65rem 1.35rem;
-    border-radius: var(--radius-sm);
-    background: var(--accent);
-    color: #090b10;
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-decoration: none;
-    transition: transform 0.15s ease;
-  }
-
-  .cta-primary:hover {
-    transform: translateY(-1px);
-  }
-
-  .cta-secondary {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.65rem 1.25rem;
-    border-radius: var(--radius-sm);
-    background: var(--bg-surface);
-    color: var(--fg-primary);
-    border: 1px solid var(--border-subtle);
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: border-color 0.15s ease;
-  }
-
-  .cta-secondary:hover {
-    border-color: var(--border-focus);
-  }
-
   /* Download Box */
   .download-box-col {
     scroll-margin-top: 5rem;
   }
 
-  .download-card {
-    border-radius: var(--radius);
-    overflow: hidden;
-  }
-
-  .download-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
-    padding: 0.5rem;
-    background: var(--bg-elevated);
-    border-bottom: 1px solid var(--border-subtle);
-    font-size: 0.72rem;
-  }
-
-  .dl-tab {
-    padding: 0.35rem 0.75rem;
-    border-radius: 4px;
-    border: none;
-    background: transparent;
-    color: var(--fg-secondary);
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-
-  .dl-tab.active {
-    background: var(--accent);
-    color: #090b10;
-    font-weight: 700;
-  }
-
-  .download-body {
-    padding: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-    background: var(--bg-canvas);
-  }
-
-  .command-line {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    padding: 0.65rem 0.85rem;
-    border-radius: var(--radius-sm);
-    background: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    font-size: 0.75rem;
-    overflow-x: auto;
-  }
-
-  .prompt-sym {
-    color: var(--accent);
-    font-weight: 700;
-  }
-
-  .copy-btn {
-    padding: 0.25rem 0.65rem;
-    border-radius: 4px;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-subtle);
-    color: var(--fg-primary);
-    font-size: 0.68rem;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-
-  .copy-btn:hover {
-    border-color: var(--border-focus);
-  }
-
-  .artifact-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    font-size: 0.7rem;
-    color: var(--fg-muted);
-    padding-top: 0.5rem;
-    border-top: 1px solid var(--border-subtle);
-  }
-
-  .artifact-links {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-
-  .artifact-link {
-    color: var(--fg-secondary);
-    text-decoration: none;
-  }
-
-  .artifact-link:hover {
-    color: var(--accent);
-    text-decoration: underline;
-  }
-
-  .sep {
-    color: var(--border-subtle);
-  }
-
   /* 3. Pillars Section */
   .pillars-section {
-    padding-block: 4rem 2rem;
+    padding-block: 2rem;
   }
 
-  .section-header {
-    margin-bottom: 2rem;
-  }
-
-  .section-title {
-    font-size: clamp(1.75rem, 3vw, 2.5rem);
-    font-weight: 800;
-    color: var(--fg-primary);
-    margin-bottom: 0.5rem;
-  }
-
-  .section-subtitle {
-    font-size: 1rem;
-    color: var(--fg-secondary);
-  }
-
-  .pillars-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
-  }
-
-  @media (min-width: 48rem) {
-    .pillars-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  .pillar-card {
-    padding: 1.75rem;
-    border-radius: var(--radius);
-    display: flex;
-    flex-direction: column;
-    gap: 0.65rem;
-  }
-
-  .pillar-tag {
-    font-size: 0.68rem;
-    color: var(--accent);
-    font-weight: 700;
-    letter-spacing: 0.05em;
-  }
-
-  .pillar-heading {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--fg-primary);
-  }
-
-  .pillar-text {
-    font-size: 0.85rem;
-    color: var(--fg-secondary);
-    line-height: 1.65;
-  }
-
-  /* 4. Docs Sources Section */
   .docs-sources-section {
-    padding-block: 3rem;
-  }
-
-  .docs-groups-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 1.25rem;
-  }
-
-  @media (min-width: 48rem) {
-    .docs-groups-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-
-  .doc-group-card {
-    padding: 1.5rem;
-    border-radius: var(--radius);
-  }
-
-  .doc-group-title {
-    font-size: 0.72rem;
-    color: var(--accent-warm);
-    letter-spacing: 0.06em;
-    margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--border-subtle);
-  }
-
-  .doc-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .doc-link {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.45rem 0.65rem;
-    border: 1px solid transparent;
-    border-radius: var(--radius-sm);
-    background: var(--bg-elevated);
-    color: var(--fg-primary);
-    text-decoration: none;
-    font-size: 0.75rem;
-    transition: all 0.15s ease;
-  }
-
-  .doc-link:hover {
-    border-color: var(--border-focus);
-    background: var(--bg-surface);
-  }
-
-  .doc-status {
-    font-size: 0.65rem;
-    color: var(--accent-mint);
+    padding-block: 2rem;
   }
 </style>

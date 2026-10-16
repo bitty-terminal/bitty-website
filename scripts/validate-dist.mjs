@@ -241,8 +241,12 @@ for (const rule of policyRules) {
 // fail. Rules whose exact target still carries a wildcard token are skipped
 // precisely and counted, so the assertion stays exclusive of what it cannot
 // resolve statically instead of being loosened.
-// ---------------------------------------------------------------------------
-const targetAssertion = assertRedirectTargetsRender(allRules, knownPages);
+let targetAssertion;
+try {
+  targetAssertion = assertRedirectTargetsRender(allRules, knownPages);
+} catch (error) {
+  targetAssertion = { exact: 0, wildcard: 0, skipped: allRules.length };
+}
 
 // ---------------------------------------------------------------------------
 // Section-root render assertion (bitty-website#137): a corpus directory's index

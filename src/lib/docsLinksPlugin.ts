@@ -89,8 +89,13 @@ export function docsLinksMdastPlugin(
 
   const rewrite = (node: DocsLinkNode, ctx: DocsLinkContext): void => {
     const url = node.url;
-    if (typeof url !== "string" || url.length === 0) return;
-    const sourcePath = sourcePathForFileURL(ctx.fileURL, mirrorRoot);
+    if (typeof url !== "string") return;
+    let sourcePath: string;
+    try {
+      sourcePath = sourcePathForFileURL(ctx.fileURL, mirrorRoot);
+    } catch {
+      return;
+    }
     // Documents outside the routable categories (e.g. website_publish:false
     // notes under docs/sources/) never become pages: the renderer and
     // sync/check reject them through the same mapper, so there is nothing to

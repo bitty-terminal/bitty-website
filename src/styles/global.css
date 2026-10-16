@@ -57,24 +57,24 @@
   --terminal-muted: oklch(0.78 0.045 252);
   --terminal-prompt: oklch(0.76 0.17 34);
 
-  /* Blueprint & High-Precision Theme Tokens (Default: Tokyo Night) */
-  --bg-canvas: #090b10;
-  --bg-surface: #0f121b;
-  --bg-elevated: #161a27;
-  --bg-code: #0c0e16;
-  --bg-glass: rgba(15, 18, 27, 0.84);
-  --fg-primary: #dce3fb;
-  --fg-secondary: #949ec2;
-  --fg-muted: #565f89;
-  --accent-warm: #e0af68;
-  --accent-mint: #73daca;
-  --accent-violet: #bb9af7;
-  --accent-danger: #f7768e;
-  --border-hairline: rgba(122, 162, 247, 0.14);
-  --border-subtle: rgba(255, 255, 255, 0.075);
-  --border-focus: #7aa2f7;
-  --grid-dot: rgba(122, 162, 247, 0.16);
-  --shadow-ambient: 0 30px 90px -20px rgba(0, 0, 0, 0.85);
+  /* Blueprint & High-Precision Theme Tokens (Default: Bitty Dark - #1e1e2e) */
+  --bg-canvas: #1e1e2e;
+  --bg-surface: #181825;
+  --bg-elevated: #25263a;
+  --bg-code: #11111b;
+  --bg-glass: rgba(24, 24, 37, 0.85);
+  --fg-primary: #cdd6f4;
+  --fg-secondary: #a6adc8;
+  --fg-muted: #7f849c;
+  --accent-warm: #fab387;
+  --accent-mint: #94e2d5;
+  --accent-violet: #89b4fa;
+  --accent-danger: #f38ba8;
+  --border-hairline: rgba(51, 204, 255, 0.18);
+  --border-subtle: rgba(205, 214, 244, 0.12);
+  --border-focus: #33ccff;
+  --grid-dot: rgba(51, 204, 255, 0.16);
+  --shadow-ambient: 0 30px 90px -20px rgba(0, 0, 0, 0.65);
 
   --radius-sm: 0.375rem;
   --radius: 0.75rem;
@@ -123,10 +123,10 @@
    * CTX-0044: the docs shell is wider than the generic content cap so the
    * center column reads as an article, not a trickle; gutters stay capped
    * by the `100% - 2rem` floor in the `main.docs-main` rule below. */
-  --docs-sidebar-width: 16rem;
-  --docs-toc-width: 13rem;
-  --docs-content-width: 88rem;
-  --docs-layout-gap: 2.5rem;
+  --docs-sidebar-width: 17.5rem;
+  --docs-toc-width: 15.5rem;
+  --docs-content-width: 86rem;
+  --docs-layout-gap: 2rem;
   --docs-scroll-margin: 5rem;
 
   /* Keep the gate's concrete 44px floor visible alongside the semantic
@@ -141,101 +141,186 @@
 }
 
 /* ==========================================================================
-   THEME PALETTES & BLUEPRINT SYSTEM
+   1. CYBER × CARTOON (日系赛博 × 卡通) COLOR PALETTES
    ========================================================================== */
-[data-theme="tokyo-night"] {
-  --bg-canvas: #090b10;
-  --bg-surface: #0f121b;
-  --bg-elevated: #161a27;
-  --bg-code: #0c0e16;
-  --bg-glass: rgba(15, 18, 27, 0.84);
-  --fg-primary: #dce3fb;
-  --fg-secondary: #949ec2;
-  --fg-muted: #565f89;
-  --accent: #7aa2f7;
-  --accent-soft: rgba(122, 162, 247, 0.12);
-  --accent-warm: #e0af68;
-  --accent-mint: #73daca;
-  --accent-violet: #bb9af7;
-  --accent-danger: #f7768e;
-  --border-hairline: rgba(122, 162, 247, 0.14);
-  --border-subtle: rgba(255, 255, 255, 0.075);
-  --border-focus: #7aa2f7;
-  --grid-dot: rgba(122, 162, 247, 0.16);
-  --shadow-ambient: 0 30px 90px -20px rgba(0, 0, 0, 0.85);
-}
-
-[data-theme="catppuccin-mocha"] {
-  --bg-canvas: #0e0e16;
-  --bg-surface: #181825;
-  --bg-elevated: #1e1e2e;
-  --bg-code: #11111b;
-  --bg-glass: rgba(24, 24, 37, 0.85);
-  --fg-primary: #cdd6f4;
-  --fg-secondary: #a6adc8;
-  --fg-muted: #6c7086;
-  --accent: #cba6f7;
-  --accent-soft: rgba(203, 166, 247, 0.13);
-  --accent-warm: #fab387;
-  --accent-mint: #94e2d5;
-  --accent-violet: #89b4fa;
-  --accent-danger: #f38ba8;
-  --border-hairline: rgba(203, 166, 247, 0.16);
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-focus: #cba6f7;
-  --grid-dot: rgba(203, 166, 247, 0.16);
-  --shadow-ambient: 0 30px 90px -20px rgba(0, 0, 0, 0.85);
-}
-
-[data-theme="gruvbox-dark"] {
-  --bg-canvas: #141617;
-  --bg-surface: #1d2021;
-  --bg-elevated: #282828;
-  --bg-code: #101213;
-  --bg-glass: rgba(29, 32, 33, 0.86);
-  --fg-primary: #ebdbb2;
-  --fg-secondary: #bdae93;
-  --fg-muted: #7c6f64;
-  --accent: #fabd2f;
-  --accent-soft: rgba(250, 189, 47, 0.13);
-  --accent-warm: #fe8019;
-  --accent-mint: #8ec07c;
-  --accent-violet: #d3869b;
-  --accent-danger: #fb4934;
-  --border-hairline: rgba(250, 189, 47, 0.16);
-  --border-subtle: rgba(235, 219, 178, 0.085);
-  --border-focus: #fabd2f;
-  --grid-dot: rgba(250, 189, 47, 0.15);
-  --shadow-ambient: 0 30px 90px -20px rgba(0, 0, 0, 0.88);
-}
-
-[data-theme="paper-light"],
-[data-theme="light"] {
-  --bg-canvas: #f7f6f2;
+/* Shibuya Daylight: Japanese Pop Magazine / Manga Paper Style (Default: Light) */
+:root,
+[data-theme="shibuya-pop"],
+[data-theme="light"],
+[data-theme="paper-light"] {
+  --bg-canvas: #fffdf6;
   --bg-surface: #ffffff;
-  --bg-elevated: #efede6;
-  --bg-code: #141720;
-  --bg-glass: rgba(247, 246, 242, 0.88);
-  --fg-primary: #14161c;
-  --fg-secondary: #3e4452;
-  --fg-muted: #767d8c;
-  --accent: #2554d8;
-  --accent-soft: rgba(37, 84, 216, 0.1);
-  --accent-warm: #b85d08;
-  --accent-mint: #0d7a68;
-  --accent-violet: #6d38c9;
-  --accent-danger: #d92d4c;
-  --border-hairline: rgba(37, 84, 216, 0.18);
-  --border-subtle: rgba(20, 22, 28, 0.09);
-  --border-focus: #2554d8;
-  --grid-dot: rgba(20, 22, 28, 0.12);
-  --shadow-ambient: 0 24px 60px -15px rgba(20, 22, 28, 0.12);
+  --bg-elevated: #f4efe0;
+  --bg-code: #14121d;
+  --bg-glass: rgba(255, 253, 246, 0.92);
+  --fg-primary: #14121d;
+  --fg-secondary: #3d3952;
+  --fg-muted: #5a5475;
+  --accent: #d6004b;
+  --accent-pop: #2b4eff;
+  --accent-yellow: #ffcc00;
+  --accent-mint: #00875a;
+  --ink-border: #14121d;
+  --card-border: #14121d;
+  --border-subtle: rgba(20, 18, 29, 0.15);
+  --border-focus: #d6004b;
+  --toon-shadow: #14121d;
+  --toon-shadow-alt: #ff2a6d;
+  --halftone-dot: rgba(20, 18, 29, 0.11);
+  --grid-dot: rgba(20, 18, 29, 0.14);
+  --shadow-ambient: 4px 4px 0px #14121d;
+
+  --paper: #fffdf6;
+  --paper-deep: #f4efe0;
+  --card: #ffffff;
+  --ink: #14121d;
+  --muted: #5a5475;
+  --line: #14121d;
+  --hero: #fffdf6;
+  --accent-hover: #b0003d;
+  --accent-soft: rgba(214, 0, 75, 0.12);
+  --indigo: #2042eb;
+  --indigo-deep: #142eb5;
+  --ok: #007d59;
+  --ok-soft: #e3f8f0;
+  --focus: #2042eb;
+  --terminal-bg: #14121d;
+  --terminal-panel: #1f1b2e;
+  --terminal-line: #3d3952;
+  --terminal-ink: #f5f3ff;
+  --terminal-muted: #b5b0d6;
+  --terminal-prompt: #ffcc00;
+
+  color-scheme: light;
+}
+
+/* ==========================================================================
+   2. MANGA & CEL-SHADED TOON UTILITIES
+   ========================================================================== */
+.toon-card {
+  background-color: var(--bg-surface);
+  border: 2px solid var(--card-border);
+  border-radius: 14px;
+  box-shadow: 4px 4px 0px var(--toon-shadow);
+  transition:
+    transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.16s ease,
+    border-color 0.16s ease;
+  position: relative;
+}
+
+.toon-card:hover {
+  border-color: var(--ink-border);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px var(--toon-shadow);
+}
+
+.toon-card-cyan {
+  background-color: var(--bg-surface);
+  border: 2px solid var(--ink-border);
+  border-radius: 14px;
+  box-shadow: 5px 5px 0px var(--toon-shadow-alt);
+  position: relative;
+}
+
+.arcade-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--ink-border);
+  border-radius: 10px;
+  box-shadow: 3px 3px 0px var(--toon-shadow);
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.arcade-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px var(--toon-shadow);
+}
+
+.arcade-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--toon-shadow);
+}
+
+.sticker-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  border: 2px solid var(--ink-border);
+  background: var(--bg-elevated);
+  box-shadow: 2px 2px 0px var(--toon-shadow);
+  font-weight: 700;
+  font-size: 0.72rem;
+}
+
+.kbd-toon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.12rem 0.48rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--fg-primary);
+  background: var(--bg-elevated);
+  border: 1.5px solid var(--ink-border);
+  border-bottom-width: 3px;
+  border-radius: 6px;
+}
+
+.bg-manga-halftone {
+  background-image: radial-gradient(
+    var(--halftone-dot) 1.25px,
+    transparent 1.25px
+  );
+  background-size: 18px 18px;
+}
+
+.hazard-stripe {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--accent-yellow),
+    var(--accent-yellow) 8px,
+    #0b0914 8px,
+    #0b0914 16px
+  );
+}
+
+@keyframes float-bob {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.mascot-bob {
+  animation: float-bob 2.8s ease-in-out infinite;
 }
 
 /* Typography & Display helpers */
 .font-display {
   font-family: var(--font-display);
   letter-spacing: -0.03em;
+}
+
+.font-cyber-display {
+  font-family: "Chakra Petch", "M PLUS Rounded 1c", var(--font-display);
+  letter-spacing: -0.01em;
+}
+
+.hero-pop-title {
+  font-size: clamp(2.2rem, 4.4vw + 0.8rem, 4.1rem);
+  line-height: 1.05;
 }
 
 .font-mono-tech {
@@ -529,8 +614,22 @@ body {
 }
 
 ::selection {
-  background: var(--accent-soft);
-  color: var(--ink);
+  background: var(--accent-pop);
+  color: #ffffff;
+}
+
+[data-theme="akiba-cyber"] ::selection,
+[data-theme="dark"] ::selection,
+[data-theme="bitty-dark"] ::selection {
+  background: #ff2a85;
+  color: #ffffff;
+}
+
+[data-theme="shibuya-pop"] ::selection,
+[data-theme="light"] ::selection,
+[data-theme="paper-light"] ::selection {
+  background: #2b4eff;
+  color: #ffffff;
 }
 
 h1,
@@ -1384,6 +1483,7 @@ main.docs-main {
   .docs-article .prose {
     grid-column: 1;
     grid-row: 2;
+    max-width: 100%;
   }
 
   .docs-article .docs-pager {
@@ -1394,6 +1494,8 @@ main.docs-main {
   .docs-article .docs-toc {
     grid-column: 2;
     grid-row: 1 / span 2;
+    padding-inline-start: 1.25rem;
+    border-inline-start: 1px solid var(--border-subtle);
   }
 
   /* Desktop keeps the sidebar and TOC in view beside the article. The drawer
@@ -1655,6 +1757,56 @@ footer.site-footer p {
     font-style: var(--shiki-dark-font-style);
     text-decoration: var(--shiki-dark-text-decoration);
   }
+}
+
+/* Akiba Cyber: Cyberpunk Akiba Neon Night (Dark) */
+[data-theme="akiba-cyber"],
+[data-theme="dark"],
+[data-theme="bitty-dark"] {
+  --bg-canvas: #0b0914;
+  --bg-surface: #151226;
+  --bg-elevated: #1f1b38;
+  --bg-code: #090710;
+  --bg-glass: rgba(21, 18, 38, 0.9);
+  --fg-primary: #f5f3ff;
+  --fg-secondary: #b5b0d6;
+  --fg-muted: #8c85be;
+  --accent: #00f0ff;
+  --accent-pop: #ff2a85;
+  --accent-yellow: #ffe600;
+  --accent-mint: #00ff9d;
+  --ink-border: #00f0ff;
+  --card-border: #322b59;
+  --border-subtle: rgba(245, 243, 255, 0.14);
+  --border-focus: #00f0ff;
+  --toon-shadow: #ff2a85;
+  --toon-shadow-alt: #00f0ff;
+  --halftone-dot: rgba(0, 240, 255, 0.13);
+  --grid-dot: rgba(0, 240, 255, 0.16);
+  --shadow-ambient: 4px 4px 0px #ff2a85;
+
+  --paper: #0b0914;
+  --paper-deep: #1f1b38;
+  --card: #151226;
+  --ink: #f5f3ff;
+  --muted: #8c85be;
+  --line: #322b59;
+  --hero: #0b0914;
+  --accent-hover: #33f3ff;
+  --accent-soft: rgba(0, 240, 255, 0.16);
+  --indigo: #7aa2f7;
+  --indigo-deep: #89b4fa;
+  --ok: #00ff9d;
+  --ok-soft: #0e2a1e;
+  --focus: #00f0ff;
+  --terminal-bg: #090710;
+  --terminal-panel: #151226;
+  --terminal-line: #322b59;
+  --terminal-ink: #f5f3ff;
+  --terminal-muted: #b5b0d6;
+  --terminal-prompt: #ffe600;
+
+  color-scheme: dark;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -263,14 +263,21 @@ const navTitles = new Map(navEntries.map((entry) => [entry.slug, entry.title]));
         try {
           const params = new URLSearchParams(window.location.search);
           const urlTheme = params.get("theme");
-          const savedTheme = localStorage.getItem("bitty-theme");
           if (urlTheme && VALID_THEMES.includes(urlTheme)) {
             theme = urlTheme;
-          } else if (savedTheme && VALID_THEMES.includes(savedTheme)) {
-            theme = savedTheme;
+          } else {
+            let savedTheme = null;
+            try {
+              savedTheme = localStorage.getItem("bitty-theme");
+            } catch {
+              // Blocked storage
+            }
+            if (savedTheme && VALID_THEMES.includes(savedTheme)) {
+              theme = savedTheme;
+            }
           }
         } catch {
-          // Fall back to default on blocked storage
+          // Fall back to default
         }
         document.documentElement.setAttribute("data-theme", theme);
       })();

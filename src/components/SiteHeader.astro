@@ -188,7 +188,8 @@ const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
 
     themeBtn?.addEventListener("click", (e) => {
       e.stopPropagation();
-      themeDropdown?.classList.toggle("hidden");
+      const isHidden = themeDropdown?.classList.toggle("hidden");
+      themeBtn.setAttribute("aria-expanded", String(!isHidden));
     });
 
     document.querySelectorAll("[data-set-theme]").forEach((btn) => {
@@ -196,11 +197,13 @@ const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
         const theme = btn.getAttribute("data-set-theme");
         if (theme) setTheme(theme);
         themeDropdown?.classList.add("hidden");
+        themeBtn?.setAttribute("aria-expanded", "false");
       });
     });
 
     document.addEventListener("click", () => {
       themeDropdown?.classList.add("hidden");
+      themeBtn?.setAttribute("aria-expanded", "false");
     });
   })();
 </script>

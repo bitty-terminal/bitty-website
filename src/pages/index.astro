@@ -139,14 +139,21 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
         try {
           const params = new URLSearchParams(window.location.search);
           const urlTheme = params.get("theme");
-          const savedTheme = localStorage.getItem("bitty-theme");
           if (urlTheme && VALID_THEMES.includes(urlTheme)) {
             theme = urlTheme;
-          } else if (savedTheme && VALID_THEMES.includes(savedTheme)) {
-            theme = savedTheme;
+          } else {
+            let savedTheme = null;
+            try {
+              savedTheme = localStorage.getItem("bitty-theme");
+            } catch {
+              // Blocked storage
+            }
+            if (savedTheme && VALID_THEMES.includes(savedTheme)) {
+              theme = savedTheme;
+            }
           }
         } catch {
-          // Fall back to default on blocked storage
+          // Fall back to default
         }
         document.documentElement.setAttribute("data-theme", theme);
       })();
@@ -211,7 +218,9 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
                   <button
                     type="button"
                     role="tab"
+                    id="dl-tab-unix"
                     aria-selected="true"
+                    tabindex="0"
                     data-dl-tab="unix"
                     class="dl-tab active"
                   >
@@ -220,7 +229,9 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
                   <button
                     type="button"
                     role="tab"
+                    id="dl-tab-win"
                     aria-selected="false"
+                    tabindex="-1"
                     data-dl-tab="win"
                     class="dl-tab"
                   >
@@ -229,7 +240,9 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
                   <button
                     type="button"
                     role="tab"
+                    id="dl-tab-pkg"
                     aria-selected="false"
+                    tabindex="-1"
                     data-dl-tab="pkg"
                     class="dl-tab"
                   >
@@ -238,7 +251,9 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
                   <button
                     type="button"
                     role="tab"
+                    id="dl-tab-cargo"
                     aria-selected="false"
+                    tabindex="-1"
                     data-dl-tab="cargo"
                     class="dl-tab"
                   >
@@ -482,21 +497,48 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
             "cargo +1.98.1 install --git https://github.com/bitty-terminal/bitty.git bitty-terminal --locked",
         };
 
-        dlTabs.forEach((tab) => {
-          tab.addEventListener("click", () => {
-            const key = tab.getAttribute("data-dl-tab");
-            if (!key) return;
+        const dlTabList = Array.from(dlTabs);
+        const activateDlTab = (tab: HTMLButtonElement, focus = true) => {
+          const key = tab.getAttribute("data-dl-tab");
+          if (!key) return;
 
-            dlTabs.forEach((t) => {
-              t.classList.remove("active");
-              t.setAttribute("aria-selected", "false");
-            });
-            tab.classList.add("active");
-            tab.setAttribute("aria-selected", "true");
+          dlTabs.forEach((t) => {
+            t.classList.remove("active");
+            t.setAttribute("aria-selected", "false");
+            t.tabIndex = -1;
+          });
+          tab.classList.add("active");
+          tab.setAttribute("aria-selected", "true");
+          tab.tabIndex = 0;
+          if (focus) tab.focus();
 
-            if (dlCommandText && installCommands[key]) {
-              dlCommandText.textContent = installCommands[key];
+          if (dlCommandText && installCommands[key]) {
+            dlCommandText.textContent = installCommands[key];
+          }
+        };
+
+        dlTabs.forEach((tab, index) => {
+          tab.addEventListener("click", () => activateDlTab(tab, false));
+
+          tab.addEventListener("keydown", (e) => {
+            let newIndex = index;
+            if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+              e.preventDefault();
+              newIndex = (index + 1) % dlTabList.length;
+            } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+              e.preventDefault();
+              newIndex = (index - 1 + dlTabList.length) % dlTabList.length;
+            } else if (e.key === "Home") {
+              e.preventDefault();
+              newIndex = 0;
+            } else if (e.key === "End") {
+              e.preventDefault();
+              newIndex = dlTabList.length - 1;
+            } else {
+              return;
             }
+            const nextTab = dlTabList[newIndex];
+            if (nextTab) activateDlTab(nextTab, true);
           });
         });
 
@@ -630,6 +672,10 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
   }
 
   /* Download Box */
+  .download-box-col {
+    scroll-margin-top: 5rem;
+  }
+
   .download-card {
     border-radius: var(--radius);
     overflow: hidden;
@@ -637,6 +683,7 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
 
   .download-tabs {
     display: flex;
+    flex-wrap: wrap;
     gap: 0.25rem;
     padding: 0.5rem;
     background: var(--bg-elevated);

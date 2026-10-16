@@ -48,21 +48,6 @@ const items = headings.filter(
         ))}
       </ul>
     </nav>
-    <div class="docs-renderer-card">
-      <div class="renderer-header">Universal Renderer</div>
-      <div class="renderer-item">
-        <span>KaTeX Math</span>
-        <span class="status-active">Active</span>
-      </div>
-      <div class="renderer-item">
-        <span>Mermaid.js</span>
-        <span class="status-active">Active</span>
-      </div>
-      <div class="renderer-item">
-        <span>GFM Callouts</span>
-        <span class="status-badge">[!NOTE]</span>
-      </div>
-    </div>
   </details>
 )}
 
@@ -199,10 +184,6 @@ const items = headings.filter(
     font-weight: 600;
   }
 
-  .docs-renderer-card {
-    display: none;
-  }
-
   /* Wide viewports: the TOC is the sticky right rail and CSS keeps the
    * disclosure open, so the summary is gone and the inline label returns. */
   @media (width >= 70rem) {
@@ -230,44 +211,6 @@ const items = headings.filter(
       block-size: 0.75rem;
       background: var(--accent);
       border-radius: 1px;
-    }
-
-    .docs-renderer-card {
-      display: block;
-      margin-block-start: 1.75rem;
-      padding: 0.75rem;
-      background: var(--bg-surface);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-sm);
-      font-family: var(--font-mono);
-      font-size: 0.6875rem;
-    }
-
-    .renderer-header {
-      font-size: 0.625rem;
-      font-weight: 700;
-      color: var(--fg-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin-block-end: 0.5rem;
-    }
-
-    .renderer-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      color: var(--fg-secondary);
-      padding-block: 0.2rem;
-    }
-
-    .status-active {
-      color: var(--accent-mint);
-      font-weight: 600;
-    }
-
-    .status-badge {
-      color: var(--accent);
-      font-weight: 600;
     }
   }
 </style>

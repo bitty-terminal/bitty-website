@@ -520,13 +520,12 @@ html {
 body {
   min-block-size: 100vh;
   margin: 0;
-  background:
-    linear-gradient(
-      180deg,
-      oklch(from var(--hero) l c h / 0.86) 0,
-      var(--paper) min(34rem, 62vh)
-    ),
-    var(--paper);
+  background-color: var(--bg-canvas);
+  color: var(--fg-primary);
+  font-family: var(--font-sans);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 ::selection {

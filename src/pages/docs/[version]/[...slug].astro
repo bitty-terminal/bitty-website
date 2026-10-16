@@ -251,6 +251,30 @@ const navTitles = new Map(navEntries.map((entry) => [entry.slug, entry.title]));
         href={currentRoute.replace(`/docs/${version}/`, `/docs/latest/`)}
       />
     )}
+    <script is:inline>
+      (() => {
+        const VALID_THEMES = [
+          "tokyo-night",
+          "catppuccin-mocha",
+          "gruvbox-dark",
+          "paper-light",
+        ];
+        let theme = "tokyo-night";
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const urlTheme = params.get("theme");
+          const savedTheme = localStorage.getItem("bitty-theme");
+          if (urlTheme && VALID_THEMES.includes(urlTheme)) {
+            theme = urlTheme;
+          } else if (savedTheme && VALID_THEMES.includes(savedTheme)) {
+            theme = savedTheme;
+          }
+        } catch {
+          // Fall back to default on blocked storage
+        }
+        document.documentElement.setAttribute("data-theme", theme);
+      })();
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">

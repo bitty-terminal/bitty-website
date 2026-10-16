@@ -8,6 +8,7 @@
  */
 import BittyLogo from "./BittyLogo.astro";
 import SiteSearch from "./SiteSearch.astro";
+import { getVersions } from "../lib/versions.ts";
 
 type Props = {
   version?: string;
@@ -15,6 +16,8 @@ type Props = {
 };
 
 const { version = "latest", showSearch = true } = Astro.props as Props;
+const versions = getVersions();
+const displayVersion = version === "latest" ? versions.latest : version;
 const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
 ---
 
@@ -38,7 +41,7 @@ const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
         </span>
       </a>
       <span class="version-badge font-mono-tech text-[11px] px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--fg-secondary)]">
-        0.0.23
+        {displayVersion}
       </span>
     </div>
 
@@ -121,52 +124,6 @@ const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
         </div>
       </div>
 
-      <!-- i18n Switcher -->
-      <div class="lang-switcher relative">
-        <button
-          type="button"
-          id="lang-menu-btn"
-          class="lang-toggle-btn"
-          aria-haspopup="true"
-          aria-expanded="false"
-          title="Switch language"
-        >
-          <span class="globe-icon">🌐</span>
-          <span id="current-lang-label">EN</span>
-          <span class="chevron-icon">▾</span>
-        </button>
-
-        <div id="lang-dropdown" class="lang-dropdown-menu hidden" role="menu">
-          <button
-            type="button"
-            data-set-lang="en"
-            class="lang-opt"
-            role="menuitem"
-          >
-            <span>English</span>
-            <span class="lang-path">/en</span>
-          </button>
-          <button
-            type="button"
-            data-set-lang="zh-CN"
-            class="lang-opt"
-            role="menuitem"
-          >
-            <span>简体中文</span>
-            <span class="lang-path">/zh-CN</span>
-          </button>
-          <button
-            type="button"
-            data-set-lang="ja"
-            class="lang-opt"
-            role="menuitem"
-          >
-            <span>日本語</span>
-            <span class="lang-path">/ja</span>
-          </button>
-        </div>
-      </div>
-
       <!-- GitHub Link -->
       <a
         href={GITHUB_REPO_URL}
@@ -216,9 +173,16 @@ const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
       }
     };
 
+    let savedTheme: string | null = null;
+    try {
+      savedTheme = localStorage.getItem("bitty-theme");
+    } catch {
+      // storage unavailable
+    }
+
     const currentTheme =
       document.documentElement.getAttribute("data-theme") ||
-      localStorage.getItem("bitty-theme") ||
+      savedTheme ||
       "tokyo-night";
     setTheme(currentTheme);
 
@@ -235,32 +199,8 @@ const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
       });
     });
 
-    // Language switcher behavior
-    const langBtn = document.getElementById("lang-menu-btn");
-    const langDropdown = document.getElementById("lang-dropdown");
-    const langLabel = document.getElementById("current-lang-label");
-
-    langBtn?.addEventListener("click", (e) => {
-      e.stopPropagation();
-      langDropdown?.classList.toggle("hidden");
-    });
-
-    document.querySelectorAll("[data-set-lang]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const lang = btn.getAttribute("data-set-lang");
-        if (lang) {
-          if (langLabel) langLabel.textContent = lang.toUpperCase();
-          window.dispatchEvent(
-            new CustomEvent("bitty-lang-changed", { detail: { lang } }),
-          );
-        }
-        langDropdown?.classList.add("hidden");
-      });
-    });
-
     document.addEventListener("click", () => {
       themeDropdown?.classList.add("hidden");
-      langDropdown?.classList.add("hidden");
     });
   })();
 </script>

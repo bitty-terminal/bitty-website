@@ -21,8 +21,10 @@
       <button
         type="button"
         role="tab"
+        id="reel-tab-tiling"
         aria-selected="true"
         aria-controls="reel-panel-tiling"
+        tabindex="0"
         data-reel="tiling"
         class="reel-btn active"
       >
@@ -33,8 +35,10 @@
       <button
         type="button"
         role="tab"
+        id="reel-tab-composer"
         aria-selected="false"
         aria-controls="reel-panel-composer"
+        tabindex="-1"
         data-reel="composer"
         class="reel-btn"
       >
@@ -45,8 +49,10 @@
       <button
         type="button"
         role="tab"
+        id="reel-tab-architecture"
         aria-selected="false"
         aria-controls="reel-panel-architecture"
+        tabindex="-1"
         data-reel="architecture"
         class="reel-btn"
       >
@@ -57,8 +63,10 @@
       <button
         type="button"
         role="tab"
+        id="reel-tab-rawslot"
         aria-selected="false"
         aria-controls="reel-panel-rawslot"
+        tabindex="-1"
         data-reel="rawslot"
         class="reel-btn reel-btn-slot"
         title="Slot preview for real GIF/Video in Astro"
@@ -102,6 +110,7 @@
       id="reel-panel-tiling"
       class="reel-content reel-active"
       role="tabpanel"
+      aria-labelledby="reel-tab-tiling"
     >
       <div class="tiling-grid">
         <!-- Left Master Panel: PTY Session -->
@@ -197,7 +206,13 @@
     </div>
 
     <!-- REEL 02: Composer Modal (Alt+E) -->
-    <div id="reel-panel-composer" class="reel-content hidden" role="tabpanel">
+    <div
+      id="reel-panel-composer"
+      class="reel-content hidden"
+      role="tabpanel"
+      aria-labelledby="reel-tab-composer"
+      hidden
+    >
       <div class="composer-container media-slot-grid">
         <div class="composer-modal blueprint-box font-mono-tech">
           <div class="modal-header">
@@ -235,6 +250,8 @@
       id="reel-panel-architecture"
       class="reel-content hidden"
       role="tabpanel"
+      aria-labelledby="reel-tab-architecture"
+      hidden
     >
       <div class="arch-container media-slot-grid">
         <div class="arch-grid font-mono-tech">
@@ -273,7 +290,13 @@
     </div>
 
     <!-- REEL 04: Media Slot Mode (GIF / Video) -->
-    <div id="reel-panel-rawslot" class="reel-content hidden" role="tabpanel">
+    <div
+      id="reel-panel-rawslot"
+      class="reel-content hidden"
+      role="tabpanel"
+      aria-labelledby="reel-tab-rawslot"
+      hidden
+    >
       <div class="media-slot-container media-slot-grid">
         <div class="slot-placeholder blueprint-box font-mono-tech">
           <div class="slot-icon">📽️</div>
@@ -305,31 +328,61 @@
       rawslot: "bitty — live media recording slot",
     };
 
-    tabs.forEach((tab) => {
-      tab.addEventListener("click", () => {
-        const target = tab.getAttribute("data-reel");
-        if (!target) return;
+    const tabList = Array.from(tabs);
 
-        tabs.forEach((t) => {
-          t.classList.remove("active");
-          t.setAttribute("aria-selected", "false");
-        });
-        tab.classList.add("active");
-        tab.setAttribute("aria-selected", "true");
+    const activateTab = (tab: HTMLButtonElement, focus = true) => {
+      const target = tab.getAttribute("data-reel");
+      if (!target) return;
 
-        panels.forEach((p) => {
-          if (p.id === `reel-panel-${target}`) {
-            p.classList.remove("hidden");
-            p.classList.add("reel-active");
-          } else {
-            p.classList.add("hidden");
-            p.classList.remove("reel-active");
-          }
-        });
+      tabs.forEach((t) => {
+        t.classList.remove("active");
+        t.setAttribute("aria-selected", "false");
+        t.tabIndex = -1;
+      });
+      tab.classList.add("active");
+      tab.setAttribute("aria-selected", "true");
+      tab.tabIndex = 0;
+      if (focus) tab.focus();
 
-        if (windowTitle && titles[target]) {
-          windowTitle.textContent = titles[target];
+      panels.forEach((p) => {
+        if (p.id === `reel-panel-${target}`) {
+          p.classList.remove("hidden");
+          p.classList.add("reel-active");
+          p.removeAttribute("hidden");
+        } else {
+          p.classList.add("hidden");
+          p.classList.remove("reel-active");
+          p.setAttribute("hidden", "");
         }
+      });
+
+      if (windowTitle && titles[target]) {
+        windowTitle.textContent = titles[target];
+      }
+    };
+
+    tabs.forEach((tab, index) => {
+      tab.addEventListener("click", () => activateTab(tab, false));
+
+      tab.addEventListener("keydown", (e) => {
+        let newIndex = index;
+        if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+          e.preventDefault();
+          newIndex = (index + 1) % tabList.length;
+        } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+          e.preventDefault();
+          newIndex = (index - 1 + tabList.length) % tabList.length;
+        } else if (e.key === "Home") {
+          e.preventDefault();
+          newIndex = 0;
+        } else if (e.key === "End") {
+          e.preventDefault();
+          newIndex = tabList.length - 1;
+        } else {
+          return;
+        }
+        const nextTab = tabList[newIndex];
+        if (nextTab) activateTab(nextTab, true);
       });
     });
   })();
@@ -490,7 +543,7 @@
 
   .tiling-panel {
     display: flex;
-    flex-col: column;
+    flex-direction: column;
     justify-content: space-between;
     padding: 1rem;
     border-radius: var(--radius-sm);

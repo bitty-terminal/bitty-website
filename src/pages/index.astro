@@ -129,10 +129,25 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
 
     <script is:inline>
       (() => {
-        const params = new URLSearchParams(window.location.search);
-        const urlTheme = params.get("theme");
-        const savedTheme = localStorage.getItem("bitty-theme");
-        const theme = urlTheme || savedTheme || "tokyo-night";
+        const VALID_THEMES = [
+          "tokyo-night",
+          "catppuccin-mocha",
+          "gruvbox-dark",
+          "paper-light",
+        ];
+        let theme = "tokyo-night";
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const urlTheme = params.get("theme");
+          const savedTheme = localStorage.getItem("bitty-theme");
+          if (urlTheme && VALID_THEMES.includes(urlTheme)) {
+            theme = urlTheme;
+          } else if (savedTheme && VALID_THEMES.includes(savedTheme)) {
+            theme = savedTheme;
+          }
+        } catch {
+          // Fall back to default on blocked storage
+        }
         document.documentElement.setAttribute("data-theme", theme);
       })();
     </script>
@@ -823,6 +838,7 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
     align-items: center;
     justify-content: space-between;
     padding: 0.45rem 0.65rem;
+    border: 1px solid transparent;
     border-radius: var(--radius-sm);
     background: var(--bg-elevated);
     color: var(--fg-primary);
@@ -832,7 +848,7 @@ const alsoDocs = await resolveHomeDocs(ALSO_SOURCES);
   }
 
   .doc-link:hover {
-    border: 1px solid var(--border-focus);
+    border-color: var(--border-focus);
     background: var(--bg-surface);
   }
 

@@ -1,183 +1,155 @@
 # Bitty Website
 
-This repository contains the static website for the Bitty project. It renders
-the marketing shell plus the canonical documents whose frontmatter sets
-`website_publish: true`, consumed from four pinned source revisions. It does not
-publish product features, search, analytics, localized content, or an
-unversioned routing contract.
-
-Canonical technical documentation remains owned by its corpus: `bitty-docs`
-(governance content and the revision index), `bitty-terminal-docs`,
-`bitty-plugins-docs`, and `bitty-ai-docs`; this repository only mirrors and
-presents them. The authoritative mechanism, route mapping, and operator
-contract live in the canonical `bitty-docs` guide
-`docs/development/website-sync.md` (Website Delivery RFC, OQ-023).
-
-## Target stack and site map (deferred)
-
-The 2026-09-14 project decision selects Astro plus Astro Starlight for the
-Bitty developer portal at <https://bitty.run>. Website v1 ships a CSS-only
-theme on the current Astro shell instead: home page, docs entry points, an
-inline-SVG architecture sketch, and push-to-main Cloudflare auto-deploy.
-Starlight adoption, UI/UX, internationalization, themes beyond this CSS
-layer, and search stay deferred to the 0.1.0 release window. The canonical
-Website Delivery RFC still lists a required Starlight theme as deferred;
-recording the target here does not change that contract, and the
-presentation decision must be accepted before migration work starts.
-
-Target site map (v1 routes `/` and `/docs/...`; the rest stays planned):
-
-| Route                   | Planned purpose                                                                          |
-| ----------------------- | ---------------------------------------------------------------------------------------- |
-| `/`                     | Home (v1): usage, configuration, and architecture entry points plus an inline-SVG sketch |
-| `/docs/...`             | Getting started, configuration, keybindings, panels, IPC, Lua, architecture              |
-| `/api/...`              | Lua, plugin, and IPC reference                                                           |
-| `/plugins/`             | Entry point that links or redirects to <https://plugins.bitty.run>                       |
-| `/ai/`                  | AI subsystem documentation                                                               |
-| `/blog/`, `/changelog/` | Announcements and release history                                                        |
-
-The plugin store is a separate Vite application at
-<https://plugins.bitty.run>; it is not built, deployed, or documented from this
-repository. Canonical content is aggregated at build time from four pinned
-sources — `bitty-docs`, `bitty-terminal-docs`, `bitty-plugins-docs`, and
-`bitty-ai-docs` — each mounted under its own route prefix; see
-`content-sources/README.md` and `src/content/docs-revision.json`. `/api/`,
-`/ai/`, and the remaining planned routes above are still deferred: aggregation
-keeps every corpus under `/docs/<version>/...`.
-
-`astro.config.mjs` records the canonical origin as
-`site: "https://bitty.run"`. Pushes to `main` auto-deploy `dist/` through
-`wrangler` using the organization `CLOUDFLARE_ACCOUNT_ID` and
-`CLOUDFLARE_API_TOKEN` secrets (see `.github/workflows/deploy.yml`); no
-production deploy happens from a pull request. `i18n/` remains a documented
-placeholder for the deferred locale layout;
-`content-sources/` documents the implemented source-aggregation layout and
-holds no fetched content (the mirror is generated).
-
-## See the project workflow (CarryCtx)
-
-CarryCtx is the local-first tool that records this project's tasks, decisions,
-and checkpoints. Install it globally for local development (recommended):
-
-```sh
-cargo install carryctx      # Rust toolchain, or: npm i -g carryctx
+```text
+ ____  ___ _____ _______   __
+| __ )|_ _|_   _|_   _\ \ / /
+|  _ \ | |  | |   | |  \ V /
+| |_) || |  | |   | |   | |
+|____/|___| |_|   |_|   |_|
+Arcade Speed · Pure Rust · Piccolo Lua VM
 ```
 
-CarryCtx engineering state (tasks, sessions, checkpoints) is not cloned. A
-fresh clone restores it from the in-repo `refs/heads/carryctx-snapshots`
-branch:
+Production portal and documentation engine for the **Bitty** GPU-accelerated microkernel terminal emulator: [https://bitty.run](https://bitty.run).
+
+Built with [Astro](https://astro.build), [TypeScript](https://www.typescriptlang.org/), and vanilla CSS deployed to [Cloudflare Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/).
+
+---
+
+## Highlights & Visual Architecture
+
+### 1. Cyber-Pop × Cel-Shaded Manga Aesthetic
+
+The site pairs Japanese comic pop magazine paper styling with an 80s/90s arcade cabinet visual language:
+
+- **Shibuya-Pop (Light / Default)**: Warm newsprint paper background (`#fffdf6`), deep ink typography (`#14121d`), halftone dot background accents, and bold 2px comic-book borders with solid drop-shadow offsets (`4px 4px 0px`).
+- **Akiba-Cyber (Dark)**: Arcade CRT monitor glow (`#0b0914`), electric cyan and hot-magenta neon accents, paired with low-glare syntax highlighting tailored for late-night terminal hacking.
+- **Official Mascot Badge**: Dynamic `<BittyLogo />` badge in the header with interactive hover rotation.
+
+### 2. Zero-CLS Arcade Install Deck
+
+The Hero section features an arcade cartridge download deck:
+
+- **Rock-Solid Layout Stability (Zero CLS)**: Switching between installation tabs (`Unix .sh`, `Win .ps1`, `Packages`, `Cargo`) preserves exact vertical metrics with no layout shifts.
+- **Complete Cloudflare R2 Release Matrix**: Direct links to all build artifacts hosted on `cdn.bitty.run`:
+  - **Linux**: `.tar.zst`, `AppImage`, `arm64` binary
+  - **macOS**: Apple Silicon `.dmg`, Universal `.dmg`
+  - **Windows**: `.zip` portable bundle, `.msi` installer
+  - **Verification**: Direct link to authoritative `SHA256SUMS.txt`
+
+### 3. Interactive Mascot Navigator (`Bittie ^ω^`)
+
+Meet **Bittie**, the ASCII companion embedded directly on the homepage:
+
+- Cycles through quick tips on Hyprland-style dwindle tiling, Piccolo Lua VM coprocesses, and Composer shortcuts (`Alt+E`).
+- Click Bittie's face to trigger instant reaction dialogue and terminal tips.
+
+### 4. Offline Manuals & Git Source Mirror
+
+Documentation readers are never trapped in a closed web silo. Every documentation page features a full-width bottom cartridge providing:
+
+- **Direct R2 Offline Archives**: Complete standalone bundles (`.tar.gz`, `.zip`), plus dedicated Chinese (`zh-CN`) and English packages.
+- **Git Source Mirror**: Direct clone instructions for the complete raw markdown tree:
+
+  ```sh
+  git clone https://github.com/bitty-terminal/bitty-manual.git
+  ```
+
+### 5. Instant Client-Side Search & Full A11y
+
+- **Zero-Latency Search**: Full keyword search index generated at build time (`search-index.json`), supporting keyboard navigation (`/`, `Ctrl+K`, `Escape`).
+- **Native Reader Mode (a11y)**: Built with pure semantic HTML landmarks (`<main>`, `<article>`, `<header>`, `<footer>`), verified zero contrast/a11y failures via automated pa11y audits, and fully compatible with Safari/Firefox Reader Views.
+- **i18n Ready**: Header toggle provides immediate routing between English and Simplified Chinese (`zh-CN`).
+
+---
+
+## Multi-Source Documentation Architecture
+
+This repository operates as an aggregator and presentation shell. Canonical documentation is authored and maintained in four upstream repositories:
+
+1. [`bitty-docs`](https://github.com/bitty-terminal/bitty-docs): Canonical governance, architecture RFCs, and decision registers.
+2. [`bitty-terminal-docs`](https://github.com/bitty-terminal/bitty-terminal-docs): Terminal platform, renderer, and microkernel guides.
+3. [`bitty-plugins-docs`](https://github.com/bitty-terminal/bitty-plugins-docs): Non-AI Lua plugin ecosystem and SDK documentation.
+4. [`bitty-ai-docs`](https://github.com/bitty-terminal/bitty-ai-docs): AI runtime and intelligent assistant documentation.
+
+At build time, the docs pipeline synchronizes these four sources into deterministic versioned routes (`/docs/latest/...`, `/docs/stable/...`, `/docs/0.1.0/...`), rewriting links and generating cryptographic provenance manifests (`dist/docs-provenance.json`).
+
+---
+
+## Local Development & Toolchain
+
+### Prerequisites
+
+- [Bun](https://bun.sh) 1.4.x
+- [just](https://github.com/casey/just) command runner
+- [actionlint](https://github.com/rhysd/actionlint) 1.7.12
+- [wrangler](https://developers.cloudflare.com/workers/wrangler/) for Cloudflare deploys
+
+### Setup & Dev Server
 
 ```sh
-just workflow-import-dry   # fetch + validate the snapshot; no DB writes
-just workflow-import       # initialize CarryCtx state if needed, then import
-```
-
-Then `carryctx stats` reports the restored tasks, sessions, and checkpoints.
-Provenance, redaction, and `--force` behavior are covered under the
-repository snapshot documentation below.
-
-## Requirements
-
-- Bun 1.4.2
-- just
-- actionlint 1.7.12
-
-## Local checks
-
-Install the exact dependency graph recorded in `bun.lock`:
-
-```sh
+# 1. Install dependencies
 bun install --frozen-lockfile
+
+# 2. Start local development server
+bun run dev
 ```
 
-Run the same logical quality gates used by CI:
+### Running Quality Gates
+
+All changes must pass local automated gates prior to commit:
 
 ```sh
+# Run full suite: format, markdownlint, TypeScript, build, a11y audit, wrangler dry-run
 just check
 ```
 
-The aggregate check verifies formatting, Markdown linting, the docs mirror
-staleness gate, TypeScript 7.0.2 with its native compiler, the Astro static
-build, the expected `dist/index.html` output, Wrangler's deployment
-configuration in dry-run mode, and both GitHub Actions workflows. The
-`validate:dist` script also checks the emitted cache-header contract and the
-generated `dist/docs-provenance.json` corpus record.
-
-Cloudflare Workers Static Assets reads `public/_headers` from the build
-output. Content-hashed `/_astro/*` assets use a one-year immutable browser
-cache, while `/icons/*` and the root HTML document retain
-`public, max-age=0, must-revalidate` so content updates are revalidated.
-
-## Documentation sync
-
-Never edit `src/content/docs/` by hand: it is a generated, read-only mirror of
-the four pinned corpus revisions. The pins live in
-`src/content/docs-revision.json` (schema 2, one entry per source with its mount
-and published band); `src/content/docs-manifest.json` records the per-source
-parity results, counts, per-file provenance (source path, SHA-256, revision),
-and the routes each source publishes. `content-sources/README.md` describes the
-model and the documentation gates (`docs-check`, `docs-sync`, `validate:dist`).
-
-Advance one source to a merged, reviewed commit, or re-materialize every source
-at its committed pin:
+Or individual checks:
 
 ```sh
-just docs-sync                                    # re-materialize all four sources (idempotent)
-just docs-sync --source bitty-docs --pin <sha>    # advance exactly one source
-just docs-check                                   # fail-closed staleness gate
+just fmt            # Run Prettier code formatting
+bun run lint:md     # Markdown linting
+bun run build       # Astro production static build
+bun run audit:a11y  # Automated accessibility & landmark checks
 ```
 
-`just check` runs `docs:check`, so CI fails when the mirror or manifest drifts
-from a pinned source or was hand-edited. Canonical documentation is the
-source and must be recorded continuously: a docs change is not complete until
-the owning corpus's pin advances in the same delivery window. See the canonical
-operator note for the full procedure.
+---
 
-Git hooks managed by lefthook enforce Conventional Commits messages and
-pre-commit formatting plus Markdown linting on staged files. Install them once
-per clone with `just hooks-install`; every hook runs through a justfile target.
+## Documentation Synchronization
 
-Astro 7.2.6 cannot currently run `astro check` with TypeScript 7 because its
-language service depends on a programmatic API that the native compiler does
-not yet expose. The native TypeScript check does not replace Astro's full
-language-server diagnostics; the static build separately compiles the Astro
-template. Upstream support is tracked in the official
-[Astro TypeScript 7 compatibility discussion](https://github.com/withastro/roadmap/discussions/1321).
-Restoring the full Astro diagnostics gate requires a separately reviewed task
-after that support is available.
-
-Use `just fmt` only when intentionally updating formatting. Generated build and
-Wrangler dry-run output are not repository content.
-
-## Workflow snapshot restore
-
-CarryCtx runtime state (`.git/carryctx/state.sqlite`) is never cloned. The
-redacted engineering snapshot lives in this repository on branch
-`refs/heads/carryctx-snapshots`, one commit per publication. The commander's
-merge closeout publishes it with `just workflow-publish`; a fresh clone restores
-its local CarryCtx DB from that branch:
+Never edit `src/content/docs/` manually; it is a generated mirror. To sync or advance source pins:
 
 ```sh
-just workflow-import-dry   # fetch + validate the snapshot; no DB writes
-just workflow-import       # initialize CarryCtx state if needed, then import
+# Re-materialize all sources at their committed pins
+just docs-sync
+
+# Advance a specific source pin to a reviewed commit
+just docs-sync --source bitty-terminal-docs --pin <commit-sha>
+
+# Verify mirror integrity against pins (fail-closed gate)
+just docs-check
 ```
 
-The import fetches `refs/heads/carryctx-snapshots`, refuses to replace a
-non-empty local DB without `--force` (`just workflow-import --force`), and
-prints provenance (snapshot commit + source). Snapshots are redacted
-publication artifacts produced by `carryctx export --publication`: CarryCtx
-refuses them as merge sources, so restore always uses replace mode, and a
-secret that leaked before rotation must still be rotated at the source.
+---
 
-## Deployment boundary
+## Project Workflow & CarryCtx
 
-The deployment workflow is manual, restricted to the main branch, and guarded
-by the production environment. Its presence is configuration only: no
-deployment has been performed or verified by this bootstrap. The canonical
-origin for the portal is <https://bitty.run>; domain verification through
-Cloudflare is still pending, and deploy or release automation changes are
-deferred to the 0.1.0 window under a scoped task.
+Engineering lifecycle and task state are managed by [CarryCtx](https://github.com/bitty-terminal/carryctx). Fresh clones restore state from the in-repo snapshot branch:
 
-The workflow references the approved GitHub secret names only at the deployment
-step. Never place credential values in source files, command arguments, logs,
-artifacts, or task records.
+```sh
+# Inspect snapshot without mutating local database
+just workflow-import-dry
+
+# Import snapshot into local SQLite state
+just workflow-import
+```
+
+Published snapshots are maintained on branch `refs/heads/carryctx-snapshots`.
+
+---
+
+## Deployment
+
+Pushes and merges to `main` trigger `.github/workflows/deploy.yml` which deploys the static build output (`dist/`) directly to Cloudflare Workers Static Assets:
+
+- **Production Origin**: <https://bitty.run>
+- **Preview / Worker Domain**: <https://bitty-website.ven3428set.workers.dev>

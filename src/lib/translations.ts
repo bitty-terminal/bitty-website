@@ -87,6 +87,9 @@ export interface Translations {
   distroStatusReady: string;
   distroCopyBtn: string;
   distroAltLabel: string;
+  distroViewQuick: string;
+  distroViewAll: string;
+  distroActiveDistroLabel: string;
 
   // 12 Distro Descriptions
   distroDescArch: string;
@@ -255,6 +258,9 @@ export const translations: Record<SupportedLang, Translations> = {
     distroStatusReady: "● READY",
     distroCopyBtn: "COPY",
     distroAltLabel: "ALT:",
+    distroViewQuick: "⚡ Quick Command",
+    distroViewAll: "📋 All Distros",
+    distroActiveDistroLabel: "Active Distro Package:",
 
     // 12 Distro Descriptions
     distroDescArch:
@@ -436,6 +442,9 @@ export const translations: Record<SupportedLang, Translations> = {
     distroStatusReady: "● 官方支持",
     distroCopyBtn: "复制",
     distroAltLabel: "备选:",
+    distroViewQuick: "⚡ 快捷单行命令",
+    distroViewAll: "📋 全部发行版列表",
+    distroActiveDistroLabel: "当前发行版安装包:",
 
     // 12 Distro Descriptions
     distroDescArch:

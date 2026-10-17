@@ -1139,6 +1139,14 @@ body {
 .border-dashed {
   border-style: dashed;
 }
+.border-t-dashed {
+  border-top-width: 2px;
+  border-top-style: dashed;
+  border-top-color: var(--card-border);
+  border-right-style: none;
+  border-bottom-style: none;
+  border-left-style: none;
+}
 
 .rounded {
   border-radius: 0.25rem;

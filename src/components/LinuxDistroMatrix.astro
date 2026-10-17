@@ -1,0 +1,665 @@
+---
+// src/components/LinuxDistroMatrix.astro
+// Universal Linux Packaging & Distribution Matrix for Bitty Terminal.
+// Cyber-Pop & Manga Bento style with full keyboard accessibility.
+
+interface DistroDownload {
+  label: string;
+  url: string;
+  title: string;
+}
+
+interface DistroEntry {
+  id: string;
+  name: string;
+  family:
+    | "arch"
+    | "debian"
+    | "fedora"
+    | "suse"
+    | "alpine"
+    | "nix"
+    | "source"
+    | "universal";
+  categoryName: string;
+  badge: string;
+  badgeColor: string;
+  sticker: string;
+  distros: string[];
+  command: string;
+  altCommand?: string;
+  description: string;
+  architectures: string[];
+  downloads?: DistroDownload[];
+}
+
+const distroList: DistroEntry[] = [
+  {
+    id: "arch",
+    name: "Arch Linux & CachyOS",
+    family: "arch",
+    categoryName: "Arch & Derivatives",
+    badge: "AUR",
+    badgeColor: "var(--accent-mint)",
+    sticker: "★ PACMAN & AUR // BLEEDING EDGE",
+    distros: ["Arch Linux", "CachyOS", "Manjaro", "EndeavourOS", "Garuda"],
+    command: "paru -S bitty-bin",
+    altCommand: "yay -S bitty-bin",
+    description:
+      "Automated AUR packaging with x86-64-v3/v4 hardware optimizations for instant startup and 0B idle Piccolo Lua memory.",
+    architectures: ["x86_64 (v3/v4)", "aarch64"],
+    downloads: [
+      {
+        label: "PKGBUILD",
+        url: "https://aur.archlinux.org/packages/bitty-bin",
+        title: "View AUR Package Build",
+      },
+      {
+        label: ".pkg.tar.zst",
+        url: "https://cdn.bitty.run/bitty/releases/bitty-linux-x86_64.pkg.tar.zst",
+        title: "Download Prebuilt Pacman Package",
+      },
+    ],
+  },
+  {
+    id: "debian-ubuntu",
+    name: "Debian & Ubuntu",
+    family: "debian",
+    categoryName: "Debian & Ubuntu Family",
+    badge: "APT / .DEB",
+    badgeColor: "var(--accent-pop)",
+    sticker: "★ NATIVE .DEB // LTS & STABLE",
+    distros: [
+      "Ubuntu 24.04/22.04 LTS",
+      "Debian 12+",
+      "Linux Mint",
+      "Pop!_OS",
+      "Zorin OS",
+    ],
+    command: "sudo apt install ./bitty_amd64.deb",
+    altCommand:
+      "curl -fsSL https://cdn.bitty.run/bitty/install/install.sh | bash",
+    description:
+      "Official signed .deb packages with complete desktop integration, systemd user service hooks, and automatic Wayland session detection.",
+    architectures: ["amd64 (x86_64)", "arm64 (aarch64)"],
+    downloads: [
+      {
+        label: "bitty_amd64.deb",
+        url: "https://cdn.bitty.run/bitty/releases/bitty_amd64.deb",
+        title: "Download Debian/Ubuntu amd64 package",
+      },
+      {
+        label: "bitty_arm64.deb",
+        url: "https://cdn.bitty.run/bitty/releases/bitty_arm64.deb",
+        title: "Download Debian/Ubuntu arm64 package",
+      },
+    ],
+  },
+  {
+    id: "fedora-rhel",
+    name: "Fedora & RHEL",
+    family: "fedora",
+    categoryName: "Fedora & Red Hat Family",
+    badge: "DNF / RPM",
+    badgeColor: "var(--accent-violet)",
+    sticker: "★ COPR & RPM // ENTERPRISE",
+    distros: [
+      "Fedora 40/41",
+      "RHEL 9+",
+      "AlmaLinux",
+      "Rocky Linux",
+      "CentOS Stream",
+    ],
+    command: "sudo dnf copr enable bitty/bitty && sudo dnf install bitty",
+    altCommand: "sudo dnf install ./bitty-x86_64.rpm",
+    description:
+      "Automated COPR builds for Fedora and Enterprise Linux. Features SELinux policy compliance and full Vulkan/Wayland acceleration.",
+    architectures: ["x86_64", "aarch64"],
+    downloads: [
+      {
+        label: "bitty-x86_64.rpm",
+        url: "https://cdn.bitty.run/bitty/releases/bitty-x86_64.rpm",
+        title: "Download RPM for x86_64",
+      },
+      {
+        label: "bitty-aarch64.rpm",
+        url: "https://cdn.bitty.run/bitty/releases/bitty-aarch64.rpm",
+        title: "Download RPM for aarch64",
+      },
+    ],
+  },
+  {
+    id: "opensuse",
+    name: "openSUSE (Tumbleweed & Leap)",
+    family: "suse",
+    categoryName: "openSUSE Family",
+    badge: "ZYPPER / OBS",
+    badgeColor: "var(--accent-mint)",
+    sticker: "★ OPEN BUILD SERVICE // LEAP & TUMBLEWEED",
+    distros: ["openSUSE Tumbleweed", "openSUSE Leap 15.6+", "Aeon", "MicroOS"],
+    command: "sudo zypper in bitty",
+    altCommand: "sudo zypper install ./bitty-x86_64.rpm",
+    description:
+      "Packaged for openSUSE with transactional update compatibility and YaST integration. Tested on rolling Tumbleweed releases.",
+    architectures: ["x86_64", "aarch64"],
+    downloads: [
+      {
+        label: "bitty-x86_64.rpm",
+        url: "https://cdn.bitty.run/bitty/releases/bitty-x86_64.rpm",
+        title: "Download RPM package",
+      },
+    ],
+  },
+  {
+    id: "alpine",
+    name: "Alpine Linux & postmarketOS",
+    family: "alpine",
+    categoryName: "Alpine & musl Family",
+    badge: "APK (musl)",
+    badgeColor: "var(--accent-yellow)",
+    sticker: "★ LIGHTWEIGHT // ZERO GLIBC DEPENDENCY",
+    distros: ["Alpine Linux v3.19+", "postmarketOS", "musl-based Containers"],
+    command: "apk add --allow-untrusted ./bitty.apk",
+    altCommand: "apk add bitty",
+    description:
+      "Static, musl-linked binaries with ultra-small footprint. Built for low-overhead development containers and mobile Linux environments.",
+    architectures: ["x86_64", "aarch64", "armv7"],
+    downloads: [
+      {
+        label: "bitty.apk",
+        url: "https://cdn.bitty.run/bitty/releases/bitty.apk",
+        title: "Download Alpine APK package",
+      },
+    ],
+  },
+  {
+    id: "nixos",
+    name: "NixOS & Flakes",
+    family: "nix",
+    categoryName: "NixOS & Flakes",
+    badge: "NIX FLAKES",
+    badgeColor: "var(--accent-violet)",
+    sticker: "★ 100% REPRODUCIBLE // DECLARATIVE",
+    distros: ["NixOS 24.05+", "NixOS Unstable", "Any Linux with Nix"],
+    command: "nix profile install github:bitty-terminal/bitty",
+    altCommand: "environment.systemPackages = [ pkgs.bitty ];",
+    description:
+      "Fully hermetic, reproducible packaging. Declaratively import Bitty in your NixOS configuration or home-manager flake without dependency leaks.",
+    architectures: ["x86_64-linux", "aarch64-linux"],
+    downloads: [
+      {
+        label: "flake.nix",
+        url: "https://github.com/bitty-terminal/bitty/blob/main/flake.nix",
+        title: "View Bitty Flake Definition",
+      },
+    ],
+  },
+  {
+    id: "void",
+    name: "Void Linux",
+    family: "source",
+    categoryName: "Void Linux",
+    badge: "XBPS",
+    badgeColor: "var(--accent-mint)",
+    sticker: "★ RUNIT & XBPS // FAST & LEAN",
+    distros: ["Void Linux (glibc)", "Void Linux (musl)"],
+    command: "sudo xbps-install -S bitty",
+    altCommand: "./xbps-src pkg bitty",
+    description:
+      "Native packages for Void Linux with clean runit service files and zero systemd dependencies. Available for glibc and musl.",
+    architectures: ["x86_64", "aarch64"],
+    downloads: [
+      {
+        label: "xbps-template",
+        url: "https://github.com/bitty-terminal/bitty/tree/main/packaging/void",
+        title: "XBPS package template",
+      },
+    ],
+  },
+  {
+    id: "gentoo",
+    name: "Gentoo Linux",
+    family: "source",
+    categoryName: "Gentoo Linux",
+    badge: "PORTAGE",
+    badgeColor: "var(--accent-pop)",
+    sticker: "★ EBUILD // CUSTOM USE FLAGS",
+    distros: ["Gentoo Linux", "Funtoo"],
+    command: "emerge --ask app-shells/bitty",
+    altCommand: 'USE="wayland vulkan" emerge --ask app-shells/bitty',
+    description:
+      "Source-optimized ebuild recipe supporting granular USE flags for Wayland, Vulkan backend, Piccolo Lua VM, and coprocess runtime.",
+    architectures: ["x86_64", "aarch64", "riscv64"],
+    downloads: [
+      {
+        label: "bitty.ebuild",
+        url: "https://github.com/bitty-terminal/bitty/tree/main/packaging/gentoo",
+        title: "Portage ebuild definition",
+      },
+    ],
+  },
+  {
+    id: "appimage",
+    name: "Universal AppImage",
+    family: "universal",
+    categoryName: "Universal Formats",
+    badge: "APPIMAGE",
+    badgeColor: "var(--accent)",
+    sticker: "★ STANDALONE // RUNS ANYWHERE",
+    distros: ["All Linux Distributions (glibc 2.31+)"],
+    command:
+      "chmod +x bitty-linux-x86_64.AppImage && ./bitty-linux-x86_64.AppImage",
+    description:
+      "Single-file standalone bundle with all Wayland, Vulkan, and graphics libraries embedded. Run directly without installation or root privileges.",
+    architectures: ["x86_64"],
+    downloads: [
+      {
+        label: "bitty-linux-x86_64.AppImage",
+        url: "https://cdn.bitty.run/bitty/releases/bitty-linux-x86_64.AppImage",
+        title: "Download Standalone AppImage",
+      },
+    ],
+  },
+  {
+    id: "flatpak",
+    name: "Flatpak & Flathub",
+    family: "universal",
+    categoryName: "Universal Formats",
+    badge: "FLATHUB",
+    badgeColor: "var(--accent-mint)",
+    sticker: "★ DESKTOP SANDBOX // XDG PORTALS",
+    distros: ["SteamOS", "Fedora Silverblue", "Ubuntu", "Arch", "Debian"],
+    command: "flatpak install flathub run.bitty.Bitty",
+    altCommand: "flatpak run run.bitty.Bitty",
+    description:
+      "Sandboxed desktop distribution with Wayland display and PipeWire portal permissions. Ideal for immutable operating systems.",
+    architectures: ["x86_64", "aarch64"],
+    downloads: [
+      {
+        label: "Flathub Page",
+        url: "https://flathub.org/apps/run.bitty.Bitty",
+        title: "View on Flathub",
+      },
+    ],
+  },
+  {
+    id: "snap",
+    name: "Canonical Snapcraft",
+    family: "universal",
+    categoryName: "Universal Formats",
+    badge: "SNAP",
+    badgeColor: "var(--accent-violet)",
+    sticker: "★ SNAP PACKAGING // CLASSIC",
+    distros: ["Ubuntu", "Debian", "Fedora", "Manjaro", "openSUSE"],
+    command: "sudo snap install bitty --classic",
+    altCommand: "snap info bitty",
+    description:
+      "Universal snap package with classic confinement. Automatic background updates, seamless desktop integration, and zero library conflicts.",
+    architectures: ["amd64", "arm64"],
+    downloads: [
+      {
+        label: "Snap Store",
+        url: "https://snapcraft.io/bitty",
+        title: "View on Snapcraft Store",
+      },
+    ],
+  },
+  {
+    id: "portable-tarball",
+    name: "Standalone Portable Tarball",
+    family: "universal",
+    categoryName: "Universal Formats",
+    badge: ".TAR.ZST",
+    badgeColor: "var(--accent-yellow)",
+    sticker: "★ ZERO INSTALL // FAST EXTRACT",
+    distros: ["All POSIX Linux Distributions"],
+    command: "tar -I zstd -xvf bitty-linux-x86_64.tar.zst -C ~/.local/bin/",
+    altCommand:
+      "curl -fsSL https://cdn.bitty.run/bitty/releases/bitty-linux-x86_64.tar.zst | tar -I zstd -x -C ~/.local/bin/",
+    description:
+      "Precompiled standalone binary compressed with ultra-fast Zstandard. Unpack straight into ~/.local/bin and run without administrative rights.",
+    architectures: ["x86_64", "aarch64"],
+    downloads: [
+      {
+        label: "bitty-linux-x86_64.tar.zst",
+        url: "https://cdn.bitty.run/bitty/releases/bitty-linux-x86_64.tar.zst",
+        title: "Download x86_64 tarball",
+      },
+      {
+        label: "bitty-linux-aarch64.tar.zst",
+        url: "https://cdn.bitty.run/bitty/releases/bitty-linux-aarch64.tar.zst",
+        title: "Download aarch64 tarball",
+      },
+    ],
+  },
+];
+
+const families = [
+  { id: "all", label: "All Formats (12)" },
+  { id: "arch", label: "Arch / CachyOS" },
+  { id: "debian", label: "Debian / Ubuntu" },
+  { id: "fedora", label: "Fedora / RHEL" },
+  { id: "suse", label: "openSUSE" },
+  { id: "alpine", label: "Alpine (musl)" },
+  { id: "nix", label: "NixOS" },
+  { id: "source", label: "Void & Gentoo" },
+  { id: "universal", label: "Universal (AppImage / Flatpak / Snap)" },
+];
+---
+
+<section
+  id="linux-distros"
+  class="linux-distros-section space-y-6"
+  aria-labelledby="linux-distros-title"
+>
+  <div class="section-header flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div class="space-y-2">
+      <div class="flex items-center gap-2 font-mono-tech">
+        <span class="px-2 py-0.5 rounded font-bold bg-[var(--accent)] text-[#0b0914] text-[10px]">
+          LINUX ECOSYSTEM
+        </span>
+        <span class="text-xs text-[var(--accent-yellow)] font-bold">
+          ★ 全主流 Linux 发行版与包管理器支持
+        </span>
+      </div>
+      <h2
+        id="linux-distros-title"
+        class="font-cyber-display font-bold text-2xl sm:text-3xl text-[var(--fg-primary)]"
+      >
+        Universal Linux Distribution Matrix
+      </h2>
+      <p class="text-xs sm:text-sm text-[var(--fg-secondary)] max-w-2xl leading-relaxed">
+        From bleeding-edge rolling releases (Arch, CachyOS) to stable enterprise
+        deployments (Debian, Ubuntu, Fedora, openSUSE), lightweight musl systems
+        (Alpine), and reproducible environments (NixOS)—Bitty runs natively
+        everywhere.
+      </p>
+    </div>
+
+    <!-- Quick Stats Sticker -->
+    <div class="shrink-0 flex items-center gap-3 font-mono-tech text-xs bg-[var(--bg-elevated)] p-3 rounded-xl border-2 border-[var(--ink-border)] shadow-[3px_3px_0px_var(--toon-shadow)]">
+      <div class="text-center px-2">
+        <div class="font-bold text-[var(--accent)] text-lg">100%</div>
+        <div class="text-[10px] text-[var(--fg-muted)]">NATIVE RUST</div>
+      </div>
+      <div class="h-6 w-px bg-[var(--card-border)]"></div>
+      <div class="text-center px-2">
+        <div class="font-bold text-[var(--accent-mint)] text-lg">12</div>
+        <div class="text-[10px] text-[var(--fg-muted)]">FORMATS &amp; PKGS</div>
+      </div>
+      <div class="h-6 w-px bg-[var(--card-border)]"></div>
+      <div class="text-center px-2">
+        <div class="font-bold text-[var(--accent-yellow)] text-lg">0B</div>
+        <div class="text-[10px] text-[var(--fg-muted)]">IDLE MEMORY</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Buttons / Category Bar -->
+  <div
+    class="distro-filter-bar flex flex-wrap items-center gap-2 font-mono-tech text-xs"
+    role="tablist"
+    aria-label="Filter Linux Distribution Families"
+  >
+    {families.map((f, i) => (
+      <button
+        type="button"
+        role="tab"
+        id={`distro-tab-${f.id}`}
+        aria-selected={i === 0 ? "true" : "false"}
+        data-filter={f.id}
+        tabindex={i === 0 ? 0 : -1}
+        class={`distro-filter-pill px-3 py-1.5 rounded-lg border-2 font-bold cursor-pointer transition-all ${
+          i === 0
+            ? "active bg-[var(--accent)] text-[#0b0914] border-[var(--ink-border)] shadow-[2px_2px_0px_var(--toon-shadow)]"
+            : "bg-[var(--bg-surface)] text-[var(--fg-secondary)] border-[var(--card-border)] hover:border-[var(--ink-border)] hover:text-[var(--fg-primary)]"
+        }`}
+      >
+        {f.label}
+      </button>
+    ))}
+  </div>
+
+  <!-- Distro Cards Grid (Manga / Bento Style) -->
+  <div
+    id="distro-cards-grid"
+    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+  >
+    {distroList.map((distro) => (
+      <article
+        class="distro-card toon-card p-4 sm:p-5 flex flex-col justify-between gap-4"
+        data-distro-family={distro.family}
+      >
+        <!-- Card Top Bar: Distro Name + Badges -->
+        <div class="space-y-3">
+          <div class="flex items-center justify-between gap-2 border-b-2 border-[var(--card-border)] pb-2.5">
+            <div class="flex items-center gap-2">
+              <span
+                class="px-2 py-0.5 rounded text-[10px] font-mono-tech font-bold uppercase tracking-wider text-[#0b0914]"
+                style={`background: ${distro.badgeColor};`}
+              >
+                {distro.badge}
+              </span>
+              <span class="text-[10px] font-mono-tech text-[var(--fg-muted)] font-bold">
+                {distro.categoryName}
+              </span>
+            </div>
+            <span class="text-[10px] font-mono-tech font-bold text-[var(--accent-mint)]">
+              ● READY
+            </span>
+          </div>
+
+          <div class="space-y-1">
+            <h3 class="font-cyber-display font-bold text-lg text-[var(--fg-primary)] flex items-center justify-between">
+              <span>{distro.name}</span>
+            </h3>
+            <div class="flex flex-wrap gap-1 font-mono-tech text-[10px] text-[var(--fg-muted)]">
+              {distro.distros.map((d) => (
+                <span class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--card-border)]">
+                  {d}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <p class="text-xs text-[var(--fg-secondary)] leading-relaxed">
+            {distro.description}
+          </p>
+
+          <!-- Primary Install Command Box with Copy Button -->
+          <div class="space-y-1.5 pt-1">
+            <div class="distro-code-box p-2.5 rounded-lg bg-[var(--bg-code)] border border-[var(--card-border)] flex items-center justify-between gap-2 overflow-hidden">
+              <div
+                class="font-mono-tech text-xs text-[#f5f3ff] overflow-x-auto whitespace-nowrap select-all flex-1 py-0.5"
+                style="scrollbar-width: thin;"
+              >
+                <span class="select-none mr-1.5 font-bold text-[var(--accent-pop)]">
+                  ❯
+                </span>
+                <span class="distro-cmd-text">{distro.command}</span>
+              </div>
+              <button
+                type="button"
+                class="copy-distro-cmd-btn shrink-0 px-2 py-1 rounded bg-[var(--bg-elevated)] border border-[var(--card-border)] hover:border-[var(--ink-border)] font-mono-tech text-[10px] font-bold text-[var(--fg-primary)] cursor-pointer transition-colors"
+                aria-label={`Copy install command for ${distro.name}`}
+              >
+                COPY
+              </button>
+            </div>
+
+            {distro.altCommand && (
+              <div class="text-[10px] font-mono-tech text-[var(--fg-muted)] flex items-center gap-1.5 px-1 truncate">
+                <span class="text-[var(--accent-yellow)] font-bold">ALT:</span>
+                <code class="text-[var(--fg-secondary)] truncate">
+                  {distro.altCommand}
+                </code>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <!-- Card Bottom Bar: Architectures & Direct Downloads -->
+        <div class="pt-3 border-t-dashed space-y-2 font-mono-tech text-[11px]">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] text-[var(--fg-muted)] uppercase tracking-wider font-bold">
+              Arch:
+            </span>
+            <div class="flex items-center gap-1">
+              {distro.architectures.map((arch) => (
+                <span class="text-[9px] px-1.5 py-0.2 rounded bg-[var(--bg-canvas)] border border-[var(--card-border)] text-[var(--fg-secondary)] font-bold">
+                  {arch}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          {distro.downloads && distro.downloads.length > 0 && (
+            <div class="flex items-center justify-between gap-1 pt-1">
+              <span class="text-[10px] text-[var(--fg-muted)] font-bold">
+                Direct:
+              </span>
+              <div class="flex flex-wrap items-center gap-1.5">
+                {distro.downloads.map((dl) => (
+                  <a
+                    href={dl.url}
+                    class="px-2 py-0.5 rounded bg-[var(--bg-canvas)] border border-[var(--card-border)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px] font-bold transition-colors"
+                    title={dl.title}
+                  >
+                    <span>{dl.label}</span>
+                    <span class="text-[var(--accent)] ml-0.5">↓</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </article>
+    ))}
+  </div>
+</section>
+
+<script>
+  (() => {
+    // 1. Filter pill switching
+    const filterPills = document.querySelectorAll<HTMLButtonElement>(
+      ".distro-filter-pill",
+    );
+    const distroCards = document.querySelectorAll<HTMLElement>(".distro-card");
+    const pillList = Array.from(filterPills);
+
+    const applyFilter = (
+      filterKey: string,
+      activePill: HTMLButtonElement,
+      focus = true,
+    ) => {
+      filterPills.forEach((p) => {
+        p.classList.remove("active");
+        p.setAttribute("aria-selected", "false");
+        p.tabIndex = -1;
+        p.style.background = "var(--bg-surface)";
+        p.style.color = "var(--fg-secondary)";
+        p.style.borderColor = "var(--card-border)";
+        p.style.boxShadow = "none";
+      });
+
+      activePill.classList.add("active");
+      activePill.setAttribute("aria-selected", "true");
+      activePill.tabIndex = 0;
+      activePill.style.background = "var(--accent)";
+      activePill.style.color = "#0b0914";
+      activePill.style.borderColor = "var(--ink-border)";
+      activePill.style.boxShadow = "2px 2px 0px var(--toon-shadow)";
+
+      if (focus) activePill.focus();
+
+      distroCards.forEach((card) => {
+        const family = card.getAttribute("data-distro-family");
+        if (filterKey === "all" || family === filterKey) {
+          card.style.display = "flex";
+        } else {
+          card.style.display = "none";
+        }
+      });
+    };
+
+    filterPills.forEach((pill) => {
+      pill.addEventListener("click", () => {
+        const key = pill.getAttribute("data-filter") || "all";
+        applyFilter(key, pill, false);
+      });
+
+      pill.addEventListener("keydown", (e) => {
+        const index = pillList.indexOf(pill);
+        if (index === -1) return;
+        let nextIndex = -1;
+
+        if (e.key === "ArrowRight") {
+          nextIndex = (index + 1) % pillList.length;
+        } else if (e.key === "ArrowLeft") {
+          nextIndex = (index - 1 + pillList.length) % pillList.length;
+        } else if (e.key === "Home") {
+          nextIndex = 0;
+        } else if (e.key === "End") {
+          nextIndex = pillList.length - 1;
+        }
+
+        if (nextIndex !== -1) {
+          e.preventDefault();
+          const target = pillList[nextIndex];
+          if (target) {
+            const key = target.getAttribute("data-filter") || "all";
+            applyFilter(key, target, true);
+          }
+        }
+      });
+    });
+
+    // 2. Individual copy buttons on code boxes
+    const copyButtons = document.querySelectorAll<HTMLButtonElement>(
+      ".copy-distro-cmd-btn",
+    );
+    copyButtons.forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const box = btn.closest(".distro-code-box");
+        const cmdEl = box?.querySelector(".distro-cmd-text");
+        const text = cmdEl?.textContent?.trim() || "";
+        if (!text) return;
+
+        try {
+          await navigator.clipboard.writeText(text);
+          const original = btn.textContent;
+          btn.textContent = "COPIED!";
+          btn.style.color = "var(--accent-mint)";
+          setTimeout(() => {
+            btn.textContent = original;
+            btn.style.color = "";
+          }, 2000);
+        } catch {}
+      });
+    });
+  })();
+</script>
+
+<style>
+  .linux-distros-section {
+    padding-block: 2.5rem;
+    scroll-margin-top: 5rem;
+  }
+
+  .distro-code-box {
+    box-sizing: border-box;
+  }
+
+  .distro-card {
+    transition:
+      transform 0.16s ease,
+      box-shadow 0.16s ease,
+      border-color 0.16s ease;
+  }
+
+  .distro-filter-pill {
+    min-height: 2.25rem;
+    display: inline-flex;
+    align-items: center;
+  }
+</style>

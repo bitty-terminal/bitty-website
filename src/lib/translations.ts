@@ -45,10 +45,10 @@ export interface Translations {
 export const translations: Record<SupportedLang, Translations> = {
   en: {
     heroBadge1: "★ GPU-ACCELERATED · RUST MICROKERNEL",
-    heroBadge2: "PICCOLO LUA SANDBOX · 0B IDLE",
-    heroTitle: "TILE SHELLS & RICH LUA PANELS AT NATIVE SPEED.",
+    heroBadge2: "HIGHLY EXTENSIBLE · 0B IDLE LUA VM",
+    heroTitle: "TILE SHELLS & HIGHLY EXTENSIBLE LUA PANELS AT NATIVE SPEED.",
     heroLede:
-      "Bitty pairs Hyprland dwindle tiling with a pure-Rust microkernel. Run high-throughput PTY shells alongside declarative Piccolo Lua UI panels with zero background daemons.",
+      "Bitty pairs Hyprland dwindle tiling and a pure-Rust microkernel with extreme extensibility. Build declarative Piccolo Lua UI panels and native coprocesses with zero background daemons.",
     getBittyBtn: "Get Bitty ⚡",
     exploreDocsBtn: "Explore Docs →",
     installDeckBadge: "QUICK INSTALL",
@@ -90,11 +90,11 @@ export const translations: Record<SupportedLang, Translations> = {
       "Official user manual, configuration reference, and Lua API documentation served directly from Cloudflare R2.",
   },
   "zh-CN": {
-    heroBadge1: "GPU 加速微内核架构",
-    heroBadge2: "PICCOLO LUA 隔离沙箱 · 0B 空闲内存",
-    heroTitle: "平铺分屏与丰富 LUA 面板，原生极速终端",
+    heroBadge1: "★ GPU 加速 · RUST 微内核架构",
+    heroBadge2: "高扩展架构 · 0B 空闲内存 LUA 沙箱",
+    heroTitle: "平铺分屏与高扩展 LUA 面板，原生极速终端",
     heroLede:
-      "Bitty 将 Hyprland 风格的平铺分屏与纯 Rust 微内核深度结合。支持高吞吐 PTY 终端会话与声明式 Piccolo Lua UI 面板并存，零后台守护进程常驻。",
+      "Bitty 将 Hyprland 风格的平铺分屏、纯 Rust 微内核与高扩展性深度结合。通过沙箱隔离的 Piccolo Lua 扩展生态与原生协进程，自由定制终端界面与自动化工作流，零后台守护进程常驻。",
     getBittyBtn: "安装 Bitty ⚡",
     exploreDocsBtn: "浏览官方文档 →",
     installDeckBadge: "快速安装",

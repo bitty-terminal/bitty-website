@@ -3,6 +3,7 @@
 .astro/
 .wrangler/
 dist/
+node_modules
 node_modules/
 .env
 .env.*

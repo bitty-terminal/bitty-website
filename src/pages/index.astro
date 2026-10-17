@@ -201,12 +201,12 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                     <span>導入カートリッジ // SHA-256</span>
                   </div>
                   <span class="font-mono-tech text-[10px] text-[var(--accent)]">
-                    DPR 2.0x
+                    v0.0.23 · R2 CDN
                   </span>
                 </div>
 
-                <!-- OS Tabs -->
-                <div class="p-4 space-y-3.5 bg-[var(--bg-surface)]">
+                <!-- OS Tabs & Command Readout -->
+                <div class="p-4 space-y-3 bg-[var(--bg-surface)]">
                   <div
                     class="grid grid-cols-4 gap-1.5 font-mono-tech text-xs font-bold"
                     role="tablist"
@@ -263,14 +263,17 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                     </button>
                   </div>
 
-                  <!-- Command Readout Box -->
+                  <!-- Command Readout Box (Strictly Fixed Height - Zero CLS) -->
                   <div
                     id="dl-panel"
-                    class="p-3 rounded-xl bg-[var(--bg-code)] border-2 border-[var(--card-border)] flex items-center justify-between gap-2"
+                    class="dl-panel-box p-3 rounded-xl bg-[var(--bg-code)] border-2 border-[var(--card-border)] flex items-center justify-between gap-2 overflow-hidden"
                     role="tabpanel"
                     aria-labelledby="dl-tab-unix"
                   >
-                    <div class="font-mono-tech text-xs text-[#f5f3ff] overflow-x-auto whitespace-nowrap py-0.5 flex-1">
+                    <div
+                      class="font-mono-tech text-xs text-[#f5f3ff] overflow-x-auto whitespace-nowrap py-0.5 flex-1 select-all"
+                      style="scrollbar-width: thin;"
+                    >
                       <span
                         class="select-none mr-2 font-bold"
                         style="color: var(--accent-pop);"
@@ -292,30 +295,111 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                     </button>
                   </div>
 
-                  <!-- Direct R2 Artifacts -->
-                  <div class="pt-2 border-t-2 border-dashed border-[var(--card-border)] flex flex-wrap items-center justify-between gap-2 font-mono-tech text-[11px]">
-                    <span class="text-[var(--fg-muted)] font-bold">
-                      DIRECT R2 ARTIFACTS:
+                  <!-- Platform Hint / Target Summary (Fixed Single Line) -->
+                  <div class="h-5 flex items-center justify-between font-mono-tech text-[11px] text-[var(--fg-muted)] px-1">
+                    <span id="dl-hint-text" class="truncate">
+                      Linux &amp; macOS: Automated bootstrap fetching verified
+                      .tar.zst / binary
                     </span>
-                    <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="text-[10px] text-[var(--accent-mint)] shrink-0 font-bold hidden sm:inline">
+                      ● READY
+                    </span>
+                  </div>
+
+                  <!-- Direct R2 Artifacts Matrix (Expanded R2 Ecosystem) -->
+                  <div class="pt-3 border-t-2 border-dashed border-[var(--card-border)] space-y-2 font-mono-tech text-[11px]">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[var(--fg-muted)] font-bold uppercase tracking-wider text-[10px]">
+                        ★ Direct R2 Binaries &amp; Packages:
+                      </span>
                       <a
-                        href="https://cdn.bitty.run/bitty/releases/bitty-linux-x86_64.tar.zst"
-                        class="px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] border border-[var(--card-border)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] transition-colors"
+                        href="https://cdn.bitty.run/bitty/releases/SHA256SUMS.txt"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-[10px] text-[var(--accent)] hover:underline"
+                        title="Download release SHA256 checksums"
                       >
-                        .tar.zst
+                        SHA256SUMS ↗
                       </a>
-                      <a
-                        href="https://cdn.bitty.run/bitty/releases/bitty-macos-universal.dmg"
-                        class="px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] border border-[var(--card-border)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] transition-colors"
-                      >
-                        .dmg
-                      </a>
-                      <a
-                        href="https://cdn.bitty.run/bitty/releases/bitty-windows-x64.zip"
-                        class="px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] border border-[var(--card-border)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] transition-colors"
-                      >
-                        .zip
-                      </a>
+                    </div>
+
+                    <!-- Platform Binary Grid -->
+                    <div class="grid grid-cols-3 gap-2">
+                      <!-- Linux -->
+                      <div class="p-2 rounded-lg bg-[var(--bg-canvas)] border border-[var(--card-border)] flex flex-col justify-between gap-1.5">
+                        <span class="font-bold text-[var(--fg-primary)] text-[10px]">
+                          🐧 Linux
+                        </span>
+                        <div class="flex flex-wrap gap-1">
+                          <a
+                            href="https://cdn.bitty.run/bitty/releases/bitty-linux-x86_64.tar.zst"
+                            class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
+                            title="x86_64 tar.zst"
+                          >
+                            .tar.zst
+                          </a>
+                          <a
+                            href="https://cdn.bitty.run/bitty/releases/bitty-linux-x86_64.AppImage"
+                            class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
+                            title="x86_64 AppImage"
+                          >
+                            AppImage
+                          </a>
+                          <a
+                            href="https://cdn.bitty.run/bitty/releases/bitty-linux-aarch64.tar.zst"
+                            class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
+                            title="aarch64 tar.zst"
+                          >
+                            arm64
+                          </a>
+                        </div>
+                      </div>
+
+                      <!-- macOS -->
+                      <div class="p-2 rounded-lg bg-[var(--bg-canvas)] border border-[var(--card-border)] flex flex-col justify-between gap-1.5">
+                        <span class="font-bold text-[var(--fg-primary)] text-[10px]">
+                          🍏 macOS
+                        </span>
+                        <div class="flex flex-wrap gap-1">
+                          <a
+                            href="https://cdn.bitty.run/bitty/releases/bitty-macos-arm64.dmg"
+                            class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
+                            title="Apple Silicon DMG"
+                          >
+                            Apple Silicon .dmg
+                          </a>
+                          <a
+                            href="https://cdn.bitty.run/bitty/releases/bitty-macos-universal.dmg"
+                            class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
+                            title="Universal DMG"
+                          >
+                            Universal .dmg
+                          </a>
+                        </div>
+                      </div>
+
+                      <!-- Windows -->
+                      <div class="p-2 rounded-lg bg-[var(--bg-canvas)] border border-[var(--card-border)] flex flex-col justify-between gap-1.5">
+                        <span class="font-bold text-[var(--fg-primary)] text-[10px]">
+                          🪟 Windows
+                        </span>
+                        <div class="flex flex-wrap gap-1">
+                          <a
+                            href="https://cdn.bitty.run/bitty/releases/bitty-windows-x64.zip"
+                            class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
+                            title="Windows x64 Portable ZIP"
+                          >
+                            .zip (Portable)
+                          </a>
+                          <a
+                            href="https://cdn.bitty.run/bitty/releases/bitty-windows-x64.msi"
+                            class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
+                            title="Windows x64 MSI Installer"
+                          >
+                            .msi
+                          </a>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -647,6 +731,14 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
             "cargo +1.98.1 install --git https://github.com/bitty-terminal/bitty.git bitty-terminal --locked",
         };
 
+        const installHints: Record<string, string> = {
+          unix: "Linux & macOS: Automated bootstrap fetching verified .tar.zst / binary",
+          win: "Windows: PowerShell one-liner installing portable binary (user-local)",
+          pkg: "System package managers: Arch Linux (AUR), macOS (Homebrew), Windows (Scoop)",
+          cargo:
+            "Build from source: compile with pinned toolchain (+1.98.1) via Cargo",
+        };
+
         const dlTabList = Array.from(dlTabs);
         const activateDlTab = (tab: HTMLButtonElement, focus = true) => {
           const key = tab.getAttribute("data-dl-tab");
@@ -671,6 +763,10 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
 
           if (dlCommandText && installCommands[key]) {
             dlCommandText.textContent = installCommands[key];
+          }
+          const hint = document.getElementById("dl-hint-text");
+          if (hint && installHints[key]) {
+            hint.textContent = installHints[key];
           }
         };
 
@@ -739,13 +835,29 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
     display: grid;
     grid-template-columns: 1fr;
     gap: 2.5rem;
-    align-items: center;
+    align-items: start;
   }
 
   @media (min-width: 64rem) {
     .hero-grid {
       grid-template-columns: 7fr 5fr;
     }
+  }
+
+  .dl-panel-box {
+    min-height: 4.25rem;
+    height: 4.25rem;
+    max-height: 4.25rem;
+    box-sizing: border-box;
+  }
+
+  .dl-tab {
+    min-height: 2.25rem;
+    height: 2.25rem;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .hero-lede {

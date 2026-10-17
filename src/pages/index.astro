@@ -13,7 +13,6 @@ import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import ShowcaseStage from "../components/ShowcaseStage.astro";
 import LinuxDistroMatrix from "../components/LinuxDistroMatrix.astro";
-import TerminalMatrix from "../components/TerminalMatrix.astro";
 import BackgroundCanvas from "../components/BackgroundCanvas.astro";
 import { getManualNavGroups } from "../lib/manualDocs.ts";
 import "../styles/global.css";
@@ -575,9 +574,6 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
             </article>
           </div>
         </section>
-
-        <!-- 5. TERMINAL POSITIONING & ARCHITECTURAL COMPARISON MATRIX -->
-        <TerminalMatrix />
 
         <!-- 4. CANONICAL DOCUMENTATION INDEX (bitty-manual) -->
         <section

@@ -13,6 +13,7 @@ import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import ShowcaseStage from "../components/ShowcaseStage.astro";
 import LinuxDistroMatrix from "../components/LinuxDistroMatrix.astro";
+import TerminalMatrix from "../components/TerminalMatrix.astro";
 import BackgroundCanvas from "../components/BackgroundCanvas.astro";
 import { getManualNavGroups } from "../lib/manualDocs.ts";
 import "../styles/global.css";
@@ -33,7 +34,7 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Bitty — Cyber-Pop high-performance programmable GPU terminal emulator pairing a Rust microkernel with a sandboxed Piccolo Lua engine and Hyprland-style tiling."
+      content="Bitty — Cyber-Pop high-performance programmable GPU terminal platform pairing a pure-Rust microkernel with sandboxed Phodopus (Piccolo Fork) and Hyprland-style tiling."
     />
     <link rel="canonical" href="https://bitty.run/" />
     <link rel="icon" type="image/x-icon" href="/icons/favicon.ico" />
@@ -122,7 +123,7 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                   style="color: var(--accent-yellow); border-color: var(--accent-yellow);"
                 >
                   <span data-i18n="heroBadge2">
-                    HIGHLY EXTENSIBLE · 0B IDLE LUA VM
+                    PHODOPUS (PICCOLO FORK) · 0B IDLE SANDBOX
                   </span>
                 </span>
               </div>
@@ -133,16 +134,19 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                 class="font-cyber-display font-bold hero-pop-title text-[var(--fg-primary)]"
                 data-i18n="heroTitle"
               >
-                TILE SHELLS &amp; HIGHLY EXTENSIBLE LUA PANELS AT NATIVE SPEED.
+                SMALL CORE. HIGHLY PROGRAMMABLE TERMINAL PLATFORM.
               </h1>
 
               <p
                 class="hero-lede text-[var(--fg-secondary)] leading-relaxed"
                 data-i18n="heroLede"
               >
-                Bitty pairs Hyprland dwindle tiling and a pure-Rust microkernel
-                with extreme extensibility. Build declarative Piccolo Lua UI
-                panels and native coprocesses with zero background daemons.
+                Bitty is built on a timeless tenet: &ldquo;Small core. Stable
+                API. Everything composable. Extensions own the
+                experience.&rdquo; A pure Rust microkernel preserves terminal
+                truth and blazing GPU throughput, while sandboxed Phodopus
+                (Piccolo Fork) and native coprocesses shape your ideal
+                workspace—with zero background daemons.
               </p>
 
               <!-- Primary Action Buttons -->
@@ -470,20 +474,24 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                   <span class="px-2 py-0.5 rounded font-bold bg-[var(--accent)] text-[#0b0914]">
                     STAGE 01
                   </span>
-                  <span class="text-[var(--fg-muted)]">
-                    TILING &amp; PANELS
+                  <span class="text-[var(--fg-muted)]" data-i18n="bento1Badge">
+                    TERMINAL TRUTH &amp; TILING
                   </span>
                 </div>
-                <h3 class="font-cyber-display font-bold text-xl text-[var(--fg-primary)]">
-                  Hyprland Tiling × GUI Panels
+                <h3
+                  class="font-cyber-display font-bold text-xl text-[var(--fg-primary)]"
+                  data-i18n="bento1Title"
+                >
+                  Hyprland Tiling × Terminal Truth
                 </h3>
-                <p class="text-xs sm:text-sm text-[var(--fg-secondary)] leading-relaxed">
-                  Dwindle &amp; BSP binary trees, floating scratchpads, and
-                  declarative{" "}
-                  <code class="font-mono-tech text-[var(--accent)]">
-                    bitty.ui
-                  </code>{" "}
-                  panels that live side-by-side with PTY shells.
+                <p
+                  class="text-xs sm:text-sm text-[var(--fg-secondary)] leading-relaxed"
+                  data-i18n="bento1Desc"
+                >
+                  Strict separation between Terminal (canonical PTY state), View
+                  (presentation), and Layout (compositor). Dwindle &amp; BSP
+                  binary trees with sub-pixel borders that never block hot
+                  paths.
                 </p>
               </div>
               <a
@@ -502,20 +510,24 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                   <span class="px-2 py-0.5 rounded font-bold bg-[var(--accent-pop)] text-white">
                     STAGE 02
                   </span>
-                  <span class="text-[var(--fg-muted)]">
-                    PICCOLO &amp; WIRE V1
+                  <span class="text-[var(--fg-muted)]" data-i18n="bento2Badge">
+                    PHODOPUS &amp; WIRE V1
                   </span>
                 </div>
-                <h3 class="font-cyber-display font-bold text-xl text-[var(--fg-primary)]">
-                  Piccolo Lua × Rust Coprocesses
+                <h3
+                  class="font-cyber-display font-bold text-xl text-[var(--fg-primary)]"
+                  data-i18n="bento2Title"
+                >
+                  Phodopus (Piccolo Fork) × Native Coprocesses
                 </h3>
-                <p class="text-xs sm:text-sm text-[var(--fg-secondary)] leading-relaxed">
-                  Zero-byte idle VMs in a stackless, fuel-metered Piccolo Lua
-                  sandbox, paired with TOFU-pinned upstream Rust binaries over{" "}
-                  <code class="font-mono-tech text-[var(--accent)]">
-                    stdio Wire v1
-                  </code>
-                  .
+                <p
+                  class="text-xs sm:text-sm text-[var(--fg-secondary)] leading-relaxed"
+                  data-i18n="bento2Desc"
+                >
+                  Independent sandbox-first runtime forked from Piccolo —
+                  complete with require module chains, pattern matching, fuel
+                  metering, and 32 MiB hard quotas at 0-byte idle memory; heavy
+                  workloads isolate safely over stdio Wire v1.
                 </p>
               </div>
               <a
@@ -534,24 +546,23 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                   <span class="px-2 py-0.5 rounded font-bold bg-[var(--accent-yellow)] text-[#0b0914]">
                     STAGE 03
                   </span>
-                  <span class="text-[var(--fg-muted)]">
-                    HOT RELOAD &amp; RECOVERY
+                  <span class="text-[var(--fg-muted)]" data-i18n="bento3Badge">
+                    CONFIGPLAN &amp; RESILIENCE
                   </span>
                 </div>
-                <h3 class="font-cyber-display font-bold text-xl text-[var(--fg-primary)]">
-                  Live Config &amp; Safe Recovery
+                <h3
+                  class="font-cyber-display font-bold text-xl text-[var(--fg-primary)]"
+                  data-i18n="bento3Title"
+                >
+                  Declarative ConfigPlan &amp; Safe Recovery
                 </h3>
-                <p class="text-xs sm:text-sm text-[var(--fg-secondary)] leading-relaxed">
-                  Instant{" "}
-                  <code class="font-mono-tech text-[var(--accent)]">
-                    init.lua
-                  </code>{" "}
-                  reconciliation without dropping PTYs, atomic rollback on
-                  invalid fields, and{" "}
-                  <code class="font-mono-tech text-[var(--accent-mint)]">
-                    bitty --safe
-                  </code>{" "}
-                  emergency mode.
+                <p
+                  class="text-xs sm:text-sm text-[var(--fg-secondary)] leading-relaxed"
+                  data-i18n="bento3Desc"
+                >
+                  Instant ~/.config/bitty/init.lua reconciliation without
+                  dropping active PTY sessions, atomic schema rollback, and
+                  emergency bitty --safe recovery mode.
                 </p>
               </div>
               <a
@@ -564,6 +575,9 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
             </article>
           </div>
         </section>
+
+        <!-- 5. TERMINAL POSITIONING & ARCHITECTURAL COMPARISON MATRIX -->
+        <TerminalMatrix />
 
         <!-- 4. CANONICAL DOCUMENTATION INDEX (bitty-manual) -->
         <section

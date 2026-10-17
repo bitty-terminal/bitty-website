@@ -1,0 +1,389 @@
+---
+// src/components/TerminalMatrix.astro
+// Architectural Positioning & Comparison Matrix for Bitty Terminal.
+// Cyber-Pop aesthetic with accessible, high-contrast, zero-CLS layout.
+---
+
+<section
+  class="terminal-matrix-section space-y-6"
+  aria-labelledby="comparison-title"
+>
+  <div class="section-header">
+    <div class="flex items-center gap-2 mb-2">
+      <span
+        class="px-2.5 py-0.5 rounded font-cyber-display text-xs font-bold uppercase tracking-wider"
+        style="background: var(--accent-yellow); color: #0b0914;"
+        data-i18n="comparisonBadge"
+      >
+        TERMINAL MATRIX
+      </span>
+      <span class="font-mono-tech text-xs text-[var(--fg-muted)]">
+        ★ ARCHITECTURAL COMPARISON
+      </span>
+    </div>
+
+    <h2
+      id="comparison-title"
+      class="font-cyber-display font-bold text-2xl sm:text-3xl text-[var(--fg-primary)] mb-2"
+      data-i18n="comparisonTitle"
+    >
+      Why Bitty? Architectural Positioning Matrix
+    </h2>
+
+    <p
+      class="text-sm text-[var(--fg-secondary)] max-w-3xl"
+      data-i18n="comparisonSubtitle"
+    >
+      How Bitty's small microkernel and programmable platform compare to classic
+      and modern terminal emulators.
+    </p>
+  </div>
+
+  <!-- Comparison Table Card -->
+  <div class="toon-card p-4 sm:p-6 overflow-hidden">
+    <div class="overflow-x-auto no-scrollbar -mx-4 sm:mx-0 px-4 sm:px-0">
+      <table class="w-full text-left comp-table min-w-[760px] font-mono-tech text-xs">
+        <caption class="sr-only">
+          Architectural comparison between Bitty, Alacritty, WezTerm, and Warp
+        </caption>
+        <thead>
+          <tr class="bg-[var(--bg-elevated)]">
+            <th
+              scope="col"
+              class="py-3 px-4 font-cyber-display text-xs font-bold text-[var(--fg-muted)] uppercase tracking-wider w-[18%] border-b-2 border-[var(--card-border)]"
+              data-i18n="compColFeature"
+            >
+              Architectural Dimension
+            </th>
+            <!-- Bitty (Highlighted Column) -->
+            <th
+              scope="col"
+              class="py-3 px-4 font-cyber-display text-xs font-bold text-[var(--accent)] col-bitty-head w-[26%]"
+            >
+              <div class="flex items-center gap-1.5">
+                <span class="text-sm" aria-hidden="true">
+                  ⚡
+                </span>
+                <span data-i18n="compColBitty">Bitty (Platform)</span>
+              </div>
+            </th>
+            <!-- Alacritty -->
+            <th
+              scope="col"
+              class="py-3 px-4 font-cyber-display text-xs font-bold text-[var(--fg-primary)] w-[18%] border-b-2 border-[var(--card-border)]"
+            >
+              <div class="flex items-center gap-1.5">
+                <span aria-hidden="true">⚡</span>
+                <span data-i18n="compColAlacritty">Alacritty (Minimal)</span>
+              </div>
+            </th>
+            <!-- WezTerm -->
+            <th
+              scope="col"
+              class="py-3 px-4 font-cyber-display text-xs font-bold text-[var(--fg-primary)] w-[19%] border-b-2 border-[var(--card-border)]"
+            >
+              <div class="flex items-center gap-1.5">
+                <span aria-hidden="true">📦</span>
+                <span data-i18n="compColWezTerm">WezTerm (Monolith)</span>
+              </div>
+            </th>
+            <!-- Warp -->
+            <th
+              scope="col"
+              class="py-3 px-4 font-cyber-display text-xs font-bold text-[var(--fg-primary)] w-[19%] border-b-2 border-[var(--card-border)]"
+            >
+              <div class="flex items-center gap-1.5">
+                <span aria-hidden="true">☁️</span>
+                <span data-i18n="compColWarp">Warp (Cloud/Closed)</span>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody class="text-[11px] leading-relaxed">
+          <!-- Row 1: Core Positioning -->
+          <tr class="comp-row">
+            <th
+              scope="row"
+              class="py-3.5 px-4 font-bold text-[var(--fg-primary)] row-dim"
+              data-i18n="compRow1Name"
+            >
+              Core Positioning
+            </th>
+            <td
+              class="py-3.5 px-4 font-semibold text-[var(--accent)] col-bitty-cell"
+              data-i18n="compRow1Bitty"
+            >
+              Programmable Terminal Platform (Emacs-level customizability with
+              Rust crash isolation)
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow1Alacritty"
+            >
+              Bare single-pane terminal emulator with zero scripting
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow1WezTerm"
+            >
+              Feature-rich terminal with large monolithic footprint
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow1Warp"
+            >
+              Closed-source, cloud-bound commercial AI terminal
+            </td>
+          </tr>
+
+          <!-- Row 2: Kernel & State -->
+          <tr class="comp-row">
+            <th
+              scope="row"
+              class="py-3.5 px-4 font-bold text-[var(--fg-primary)] row-dim"
+              data-i18n="compRow2Name"
+            >
+              Kernel &amp; State
+            </th>
+            <td
+              class="py-3.5 px-4 font-semibold text-[var(--fg-primary)] col-bitty-cell"
+              data-i18n="compRow2Bitty"
+            >
+              Pure-Rust Microkernel: Terminal Truth strictly decoupled from
+              Views and Layout
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow2Alacritty"
+            >
+              Monolithic pure-Rust terminal engine with single window
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow2WezTerm"
+            >
+              Monolithic Rust GUI integrating terminal, multiplexer, and GUI
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow2Warp"
+            >
+              Closed-source custom client with web/cloud integrations
+            </td>
+          </tr>
+
+          <!-- Row 3: Extension Runtime -->
+          <tr class="comp-row">
+            <th
+              scope="row"
+              class="py-3.5 px-4 font-bold text-[var(--fg-primary)] row-dim"
+              data-i18n="compRow3Name"
+            >
+              Extension Runtime
+            </th>
+            <td
+              class="py-3.5 px-4 font-semibold text-[var(--accent-mint)] col-bitty-cell"
+              data-i18n="compRow3Bitty"
+            >
+              Phodopus (Piccolo Fork) 0B idle sandbox + stdio Wire v1 native
+              coprocesses
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow3Alacritty"
+            >
+              None (extensions intentionally excluded)
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow3WezTerm"
+            >
+              Embedded full Lua 5.4 runtime (resident memory overhead)
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow3Warp"
+            >
+              Proprietary extension store with closed extensions
+            </td>
+          </tr>
+
+          <!-- Row 4: Tiling & Panels -->
+          <tr class="comp-row">
+            <th
+              scope="row"
+              class="py-3.5 px-4 font-bold text-[var(--fg-primary)] row-dim"
+              data-i18n="compRow4Name"
+            >
+              Tiling &amp; Panels
+            </th>
+            <td
+              class="py-3.5 px-4 font-semibold text-[var(--fg-primary)] col-bitty-cell"
+              data-i18n="compRow4Bitty"
+            >
+              Native GPU Hyprland dwindle tiling + declarative Rich GUI Panels
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow4Alacritty"
+            >
+              Single pane only (requires external tmux / zellij)
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow4WezTerm"
+            >
+              Built-in tabs, panes, and floating splits
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow4Warp"
+            >
+              Block-based terminal interface with pane splits
+            </td>
+          </tr>
+
+          <!-- Row 5: Daemons & Privacy -->
+          <tr class="comp-row">
+            <th
+              scope="row"
+              class="py-3.5 px-4 font-bold text-[var(--fg-primary)] row-dim"
+              data-i18n="compRow5Name"
+            >
+              Daemons &amp; Privacy
+            </th>
+            <td
+              class="py-3.5 px-4 font-semibold text-[var(--accent-yellow)] col-bitty-cell"
+              data-i18n="compRow5Bitty"
+            >
+              Zero background daemons, 100% local-first, zero telemetry
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow5Alacritty"
+            >
+              Zero daemons, 100% local-first, zero telemetry
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow5WezTerm"
+            >
+              Optional GUI multiplexer daemon, local-first, zero telemetry
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow5Warp"
+            >
+              Mandatory background helpers, requires account login &amp;
+              telemetry
+            </td>
+          </tr>
+
+          <!-- Row 6: Crash & Fault Isolation -->
+          <tr class="comp-row">
+            <th
+              scope="row"
+              class="py-3.5 px-4 font-bold text-[var(--fg-primary)] row-dim"
+              data-i18n="compRow6Name"
+            >
+              Crash &amp; Fault Isolation
+            </th>
+            <td
+              class="py-3.5 px-4 font-semibold text-[var(--accent-mint)] col-bitty-cell col-bitty-foot"
+              data-i18n="compRow6Bitty"
+            >
+              Hard isolation: plugin / coprocess crashes never bring down the
+              core terminal
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow6Alacritty"
+            >
+              N/A (no plugin subsystem)
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow6WezTerm"
+            >
+              Lua script errors can block or crash the main GUI event loop
+            </td>
+            <td
+              class="py-3.5 px-4 text-[var(--fg-secondary)] col-other"
+              data-i18n="compRow6Warp"
+            >
+              Commercial crash reporting to cloud services
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Scroll Hint -->
+    <div class="mt-3.5 flex items-center justify-between text-[10px] font-mono-tech text-[var(--fg-muted)] sm:hidden">
+      <span>← Swipe horizontally to compare all terminals →</span>
+      <span class="text-[var(--accent)] font-bold">BITTY HIGHLIGHTED</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  .sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border-width: 0 !important;
+  }
+
+  .comp-table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .row-dim {
+    border-right: 1px solid var(--card-border);
+    border-bottom: 1px solid var(--card-border);
+    background: var(--bg-canvas);
+  }
+
+  .col-other {
+    border-bottom: 1px solid var(--card-border);
+  }
+
+  .col-bitty-head {
+    background: rgba(34, 211, 238, 0.12);
+    border-top: 2px solid var(--accent);
+    border-left: 2px solid var(--accent);
+    border-right: 2px solid var(--accent);
+    border-bottom: 2px solid var(--accent);
+    border-radius: 8px 8px 0 0;
+  }
+
+  .col-bitty-cell {
+    background: rgba(34, 211, 238, 0.05);
+    border-left: 2px solid var(--accent);
+    border-right: 2px solid var(--accent);
+    border-bottom: 1px solid rgba(34, 211, 238, 0.2);
+  }
+
+  .col-bitty-foot {
+    border-bottom: 2px solid var(--accent);
+    border-radius: 0 0 8px 8px;
+  }
+
+  .comp-row:hover .row-dim {
+    background: var(--bg-elevated);
+  }
+
+  .comp-row:hover .col-other {
+    background: var(--bg-elevated);
+  }
+
+  .comp-row:hover .col-bitty-cell {
+    background: rgba(34, 211, 238, 0.09);
+  }
+</style>

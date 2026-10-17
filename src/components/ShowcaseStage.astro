@@ -57,7 +57,7 @@
         class="reel-btn"
       >
         <span class="reel-num">03</span>
-        <span>Piccolo Sandbox &amp; Coprocesses</span>
+        <span>Phodopus Sandbox &amp; Coprocesses</span>
       </button>
 
       <button
@@ -145,7 +145,7 @@
               </div>
               <div>
                 custom.git-graph <span class="badge-lazy">[Installed]</span> 0
-                Bytes (Lazy VM)
+                Bytes (Phodopus Idle)
               </div>
             </div>
           </div>
@@ -164,7 +164,7 @@
           <div class="tiling-panel gui-panel">
             <div class="panel-header font-mono-tech">
               <span class="tag-gui">PANEL #2 · LUA GUI VIEW (type="rich")</span>
-              <span class="tag-vm">Piccolo VM</span>
+              <span class="tag-vm">Phodopus VM</span>
             </div>
 
             <div class="gui-body">
@@ -225,7 +225,8 @@
 
           <div class="modal-editor">
             <div>
-              git commit -m "feat(sandbox): fuel-metered Piccolo Lua ticks" \
+              git commit -m "feat(sandbox): fuel-metered Phodopus (Piccolo Fork)
+              ticks" \
             </div>
             <div class="pl-4">--trailer "Reviewed-by: core-team"</div>
           </div>
@@ -258,31 +259,37 @@
           <!-- Downstream -->
           <div class="arch-card blueprint-box">
             <div class="arch-tier-tag val-violet">Downstream Layer</div>
-            <div class="arch-tier-title">Piccolo Lua Sandbox</div>
+            <div class="arch-tier-title">
+              Phodopus Lua Sandbox (Piccolo Fork)
+            </div>
             <p class="arch-tier-desc">
-              Stackless, fuel-metered VM. 0 bytes when <code>Installed</code>,
-              32 MiB ceiling when <code>Active</code>. Deny-by-default
-              capabilities.
+              Stackless, fuel-metered VM with module loader (
+              <code>require</code>), pattern matching, and hard memory ceilings.
+              0B when <code>Installed</code>, 32 MiB quota when{" "}
+              <code>Active</code>.
             </p>
           </div>
 
           <!-- Core -->
           <div class="arch-card blueprint-box border-core">
             <div class="arch-tier-tag val-accent">Core Engine</div>
-            <div class="arch-tier-title">Rust Microkernel</div>
+            <div class="arch-tier-title">
+              Rust Microkernel &amp; Terminal Truth
+            </div>
             <p class="arch-tier-desc">
               wgpu compositor, VT parser decoupled from state machine, headless
-              runtime, and zero-allocation hot paths.
+              runtime, and zero-allocation hot paths. Extensions never touch the
+              parser.
             </p>
           </div>
 
           <!-- Upstream -->
           <div class="arch-card blueprint-box">
             <div class="arch-tier-tag val-mint">Upstream Coprocess</div>
-            <div class="arch-tier-title">Native Extensions</div>
+            <div class="arch-tier-title">Native Extensions (Wire v1)</div>
             <p class="arch-tier-desc">
               Zero-daemon architecture. Ephemeral stdio Wire Protocol v1
-              coprocesses with Landlock confinement.
+              coprocesses with Landlock confinement. Heavy tasks run isolated.
             </p>
           </div>
         </div>

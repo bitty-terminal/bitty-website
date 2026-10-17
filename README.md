@@ -25,13 +25,14 @@ The site pairs Japanese comic pop magazine paper styling with an 80s/90s arcade 
 - **Akiba-Cyber (Dark)**: Arcade CRT monitor glow (`#0b0914`), electric cyan and hot-magenta neon accents, paired with low-glare syntax highlighting tailored for late-night terminal hacking.
 - **Official Mascot Badge**: Dynamic `<BittyLogo />` badge in the header with interactive hover rotation.
 
-### 2. Zero-CLS Arcade Install Deck
+### 2. Zero-CLS Arcade Install Deck & Universal Linux Matrix
 
-The Hero section features an arcade cartridge download deck:
+The Hero section features an arcade cartridge download deck paired with a comprehensive Linux distribution matrix:
 
 - **Rock-Solid Layout Stability (Zero CLS)**: Switching between installation tabs (`Unix .sh`, `Win .ps1`, `Packages`, `Cargo`) preserves exact vertical metrics with no layout shifts.
+- **Universal Linux Matrix (12 Distro Families & Formats)**: Complete native coverage across Arch Linux/CachyOS (AUR), Debian/Ubuntu (`.deb`), Fedora/RHEL (`.rpm`), openSUSE (Zypper), Alpine (APK/musl), NixOS (Flakes), Void (XBPS), Gentoo (Portage), Universal AppImage, Flatpak (Flathub), Canonical Snap, and standalone portable tarballs (`.tar.zst`).
 - **Complete Cloudflare R2 Release Matrix**: Direct links to all build artifacts hosted on `cdn.bitty.run`:
-  - **Linux**: `.tar.zst`, `AppImage`, `arm64` binary
+  - **Linux**: `.tar.zst`, `AppImage`, `.deb`, `.rpm`, `.apk`, `arm64` binary
   - **macOS**: Apple Silicon `.dmg`, Universal `.dmg`
   - **Windows**: `.zip` portable bundle, `.msi` installer
   - **Verification**: Direct link to authoritative `SHA256SUMS.txt`

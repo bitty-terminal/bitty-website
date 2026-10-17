@@ -12,6 +12,7 @@
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import ShowcaseStage from "../components/ShowcaseStage.astro";
+import LinuxDistroMatrix from "../components/LinuxDistroMatrix.astro";
 import BackgroundCanvas from "../components/BackgroundCanvas.astro";
 import { getManualNavGroups } from "../lib/manualDocs.ts";
 import "../styles/global.css";
@@ -307,7 +308,7 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                   </div>
 
                   <!-- Direct R2 Artifacts Matrix (Expanded R2 Ecosystem) -->
-                  <div class="pt-3 border-t-2 border-dashed border-[var(--card-border)] space-y-2 font-mono-tech text-[11px]">
+                  <div class="pt-3 border-t-dashed space-y-2 font-mono-tech text-[11px]">
                     <div class="flex items-center justify-between">
                       <span class="text-[var(--fg-muted)] font-bold uppercase tracking-wider text-[10px]">
                         ★ Direct R2 Binaries &amp; Packages:
@@ -327,9 +328,18 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                     <div class="grid grid-cols-3 gap-2">
                       <!-- Linux -->
                       <div class="p-2 rounded-lg bg-[var(--bg-canvas)] border border-[var(--card-border)] flex flex-col justify-between gap-1.5">
-                        <span class="font-bold text-[var(--fg-primary)] text-[10px]">
-                          🐧 Linux
-                        </span>
+                        <div class="flex items-center justify-between">
+                          <span class="font-bold text-[var(--fg-primary)] text-[10px]">
+                            🐧 Linux
+                          </span>
+                          <a
+                            href="#linux-distros"
+                            class="text-[9px] text-[var(--accent)] hover:underline font-bold"
+                            title="Jump to full Linux Distros Matrix"
+                          >
+                            Matrix ↓
+                          </a>
+                        </div>
                         <div class="flex flex-wrap gap-1">
                           <a
                             href="https://cdn.bitty.run/bitty/releases/bitty-linux-x86_64.tar.zst"
@@ -344,6 +354,27 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                             title="x86_64 AppImage"
                           >
                             AppImage
+                          </a>
+                          <a
+                            href="https://cdn.bitty.run/bitty/releases/bitty_amd64.deb"
+                            class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
+                            title="Debian & Ubuntu amd64 .deb"
+                          >
+                            .deb
+                          </a>
+                          <a
+                            href="https://cdn.bitty.run/bitty/releases/bitty-x86_64.rpm"
+                            class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
+                            title="Fedora & openSUSE x86_64 .rpm"
+                          >
+                            .rpm
+                          </a>
+                          <a
+                            href="https://cdn.bitty.run/bitty/releases/bitty.apk"
+                            class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
+                            title="Alpine Linux .apk"
+                          >
+                            .apk
                           </a>
                           <a
                             href="https://cdn.bitty.run/bitty/releases/bitty-linux-aarch64.tar.zst"
@@ -416,7 +447,10 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
           <ShowcaseStage />
         </section>
 
-        <!-- 3. THREE CYBER-MANGA BENTO CARDS -->
+        <!-- 3. UNIVERSAL LINUX PACKAGING & DISTRIBUTION MATRIX -->
+        <LinuxDistroMatrix />
+
+        <!-- 4. THREE CYBER-MANGA BENTO CARDS -->
         <section
           class="pillars-section space-y-6"
           aria-labelledby="pillars-title"
@@ -726,7 +760,7 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
         const installCommands: Record<string, string> = {
           unix: "curl -fsSL https://cdn.bitty.run/bitty/install/install.sh | bash",
           win: "irm https://cdn.bitty.run/bitty/install/install.ps1 | iex",
-          pkg: "paru -S bitty-bin # or brew install bitty / scoop install bitty",
+          pkg: "paru -S bitty-bin # or apt / dnf / zypper / nix / flatpak (see matrix)",
           cargo:
             "cargo +1.98.1 install --git https://github.com/bitty-terminal/bitty.git bitty-terminal --locked",
         };
@@ -734,7 +768,7 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
         const installHints: Record<string, string> = {
           unix: "Linux & macOS: Automated bootstrap fetching verified .tar.zst / binary",
           win: "Windows: PowerShell one-liner installing portable binary (user-local)",
-          pkg: "System package managers: Arch Linux (AUR), macOS (Homebrew), Windows (Scoop)",
+          pkg: "Distros: Arch (AUR), Debian/Ubuntu (.deb), Fedora (.rpm), openSUSE, Alpine, NixOS, Flatpak",
           cargo:
             "Build from source: compile with pinned toolchain (+1.98.1) via Cargo",
         };

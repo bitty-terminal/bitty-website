@@ -1,7 +1,7 @@
 ---
 /**
  * Docs breadcrumb trail & R2 metadata bar.
- * Shows the locale, section, document filename, CF-Cache status, and Copy Raw .md button.
+ * Shows the locale, section, document filename, and CF-Cache status.
  */
 import { getManualBreadcrumb } from "../lib/manualDocs.ts";
 
@@ -12,11 +12,11 @@ type Props = {
   slug: string;
   /** Optional locale, default 'en'. */
   locale?: string;
-  /** Raw markdown content for the copy button. */
+  /** Raw markdown content. */
   rawMarkdown?: string;
 };
 
-const { version, slug, locale = "en", rawMarkdown = "" } = Astro.props as Props;
+const { version, slug, locale = "en" } = Astro.props as Props;
 
 const info = getManualBreadcrumb(slug, locale);
 const sectionTitle = info?.sectionTitle ?? "Documentation";
@@ -41,73 +41,8 @@ const fileName = r2Key.split("/").pop() ?? r2Key;
     <span class="cf-cache-pill" title="Cloudflare Workers Cache API">
       CF-Cache: HIT (ETag)
     </span>
-    <button
-      type="button"
-      class="copy-raw-btn"
-      id="copy-raw-md-btn"
-      title="Copy raw markdown from bitty-manual"
-    >
-      <svg
-        class="w-3.5 h-3.5"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-      >
-        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-      </svg>
-      <span id="copy-raw-label">Copy Raw .md</span>
-    </button>
-    <template id="raw-md-template">{rawMarkdown}</template>
   </div>
 </nav>
-
-<script>
-  function setupCopyButton() {
-    const btn = document.getElementById("copy-raw-md-btn");
-    const label = document.getElementById("copy-raw-label");
-    const tpl = document.getElementById(
-      "raw-md-template",
-    ) as HTMLTemplateElement | null;
-    if (!btn || !label) return;
-
-    btn.addEventListener("click", async () => {
-      const raw = tpl
-        ? tpl.innerHTML
-            .replace(/&lt;/g, "<")
-            .replace(/&gt;/g, ">")
-            .replace(/&amp;/g, "&")
-        : "";
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          await navigator.clipboard.writeText(raw);
-        } else {
-          const ta = document.createElement("textarea");
-          ta.value = raw;
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand("copy");
-          document.body.removeChild(ta);
-        }
-        label.textContent = "Copied .md!";
-        btn.classList.add("copied");
-        setTimeout(() => {
-          label.textContent = "Copy Raw .md";
-          btn.classList.remove("copied");
-        }, 1800);
-      } catch (e) {
-        console.error("Clipboard copy failed:", e);
-      }
-    });
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", setupCopyButton);
-  } else {
-    setupCopyButton();
-  }
-</script>
 
 <style>
   .docs-metadata-bar {
@@ -168,49 +103,12 @@ const fileName = r2Key.split("/").pop() ?? r2Key;
   }
 
   .cf-cache-pill {
-    display: none;
+    display: inline-block;
     padding: 0.2rem 0.5rem;
     background: var(--bg-surface);
     border: 1px solid var(--border-subtle);
     border-radius: var(--radius-sm);
     color: var(--fg-muted);
     font-size: 0.65rem;
-  }
-
-  @media (min-width: 48rem) {
-    .cf-cache-pill {
-      display: inline-block;
-    }
-  }
-
-  .copy-raw-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.25rem 0.6rem;
-    background: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-sm);
-    color: var(--fg-secondary);
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-
-  .copy-raw-btn:hover {
-    border-color: var(--border-focus);
-    color: var(--fg-primary);
-    background: var(--bg-elevated);
-  }
-
-  .copy-raw-btn.copied {
-    border-color: var(--accent-mint);
-    color: var(--accent-mint);
-  }
-
-  .copy-raw-btn svg {
-    inline-size: 0.85rem;
-    block-size: 0.85rem;
   }
 </style>

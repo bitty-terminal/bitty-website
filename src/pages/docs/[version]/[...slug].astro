@@ -1,11 +1,11 @@
 ---
 import { getCollection, render } from "astro:content";
 import "../../../styles/global.css";
-import BackgroundCanvas from "../../../components/BackgroundCanvas.astro";
 import DocsSidebar from "../../../components/DocsSidebar.astro";
 import DocsBreadcrumbs from "../../../components/DocsBreadcrumbs.astro";
 import DocsToc from "../../../components/DocsToc.astro";
 import DocsPager from "../../../components/DocsPager.astro";
+import DocsOfflinePackage from "../../../components/DocsOfflinePackage.astro";
 import DocsCodeEnhancer from "../../../components/DocsCodeEnhancer.astro";
 import SiteFooter from "../../../components/SiteFooter.astro";
 import SiteHeader from "../../../components/SiteHeader.astro";
@@ -184,11 +184,10 @@ for (const v of versions.versions) {
     </script>
   </head>
   <body>
-    <BackgroundCanvas />
     <a class="skip-link" href="#main-content">
       Skip to content
     </a>
-    <SiteHeader version={version} />
+    <SiteHeader version={version} activeNav="docs" />
     <VersionSelector
       currentRoute={currentRoute}
       currentVersion={version}
@@ -215,6 +214,7 @@ for (const v of versions.versions) {
             <Content />
           </article>
           <DocsPager version={version} currentSlug={canonicalSlug} />
+          <DocsOfflinePackage locale={locale} version={version} />
         </div>
       </div>
     </main>

@@ -237,6 +237,11 @@
   text-decoration: none;
 }
 
+.arcade-btn svg {
+  fill: currentColor;
+  color: inherit;
+}
+
 .arcade-btn:hover {
   transform: translate(-1px, -1px);
   box-shadow: 4px 4px 0px var(--toon-shadow);
@@ -2142,9 +2147,13 @@ main.docs-main {
     max-width: 100%;
   }
 
+  .docs-article .docs-offline-box {
+    grid-column: 1 / -1;
+    margin-block-start: 2rem;
+  }
+
   .docs-article .docs-pager {
-    grid-column: 1;
-    grid-row: 3;
+    grid-column: 1 / -1;
   }
 
   .docs-article .docs-toc {
@@ -2463,6 +2472,30 @@ footer.site-footer p {
   --terminal-prompt: #ffe600;
 
   color-scheme: dark;
+}
+
+/* Dark mode code blocks: comfort contrast, lowered brightness, zero harsh glare */
+[data-theme="akiba-cyber"] .prose pre.astro-code,
+[data-theme="akiba-cyber"] .code-block pre.astro-code,
+[data-theme="dark"] .prose pre.astro-code,
+[data-theme="dark"] .code-block pre.astro-code,
+[data-theme="bitty-dark"] .prose pre.astro-code,
+[data-theme="bitty-dark"] .code-block pre.astro-code {
+  background-color: #121020 !important;
+  border: 2px solid #2d264e !important;
+  color: #c9c4e5 !important;
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.4);
+}
+
+[data-theme="akiba-cyber"] .prose pre.astro-code span,
+[data-theme="akiba-cyber"] .code-block pre.astro-code span,
+[data-theme="dark"] .prose pre.astro-code span,
+[data-theme="dark"] .code-block pre.astro-code span,
+[data-theme="bitty-dark"] .prose pre.astro-code span,
+[data-theme="bitty-dark"] .code-block pre.astro-code span {
+  color: var(--shiki-dark) !important;
+  font-style: var(--shiki-dark-font-style);
+  text-decoration: var(--shiki-dark-text-decoration);
 }
 
 @media (prefers-reduced-motion: reduce) {

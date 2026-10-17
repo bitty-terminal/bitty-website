@@ -24,6 +24,26 @@ const configurationDocs =
   manualGroups.find((g) => g.id === "configuration")?.entries ?? [];
 const pluginDocs = manualGroups.find((g) => g.id === "plugins")?.entries ?? [];
 const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
+
+const docTitleMap: Record<string, string> = {
+  "getting-started/quickstart": "docTitleQuickstart",
+  "getting-started/cli": "docTitleCli",
+  "configuration/overview": "docTitleConfigOverview",
+  "configuration/workspaces-panels": "docTitleWorkspaces",
+  "configuration/actions-catalog": "docTitleActions",
+  "plugins/getting-started": "docTitlePluginStart",
+  "plugins/bar-modules": "docTitleBarModules",
+  "plugins/composer": "docTitleComposer",
+  "plugins/plugin-settings": "docTitlePluginConfig",
+  "plugins/capabilities-and-sandbox": "docTitleCapabilities",
+  "plugins/upstream-components": "docTitleNativeComponents",
+  "api/overview": "docTitleApiOverview",
+  "api/ui": "docTitleApiUi",
+  "api/commands-keymaps": "docTitleApiCommands",
+  "api/panel-workspace": "docTitleApiPanel",
+  "api/services-notify": "docTitleApiServices",
+  "api/system": "docTitleApiSystem",
+};
 ---
 
 <!doctype html>
@@ -236,7 +256,7 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                       data-dl-tab="pkg"
                       class="dl-tab py-1.5 px-2 rounded-lg border-2 border-[var(--card-border)] bg-[var(--bg-canvas)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)]"
                     >
-                      Packages
+                      <span data-i18n="tabPackages">Packages</span>
                     </button>
                     <button
                       type="button"
@@ -277,7 +297,9 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                       class="arcade-btn shrink-0 w-16 justify-center px-3 py-1.5 bg-[var(--bg-elevated)] font-mono-tech text-xs font-bold text-[var(--fg-primary)] flex items-center"
                       aria-label="Copy install command"
                     >
-                      <span id="copy-dl-label">COPY</span>
+                      <span id="copy-dl-label" data-i18n="copyBtnLabel">
+                        COPY
+                      </span>
                     </button>
                   </div>
 
@@ -413,7 +435,10 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                             class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
                             title="Windows x64 Portable ZIP"
                           >
-                            .zip (Portable)
+                            .zip{" "}
+                            <span data-i18n="directPkgPortable">
+                              (Portable)
+                            </span>
                           </a>
                           <a
                             href="https://cdn.bitty.run/bitty/releases/bitty-windows-x64.msi"
@@ -470,7 +495,10 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
             <article class="toon-card p-5 flex flex-col justify-between space-y-4">
               <div class="space-y-3">
                 <div class="flex items-center justify-between font-mono-tech text-xs">
-                  <span class="px-2 py-0.5 rounded font-bold bg-[var(--accent)] text-[#0b0914]">
+                  <span
+                    class="px-2 py-0.5 rounded font-bold bg-[var(--accent)] text-[#0b0914]"
+                    data-i18n="bentoStage1Tag"
+                  >
                     STAGE 01
                   </span>
                   <span class="text-[var(--fg-muted)]" data-i18n="bento1Badge">
@@ -497,8 +525,10 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                 href="/docs/latest/configuration/workspaces-panels/"
                 class="arcade-btn w-full py-2 px-3 bg-[var(--bg-elevated)] font-cyber-display font-bold text-xs flex items-center justify-between text-[var(--fg-primary)]"
               >
-                <span>Read Workspaces Spec</span>
-                <span style="color: var(--accent);">OPEN DOC →</span>
+                <span data-i18n="bento1BtnLabel">Read Workspaces Spec</span>
+                <span style="color: var(--accent);" data-i18n="bentoOpenDoc">
+                  OPEN DOC →
+                </span>
               </a>
             </article>
 
@@ -506,7 +536,10 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
             <article class="toon-card p-5 flex flex-col justify-between space-y-4">
               <div class="space-y-3">
                 <div class="flex items-center justify-between font-mono-tech text-xs">
-                  <span class="px-2 py-0.5 rounded font-bold bg-[var(--accent-pop)] text-white">
+                  <span
+                    class="px-2 py-0.5 rounded font-bold bg-[var(--accent-pop)] text-white"
+                    data-i18n="bentoStage2Tag"
+                  >
                     STAGE 02
                   </span>
                   <span class="text-[var(--fg-muted)]" data-i18n="bento2Badge">
@@ -533,8 +566,13 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                 href="/docs/latest/plugins/upstream-components/"
                 class="arcade-btn w-full py-2 px-3 bg-[var(--bg-elevated)] font-cyber-display font-bold text-xs flex items-center justify-between text-[var(--fg-primary)]"
               >
-                <span>Read Architecture Spec</span>
-                <span style="color: var(--accent-pop);">OPEN DOC →</span>
+                <span data-i18n="bento2BtnLabel">Read Architecture Spec</span>
+                <span
+                  style="color: var(--accent-pop);"
+                  data-i18n="bentoOpenDoc"
+                >
+                  OPEN DOC →
+                </span>
               </a>
             </article>
 
@@ -542,7 +580,10 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
             <article class="toon-card p-5 flex flex-col justify-between space-y-4">
               <div class="space-y-3">
                 <div class="flex items-center justify-between font-mono-tech text-xs">
-                  <span class="px-2 py-0.5 rounded font-bold bg-[var(--accent-yellow)] text-[#0b0914]">
+                  <span
+                    class="px-2 py-0.5 rounded font-bold bg-[var(--accent-yellow)] text-[#0b0914]"
+                    data-i18n="bentoStage3Tag"
+                  >
                     STAGE 03
                   </span>
                   <span class="text-[var(--fg-muted)]" data-i18n="bento3Badge">
@@ -568,8 +609,13 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                 href="/docs/latest/configuration/overview/"
                 class="arcade-btn w-full py-2 px-3 bg-[var(--bg-elevated)] font-cyber-display font-bold text-xs flex items-center justify-between text-[var(--fg-primary)]"
               >
-                <span>Read Config Reference</span>
-                <span style="color: var(--accent-yellow);">OPEN DOC →</span>
+                <span data-i18n="bento3BtnLabel">Read Config Reference</span>
+                <span
+                  style="color: var(--accent-yellow);"
+                  data-i18n="bentoOpenDoc"
+                >
+                  OPEN DOC →
+                </span>
               </a>
             </article>
           </div>
@@ -601,11 +647,16 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
             <!-- Getting Started -->
             <div class="toon-card p-4 space-y-3">
               <div class="flex items-center justify-between border-b-2 border-[var(--card-border)] pb-2 font-mono-tech text-xs">
-                <span class="font-bold" style="color: var(--accent);">
+                <span
+                  class="font-bold"
+                  style="color: var(--accent);"
+                  data-i18n="manualSecGettingStarted"
+                >
                   GETTING STARTED
                 </span>
                 <span class="text-[10px] text-[var(--fg-muted)] font-bold">
-                  {gettingStartedDocs.length} DOCS
+                  {gettingStartedDocs.length}{" "}
+                  <span data-i18n="manualDocsCount">DOCS</span>
                 </span>
               </div>
               <ul class="space-y-1.5 font-mono-tech text-xs">
@@ -615,7 +666,12 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                       href={`/docs/latest/${doc.fullSlug}/`}
                       class="flex items-center justify-between py-1 px-2 rounded hover:bg-[var(--bg-elevated)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] transition-colors"
                     >
-                      <span class="truncate">{doc.title}</span>
+                      <span
+                        class="truncate"
+                        data-i18n={docTitleMap[doc.fullSlug]}
+                      >
+                        {doc.title}
+                      </span>
                       <span
                         class="text-[10px] font-bold"
                         style="color: var(--accent);"
@@ -631,11 +687,16 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
             <!-- Configuration -->
             <div class="toon-card p-4 space-y-3">
               <div class="flex items-center justify-between border-b-2 border-[var(--card-border)] pb-2 font-mono-tech text-xs">
-                <span class="font-bold" style="color: var(--accent-pop);">
+                <span
+                  class="font-bold"
+                  style="color: var(--accent-pop);"
+                  data-i18n="manualSecConfiguration"
+                >
                   CONFIGURATION
                 </span>
                 <span class="text-[10px] text-[var(--fg-muted)] font-bold">
-                  {configurationDocs.length} DOCS
+                  {configurationDocs.length}{" "}
+                  <span data-i18n="manualDocsCount">DOCS</span>
                 </span>
               </div>
               <ul class="space-y-1.5 font-mono-tech text-xs">
@@ -645,7 +706,12 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                       href={`/docs/latest/${doc.fullSlug}/`}
                       class="flex items-center justify-between py-1 px-2 rounded hover:bg-[var(--bg-elevated)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] transition-colors"
                     >
-                      <span class="truncate">{doc.title}</span>
+                      <span
+                        class="truncate"
+                        data-i18n={docTitleMap[doc.fullSlug]}
+                      >
+                        {doc.title}
+                      </span>
                       <span
                         class="text-[10px] font-bold"
                         style="color: var(--accent-pop);"
@@ -661,11 +727,16 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
             <!-- Architecture -->
             <div class="toon-card p-4 space-y-3">
               <div class="flex items-center justify-between border-b-2 border-[var(--card-border)] pb-2 font-mono-tech text-xs">
-                <span class="font-bold" style="color: var(--accent-yellow);">
+                <span
+                  class="font-bold"
+                  style="color: var(--accent-yellow);"
+                  data-i18n="manualSecPlugins"
+                >
                   PLUGINS &amp; ARCH
                 </span>
                 <span class="text-[10px] text-[var(--fg-muted)] font-bold">
-                  {pluginDocs.length} DOCS
+                  {pluginDocs.length}{" "}
+                  <span data-i18n="manualDocsCount">DOCS</span>
                 </span>
               </div>
               <ul class="space-y-1.5 font-mono-tech text-xs">
@@ -675,7 +746,12 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                       href={`/docs/latest/${doc.fullSlug}/`}
                       class="flex items-center justify-between py-1 px-2 rounded hover:bg-[var(--bg-elevated)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] transition-colors"
                     >
-                      <span class="truncate">{doc.title}</span>
+                      <span
+                        class="truncate"
+                        data-i18n={docTitleMap[doc.fullSlug]}
+                      >
+                        {doc.title}
+                      </span>
                       <span
                         class="text-[10px] font-bold"
                         style="color: var(--accent-yellow);"
@@ -691,11 +767,15 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
             <!-- Lua API -->
             <div class="toon-card p-4 space-y-3">
               <div class="flex items-center justify-between border-b-2 border-[var(--card-border)] pb-2 font-mono-tech text-xs">
-                <span class="font-bold" style="color: var(--accent-mint);">
+                <span
+                  class="font-bold"
+                  style="color: var(--accent-mint);"
+                  data-i18n="manualSecApi"
+                >
                   LUA API
                 </span>
                 <span class="text-[10px] text-[var(--fg-muted)] font-bold">
-                  {apiDocs.length} DOCS
+                  {apiDocs.length} <span data-i18n="manualDocsCount">DOCS</span>
                 </span>
               </div>
               <ul class="space-y-1.5 font-mono-tech text-xs">
@@ -705,7 +785,12 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                       href={`/docs/latest/${doc.fullSlug}/`}
                       class="flex items-center justify-between py-1 px-2 rounded hover:bg-[var(--bg-elevated)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] transition-colors"
                     >
-                      <span class="truncate">{doc.title}</span>
+                      <span
+                        class="truncate"
+                        data-i18n={docTitleMap[doc.fullSlug]}
+                      >
+                        {doc.title}
+                      </span>
                       <span
                         class="text-[10px] font-bold"
                         style="color: var(--accent-mint);"
@@ -777,6 +862,18 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
               const key = el.getAttribute("data-i18n") as keyof Translations;
               if (key && dict[key]) {
                 el.textContent = dict[key];
+              }
+            });
+
+          // Update all data-i18n-placeholder elements
+          document
+            .querySelectorAll<HTMLInputElement>("[data-i18n-placeholder]")
+            .forEach((el) => {
+              const key = el.getAttribute(
+                "data-i18n-placeholder",
+              ) as keyof Translations;
+              if (key && dict[key]) {
+                el.placeholder = dict[key];
               }
             });
 
@@ -855,9 +952,11 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
           try {
             await navigator.clipboard.writeText(text);
             if (copyLabel) {
-              copyLabel.textContent = "COPIED!";
+              const dict = translations[currentLang] || translations.en;
+              copyLabel.textContent = dict.copiedBtnLabel;
               setTimeout(() => {
-                copyLabel.textContent = "COPY";
+                const nowDict = translations[currentLang] || translations.en;
+                copyLabel.textContent = nowDict.copyBtnLabel;
               }, 2000);
             }
           } catch {}

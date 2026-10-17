@@ -79,6 +79,20 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
           }
         } catch {}
         document.documentElement.setAttribute("data-theme", theme);
+
+        try {
+          const savedLang = localStorage.getItem("bitty_lang");
+          if (savedLang === "zh-CN" || savedLang === "en") {
+            document.documentElement.setAttribute("data-lang", savedLang);
+          } else if (
+            navigator.language &&
+            navigator.language.startsWith("zh")
+          ) {
+            document.documentElement.setAttribute("data-lang", "zh-CN");
+          } else {
+            document.documentElement.setAttribute("data-lang", "en");
+          }
+        } catch {}
       })();
     </script>
   </head>
@@ -91,22 +105,25 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
 
     <main id="main-content" class="home-main" tabindex="-1">
       <div class="content-container space-y-16">
-        <!-- 1. HERO TOP SPLIT: Pitch & Mascot Left | Arcade Download Deck Right -->
+        <!-- 1. HERO TOP SPLIT: Pitch & Headline Left | Arcade Download Deck Right -->
         <section class="hero-section" aria-labelledby="hero-title">
           <div class="hero-grid">
-            <!-- Left 7 Cols: Headline, Leed, Mascot, CTAs -->
+            <!-- Left 7 Cols: Headline, Leed, CTAs -->
             <div class="hero-content space-y-5">
               <!-- Sticker Badges -->
               <div class="flex flex-wrap items-center gap-2.5 font-mono-tech">
                 <span class="sticker-badge" style="color: var(--accent);">
-                  <span>★</span>
-                  <span>超高速 GPU 端末 // MICROKERNEL</span>
+                  <span data-i18n="heroBadge1">
+                    ★ GPU-ACCELERATED · RUST MICROKERNEL
+                  </span>
                 </span>
                 <span
                   class="sticker-badge"
                   style="color: var(--accent-yellow); border-color: var(--accent-yellow);"
                 >
-                  <span>PICCOLO LUA VM · 0B IDLE</span>
+                  <span data-i18n="heroBadge2">
+                    PICCOLO LUA SANDBOX · 0B IDLE
+                  </span>
                 </span>
               </div>
 
@@ -114,61 +131,19 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
               <h1
                 id="hero-title"
                 class="font-cyber-display font-bold hero-pop-title text-[var(--fg-primary)]"
+                data-i18n="heroTitle"
               >
-                TILE SHELLS &amp; RICH LUA GUIS AT ARCADE SPEED.
+                TILE SHELLS &amp; RICH LUA PANELS AT NATIVE SPEED.
               </h1>
 
-              <p class="hero-lede text-[var(--fg-secondary)] leading-relaxed">
-                <strong>Bitty</strong> brings Hyprland-style dwindle tiling into
-                a pure-Rust microkernel terminal. Every panel hosts either a raw
-                PTY stream or a sandboxed Piccolo Lua GUI—backed by zero-daemon
-                native coprocesses.
+              <p
+                class="hero-lede text-[var(--fg-secondary)] leading-relaxed"
+                data-i18n="heroLede"
+              >
+                Bitty pairs Hyprland dwindle tiling with a pure-Rust
+                microkernel. Run high-throughput PTY shells alongside
+                declarative Piccolo Lua UI panels with zero background daemons.
               </p>
-
-              <!-- Interactive Bittie Mascot Card -->
-              <div class="toon-card p-3.5 sm:p-4 flex items-center gap-4 bg-[var(--bg-elevated)] max-w-xl">
-                <button
-                  type="button"
-                  id="mascot-poke-btn"
-                  class="mascot-bob shrink-0 w-16 h-16 rounded-2xl border-2 border-[var(--ink-border)] bg-[var(--bg-canvas)] flex flex-col items-center justify-center shadow-[3px_3px_0px_var(--toon-shadow)] cursor-pointer group"
-                  title="Poke Bittie! (bitty --mascot)"
-                >
-                  <div
-                    id="mascot-face"
-                    class="font-mono-tech font-bold text-base"
-                    style="color: var(--accent);"
-                  >
-                    ^ω^
-                  </div>
-                  <div class="text-[9px] font-mono-tech text-[var(--accent-pop)] font-bold mt-0.5">
-                    BITTIE
-                  </div>
-                </button>
-                <div class="space-y-1 min-w-0 flex-1">
-                  <div class="flex items-center justify-between gap-2">
-                    <span
-                      class="font-cyber-display font-bold text-xs uppercase tracking-wider"
-                      style="color: var(--accent-yellow);"
-                    >
-                      Bittie Navigator // bitty --mascot
-                    </span>
-                    <button
-                      type="button"
-                      id="mascot-next-tip-btn"
-                      class="font-mono-tech text-[10px] px-2 py-0.5 rounded bg-[var(--bg-surface)] border border-[var(--card-border)] hover:border-[var(--ink-border)] text-[var(--fg-secondary)] cursor-pointer"
-                    >
-                      Poke Mascot ↻
-                    </button>
-                  </div>
-                  <p
-                    id="mascot-speech"
-                    class="font-mono-tech text-xs text-[var(--fg-primary)] leading-snug"
-                  >
-                    "Oha~! Press [Alt+E] to pop open the Composer modal, or
-                    click my face to cycle terminal tips!"
-                  </p>
-                </div>
-              </div>
 
               <!-- Primary Action Buttons -->
               <div class="flex flex-wrap items-center gap-3.5 pt-1 font-cyber-display font-bold text-sm">
@@ -177,14 +152,13 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                   class="arcade-btn px-5 py-2.5 flex items-center gap-2"
                   style="background: var(--accent); color: #0b0914;"
                 >
-                  <span>Get Bitty 0.0.23 ⚡</span>
+                  <span data-i18n="getBittyBtn">Get Bitty ⚡</span>
                 </a>
                 <a
                   href="/docs/latest/"
                   class="arcade-btn px-5 py-2.5 bg-[var(--bg-surface)] text-[var(--fg-primary)] flex items-center gap-2"
                 >
-                  <span>Explore R2 Docs</span>
-                  <span style="color: var(--accent-pop);">→</span>
+                  <span data-i18n="exploreDocsBtn">Explore Docs →</span>
                 </a>
               </div>
             </div>
@@ -196,13 +170,24 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                 <div class="h-2 hazard-stripe"></div>
                 <div class="px-4 py-2 border-b-2 border-[var(--card-border)] bg-[var(--bg-elevated)] flex items-center justify-between font-cyber-display text-xs font-bold">
                   <div class="flex items-center gap-2">
-                    <span class="px-2 py-0.5 rounded bg-[var(--accent-yellow)] text-[#0b0914] text-[10px]">
-                      INSTALL DECK
+                    <span
+                      class="px-2 py-0.5 rounded bg-[var(--accent-yellow)] text-[#0b0914] text-[10px]"
+                      data-i18n="installDeckBadge"
+                    >
+                      QUICK INSTALL
                     </span>
-                    <span>導入カートリッジ // SHA-256</span>
+                    <a
+                      href="https://cdn.bitty.run/bitty/releases/SHA256SUMS.txt"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="hover:underline text-[var(--fg-secondary)] hover:text-[var(--accent)] text-[10px] font-mono-tech"
+                      data-i18n="installDeckChecksum"
+                    >
+                      SHA-256 CHECKSUMS ↗
+                    </a>
                   </div>
                   <span class="font-mono-tech text-[10px] text-[var(--accent)]">
-                    v0.0.23 · R2 CDN
+                    R2 CDN
                   </span>
                 </div>
 
@@ -271,10 +256,7 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                     role="tabpanel"
                     aria-labelledby="dl-tab-unix"
                   >
-                    <div
-                      class="font-mono-tech text-xs text-[#f5f3ff] overflow-x-auto whitespace-nowrap py-0.5 flex-1 select-all"
-                      style="scrollbar-width: thin;"
-                    >
+                    <div class="font-mono-tech text-xs text-[#f5f3ff] overflow-x-auto whitespace-nowrap py-0.5 flex-1 select-all min-w-0 no-scrollbar">
                       <span
                         class="select-none mr-2 font-bold"
                         style="color: var(--accent-pop);"
@@ -289,7 +271,7 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                     <button
                       type="button"
                       id="copy-dl-btn"
-                      class="arcade-btn shrink-0 px-3 py-1.5 bg-[var(--bg-elevated)] font-mono-tech text-xs font-bold text-[var(--fg-primary)] flex items-center gap-1"
+                      class="arcade-btn shrink-0 w-16 justify-center px-3 py-1.5 bg-[var(--bg-elevated)] font-mono-tech text-xs font-bold text-[var(--fg-primary)] flex items-center"
                       aria-label="Copy install command"
                     >
                       <span id="copy-dl-label">COPY</span>
@@ -297,12 +279,16 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                   </div>
 
                   <!-- Platform Hint / Target Summary (Fixed Single Line) -->
-                  <div class="h-5 flex items-center justify-between font-mono-tech text-[11px] text-[var(--fg-muted)] px-1">
-                    <span id="dl-hint-text" class="truncate">
+                  <div class="h-6 flex items-center justify-between font-mono-tech text-[11px] text-[var(--fg-muted)] px-1 gap-2">
+                    <span id="dl-hint-text" class="truncate min-w-0 flex-1">
                       Linux &amp; macOS: Automated bootstrap fetching verified
                       .tar.zst / binary
                     </span>
-                    <span class="text-[10px] text-[var(--accent-mint)] shrink-0 font-bold hidden sm:inline">
+                    <span
+                      id="dl-status-ready"
+                      class="text-[10px] text-[var(--accent-mint)] shrink-0 font-bold hidden sm:inline"
+                      data-i18n="statusReady"
+                    >
                       ● READY
                     </span>
                   </div>
@@ -310,7 +296,10 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                   <!-- Direct R2 Artifacts Matrix (Expanded R2 Ecosystem) -->
                   <div class="pt-3 border-t-dashed space-y-2 font-mono-tech text-[11px]">
                     <div class="flex items-center justify-between">
-                      <span class="text-[var(--fg-muted)] font-bold uppercase tracking-wider text-[10px]">
+                      <span
+                        class="text-[var(--fg-muted)] font-bold uppercase tracking-wider text-[10px]"
+                        data-i18n="directBinariesTitle"
+                      >
                         ★ Direct R2 Binaries &amp; Packages:
                       </span>
                       <a
@@ -336,6 +325,7 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                             href="#linux-distros"
                             class="text-[9px] text-[var(--accent)] hover:underline font-bold"
                             title="Jump to full Linux Distros Matrix"
+                            data-i18n="directMatrixLink"
                           >
                             Matrix ↓
                           </a>
@@ -459,10 +449,14 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
             <h2
               id="pillars-title"
               class="font-cyber-display font-bold text-2xl sm:text-3xl text-[var(--fg-primary)] mb-2"
+              data-i18n="pillarsTitle"
             >
               Engineered for Composability &amp; Isolation
             </h2>
-            <p class="text-sm text-[var(--fg-secondary)]">
+            <p
+              class="text-sm text-[var(--fg-secondary)]"
+              data-i18n="pillarsSubtitle"
+            >
               Zero monolithic bloat. Bitty separates terminal mechanics from
               extension policy.
             </p>
@@ -476,7 +470,9 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                   <span class="px-2 py-0.5 rounded font-bold bg-[var(--accent)] text-[#0b0914]">
                     STAGE 01
                   </span>
-                  <span class="text-[var(--fg-muted)]">画面分割 // TILING</span>
+                  <span class="text-[var(--fg-muted)]">
+                    TILING &amp; PANELS
+                  </span>
                 </div>
                 <h3 class="font-cyber-display font-bold text-xl text-[var(--fg-primary)]">
                   Hyprland Tiling × GUI Panels
@@ -507,7 +503,7 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                     STAGE 02
                   </span>
                   <span class="text-[var(--fg-muted)]">
-                    二重拡張 // EXTENSIONS
+                    PICCOLO &amp; WIRE V1
                   </span>
                 </div>
                 <h3 class="font-cyber-display font-bold text-xl text-[var(--fg-primary)]">
@@ -539,7 +535,7 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
                     STAGE 03
                   </span>
                   <span class="text-[var(--fg-muted)]">
-                    即時反映 // LIVE LUA
+                    HOT RELOAD &amp; RECOVERY
                   </span>
                 </div>
                 <h3 class="font-cyber-display font-bold text-xl text-[var(--fg-primary)]">
@@ -578,10 +574,14 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
             <h2
               id="docs-index-title"
               class="font-cyber-display font-bold text-2xl sm:text-3xl text-[var(--fg-primary)] mb-2"
+              data-i18n="manualTitle"
             >
               Bitty Manual &amp; Guides
             </h2>
-            <p class="text-sm text-[var(--fg-secondary)]">
+            <p
+              class="text-sm text-[var(--fg-secondary)]"
+              data-i18n="manualSubtitle"
+            >
               Official user manual, configuration reference, and Lua API
               documentation served directly from Cloudflare R2.
             </p>
@@ -715,47 +715,15 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
     <SiteFooter />
 
     <script>
-      (() => {
-        // 1. Mascot tips and mood cycling
-        const mascotMoods = [
-          {
-            face: "^ω^",
-            text: '"Oha~! Press [Alt+E] to pop open the Composer modal, or click my face to cycle terminal tips!"',
-          },
-          {
-            face: "⌐■_■",
-            text: '"Piccolo Sandbox active! Unauthenticated env reads return desensitized nil—zero token leaks!"',
-          },
-          {
-            face: "★ω★",
-            text: "\"Did you know? A Bitty Panel can mount a declarative Lua GUI (type='rich') instead of a PTY!\"",
-          },
-          {
-            face: "－ω－",
-            text: '"Zzz... Plugins in Installed state spawn 0 Lua VMs and consume 0 bytes of memory until triggered!"',
-          },
-        ];
-        let mascotIdx = 0;
-        function cycleMascot() {
-          mascotIdx = (mascotIdx + 1) % mascotMoods.length;
-          const current = mascotMoods[mascotIdx];
-          const face = document.getElementById("mascot-face");
-          const speech = document.getElementById("mascot-speech");
-          if (face && current) face.textContent = current.face;
-          if (speech && current) speech.textContent = current.text;
-        }
-        document
-          .getElementById("mascot-poke-btn")
-          ?.addEventListener("click", cycleMascot);
-        document
-          .getElementById("mascot-next-tip-btn")
-          ?.addEventListener("click", cycleMascot);
+      import {
+        translations,
+        type SupportedLang,
+        type Translations,
+      } from "../lib/translations";
 
-        // 2. OS Tabs switching logic
-        const dlTabs = document.querySelectorAll<HTMLButtonElement>(".dl-tab");
-        const dlCommandText = document.getElementById("dl-command-text");
-        const copyBtn = document.getElementById("copy-dl-btn");
-        const copyLabel = document.getElementById("copy-dl-label");
+      (() => {
+        // 1. Language state and reactive update
+        let currentLang: SupportedLang = "en";
 
         const installCommands: Record<string, string> = {
           unix: "curl -fsSL https://cdn.bitty.run/bitty/install/install.sh | bash",
@@ -765,33 +733,75 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
             "cargo +1.98.1 install --git https://github.com/bitty-terminal/bitty.git bitty-terminal --locked",
         };
 
-        const installHints: Record<string, string> = {
-          unix: "Linux & macOS: Automated bootstrap fetching verified .tar.zst / binary",
-          win: "Windows: PowerShell one-liner installing portable binary (user-local)",
-          pkg: "Distros: Arch (AUR), Debian/Ubuntu (.deb), Fedora (.rpm), openSUSE, Alpine, NixOS, Flatpak",
-          cargo:
-            "Build from source: compile with pinned toolchain (+1.98.1) via Cargo",
+        const installHints: Record<SupportedLang, Record<string, string>> = {
+          en: {
+            unix: translations.en.installHintUnix,
+            win: translations.en.installHintWin,
+            pkg: translations.en.installHintPkg,
+            cargo: translations.en.installHintCargo,
+          },
+          "zh-CN": {
+            unix: translations["zh-CN"].installHintUnix,
+            win: translations["zh-CN"].installHintWin,
+            pkg: translations["zh-CN"].installHintPkg,
+            cargo: translations["zh-CN"].installHintCargo,
+          },
         };
+
+        let currentActiveTabKey = "unix";
+
+        function applyLanguage(lang: SupportedLang) {
+          currentLang = lang;
+          document.documentElement.setAttribute("data-lang", lang);
+          try {
+            localStorage.setItem("bitty_lang", lang);
+          } catch {}
+
+          const dict = translations[lang];
+          if (!dict) return;
+
+          // Update all data-i18n elements
+          document
+            .querySelectorAll<HTMLElement>("[data-i18n]")
+            .forEach((el) => {
+              const key = el.getAttribute("data-i18n") as keyof Translations;
+              if (key && dict[key]) {
+                el.textContent = dict[key];
+              }
+            });
+
+          // Update current hint text
+          const hint = document.getElementById("dl-hint-text");
+          if (hint && installHints[lang]?.[currentActiveTabKey]) {
+            hint.textContent = installHints[lang][currentActiveTabKey];
+          }
+
+          // Dispatch updated event for header synchronization
+          window.dispatchEvent(
+            new CustomEvent("bitty-lang-updated", { detail: { lang } }),
+          );
+        }
+
+        // 2. OS Tabs switching logic (Zero CLS)
+        const dlTabs = document.querySelectorAll<HTMLButtonElement>(".dl-tab");
+        const dlCommandText = document.getElementById("dl-command-text");
+        const copyBtn = document.getElementById("copy-dl-btn");
+        const copyLabel = document.getElementById("copy-dl-label");
 
         const dlTabList = Array.from(dlTabs);
         const activateDlTab = (tab: HTMLButtonElement, focus = true) => {
           const key = tab.getAttribute("data-dl-tab");
           if (!key) return;
+          currentActiveTabKey = key;
 
           dlTabs.forEach((t) => {
             t.classList.remove("active");
             t.setAttribute("aria-selected", "false");
             t.tabIndex = -1;
-            t.style.background = "var(--bg-canvas)";
-            t.style.color = "var(--fg-secondary)";
-            t.style.borderColor = "var(--card-border)";
           });
           tab.classList.add("active");
           tab.setAttribute("aria-selected", "true");
           tab.tabIndex = 0;
-          tab.style.background = "var(--accent)";
-          tab.style.color = "#0b0914";
-          tab.style.borderColor = "var(--ink-border)";
 
           if (focus) tab.focus();
 
@@ -799,8 +809,8 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
             dlCommandText.textContent = installCommands[key];
           }
           const hint = document.getElementById("dl-hint-text");
-          if (hint && installHints[key]) {
-            hint.textContent = installHints[key];
+          if (hint && installHints[currentLang]?.[key]) {
+            hint.textContent = installHints[currentLang][key];
           }
         };
 
@@ -842,6 +852,51 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
             }
           } catch {}
         });
+
+        // 4. Initial language detection & header toggle listener
+        window.addEventListener("bitty-lang-toggle", ((
+          e: CustomEvent<{ nextLang: SupportedLang }>,
+        ) => {
+          const target =
+            e.detail?.nextLang || (currentLang === "zh-CN" ? "en" : "zh-CN");
+          applyLanguage(target);
+        }) as EventListener);
+
+        // Check stored preference or navigator language
+        let initialLang: SupportedLang = "en";
+        try {
+          const saved = localStorage.getItem("bitty_lang") as SupportedLang;
+          if (saved === "zh-CN" || saved === "en") {
+            initialLang = saved;
+          } else if (
+            navigator.language &&
+            navigator.language.startsWith("zh")
+          ) {
+            initialLang = "zh-CN";
+          }
+        } catch {}
+
+        applyLanguage(initialLang);
+
+        // Async IP-based geolocation check via Cloudflare trace if user hasn't explicitly set preference
+        try {
+          if (!localStorage.getItem("bitty_lang")) {
+            fetch("/cdn-cgi/trace")
+              .then((res) => res.text())
+              .then((text) => {
+                const locMatch = text.match(/loc=([A-Z]{2})/);
+                if (locMatch) {
+                  const loc = locMatch[1];
+                  if (["CN", "HK", "MO", "TW"].includes(loc)) {
+                    if (!localStorage.getItem("bitty_lang")) {
+                      applyLanguage("zh-CN");
+                    }
+                  }
+                }
+              })
+              .catch(() => {});
+          }
+        } catch {}
       })();
     </script>
   </body>
@@ -874,7 +929,7 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
 
   @media (min-width: 64rem) {
     .hero-grid {
-      grid-template-columns: 7fr 5fr;
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
     }
   }
 
@@ -885,6 +940,14 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
     box-sizing: border-box;
   }
 
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
   .dl-tab {
     min-height: 2.25rem;
     height: 2.25rem;
@@ -892,6 +955,14 @@ const apiDocs = manualGroups.find((g) => g.id === "api")?.entries ?? [];
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.15s ease;
+  }
+
+  .dl-tab.active {
+    background: var(--accent) !important;
+    color: #0b0914 !important;
+    border-color: var(--ink-border) !important;
+    box-shadow: 2px 2px 0px var(--toon-shadow);
   }
 
   .hero-lede {

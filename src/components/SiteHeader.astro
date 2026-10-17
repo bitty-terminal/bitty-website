@@ -176,9 +176,21 @@ const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
     const langBtn = document.getElementById("lang-toggle-btn");
     const langLabel = document.getElementById("lang-current-label");
     const pathname = window.location.pathname;
-    const isZh = pathname.includes("/zh-CN/") || pathname.endsWith("/zh-CN");
+    const isZhDoc = pathname.includes("/zh-CN/") || pathname.endsWith("/zh-CN");
+    const savedLang = (() => {
+      try {
+        return localStorage.getItem("bitty_lang");
+      } catch {
+        return null;
+      }
+    })();
+    const currentDocLang =
+      document.documentElement.getAttribute("data-lang") ||
+      savedLang ||
+      (isZhDoc ? "zh-CN" : "en");
     if (langLabel) {
-      langLabel.textContent = isZh ? "中" : "EN";
+      langLabel.textContent =
+        currentDocLang === "zh-CN" || isZhDoc ? "中" : "EN";
     }
 
     langBtn?.addEventListener("click", () => {
@@ -186,9 +198,15 @@ const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
       if (cur.includes("/docs/")) {
         if (cur.includes("/zh-CN/")) {
           // Switch zh-CN -> en
+          try {
+            localStorage.setItem("bitty_lang", "en");
+          } catch {}
           window.location.href = cur.replace("/zh-CN/", "/");
         } else {
           // Switch en -> zh-CN
+          try {
+            localStorage.setItem("bitty_lang", "zh-CN");
+          } catch {}
           const match = cur.match(/^\/docs\/([^/]+)\/(.*)$/);
           if (match) {
             window.location.href = `/docs/${match[1]}/zh-CN/${match[2]}`;
@@ -198,14 +216,26 @@ const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
           }
         }
       } else {
-        if (isZh) {
-          window.location.href = "/";
-        } else {
-          window.location.href =
-            "/docs/latest/zh-CN/getting-started/quickstart/";
-        }
+        // Toggle language on the homepage in-place
+        const curLang =
+          document.documentElement.getAttribute("data-lang") || "en";
+        const nextLang = curLang === "zh-CN" ? "en" : "zh-CN";
+        window.dispatchEvent(
+          new CustomEvent("bitty-lang-toggle", {
+            detail: { nextLang },
+          }),
+        );
       }
     });
+
+    // Listen for language update events
+    window.addEventListener("bitty-lang-updated", ((
+      e: CustomEvent<{ lang: string }>,
+    ) => {
+      if (langLabel && e.detail?.lang) {
+        langLabel.textContent = e.detail.lang === "zh-CN" ? "中" : "EN";
+      }
+    }) as EventListener);
   })();
 </script>
 

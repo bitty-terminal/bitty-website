@@ -1,390 +1,211 @@
 ---
 /**
- * Site header — Blueprint & Terminal Native navigation bar.
+ * Site header — Cyber-Pop × Cel-Shaded Toon navigation bar.
  *
- * Left: Brand lockup (SVG terminal favicon + Bitty title + version pill).
- * Center: Site search trigger.
- * Right: Docs, Install, Theme Switcher, i18n Switcher, and GitHub.
+ * Left: Mascot lockup (SVG cartoon Bittie + Bitty title + version pill + Katakana tag).
+ * Center: Instant route switcher (★ HERO <-> 📖 R2 DOCS) + Site Search.
+ * Right: Tactile Light/Dark Arcade Toggle (Default: shibuya-pop) and GitHub.
  */
-import BittyLogo from "./BittyLogo.astro";
 import SiteSearch from "./SiteSearch.astro";
 import { getVersions } from "../lib/versions.ts";
 
 type Props = {
   version?: string;
   showSearch?: boolean;
+  activeNav?: "hero" | "docs";
 };
 
-const { version = "latest", showSearch = true } = Astro.props as Props;
+const {
+  version = "latest",
+  showSearch = true,
+  activeNav,
+} = Astro.props as Props;
 const versions = getVersions();
 const displayVersion = version === "latest" ? versions.latest : version;
 const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
 ---
 
-<header class="site-header sticky top-0 z-40 backdrop-blur-xl border-b border-[var(--border-subtle)]">
-  <nav
-    class="header-nav max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4"
-    aria-label="Primary Navigation"
-  >
-    <!-- Left: Brand Lockup -->
-    <div class="header-brand-group flex items-center gap-3">
+<header class="sticky top-0 z-40 backdrop-blur-xl border-b-2 border-[var(--card-border)] bg-[var(--bg-glass)]">
+  <div class="max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
+    <!-- Left: Cartoon Bittie Mascot + Brand Lockup -->
+    <div class="flex items-center gap-3">
       <a
         href="/"
-        class="brand-link flex items-center gap-2.5 group focus:outline-none"
+        class="flex items-center gap-2.5 group focus:outline-none"
         aria-label="Bitty Home"
       >
-        <div class="logo-box w-8 h-8 rounded-md flex items-center justify-center border border-[var(--border-focus)]/60 bg-[var(--bg-elevated)] shadow-sm group-hover:scale-105 transition-transform">
-          <BittyLogo />
+        <div
+          class="w-10 h-10 rounded-xl flex items-center justify-center border-2 border-[var(--ink-border)] bg-[var(--bg-elevated)] shadow-[2px_2px_0px_var(--toon-shadow)] group-hover:rotate-6 transition-transform"
+          title="Bittie Mascot"
+        >
+          <svg
+            class="w-7 h-7"
+            viewBox="0 0 36 36"
+            fill="none"
+            aria-hidden="true"
+          >
+            <path d="M6 8 L11 1 L15 8 Z" fill="var(--accent-pop)" />
+            <path d="M30 8 L25 1 L21 8 Z" fill="var(--accent-pop)" />
+            <rect
+              x="4"
+              y="7"
+              width="28"
+              height="24"
+              rx="6"
+              fill="var(--bg-canvas)"
+              stroke="var(--accent)"
+              stroke-width="2.5"
+            />
+            <rect
+              x="10"
+              y="13"
+              width="4.5"
+              height="6"
+              rx="2"
+              fill="var(--accent)"
+            />
+            <rect
+              x="21.5"
+              y="13"
+              width="4.5"
+              height="6"
+              rx="2"
+              fill="var(--accent)"
+            />
+            <path
+              d="M15 23 Q18 26 21 23"
+              stroke="var(--accent-yellow)"
+              stroke-width="2.2"
+              stroke-linecap="round"
+            />
+          </svg>
         </div>
-        <span class="font-display font-bold text-lg tracking-tight text-[var(--fg-primary)]">
-          bitty
-        </span>
+        <div>
+          <div class="flex items-center gap-1.5">
+            <span class="font-cyber-display font-bold text-xl tracking-tight text-[var(--fg-primary)]">
+              BITTY
+            </span>
+            <span class="text-[10px] font-mono-tech font-bold px-1.5 py-0.5 rounded bg-[var(--accent-pop)] text-white">
+              {displayVersion}
+            </span>
+          </div>
+          <div class="text-[10px] font-mono-tech text-[var(--accent)] tracking-widest hidden sm:block">
+            ビッティ // CYBER-TERM
+          </div>
+        </div>
       </a>
-      <span class="version-badge font-mono-tech text-[11px] px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] text-[var(--fg-secondary)]">
-        {displayVersion}
-      </span>
     </div>
 
-    <!-- Center: Search Box -->
-    {showSearch && (
-      <div class="header-search flex-1 max-w-md mx-2">
-        <SiteSearch version={version} />
-      </div>
-    )}
-
-    <!-- Right Controls: Docs, Install, Theme, i18n, GitHub -->
-    <div class="header-actions flex items-center gap-2 font-mono-tech text-xs">
-      <!-- Docs Link -->
-      <a href="/docs/latest/" class="nav-btn nav-btn-docs">
-        <span>Docs</span>
-      </a>
-
-      <!-- Install Anchor -->
-      <a href="/#download" class="nav-btn nav-btn-install">
-        <span>Install</span>
-      </a>
-
-      <div class="nav-divider" aria-hidden="true"></div>
-
-      <!-- Theme Switcher -->
-      <div class="theme-switcher relative">
-        <button
-          type="button"
-          id="theme-menu-btn"
-          class="theme-toggle-btn"
-          aria-haspopup="true"
-          aria-expanded="false"
-          title="Switch theme"
+    <!-- Center: Switcher & Search -->
+    <div class="flex items-center gap-3 flex-1 max-w-xl mx-2">
+      <div class="hidden sm:flex items-center p-1 rounded-xl border-2 border-[var(--card-border)] bg-[var(--bg-canvas)] font-cyber-display text-xs font-bold shrink-0">
+        <a
+          href="/"
+          class={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+            activeNav === "hero"
+              ? "bg-[var(--accent)] text-[#0b0914] shadow-[1px_1px_0px_var(--toon-shadow)]"
+              : "text-[var(--fg-secondary)] hover:text-[var(--fg-primary)]"
+          }`}
         >
-          <span class="theme-color-dot" id="theme-color-indicator"></span>
-          <span id="current-theme-label" class="hidden sm:inline">
-            tokyo-night
-          </span>
-          <span class="chevron-icon">▾</span>
-        </button>
-
-        <div id="theme-dropdown" class="theme-dropdown-menu hidden" role="menu">
-          <button
-            type="button"
-            data-set-theme="tokyo-night"
-            class="theme-opt"
-            role="menuitem"
-          >
-            <span>tokyo-night</span>
-            <span class="w-2 h-2 rounded-full bg-[#7aa2f7]"></span>
-          </button>
-          <button
-            type="button"
-            data-set-theme="catppuccin-mocha"
-            class="theme-opt"
-            role="menuitem"
-          >
-            <span>catppuccin-mocha</span>
-            <span class="w-2 h-2 rounded-full bg-[#cba6f7]"></span>
-          </button>
-          <button
-            type="button"
-            data-set-theme="gruvbox-dark"
-            class="theme-opt"
-            role="menuitem"
-          >
-            <span>gruvbox-dark</span>
-            <span class="w-2 h-2 rounded-full bg-[#fabd2f]"></span>
-          </button>
-          <div class="dropdown-divider"></div>
-          <button
-            type="button"
-            data-set-theme="paper-light"
-            class="theme-opt"
-            role="menuitem"
-          >
-            <span>paper-light</span>
-            <span class="w-2 h-2 rounded-full bg-[#2554d8]"></span>
-          </button>
-        </div>
+          <span>★ HERO</span>
+        </a>
+        <a
+          href="/docs/latest/"
+          class={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
+            activeNav === "docs"
+              ? "bg-[var(--accent)] text-[#0b0914] shadow-[1px_1px_0px_var(--toon-shadow)]"
+              : "text-[var(--fg-secondary)] hover:text-[var(--fg-primary)]"
+          }`}
+        >
+          <span>📖 R2 DOCS</span>
+        </a>
       </div>
+
+      {showSearch && (
+        <div class="flex-1 min-w-0">
+          <SiteSearch version={version} />
+        </div>
+      )}
+    </div>
+
+    <!-- Right Controls: Light/Dark Arcade Toggle and GitHub -->
+    <div class="flex items-center gap-2.5 font-mono-tech text-xs">
+      <!-- Arcade Light / Dark Switcher -->
+      <button
+        type="button"
+        id="theme-toggle-btn"
+        class="arcade-btn px-3 py-1.5 bg-[var(--bg-surface)] text-[var(--fg-primary)] flex items-center gap-1.5 cursor-pointer font-bold select-none"
+        aria-label="Toggle Light / Dark Mode"
+        title="Toggle Light / Dark Mode"
+      >
+        <span
+          id="theme-toggle-dot"
+          class="w-2.5 h-2.5 rounded-full bg-[var(--accent)]"
+        ></span>
+        <span id="theme-toggle-label">☀️ Light</span>
+      </button>
 
       <!-- GitHub Link -->
       <a
         href={GITHUB_REPO_URL}
         target="_blank"
         rel="noopener noreferrer"
-        class="github-btn"
+        class="arcade-btn px-3 py-1.5 bg-[var(--bg-surface)] text-[var(--fg-primary)] flex items-center gap-1.5 font-bold"
         title="GitHub Repository"
       >
         <svg
-          class="github-svg"
+          class="w-3.5 h-3.5 fill-current"
           viewBox="0 0 24 24"
-          width="14"
-          height="14"
-          fill="currentColor"
+          aria-hidden="true"
         >
           <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
         </svg>
-        <span class="hidden md:inline">GitHub</span>
+        <span class="hidden sm:inline">GitHub</span>
       </a>
     </div>
-  </nav>
+  </div>
 </header>
 
 <script>
   (() => {
-    // Theme switcher behavior
-    const themeBtn = document.getElementById("theme-menu-btn");
-    const themeDropdown = document.getElementById("theme-dropdown");
-    const themeLabel = document.getElementById("current-theme-label");
-    const themeDot = document.getElementById("theme-color-indicator");
+    const toggleBtn = document.getElementById("theme-toggle-btn");
+    const toggleLabel = document.getElementById("theme-toggle-label");
+    const toggleDot = document.getElementById("theme-toggle-dot");
 
-    const themeColors: Record<string, string> = {
-      "tokyo-night": "#7aa2f7",
-      "catppuccin-mocha": "#cba6f7",
-      "gruvbox-dark": "#fabd2f",
-      "paper-light": "#2554d8",
-    };
-
-    const setTheme = (theme: string) => {
+    function applyTheme(theme: string) {
       document.documentElement.setAttribute("data-theme", theme);
       try {
         localStorage.setItem("bitty-theme", theme);
       } catch {}
-      if (themeLabel) themeLabel.textContent = theme;
-      if (themeDot && themeColors[theme]) {
-        themeDot.style.backgroundColor = themeColors[theme];
-      }
-    };
 
-    let savedTheme: string | null = null;
-    try {
-      savedTheme = localStorage.getItem("bitty-theme");
-    } catch {
-      // storage unavailable
+      const isDark =
+        theme === "akiba-cyber" || theme === "dark" || theme === "bitty-dark";
+      if (toggleLabel) {
+        toggleLabel.textContent = isDark ? "🌙 Dark" : "☀️ Light";
+      }
+      if (toggleDot) {
+        toggleDot.style.background = isDark ? "#00f0ff" : "#ff2a6d";
+      }
     }
 
-    const currentTheme =
-      document.documentElement.getAttribute("data-theme") ||
-      savedTheme ||
-      "tokyo-night";
-    setTheme(currentTheme);
+    let initialTheme =
+      document.documentElement.getAttribute("data-theme") || "shibuya-pop";
+    if (
+      initialTheme !== "akiba-cyber" &&
+      initialTheme !== "dark" &&
+      initialTheme !== "shibuya-pop" &&
+      initialTheme !== "light"
+    ) {
+      initialTheme = "shibuya-pop";
+    }
 
-    themeBtn?.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const isHidden = themeDropdown?.classList.toggle("hidden");
-      themeBtn.setAttribute("aria-expanded", String(!isHidden));
-    });
+    applyTheme(initialTheme);
 
-    document.querySelectorAll("[data-set-theme]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const theme = btn.getAttribute("data-set-theme");
-        if (theme) setTheme(theme);
-        themeDropdown?.classList.add("hidden");
-        themeBtn?.setAttribute("aria-expanded", "false");
-      });
-    });
-
-    document.addEventListener("click", () => {
-      themeDropdown?.classList.add("hidden");
-      themeBtn?.setAttribute("aria-expanded", "false");
+    toggleBtn?.addEventListener("click", () => {
+      const current =
+        document.documentElement.getAttribute("data-theme") || initialTheme;
+      const next = current === "akiba-cyber" ? "shibuya-pop" : "akiba-cyber";
+      applyTheme(next);
     });
   })();
 </script>
-
-<style>
-  .site-header {
-    background-color: var(--bg-glass);
-    border-bottom: 1px solid var(--border-subtle);
-  }
-
-  .header-nav {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 3.75rem;
-    max-width: var(--docs-content-width);
-    margin: 0 auto;
-    padding: 0 1rem;
-  }
-
-  .brand-link {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    text-decoration: none;
-  }
-
-  .logo-box {
-    width: 2rem;
-    height: 2rem;
-    border-radius: var(--radius-sm);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--border-focus);
-    background: var(--bg-elevated);
-  }
-
-  .version-badge {
-    font-size: 0.68rem;
-    padding: 0.1rem 0.4rem;
-    border-radius: var(--radius-sm);
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-subtle);
-    color: var(--fg-secondary);
-  }
-
-  .header-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .nav-btn {
-    padding: 0.35rem 0.75rem;
-    border-radius: var(--radius-sm);
-    color: var(--fg-secondary);
-    text-decoration: none;
-    transition: all 0.15s ease;
-  }
-
-  .nav-btn:hover {
-    color: var(--fg-primary);
-    background: var(--bg-elevated);
-  }
-
-  .nav-btn-docs {
-    color: var(--fg-primary);
-    font-weight: 600;
-  }
-
-  .nav-divider {
-    width: 1px;
-    height: 1rem;
-    background: var(--border-subtle);
-    margin: 0 0.25rem;
-  }
-
-  .theme-toggle-btn,
-  .lang-toggle-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.35rem 0.65rem;
-    border-radius: var(--radius-sm);
-    background: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    color: var(--fg-primary);
-    font-size: 0.75rem;
-    cursor: pointer;
-  }
-
-  .theme-toggle-btn:hover,
-  .lang-toggle-btn:hover {
-    border-color: var(--border-focus);
-  }
-
-  .theme-color-dot {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    background-color: var(--accent);
-  }
-
-  .chevron-icon {
-    font-size: 0.6rem;
-    color: var(--fg-muted);
-  }
-
-  .theme-dropdown-menu,
-  .lang-dropdown-menu {
-    position: absolute;
-    right: 0;
-    margin-top: 0.35rem;
-    width: 11rem;
-    border-radius: var(--radius-sm);
-    background: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    box-shadow: var(--shadow-ambient);
-    padding: 0.25rem;
-    z-index: 50;
-  }
-
-  .theme-dropdown-menu.hidden,
-  .lang-dropdown-menu.hidden {
-    display: none;
-  }
-
-  .theme-opt,
-  .lang-opt {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    padding: 0.35rem 0.65rem;
-    border: none;
-    border-radius: 4px;
-    background: transparent;
-    color: var(--fg-primary);
-    font-size: 0.72rem;
-    cursor: pointer;
-    text-align: left;
-  }
-
-  .theme-opt:hover,
-  .lang-opt:hover {
-    background: var(--bg-elevated);
-  }
-
-  .dropdown-divider {
-    height: 1px;
-    background: var(--border-subtle);
-    margin: 0.25rem 0;
-  }
-
-  .lang-path {
-    font-size: 0.65rem;
-    color: var(--fg-muted);
-  }
-
-  .github-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.35rem 0.65rem;
-    border-radius: var(--radius-sm);
-    background: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    color: var(--fg-primary);
-    text-decoration: none;
-  }
-
-  .github-btn:hover {
-    border-color: var(--border-focus);
-  }
-
-  @media (max-width: 48rem) {
-    .header-nav {
-      flex-wrap: wrap;
-      height: auto;
-      padding-block: 0.5rem;
-    }
-  }
-</style>

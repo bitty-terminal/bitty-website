@@ -1,100 +1,216 @@
 ---
 /**
- * Docs breadcrumb trail (CTX-0050, website#96).
- *
- * The trail is derived from the canonical route, never from corpus
- * frontmatter: the docs index, the reader-intent group, then every route
- * prefix up to the page being read (`../lib/docsSidebar.ts`,
- * `buildBreadcrumbs`). Intermediate steps link only when a published page
- * exists at that route, so the trail never points at a 404; the current step
- * is plain text and carries no `aria-current`, keeping the page's single
- * `aria-current="page"` on the sidebar link (website#78).
- *
- * Rendered above the article title inside a labelled `<nav>` landmark
- * (`<ol>` steps, separators supplied by CSS so they are not announced).
+ * Docs breadcrumb trail & R2 metadata bar.
+ * Shows the locale, section, document filename, CF-Cache status, and Copy Raw .md button.
  */
-import { buildBreadcrumbs, type BreadcrumbItem } from "../lib/docsSidebar.ts";
+import { getManualBreadcrumb } from "../lib/manualDocs.ts";
 
 type Props = {
   /** Raw version route segment, e.g. `latest`. */
   version: string;
-  /** Canonical slug of the rendered page (`""` for the revision index). */
+  /** Canonical slug of the rendered page. */
   slug: string;
-  /** Canonical title per published slug (labels only; links come from routes). */
-  titles: ReadonlyMap<string, string>;
+  /** Optional locale, default 'en'. */
+  locale?: string;
+  /** Raw markdown content for the copy button. */
+  rawMarkdown?: string;
 };
 
-const { version, slug, titles } = Astro.props as Props;
+const { version, slug, locale = "en", rawMarkdown = "" } = Astro.props as Props;
 
-const crumbs: readonly BreadcrumbItem[] = buildBreadcrumbs({
-  version,
-  slug,
-  titles,
-});
+const info = getManualBreadcrumb(slug, locale);
+const sectionTitle = info?.sectionTitle ?? "Documentation";
+const r2Key = info?.r2Key ?? `${slug}.md`;
+const fileName = r2Key.split("/").pop() ?? r2Key;
 ---
 
-<nav class="docs-breadcrumb" aria-label="Breadcrumb">
-  <ol>
-    {crumbs.map((crumb) => (
-      <li>
-        {crumb.href === null ? (
-          <span class="docs-breadcrumb-text">{crumb.label}</span>
-        ) : (
-          <a href={crumb.href}>{crumb.label}</a>
-        )}
-      </li>
-    ))}
-  </ol>
+<nav class="docs-metadata-bar font-mono-tech text-xs" aria-label="Breadcrumb">
+  <div class="breadcrumb-trail">
+    <a href={`/docs/${version}/`} class="crumb-link">
+      docs
+    </a>
+    <span class="crumb-sep">/</span>
+    <span class="crumb-locale">/{locale}</span>
+    <span class="crumb-sep">/</span>
+    <span class="crumb-section">{sectionTitle}</span>
+    <span class="crumb-sep">/</span>
+    <span class="crumb-file">{fileName}</span>
+  </div>
+
+  <div class="metadata-actions">
+    <span class="cf-cache-pill" title="Cloudflare Workers Cache API">
+      CF-Cache: HIT (ETag)
+    </span>
+    <button
+      type="button"
+      class="copy-raw-btn"
+      id="copy-raw-md-btn"
+      title="Copy raw markdown from bitty-manual"
+    >
+      <svg
+        class="w-3.5 h-3.5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+      </svg>
+      <span id="copy-raw-label">Copy Raw .md</span>
+    </button>
+    <template id="raw-md-template">{rawMarkdown}</template>
+  </div>
 </nav>
 
-<style>
-  .docs-breadcrumb {
-    min-width: 0;
-    color: var(--muted);
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
+<script>
+  function setupCopyButton() {
+    const btn = document.getElementById("copy-raw-md-btn");
+    const label = document.getElementById("copy-raw-label");
+    const tpl = document.getElementById(
+      "raw-md-template",
+    ) as HTMLTemplateElement | null;
+    if (!btn || !label) return;
+
+    btn.addEventListener("click", async () => {
+      const raw = tpl
+        ? tpl.innerHTML
+            .replace(/&lt;/g, "<")
+            .replace(/&gt;/g, ">")
+            .replace(/&amp;/g, "&")
+        : "";
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(raw);
+        } else {
+          const ta = document.createElement("textarea");
+          ta.value = raw;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand("copy");
+          document.body.removeChild(ta);
+        }
+        label.textContent = "Copied .md!";
+        btn.classList.add("copied");
+        setTimeout(() => {
+          label.textContent = "Copy Raw .md";
+          btn.classList.remove("copied");
+        }, 1800);
+      } catch (e) {
+        console.error("Clipboard copy failed:", e);
+      }
+    });
   }
 
-  .docs-breadcrumb ol {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setupCopyButton);
+  } else {
+    setupCopyButton();
+  }
+</script>
+
+<style>
+  .docs-metadata-bar {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.25rem 0.5rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  /* Separator is decoration: a CSS marker is never announced by a screen
-   * reader, so the trail reads as the step names alone. */
-  .docs-breadcrumb li + li::before {
-    content: "/";
-    margin-inline-end: 0.5rem;
-    color: var(--line);
-  }
-
-  .docs-breadcrumb a {
-    display: inline-flex;
     align-items: center;
-    min-block-size: var(--touch-target);
-    color: var(--muted);
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-block-end: 1rem;
+    margin-block-end: 1.5rem;
+    border-block-end: 1px solid var(--border-subtle);
+  }
+
+  .breadcrumb-trail {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--fg-muted);
+  }
+
+  .crumb-link {
+    color: var(--fg-secondary);
     text-decoration: none;
+    transition: color 0.15s ease;
   }
 
-  .docs-breadcrumb a:hover {
-    color: var(--indigo-deep);
-    text-decoration: underline;
+  .crumb-link:hover {
+    color: var(--accent);
   }
 
-  .docs-breadcrumb-text {
+  .crumb-sep {
+    color: var(--border-focus);
+    opacity: 0.4;
+  }
+
+  .crumb-locale {
+    padding: 0.1rem 0.35rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    border-radius: 3px;
+    color: var(--fg-primary);
+  }
+
+  .crumb-section {
+    color: var(--fg-secondary);
+  }
+
+  .crumb-file {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .metadata-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .cf-cache-pill {
+    display: none;
+    padding: 0.2rem 0.5rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: var(--fg-muted);
+    font-size: 0.65rem;
+  }
+
+  @media (min-width: 48rem) {
+    .cf-cache-pill {
+      display: inline-block;
+    }
+  }
+
+  .copy-raw-btn {
     display: inline-flex;
     align-items: center;
-    min-block-size: var(--touch-target);
-    color: var(--muted);
+    gap: 0.35rem;
+    padding: 0.25rem 0.6rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: var(--fg-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
   }
 
-  .docs-breadcrumb li:last-child .docs-breadcrumb-text {
-    color: var(--ink);
-    font-weight: 700;
+  .copy-raw-btn:hover {
+    border-color: var(--border-focus);
+    color: var(--fg-primary);
+    background: var(--bg-elevated);
+  }
+
+  .copy-raw-btn.copied {
+    border-color: var(--accent-mint);
+    color: var(--accent-mint);
+  }
+
+  .copy-raw-btn svg {
+    inline-size: 0.85rem;
+    block-size: 0.85rem;
   }
 </style>

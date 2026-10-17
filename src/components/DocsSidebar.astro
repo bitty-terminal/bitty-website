@@ -1,43 +1,9 @@
 ---
 /**
- * Documentation sidebar navigation (CTX-0045, CTX-0050): two-layer
- * reader-intent navigation.
- *
- * Data source: the `docs` content collection, filtered by the shared
- * publication policy (`../lib/publicationPolicy.ts`, website#97) and mapped
- * through the shared entry derivation (`../lib/docsEntries.ts`), so the
- * sidebar, the breadcrumbs, and the previous/next pager all agree on the same
- * canonical slugs.
- *
- * Shape: the six reader-intent groups of `../lib/docsNavGroups.ts` are the
- * only top level, and each group renders exactly one flat list of page links
- * — route depth never adds a third level (website#96). A route that is both a
- * folder and a page is an ordinary entry labelled with its real page title,
- * replacing the previous fixed "Contents" disclosure. Grouping, ordering,
- * breadcrumbs, pager neighbours, and display titles all live in
- * `../lib/docsSidebar.ts` (unit-tested with `bun test src/lib`).
- *
- * Display titles strip machine prefixes (`ADR NNNN - `, `Finding NNNN - `)
- * and trailing ` RFC` suffixes AT RENDER TIME ONLY — canonical
- * frontmatter titles, slugs, links, and pages are unchanged (canonical
- * renames are a bitty-docs follow-up, not this issue).
- *
- * Progressive enhancement: group nodes are native `<details>` groups
- * (keyboard reachable, no script), and the whole sidebar is a `<details>`
- * drawer that renders `open` — modern Chrome clips `::details-content`
- * regardless of the `display` override, so a CSS-forced desktop open does
- * not work. A tiny inline script (CTX-0047) collapses the drawer on
- * narrow viewports during parse, before first paint; without JS it stays
- * open everywhere (usable, never empty). The current document carries
- * `aria-current="page"`.
+ * Documentation sidebar navigation.
+ * Renders the 6 canonical categories and 41 items from bitty-manual.
  */
-import { getCollection } from "astro:content";
-import { sidebarEntriesFrom } from "../lib/docsEntries.ts";
-import {
-  buildNavGroups,
-  renderSidebarTree,
-  type SidebarEntry,
-} from "../lib/docsSidebar.ts";
+import { getManualNavGroups } from "../lib/manualDocs.ts";
 
 type Props = {
   /** Raw version route segment, e.g. `latest`, `stable`, or `0.1.0`. */
@@ -47,13 +13,7 @@ type Props = {
 };
 
 const { version, currentSlug } = Astro.props as Props;
-
-const entries: readonly SidebarEntry[] = sidebarEntriesFrom(
-  await getCollection("docs"),
-);
-
-const groups = buildNavGroups(entries, currentSlug);
-const treeHtml = renderSidebarTree(groups, version, currentSlug);
+const groups = getManualNavGroups(currentSlug, version);
 ---
 
 <details class="docs-nav-drawer" open>
@@ -66,23 +26,56 @@ const treeHtml = renderSidebarTree(groups, version, currentSlug);
         R2 Live
       </span>
     </div>
-    <div class="r2-sync-path">cdn.bitty.run/manual/{version}/...</div>
+    <div class="r2-sync-path">
+      cdn.bitty.run/manual/bitty-manual/{version}/...
+    </div>
   </div>
-  <nav class="docs-sidebar" aria-label="Documentation" set:html={treeHtml} />
+  <nav class="docs-sidebar" aria-label="Documentation">
+    <ul class="docs-nav-tree">
+      {groups.map((group) => (
+        <li class="docs-nav-group">
+          <details
+            class="docs-nav-group-details"
+            open={group.isCurrent || group.id === "getting-started"}
+          >
+            <summary>{group.label}</summary>
+            <ul>
+              {group.entries.map((entry) => {
+                const isActive =
+                  entry.fullSlug === currentSlug ||
+                  (currentSlug === "" && entry.order === 0);
+                const href = `/docs/${version}/${entry.fullSlug}/`;
+                return (
+                  <li class="docs-nav-entry">
+                    <a
+                      href={href}
+                      aria-current={isActive ? "page" : undefined}
+                      class={isActive ? "active" : undefined}
+                    >
+                      {entry.title}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </details>
+        </li>
+      ))}
+    </ul>
+  </nav>
 </details>
 
 <script is:inline>
   // CTX-0047: collapse the drawer on narrow viewports BEFORE first paint.
-  // The drawer renders `open` so desktop (and no-JS) never shows an empty
-  // sidebar; removing `open` from a deferred module script made the article
-  // jump by the tree height after paint (Lighthouse CLS 0.202 on docs
-  // pages), so this runs inline, during parse, and keeps the breakpoint
-  // listener for later resizes. Scoped to this component instance.
   const drawer = document.querySelector("details.docs-nav-drawer");
   const narrow = window.matchMedia("(max-width: 49.9375rem)");
   const syncDrawer = () => {
-    if (drawer instanceof HTMLDetailsElement && narrow.matches) {
-      drawer.removeAttribute("open");
+    if (drawer instanceof HTMLDetailsElement) {
+      if (narrow.matches) {
+        drawer.removeAttribute("open");
+      } else {
+        drawer.setAttribute("open", "");
+      }
     }
   };
   syncDrawer();
@@ -104,9 +97,6 @@ const treeHtml = renderSidebarTree(groups, version, currentSlug);
     font-weight: 700;
   }
 
-  /* `display: inline-flex` suppresses the native disclosure marker, so the
-   * drawer toggle gets an explicit chevron (rotates when open). Without it
-   * the summary reads as a dead heading on narrow viewports. */
   .docs-nav-drawer > summary::before {
     content: "\25B8";
     margin-inline-end: 0.375rem;

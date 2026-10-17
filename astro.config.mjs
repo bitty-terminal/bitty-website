@@ -314,12 +314,6 @@ export default defineConfig({
     shikiConfig: {
       themes: { light: "github-light", dark: "one-dark-pro" },
     },
-    processor: satteri({
-      mdastPlugins: [
-        docsHeadingsMdastPlugin(),
-        docsLinksMdastPlugin({ mirrorRoot }),
-      ],
-    }),
   },
   integrations: [
     redirectArtifacts(),

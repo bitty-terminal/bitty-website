@@ -1,0 +1,106 @@
+---
+/**
+ * Responsive High-DPR Interactive Background Canvas.
+ * Directly implements the Cyber-Pop Star / Crosshair background from
+ * recording/website-example/bitty_cyber_pop_gpu_terminal_universal_r2_docs.html.
+ * Crosshairs illuminate and pop within 160px of the cursor.
+ */
+---
+
+<canvas
+  id="cyber-pop-canvas"
+  class="fixed inset-0 pointer-events-none z-0 opacity-75"
+  aria-hidden="true"
+></canvas>
+
+<script>
+  function initCyberCanvas() {
+    const canvas = document.getElementById(
+      "cyber-pop-canvas",
+    ) as HTMLCanvasElement | null;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let pointerX = -999;
+    let pointerY = -999;
+    let animId: number | null = null;
+
+    function resizeCanvas() {
+      if (!canvas || !ctx) return;
+      const dpr = window.devicePixelRatio || 1;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      canvas.width = Math.floor(w * dpr);
+      canvas.height = Math.floor(h * dpr);
+      canvas.style.width = w + "px";
+      canvas.style.height = h + "px";
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      drawCyberCanvas();
+    }
+
+    function drawCyberCanvas() {
+      if (!ctx || !canvas) return;
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      ctx.clearRect(0, 0, w, h);
+
+      const style = getComputedStyle(document.documentElement);
+      const accent = style.getPropertyValue("--accent").trim() || "#00f0ff";
+      const pop = style.getPropertyValue("--accent-pop").trim() || "#ff2a85";
+
+      const step = 96;
+      ctx.lineWidth = 1.2;
+      for (let x = step; x < w; x += step) {
+        for (let y = step; y < h; y += step) {
+          const dx = x - pointerX;
+          const dy = y - pointerY;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const isNear = dist < 160;
+          ctx.strokeStyle = isNear ? pop : accent;
+          ctx.globalAlpha = isNear ? 0.65 : 0.16;
+          const sz = isNear ? 5 : 3;
+          ctx.beginPath();
+          ctx.moveTo(x - sz, y);
+          ctx.lineTo(x + sz, y);
+          ctx.moveTo(x, y - sz);
+          ctx.lineTo(x, y + sz);
+          ctx.stroke();
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    window.addEventListener("resize", resizeCanvas, { passive: true });
+    window.addEventListener(
+      "mousemove",
+      (e) => {
+        pointerX = e.clientX;
+        pointerY = e.clientY;
+        if (!animId) {
+          animId = requestAnimationFrame(() => {
+            drawCyberCanvas();
+            animId = null;
+          });
+        }
+      },
+      { passive: true },
+    );
+
+    const observer = new MutationObserver(() => {
+      drawCyberCanvas();
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+
+    resizeCanvas();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initCyberCanvas);
+  } else {
+    initCyberCanvas();
+  }
+</script>

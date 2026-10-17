@@ -426,11 +426,19 @@ export function pageAriaCurrentCount(html: string): number {
   return (html.match(ARIA_CURRENT_PAGE_PATTERN) ?? []).length;
 }
 
-/** `true` when the article body opens with a heading that repeats the `h1`. */
+/** `true` when the article body opens with a heading that repeats the pre-article `h1`. */
 export function repeatsPageTitle(html: string): boolean {
-  const heading = H1_PATTERN.exec(html);
   const article = ARTICLE_PATTERN.exec(html);
-  if (heading === null || article === null || article[1] === undefined) {
+  if (
+    article === null ||
+    article[1] === undefined ||
+    article.index === undefined
+  ) {
+    return false;
+  }
+  const preArticle = html.slice(0, article.index);
+  const heading = H1_PATTERN.exec(preArticle);
+  if (heading === null) {
     return false;
   }
   const body = BODY_HEADING_PATTERN.exec(article[1]);

@@ -1,27 +1,7 @@
 ---
 import { getCollection, render } from "astro:content";
 import "../../../styles/global.css";
-import { assertValidRevisionPin } from "../../../lib/docsValidation.ts";
-import { getVersions, isValidVersionSegment } from "../../../lib/versions.ts";
-import {
-  sourcePathToRouteIdentity,
-  validateRouteCollisions,
-} from "../../../lib/docsRoutes.ts";
-import {
-  assertCollectionPublicationPolicy,
-  publicationMetadataFromEntry,
-  publishedEntriesFrom,
-  sidebarEntriesFrom,
-  slugFromSourceFile,
-  sourcePathFromFilePath,
-} from "../../../lib/docsEntries.ts";
-import { pageBadges } from "../../../lib/pageBadges.ts";
-import {
-  buildLegacyAliases,
-  buildSectionRootAliases,
-  loadMergedRedirects,
-} from "../../../lib/redirects.ts";
-import VersionSelector from "../../../components/VersionSelector.astro";
+import BackgroundCanvas from "../../../components/BackgroundCanvas.astro";
 import DocsSidebar from "../../../components/DocsSidebar.astro";
 import DocsBreadcrumbs from "../../../components/DocsBreadcrumbs.astro";
 import DocsToc from "../../../components/DocsToc.astro";
@@ -29,93 +9,19 @@ import DocsPager from "../../../components/DocsPager.astro";
 import DocsCodeEnhancer from "../../../components/DocsCodeEnhancer.astro";
 import SiteFooter from "../../../components/SiteFooter.astro";
 import SiteHeader from "../../../components/SiteHeader.astro";
+import VersionSelector from "../../../components/VersionSelector.astro";
+import { getVersions, isValidVersionSegment } from "../../../lib/versions.ts";
+import {
+  getAllManualDocEntries,
+  loadManualManifest,
+  readManualRawMarkdown,
+  type ManualDocEntry,
+} from "../../../lib/manualDocs.ts";
 
-// Canonical slugs come from the single authoritative route mapper
-// (`src/lib/docsRoutes.ts`, RM-6), resolved per entry from its source file
-// path — never from the Astro glob id. Examples:
-//   docs/README.md                -> "" (revision index)
-//   docs/decisions/index.md       -> "decisions"
-//   docs/decisions/README.md      -> "decisions/readme" (explicit slug)
-//   docs/decisions/adrs/README.md -> "decisions/adrs/readme"
-//   docs/projects/bitty/...       -> "projects/bitty/..." (partition kept)
-//
-// NOTE: the mirror is located by path invariant
-// (`./lib/docsEntries.ts`, `<root>/src/content/docs/`) rather than relative to
-// this module, because import.meta.url points at the compiled chunk in
-// dist/.prerender at build time, not at this source file. The entry mapping
-// itself lives in `./lib/docsEntries.ts` so the sidebar, breadcrumbs, and
-// pager resolve the same canonical slug for the same source file.
 export async function getStaticPaths() {
-  assertValidRevisionPin();
   const versions = getVersions();
-  const docs = await getCollection("docs");
-
-  // One eligibility definition (website#97, closing website#102 D2/D6): the
-  // published set is what `../../../lib/publicationPolicy.ts` publishes, and
-  // the same assertion the sync/check pipeline runs fails this build when a
-  // page requests publication without being eligible, allow-listed, or
-  // recorded in the docs-side flip list. An excluded route emits no page at
-  // all; the build's redirect table sends it to its nearest surviving
-  // ancestor, so the pinned corpus cannot leak governance pages onto the
-  // public site.
-  assertCollectionPublicationPolicy(docs);
-  const eligible = publishedEntriesFrom(docs);
-
-  // RM-4: two distinct eligible sources sharing one public route fail the
-  // build here as well as in sync/check (same mapper, same rule).
-  const eligibleSources = eligible.map((e) => {
-    if (e.filePath === undefined || e.filePath.length === 0) {
-      throw new Error(`Docs entry "${e.id}" has no filePath`);
-    }
-    return sourcePathFromFilePath(e.filePath, e.id);
-  });
-  validateRouteCollisions(eligibleSources);
-
-  const canonical = new Map<string, (typeof eligible)[number]>();
-  const canonicalRoutes = new Map<string, string>();
-  for (const entry of eligible) {
-    const sourcePath = sourcePathFromFilePath(entry.filePath, entry.id);
-    const routeIdentity = sourcePathToRouteIdentity(sourcePath);
-    const slug = slugFromSourceFile(entry.filePath, entry.id);
-    const duplicate = canonical.get(slug);
-    if (duplicate !== undefined) {
-      throw new Error(
-        `Duplicate docs route slug "${slug}": ${duplicate.id} and ${entry.id}`,
-      );
-    }
-    canonical.set(slug, entry);
-    // The RS-3 identity is the route suffix after /docs/, matching
-    // routeIdentityFromVersionedPath(). Keep the mapper authoritative for
-    // slugging and strip only this known public prefix.
-    canonicalRoutes.set(
-      slug,
-      routeIdentity.routeWithoutVersion.slice("/docs".length),
-    );
-  }
-
-  // RD-3: legacy aliases from the merged website + docs-owned redirect manifest.
-  // Every alias 301s to the canonical route of the same version (see below).
-  const redirectEntries = await loadMergedRedirects();
-  const aliases = new Map(
-    buildLegacyAliases([...canonical.keys()], redirectEntries),
-  );
-  // bitty-website#137: a corpus directory's index is its `README.md`, so the
-  // directory root renders nothing of its own. The derived alias gives it the
-  // same 301 stub a legacy alias gets, which keeps the bare section URL (and
-  // the edge's slash-less form of it) off the 404 document. A collision fails
-  // closed instead of silently picking one target.
-  for (const [alias, target] of buildSectionRootAliases(
-    [...canonical.keys()],
-    redirectEntries,
-  )) {
-    const existing = aliases.get(alias);
-    if (existing !== undefined && existing !== target) {
-      throw new Error(
-        `Section-root alias "${alias}" collides with an alias already pointing at "${existing}"`,
-      );
-    }
-    aliases.set(alias, target);
-  }
+  const manifest = loadManualManifest();
+  const entries = getAllManualDocEntries(manifest);
 
   const versionSegments = [
     "latest",
@@ -126,52 +32,58 @@ export async function getStaticPaths() {
   const paths: Array<{
     params: { version: string; slug: string | undefined };
     props: {
-      entry: (typeof eligible)[number];
+      item: ManualDocEntry;
       version: string;
       canonicalSlug: string;
-      isLegacy: boolean;
-      targetIdentities: Record<string, string[]>;
+      locale: string;
+      isIndex: boolean;
+      allSlugs: string[];
     };
   }> = [];
 
-  // RS-3 uses the source-relative path as the version-spanning content
-  // identity. The website currently renders the same pinned corpus set under
-  // every hosted segment, so a version's eligible set is explicit in
-  // versions.json and is the same set the static paths below expose. Keeping
-  // the map in static-path props makes a future per-version mirror change one
-  // data input rather than a second route-rewrite implementation.
-  //
-  // Fail closed: an unknown target version is absent from this map, so the
-  // selector falls back to its index instead of guessing an identity set.
-  const targetIdentities: Record<string, string[]> = {};
-  for (const hostedVersion of versions.versions) {
-    targetIdentities[hostedVersion.version] = [...canonicalRoutes.values()];
-  }
+  const allSlugs = entries.map((e) => e.fullSlug);
 
   for (const version of versionSegments) {
-    for (const [slug, entry] of canonical) {
+    // 1. Root /docs/${version}/ -> quickstart
+    const firstItem = entries[0];
+    paths.push({
+      params: { version, slug: undefined },
+      props: {
+        item: firstItem,
+        version,
+        canonicalSlug: firstItem.fullSlug,
+        locale: "en",
+        isIndex: true,
+        allSlugs,
+      },
+    });
+
+    // 2. English docs
+    for (const item of entries) {
       paths.push({
-        params: { version, slug: slug === "" ? undefined : slug },
+        params: { version, slug: item.fullSlug },
         props: {
-          entry,
+          item,
           version,
-          canonicalSlug: slug,
-          isLegacy: false,
-          targetIdentities,
+          canonicalSlug: item.fullSlug,
+          locale: "en",
+          isIndex: false,
+          allSlugs,
         },
       });
     }
-    for (const [alias, canonicalSlug] of aliases) {
-      const entry = canonical.get(canonicalSlug);
-      if (entry === undefined) continue;
+
+    // 3. Chinese docs (zh-CN)
+    for (const item of entries) {
       paths.push({
-        params: { version, slug: alias },
+        params: { version, slug: `zh-CN/${item.fullSlug}` },
         props: {
-          entry,
+          item,
           version,
-          canonicalSlug,
-          isLegacy: true,
-          targetIdentities,
+          canonicalSlug: item.fullSlug,
+          locale: "zh-CN",
+          isIndex: false,
+          allSlugs,
         },
       });
     }
@@ -180,59 +92,54 @@ export async function getStaticPaths() {
   return paths;
 }
 
-const { entry, version, canonicalSlug, isLegacy, targetIdentities } =
-  Astro.props as {
-    entry: Awaited<ReturnType<typeof getCollection>>[number];
-    version: string;
-    canonicalSlug: string;
-    isLegacy: boolean;
-    targetIdentities: Record<string, string[]>;
-  };
+const { item, version, canonicalSlug, locale, allSlugs } = Astro.props as {
+  item: ManualDocEntry;
+  version: string;
+  canonicalSlug: string;
+  locale: string;
+  isIndex: boolean;
+  allSlugs: string[];
+};
 
 if (!isValidVersionSegment(version)) {
   throw new Response("Not Found", { status: 404 });
 }
 
-// RD-3: an old published route resolves to the canonical route of the same
-// version with a 301; the edge `dist/_redirects` table mirrors this mapping.
-if (isLegacy) {
-  return Astro.redirect(
-    canonicalSlug === ""
-      ? `/docs/${version}/`
-      : `/docs/${version}/${canonicalSlug}/`,
-    301,
-  );
+// Find matching entry from astro collection
+const allDocs = await getCollection("docs");
+const normId = `${locale.toLowerCase()}/${item.path.replace(/\.md$/, "")}`;
+const entry =
+  allDocs.find(
+    (d) =>
+      d.id === normId || d.id === `${locale}/${item.path.replace(/\.md$/, "")}`,
+  ) ?? allDocs.find((d) => d.id === `en/${item.path.replace(/\.md$/, "")}`);
+
+if (!entry) {
+  throw new Error(`Manual entry not found for id "${normId}"`);
 }
 
-// Page-level status presentation (website#97): the page's own `status`, its
-// `audience`, and — when the metadata states a contract that is not
-// implemented — a `Contract not implemented` badge. Every value comes from
-// frontmatter through `../../../lib/pageBadges.ts`; the canonical document is
-// rendered unchanged and no prose state sentence is parsed or rewritten.
-const badges = pageBadges(publicationMetadataFromEntry(entry));
-
 const { Content, headings } = await render(entry);
+const rawMarkdown = readManualRawMarkdown(item.path, locale);
 const versions = getVersions();
-const versionLabels = new Map(
-  versions.versions.map((v) => [v.version, v.label]),
-);
+const currentRoute = `/docs/${version}/${canonicalSlug}/`;
 
-const slugParam = Astro.params.slug ?? "";
-const currentRoute = `/docs/${version}/${slugParam}${slugParam ? "/" : ""}`;
-
-// Breadcrumb labels: canonical titles per published slug, derived through the
-// same collection -> entry mapping the sidebar uses (`./lib/docsEntries.ts`),
-// so the trail and the sidebar label one page identically by construction.
-const navEntries = sidebarEntriesFrom(await getCollection("docs"));
-const navTitles = new Map(navEntries.map((entry) => [entry.slug, entry.title]));
+// Target identities for VersionSelector
+const targetIdentities = new Map<string, Set<string>>();
+for (const v of versions.versions) {
+  targetIdentities.set(v.version, new Set(allSlugs.map((s) => `/docs/${s}/`)));
+}
 ---
 
-<html lang="en">
+<!doctype html>
+<html lang={locale === "zh-CN" ? "zh-CN" : "en"} data-theme="shibuya-pop">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>{entry.data.title} — Bitty {version}</title>
-    <meta name="description" content={entry.data.description} />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{item.title} — Bitty Manual ({version})</title>
+    <meta
+      name="description"
+      content={`Bitty terminal official documentation: ${item.title} (${item.sectionTitle}).`}
+    />
     <link rel="icon" type="image/x-icon" href="/icons/favicon.ico" />
     <link
       rel="icon"
@@ -245,45 +152,39 @@ const navTitles = new Map(navEntries.map((entry) => [entry.slug, entry.title]));
       sizes="180x180"
       href="/icons/apple-touch-icon.png"
     />
-    {version !== versions.latest && (
-      <link
-        rel="canonical"
-        href={currentRoute.replace(`/docs/${version}/`, `/docs/latest/`)}
-      />
-    )}
+    <link
+      rel="canonical"
+      href={`https://bitty.run/docs/latest/${canonicalSlug}/`}
+    />
+
     <script is:inline>
       (() => {
-        const VALID_THEMES = [
-          "tokyo-night",
-          "catppuccin-mocha",
-          "gruvbox-dark",
-          "paper-light",
-        ];
-        let theme = "tokyo-night";
+        let theme = "shibuya-pop";
         try {
           const params = new URLSearchParams(window.location.search);
           const urlTheme = params.get("theme");
-          if (urlTheme && VALID_THEMES.includes(urlTheme)) {
-            theme = urlTheme;
+          if (urlTheme === "akiba-cyber" || urlTheme === "dark") {
+            theme = "akiba-cyber";
+          } else if (urlTheme === "shibuya-pop" || urlTheme === "light") {
+            theme = "shibuya-pop";
           } else {
             let savedTheme = null;
             try {
               savedTheme = localStorage.getItem("bitty-theme");
-            } catch {
-              // Blocked storage
-            }
-            if (savedTheme && VALID_THEMES.includes(savedTheme)) {
-              theme = savedTheme;
+            } catch {}
+            if (savedTheme === "akiba-cyber" || savedTheme === "dark") {
+              theme = "akiba-cyber";
+            } else if (savedTheme === "shibuya-pop" || savedTheme === "light") {
+              theme = "shibuya-pop";
             }
           }
-        } catch {
-          // Fall back to default
-        }
+        } catch {}
         document.documentElement.setAttribute("data-theme", theme);
       })();
     </script>
   </head>
   <body>
+    <BackgroundCanvas />
     <a class="skip-link" href="#main-content">
       Skip to content
     </a>
@@ -291,17 +192,9 @@ const navTitles = new Map(navEntries.map((entry) => [entry.slug, entry.title]));
     <VersionSelector
       currentRoute={currentRoute}
       currentVersion={version}
-      targetIdentities={
-        new Map(
-          Object.entries(targetIdentities).map(
-            ([targetVersion, identities]) => [
-              targetVersion,
-              new Set(identities),
-            ],
-          ),
-        )
-      }
+      targetIdentities={targetIdentities}
     />
+
     <main id="main-content" class="docs-main" tabindex="-1">
       <div class="docs-layout">
         <DocsSidebar version={version} currentSlug={canonicalSlug} />
@@ -310,23 +203,12 @@ const navTitles = new Map(navEntries.map((entry) => [entry.slug, entry.title]));
             <DocsBreadcrumbs
               version={version}
               slug={canonicalSlug}
-              titles={navTitles}
+              locale={locale}
+              rawMarkdown={rawMarkdown}
             />
             <p class="eyebrow">
-              {entry.data.category} · {versionLabels.get(version) ?? version}
+              {item.sectionTitle} · Bitty Manual ({version})
             </p>
-            <h1>{entry.data.title}</h1>
-            <ul class="page-badges">
-              {badges.map((badge) => (
-                <li
-                  class="page-badge"
-                  data-badge={badge.id}
-                  data-value={badge.value}
-                >
-                  {badge.label}
-                </li>
-              ))}
-            </ul>
           </header>
           <DocsToc headings={headings} />
           <article class="prose bitty-prose">
@@ -336,6 +218,7 @@ const navTitles = new Map(navEntries.map((entry) => [entry.slug, entry.title]));
         </div>
       </div>
     </main>
+
     <SiteFooter />
     <DocsCodeEnhancer />
   </body>

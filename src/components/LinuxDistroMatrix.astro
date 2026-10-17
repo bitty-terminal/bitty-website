@@ -345,6 +345,18 @@ const families = [
   { id: "source", label: "Void & Gentoo" },
   { id: "universal", label: "Universal (AppImage / Flatpak / Snap)" },
 ];
+
+const filterI18nMap: Record<string, string> = {
+  all: "filterAll",
+  arch: "filterArch",
+  debian: "filterDebian",
+  fedora: "filterFedora",
+  suse: "filterSuse",
+  alpine: "filterAlpine",
+  nix: "filterNix",
+  source: "filterSource",
+  universal: "filterUniversal",
+};
 ---
 
 <section
@@ -355,20 +367,30 @@ const families = [
   <div class="section-header flex flex-col md:flex-row md:items-end justify-between gap-4">
     <div class="space-y-2">
       <div class="flex items-center gap-2 font-mono-tech">
-        <span class="px-2 py-0.5 rounded font-bold bg-[var(--accent)] text-[#0b0914] text-[10px]">
+        <span
+          class="px-2 py-0.5 rounded font-bold bg-[var(--accent)] text-[#0b0914] text-[10px]"
+          data-i18n="linuxEcosystemBadge"
+        >
           LINUX ECOSYSTEM
         </span>
-        <span class="text-xs text-[var(--accent-yellow)] font-bold">
-          ★ 全主流 Linux 发行版与包管理器支持
+        <span
+          class="text-xs text-[var(--accent-yellow)] font-bold"
+          data-i18n="linuxEcosystemSubtitle"
+        >
+          ★ Universal Linux Distribution &amp; Package Support
         </span>
       </div>
       <h2
         id="linux-distros-title"
         class="font-cyber-display font-bold text-2xl sm:text-3xl text-[var(--fg-primary)]"
+        data-i18n="linuxMatrixTitle"
       >
         Universal Linux Distribution Matrix
       </h2>
-      <p class="text-xs sm:text-sm text-[var(--fg-secondary)] max-w-2xl leading-relaxed">
+      <p
+        class="text-xs sm:text-sm text-[var(--fg-secondary)] max-w-2xl leading-relaxed"
+        data-i18n="linuxMatrixDesc"
+      >
         From bleeding-edge rolling releases (Arch, CachyOS) to stable enterprise
         deployments (Debian, Ubuntu, Fedora, openSUSE), lightweight musl systems
         (Alpine), and reproducible environments (NixOS)—Bitty runs natively
@@ -380,17 +402,29 @@ const families = [
     <div class="shrink-0 flex items-center gap-3 font-mono-tech text-xs bg-[var(--bg-elevated)] p-3 rounded-xl border-2 border-[var(--ink-border)] shadow-[3px_3px_0px_var(--toon-shadow)]">
       <div class="text-center px-2">
         <div class="font-bold text-[var(--accent)] text-lg">100%</div>
-        <div class="text-[10px] text-[var(--fg-muted)]">NATIVE RUST</div>
+        <div
+          class="text-[10px] text-[var(--fg-muted)]"
+          data-i18n="statNativeRust"
+        >
+          NATIVE RUST
+        </div>
       </div>
       <div class="h-6 w-px bg-[var(--card-border)]"></div>
       <div class="text-center px-2">
         <div class="font-bold text-[var(--accent-mint)] text-lg">12</div>
-        <div class="text-[10px] text-[var(--fg-muted)]">FORMATS &amp; PKGS</div>
+        <div
+          class="text-[10px] text-[var(--fg-muted)]"
+          data-i18n="statPackages"
+        >
+          FORMATS &amp; PKGS
+        </div>
       </div>
       <div class="h-6 w-px bg-[var(--card-border)]"></div>
       <div class="text-center px-2">
         <div class="font-bold text-[var(--accent-yellow)] text-lg">0B</div>
-        <div class="text-[10px] text-[var(--fg-muted)]">IDLE MEMORY</div>
+        <div class="text-[10px] text-[var(--fg-muted)]" data-i18n="statIdleMem">
+          IDLE MEMORY
+        </div>
       </div>
     </div>
   </div>
@@ -415,7 +449,7 @@ const families = [
             : "bg-[var(--bg-surface)] text-[var(--fg-secondary)] border-[var(--card-border)] hover:border-[var(--ink-border)] hover:text-[var(--fg-primary)]"
         }`}
       >
-        {f.label}
+        <span data-i18n={filterI18nMap[f.id]}>{f.label}</span>
       </button>
     ))}
   </div>

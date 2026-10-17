@@ -77,7 +77,9 @@ const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
         aria-label="Documentation"
       >
         <span>📖</span>
-        <span class="hidden sm:inline">Docs</span>
+        <span class="hidden sm:inline" data-i18n="navDocs">
+          Docs
+        </span>
       </a>
 
       <!-- i18n Language Toggle Button -->
@@ -144,8 +146,18 @@ const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
 
       const isDark =
         theme === "akiba-cyber" || theme === "dark" || theme === "bitty-dark";
+      const curLang =
+        document.documentElement.getAttribute("data-lang") ||
+        (window.location.pathname.includes("/zh-CN/") ? "zh-CN" : "en");
+      const isZh = curLang === "zh-CN";
       if (toggleLabel) {
-        toggleLabel.textContent = isDark ? "🌙 Dark" : "☀️ Light";
+        toggleLabel.textContent = isDark
+          ? isZh
+            ? "🌙 深色"
+            : "🌙 Dark"
+          : isZh
+            ? "☀️ 浅色"
+            : "☀️ Light";
       }
       if (toggleDot) {
         toggleDot.style.background = isDark ? "#00f0ff" : "#ff2a6d";
@@ -235,6 +247,9 @@ const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
       if (langLabel && e.detail?.lang) {
         langLabel.textContent = e.detail.lang === "zh-CN" ? "中" : "EN";
       }
+      const curTheme =
+        document.documentElement.getAttribute("data-theme") || "shibuya-pop";
+      applyTheme(curTheme);
     }) as EventListener);
   })();
 </script>

@@ -29,7 +29,9 @@
         class="reel-btn active"
       >
         <span class="reel-num">01</span>
-        <span>Dwindle Tiling &amp; GUI Panels</span>
+        <span data-i18n="showcaseReel1Tab">
+          01 Dwindle Tiling &amp; GUI Panels
+        </span>
       </button>
 
       <button
@@ -43,7 +45,7 @@
         class="reel-btn"
       >
         <span class="reel-num">02</span>
-        <span>Composer Modal (Alt+E)</span>
+        <span data-i18n="showcaseReel2Tab">02 Composer Modal (Alt+E)</span>
       </button>
 
       <button
@@ -57,7 +59,9 @@
         class="reel-btn"
       >
         <span class="reel-num">03</span>
-        <span>Phodopus Sandbox &amp; Coprocesses</span>
+        <span data-i18n="showcaseReel3Tab">
+          03 Phodopus Sandbox &amp; Coprocesses
+        </span>
       </button>
 
       <button
@@ -72,13 +76,17 @@
         title="Slot preview for real GIF/Video in Astro"
       >
         <span class="reel-icon">◆</span>
-        <span>Media Slot (GIF/Video)</span>
+        <span data-i18n="showcaseReel4Tab">Media Slot (GIF/Video)</span>
       </button>
     </div>
 
     <div class="telemetry-badge font-mono-tech">
-      <span class="dpr-indicator">High-DPR 120 FPS</span>
-      <span class="gpu-indicator">wgpu (Vulkan / Metal / DX12)</span>
+      <span class="dpr-indicator" data-i18n="showcaseDprIndicator">
+        High-DPR 120 FPS
+      </span>
+      <span class="gpu-indicator" data-i18n="showcaseGpuIndicator">
+        wgpu (Vulkan / Metal / DX12)
+      </span>
     </div>
   </div>
 
@@ -94,7 +102,11 @@
         <span class="dot dot-close" aria-hidden="true"></span>
         <span class="dot dot-min" aria-hidden="true"></span>
         <span class="dot dot-max" aria-hidden="true"></span>
-        <span id="stage-window-title" class="chrome-title">
+        <span
+          id="stage-window-title"
+          class="chrome-title"
+          data-i18n="showcaseWindowTitle"
+        >
           bitty — workspace 1:dev (dwindle)
         </span>
       </div>
@@ -116,8 +128,12 @@
         <!-- Left Master Panel: PTY Session -->
         <div class="tiling-panel master-pty">
           <div class="panel-header font-mono-tech">
-            <span class="tag-pty">PANEL #1 · PTY STREAM (t:1)</span>
-            <span class="tag-status">focused · border_color_focused</span>
+            <span class="tag-pty" data-i18n="showcasePtyTag">
+              PANEL #1 · PTY STREAM (t:1)
+            </span>
+            <span class="tag-status" data-i18n="showcasePtyFocus">
+              focused · border_color_focused
+            </span>
           </div>
 
           <div class="panel-body font-mono-tech">
@@ -151,10 +167,12 @@
           </div>
 
           <div class="panel-footer font-mono-tech">
-            <span class="footer-note">
+            <span class="footer-note" data-i18n="showcasePtyFooterNote">
               Microkernel decoupled view container
             </span>
-            <span class="footer-tick">0.42ms frame tick</span>
+            <span class="footer-tick" data-i18n="showcasePtyFooterTick">
+              0.42ms frame tick
+            </span>
           </div>
         </div>
 
@@ -163,23 +181,29 @@
           <!-- Panel #2: Declarative Lua GUI View -->
           <div class="tiling-panel gui-panel">
             <div class="panel-header font-mono-tech">
-              <span class="tag-gui">PANEL #2 · LUA GUI VIEW (type="rich")</span>
+              <span class="tag-gui" data-i18n="showcaseGuiTag">
+                PANEL #2 · LUA GUI VIEW (type="rich")
+              </span>
               <span class="tag-vm">Phodopus VM</span>
             </div>
 
             <div class="gui-body">
-              <p class="gui-desc">
+              <p class="gui-desc" data-i18n="showcaseGuiDesc">
                 Panels are not limited to PTYs. Mount declarative{" "}
                 <code>bitty.ui</code> trees directly into the Hyprland tiling
                 grid:
               </p>
               <div class="gui-card font-mono-tech">
                 <div class="card-row">
-                  <span class="card-k">Upstream Coprocess:</span>
+                  <span class="card-k" data-i18n="showcaseCoprocessLabel">
+                    Upstream Coprocess:
+                  </span>
                   <span class="card-v val-mint">bitty-net (TOFU pinned)</span>
                 </div>
                 <div class="card-row">
-                  <span class="card-k">Confinement:</span>
+                  <span class="card-k" data-i18n="showcaseConfinementLabel">
+                    Confinement:
+                  </span>
                   <span class="card-v">Linux Landlock v3</span>
                 </div>
               </div>
@@ -194,7 +218,9 @@
           <!-- Panel #3: Secondary Tiled Split -->
           <div class="tiling-panel sub-split font-mono-tech">
             <div class="panel-header">
-              <span class="tag-split">PANEL #3 · DWINDLE SPLIT (t:2)</span>
+              <span class="tag-split" data-i18n="showcaseSplitTag">
+                PANEL #3 · DWINDLE SPLIT (t:2)
+              </span>
               <span>gaps_in = 6</span>
             </div>
             <div class="split-body">
@@ -220,7 +246,9 @@
               <span class="badge-overlay">OVERLAY</span>
               <span class="modal-name">bitty-terminal.composer</span>
             </div>
-            <span class="modal-cap">64 KiB cap · Bracketed Paste</span>
+            <span class="modal-cap" data-i18n="showcaseComposerHint">
+              64 KiB cap · Bracketed Paste
+            </span>
           </div>
 
           <div class="modal-editor">
@@ -232,13 +260,13 @@
           </div>
 
           <div class="modal-footer">
-            <span>
+            <span data-i18n="showcaseComposerSubmit">
               <span class="kbd-cap">Ctrl+Enter</span> Submit to PTY
             </span>
             <span>
               <span class="kbd-cap">Alt+E</span> Edit in nvim/vim
             </span>
-            <span>
+            <span data-i18n="showcaseComposerDismiss">
               <span class="kbd-cap">Esc</span> Keep draft &amp; close
             </span>
           </div>
@@ -258,11 +286,16 @@
         <div class="arch-grid font-mono-tech">
           <!-- Downstream -->
           <div class="arch-card blueprint-box">
-            <div class="arch-tier-tag val-violet">Downstream Layer</div>
+            <div
+              class="arch-tier-tag val-violet"
+              data-i18n="showcaseArchLayerDownstream"
+            >
+              Downstream Layer
+            </div>
             <div class="arch-tier-title">
               Phodopus Lua Sandbox (Piccolo Fork)
             </div>
-            <p class="arch-tier-desc">
+            <p class="arch-tier-desc" data-i18n="showcaseArchDownstreamDesc">
               Stackless, fuel-metered VM with module loader (
               <code>require</code>), pattern matching, and hard memory ceilings.
               0B when <code>Installed</code>, 32 MiB quota when{" "}
@@ -272,11 +305,16 @@
 
           <!-- Core -->
           <div class="arch-card blueprint-box border-core">
-            <div class="arch-tier-tag val-accent">Core Engine</div>
+            <div
+              class="arch-tier-tag val-accent"
+              data-i18n="showcaseArchLayerCore"
+            >
+              Core Engine
+            </div>
             <div class="arch-tier-title">
               Rust Microkernel &amp; Terminal Truth
             </div>
-            <p class="arch-tier-desc">
+            <p class="arch-tier-desc" data-i18n="showcaseArchCoreDesc">
               wgpu compositor, VT parser decoupled from state machine, headless
               runtime, and zero-allocation hot paths. Extensions never touch the
               parser.
@@ -285,9 +323,14 @@
 
           <!-- Upstream -->
           <div class="arch-card blueprint-box">
-            <div class="arch-tier-tag val-mint">Upstream Coprocess</div>
+            <div
+              class="arch-tier-tag val-mint"
+              data-i18n="showcaseArchLayerUpstream"
+            >
+              Upstream Coprocess
+            </div>
             <div class="arch-tier-title">Native Extensions (Wire v1)</div>
-            <p class="arch-tier-desc">
+            <p class="arch-tier-desc" data-i18n="showcaseArchUpstreamDesc">
               Zero-daemon architecture. Ephemeral stdio Wire Protocol v1
               coprocesses with Landlock confinement. Heavy tasks run isolated.
             </p>

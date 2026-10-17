@@ -21,7 +21,9 @@ const shortCorpusSet = corpusSet.slice(0, DOCS_CORPUS_ID_PREFIX.length + 12);
     <div class="footer-top">
       <div class="footer-brand">
         <span class="footer-logo font-display">bitty</span>
-        <span class="footer-tagline">Microkernel GPU Terminal Emulator</span>
+        <span class="footer-tagline" data-i18n="footerTagline">
+          Microkernel GPU Terminal Emulator
+        </span>
       </div>
       <div class="footer-links">
         <a
@@ -36,23 +38,30 @@ const shortCorpusSet = corpusSet.slice(0, DOCS_CORPUS_ID_PREFIX.length + 12);
           href="https://cdn.bitty.run/manual/"
           target="_blank"
           rel="noopener noreferrer"
+          data-i18n="footerManualLink"
         >
           Manual CDN (R2)
         </a>
         <span>·</span>
-        <a href="/docs/latest/">Documentation</a>
+        <a href="/docs/latest/" data-i18n="footerDocLink">
+          Documentation
+        </a>
       </div>
     </div>
 
     <div class="footer-provenance">
-      <p>
+      <p data-i18n="footerSummary">
         Bitty Terminal · Microkernel Architecture · Pure-Rust Stackless Lua
         Sandbox (Phodopus — Piccolo Fork).
       </p>
       <p class="provenance-detail">
-        Canonical docs owned by <strong>{owner.id}</strong> (pinned{" "}
-        <code>{shortRevision}</code>). Corpus set: <code>{shortCorpusSet}</code>
-        . Rendered at Edge via Cloudflare Workers.
+        <span data-i18n="footerProvenancePrefix">Canonical docs owned by</span>{" "}
+        <strong>{owner.id}</strong> (pinned <code>{shortRevision}</code>).{" "}
+        <span data-i18n="footerCorpusSetPrefix">Corpus set:</span>{" "}
+        <code>{shortCorpusSet}</code>.{" "}
+        <span data-i18n="footerRenderedEdge">
+          Rendered at Edge via Cloudflare Workers.
+        </span>
       </p>
     </div>
   </div>

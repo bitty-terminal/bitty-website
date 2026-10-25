@@ -83,8 +83,7 @@ bitty
 
 On first startup, Bitty probes for your configuration file according to platform standards:
 
-- **Linux / BSD**: `$XDG_CONFIG_HOME/bitty/init.lua` (fallback `~/.config/bitty/init.lua`)
-- **macOS**: `~/Library/Application Support/bitty/init.lua` (or `$XDG_CONFIG_HOME/bitty/init.lua`, fallback `~/.config/bitty/init.lua`)
+- **Linux / BSD / macOS**: `$XDG_CONFIG_HOME/bitty/init.lua` (fallback `~/.config/bitty/init.lua`)
 - **Windows**: `%APPDATA%\bitty\init.lua` (fallback `%LOCALAPPDATA%\bitty\init.lua`)
 
 > [!NOTE]
@@ -125,14 +124,13 @@ sudo rm /usr/local/bin/bitty
 
 ### 2. Remove Configuration Files
 
-- **Linux / BSD**: `rm -rf ~/.config/bitty` (or `$XDG_CONFIG_HOME/bitty`)
-- **macOS**: `rm -rf ~/Library/Application\ Support/bitty ~/.config/bitty`
+- **Linux / BSD / macOS**: `rm -rf ~/.config/bitty` (or `$XDG_CONFIG_HOME/bitty`)
 - **Windows (PowerShell)**: `Remove-Item -Recurse -Force $env:APPDATA\bitty`
 
 ### 3. Clean Logs, State & Cache
 
 - **Linux / BSD**: `rm -rf ~/.local/state/bitty ~/.cache/bitty`
-- **macOS**: `rm -rf ~/Library/Logs/bitty ~/Library/Caches/bitty`
+- **macOS**: same XDG roots as Linux/BSD — state under `$XDG_STATE_HOME/bitty` (fallback `~/.local/state/bitty`), data under `$XDG_DATA_HOME/bitty` (fallback `~/.local/share/bitty`)
 - **Windows (PowerShell)**: `Remove-Item -Recurse -Force $env:LOCALAPPDATA\bitty`
 
 ## Next Steps

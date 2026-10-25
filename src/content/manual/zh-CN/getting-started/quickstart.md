@@ -82,8 +82,7 @@ bitty
 
 首次启动时，Bitty 会依据平台规范与探测优先级搜索配置文件：
 
-- **Linux / BSD**：`$XDG_CONFIG_HOME/bitty/init.lua`（回退为 `~/.config/bitty/init.lua`）
-- **macOS**：`~/Library/Application Support/bitty/init.lua`（或 `$XDG_CONFIG_HOME/bitty/init.lua`，回退为 `~/.config/bitty/init.lua`）
+- **Linux / BSD / macOS**：`$XDG_CONFIG_HOME/bitty/init.lua`（回退为 `~/.config/bitty/init.lua`）
 - **Windows**：`%APPDATA%\bitty\init.lua`（回退为 `%LOCALAPPDATA%\bitty\init.lua`）
 
 > [!NOTE]
@@ -124,14 +123,13 @@ sudo rm /usr/local/bin/bitty
 
 ### 2. 移除配置文件
 
-- **Linux / BSD**：`rm -rf ~/.config/bitty`（或 `$XDG_CONFIG_HOME/bitty`）
-- **macOS**：`rm -rf ~/Library/Application\ Support/bitty ~/.config/bitty`
+- **Linux / BSD / macOS**：`rm -rf ~/.config/bitty`（或 `$XDG_CONFIG_HOME/bitty`）
 - **Windows (PowerShell)**：`Remove-Item -Recurse -Force $env:APPDATA\bitty`
 
 ### 3. 清理日志、状态与缓存数据
 
 - **Linux / BSD**：`rm -rf ~/.local/state/bitty ~/.cache/bitty`
-- **macOS**：`rm -rf ~/Library/Logs/bitty ~/Library/Caches/bitty`
+- **macOS**：与 Linux/BSD 相同的 XDG 根目录——状态在 `$XDG_STATE_HOME/bitty`（回退为 `~/.local/state/bitty`）、数据在 `$XDG_DATA_HOME/bitty`（回退为 `~/.local/share/bitty`）
 - **Windows (PowerShell)**：`Remove-Item -Recurse -Force $env:LOCALAPPDATA\bitty`
 
 ## 下一步

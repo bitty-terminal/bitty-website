@@ -60,7 +60,7 @@ describe("manualDocs", () => {
     expect(bc?.title).toBe("Native Component Boundary");
     expect(bc?.r2Key).toBe("plugins/upstream-components.md");
     expect(bc?.r2Url).toBe(
-      "https://cdn.bitty.run/manual/bitty-manual/en/plugins/upstream-components.md",
+      "https://cdn.bitty.run/manual/en/plugins/upstream-components.md",
     );
   });
 

@@ -185,10 +185,10 @@ export function getManualBreadcrumb(
   }
 
   const cdnBase = m.distribution.cdn_base || "https://cdn.bitty.run/manual";
-  const canonicalPrefix =
-    m.distribution.canonical_prefix || "manual/bitty-manual";
   const r2Key = `${entry.path}`;
-  const r2Url = `${cdnBase}/${canonicalPrefix.replace(/^manual\//, "")}/${locale}/${entry.path}`;
+  // The published manual keys are `manual/<locale>/<path>`; the legacy
+  // `manual/bitty-manual/...` prefix is not served by the CDN origin.
+  const r2Url = `${cdnBase}/${locale}/${entry.path}`;
 
   return {
     locale,

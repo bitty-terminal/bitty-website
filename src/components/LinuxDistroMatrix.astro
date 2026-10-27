@@ -3,6 +3,8 @@
 // Universal Linux Packaging & Distribution Matrix for Bitty Terminal.
 // Cyber-Pop & Manga Bento style with ultra-compact One-Line Command & Button design.
 
+import { INSTALL_SH_URL, releaseUrl } from "../lib/release";
+
 interface DistroDownload {
   label: string;
   url: string;
@@ -51,7 +53,7 @@ const distroList: DistroEntry[] = [
       },
       {
         label: ".pkg.tar.zst",
-        url: "https://cdn.bitty.run/bitty/releases/bitty-linux-x86_64.pkg.tar.zst",
+        url: releaseUrl("bitty-{v}-1-x86_64.pkg.tar.zst"),
         title: "Download Prebuilt Pacman Package",
       },
     ],
@@ -71,18 +73,17 @@ const distroList: DistroEntry[] = [
       "Zorin OS",
     ],
     command: "sudo apt install ./bitty_amd64.deb",
-    altCommand:
-      "curl -fsSL https://cdn.bitty.run/bitty/install/install.sh | bash",
+    altCommand: `curl -fsSL ${INSTALL_SH_URL} | bash`,
     architectures: ["amd64 (x86_64)", "arm64 (aarch64)"],
     downloads: [
       {
         label: "bitty_amd64.deb",
-        url: "https://cdn.bitty.run/bitty/releases/bitty_amd64.deb",
+        url: releaseUrl("bitty-x86_64-unknown-linux-gnu.deb"),
         title: "Download Debian/Ubuntu amd64 package",
       },
       {
         label: "bitty_arm64.deb",
-        url: "https://cdn.bitty.run/bitty/releases/bitty_arm64.deb",
+        url: releaseUrl("bitty-aarch64-unknown-linux-gnu.deb"),
         title: "Download Debian/Ubuntu arm64 package",
       },
     ],
@@ -107,12 +108,12 @@ const distroList: DistroEntry[] = [
     downloads: [
       {
         label: "bitty-x86_64.rpm",
-        url: "https://cdn.bitty.run/bitty/releases/bitty-x86_64.rpm",
+        url: releaseUrl("bitty-x86_64-unknown-linux-gnu.rpm"),
         title: "Download RPM for x86_64",
       },
       {
         label: "bitty-aarch64.rpm",
-        url: "https://cdn.bitty.run/bitty/releases/bitty-aarch64.rpm",
+        url: releaseUrl("bitty-aarch64-unknown-linux-gnu.rpm"),
         title: "Download RPM for aarch64",
       },
     ],
@@ -131,7 +132,7 @@ const distroList: DistroEntry[] = [
     downloads: [
       {
         label: "bitty-x86_64.rpm",
-        url: "https://cdn.bitty.run/bitty/releases/bitty-x86_64.rpm",
+        url: releaseUrl("bitty-x86_64-unknown-linux-gnu.rpm"),
         title: "Download RPM package",
       },
     ],
@@ -150,7 +151,7 @@ const distroList: DistroEntry[] = [
     downloads: [
       {
         label: "bitty.apk",
-        url: "https://cdn.bitty.run/bitty/releases/bitty.apk",
+        url: releaseUrl("bitty-x86_64-unknown-linux-musl.apk"),
         title: "Download Alpine APK package",
       },
     ],
@@ -226,7 +227,7 @@ const distroList: DistroEntry[] = [
     downloads: [
       {
         label: "bitty-linux-x86_64.AppImage",
-        url: "https://cdn.bitty.run/bitty/releases/bitty-linux-x86_64.AppImage",
+        url: releaseUrl("bitty-x86_64-unknown-linux-gnu.AppImage"),
         title: "Download Standalone AppImage",
       },
     ],
@@ -278,18 +279,17 @@ const distroList: DistroEntry[] = [
     badgeColor: "var(--accent-yellow)",
     distros: ["All POSIX Linux Distributions"],
     command: "tar -I zstd -xvf bitty-linux-x86_64.tar.zst -C ~/.local/bin/",
-    altCommand:
-      "curl -fsSL https://cdn.bitty.run/bitty/releases/bitty-linux-x86_64.tar.zst | tar -I zstd -x -C ~/.local/bin/",
+    altCommand: `curl -fsSL ${releaseUrl("bitty-{v}-x86_64-unknown-linux-gnu.tar.zst")} | tar -I zstd -x -C ~/.local/bin/`,
     architectures: ["x86_64", "aarch64"],
     downloads: [
       {
         label: "bitty-linux-x86_64.tar.zst",
-        url: "https://cdn.bitty.run/bitty/releases/bitty-linux-x86_64.tar.zst",
+        url: releaseUrl("bitty-{v}-x86_64-unknown-linux-gnu.tar.zst"),
         title: "Download x86_64 tarball",
       },
       {
         label: "bitty-linux-aarch64.tar.zst",
-        url: "https://cdn.bitty.run/bitty/releases/bitty-linux-aarch64.tar.zst",
+        url: releaseUrl("bitty-{v}-aarch64-unknown-linux-gnu.tar.zst"),
         title: "Download aarch64 tarball",
       },
     ],

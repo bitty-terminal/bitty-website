@@ -19,7 +19,9 @@
     "deploy": "WRANGLER_SEND_METRICS=false wrangler deploy",
     "sync:docs": "bun scripts/sync-docs.mjs",
     "docs:check": "bun scripts/check-docs-sync.mjs",
-    "report:route-moves": "bun scripts/report-route-moves.mjs"
+    "report:route-moves": "bun scripts/report-route-moves.mjs",
+    "release:sync": "bun scripts/fetch-release.mjs",
+    "prebuild": "bun scripts/fetch-release.mjs"
   },
   "devDependencies": {
     "@astrojs/markdown-satteri": "0.4.1",

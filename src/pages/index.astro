@@ -15,6 +15,12 @@ import ShowcaseStage from "../components/ShowcaseStage.astro";
 import LinuxDistroMatrix from "../components/LinuxDistroMatrix.astro";
 import BackgroundCanvas from "../components/BackgroundCanvas.astro";
 import { getManualNavGroups } from "../lib/manualDocs.ts";
+import {
+  CHECKSUMS_URL,
+  INSTALL_SH_URL,
+  INSTALL_PS1_URL,
+  releaseUrl,
+} from "../lib/release";
 import "../styles/global.css";
 
 const manualGroups = getManualNavGroups("", "latest");
@@ -200,7 +206,7 @@ const docTitleMap: Record<string, string> = {
                       QUICK INSTALL
                     </span>
                     <a
-                      href="https://cdn.bitty.run/bitty/releases/SHA256SUMS.txt"
+                      href={CHECKSUMS_URL}
                       target="_blank"
                       rel="noopener noreferrer"
                       class="hover:underline text-[var(--fg-secondary)] hover:text-[var(--accent)] text-[10px] font-mono-tech"
@@ -287,8 +293,7 @@ const docTitleMap: Record<string, string> = {
                         ❯
                       </span>
                       <span id="dl-command-text">
-                        curl -fsSL
-                        https://cdn.bitty.run/bitty/install/install.sh | bash
+                        {`curl -fsSL ${INSTALL_SH_URL} | bash`}
                       </span>
                     </div>
                     <button
@@ -328,7 +333,7 @@ const docTitleMap: Record<string, string> = {
                         ★ Direct R2 Binaries &amp; Packages:
                       </span>
                       <a
-                        href="https://cdn.bitty.run/bitty/releases/SHA256SUMS.txt"
+                        href={CHECKSUMS_URL}
                         target="_blank"
                         rel="noopener noreferrer"
                         class="text-[10px] text-[var(--accent)] hover:underline"
@@ -357,42 +362,54 @@ const docTitleMap: Record<string, string> = {
                         </div>
                         <div class="flex flex-wrap gap-1">
                           <a
-                            href="https://cdn.bitty.run/bitty/releases/bitty-linux-x86_64.tar.zst"
+                            href={releaseUrl(
+                              "bitty-{v}-x86_64-unknown-linux-gnu.tar.zst",
+                            )}
                             class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
                             title="x86_64 tar.zst"
                           >
                             .tar.zst
                           </a>
                           <a
-                            href="https://cdn.bitty.run/bitty/releases/bitty-linux-x86_64.AppImage"
+                            href={releaseUrl(
+                              "bitty-x86_64-unknown-linux-gnu.AppImage",
+                            )}
                             class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
                             title="x86_64 AppImage"
                           >
                             AppImage
                           </a>
                           <a
-                            href="https://cdn.bitty.run/bitty/releases/bitty_amd64.deb"
+                            href={releaseUrl(
+                              "bitty-x86_64-unknown-linux-gnu.deb",
+                            )}
                             class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
                             title="Debian & Ubuntu amd64 .deb"
                           >
                             .deb
                           </a>
                           <a
-                            href="https://cdn.bitty.run/bitty/releases/bitty-x86_64.rpm"
+                            href={releaseUrl(
+                              "bitty-x86_64-unknown-linux-gnu.rpm",
+                            )}
                             class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
                             title="Fedora & openSUSE x86_64 .rpm"
                           >
                             .rpm
                           </a>
                           <a
-                            href="https://cdn.bitty.run/bitty/releases/bitty.apk"
+                            href={releaseUrl(
+                              "bitty-x86_64-unknown-linux-musl.apk",
+                            )}
                             class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
                             title="Alpine Linux .apk"
                           >
                             .apk
                           </a>
                           <a
-                            href="https://cdn.bitty.run/bitty/releases/bitty-linux-aarch64.tar.zst"
+                            href={releaseUrl(
+                              "bitty-{v}-aarch64-unknown-linux-gnu.tar.zst",
+                            )}
                             class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
                             title="aarch64 tar.zst"
                           >
@@ -408,14 +425,14 @@ const docTitleMap: Record<string, string> = {
                         </span>
                         <div class="flex flex-wrap gap-1">
                           <a
-                            href="https://cdn.bitty.run/bitty/releases/bitty-macos-arm64.dmg"
+                            href={releaseUrl("bitty-aarch64-apple-darwin")}
                             class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
-                            title="Apple Silicon DMG"
+                            title="Apple Silicon binary"
                           >
-                            Apple Silicon .dmg
+                            Apple Silicon binary
                           </a>
                           <a
-                            href="https://cdn.bitty.run/bitty/releases/bitty-macos-universal.dmg"
+                            href={releaseUrl("Bitty-{v}-universal.dmg")}
                             class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
                             title="Universal DMG"
                           >
@@ -431,7 +448,7 @@ const docTitleMap: Record<string, string> = {
                         </span>
                         <div class="flex flex-wrap gap-1">
                           <a
-                            href="https://cdn.bitty.run/bitty/releases/bitty-windows-x64.zip"
+                            href={releaseUrl("bitty-{v}-windows-x86_64.zip")}
                             class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
                             title="Windows x64 Portable ZIP"
                           >
@@ -441,11 +458,13 @@ const docTitleMap: Record<string, string> = {
                             </span>
                           </a>
                           <a
-                            href="https://cdn.bitty.run/bitty/releases/bitty-windows-x64.msi"
+                            href={releaseUrl(
+                              "bitty-{v}-windows-x86_64-setup.exe",
+                            )}
                             class="px-1.5 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-subtle)] hover:border-[var(--ink-border)] text-[var(--fg-primary)] hover:text-[var(--accent)] text-[10px]"
-                            title="Windows x64 MSI Installer"
+                            title="Windows x64 Setup Installer"
                           >
-                            .msi
+                            .exe
                           </a>
                         </div>
                       </div>
@@ -815,14 +834,15 @@ const docTitleMap: Record<string, string> = {
         type SupportedLang,
         type Translations,
       } from "../lib/translations";
+      import { INSTALL_SH_URL, INSTALL_PS1_URL } from "../lib/release";
 
       (() => {
         // 1. Language state and reactive update
         let currentLang: SupportedLang = "en";
 
         const installCommands: Record<string, string> = {
-          unix: "curl -fsSL https://cdn.bitty.run/bitty/install/install.sh | bash",
-          win: "irm https://cdn.bitty.run/bitty/install/install.ps1 | iex",
+          unix: `curl -fsSL ${INSTALL_SH_URL} | bash`,
+          win: `irm ${INSTALL_PS1_URL} | iex`,
           pkg: "paru -S bitty-bin # or apt / dnf / zypper / nix / flatpak (see matrix)",
           cargo:
             "cargo +1.98.1 install --git https://github.com/bitty-terminal/bitty.git bitty-terminal --locked",

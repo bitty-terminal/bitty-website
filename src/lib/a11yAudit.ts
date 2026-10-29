@@ -451,7 +451,7 @@ export function auditDocsShell(html: string): readonly DocsShellDefect[] {
       detail: `sidebar renders ${depth} nested list levels (two-layer ceiling)`,
     });
   }
-  if (!html.includes('aria-label="Breadcrumb"')) {
+  if (!/class="docs-metadata-bar[^"]*"/u.test(html)) {
     defects.push({
       kind: "breadcrumb",
       detail: "breadcrumb landmark missing",

@@ -137,7 +137,7 @@ function localizedEntry(
     : { ...entry, title: localizedTitle(entry, locale) };
 }
 
-const ZH_SECTION_TITLES: Readonly<Record<string, string>> = {
+export const ZH_SECTION_TITLES: Readonly<Record<string, string>> = {
   "getting-started": "快速开始",
   configuration: "配置参考",
   plugins: "插件架构与开发",
@@ -145,6 +145,14 @@ const ZH_SECTION_TITLES: Readonly<Record<string, string>> = {
   api: "Lua API 参考",
   faq: "常见问题与诊断",
 };
+
+export function localizedSectionTitle(
+  sectionId: string,
+  title: string,
+  locale: ManualLocale,
+): string {
+  return locale === "zh-CN" ? (ZH_SECTION_TITLES[sectionId] ?? title) : title;
+}
 
 export function getManualNavGroups(
   currentFullSlug: string,
@@ -165,10 +173,7 @@ export function getManualNavGroups(
     );
     return {
       id: section.id,
-      label:
-        locale === "zh-CN"
-          ? (ZH_SECTION_TITLES[section.id] ?? section.title)
-          : section.title,
+      label: localizedSectionTitle(section.id, section.title, locale),
       entries,
       isCurrent,
     };
@@ -237,7 +242,11 @@ export function getManualBreadcrumb(
   return {
     locale,
     sectionId: entry.sectionId,
-    sectionTitle: entry.sectionTitle,
+    sectionTitle: localizedSectionTitle(
+      entry.sectionId,
+      entry.sectionTitle,
+      locale,
+    ),
     title: localizedTitle(entry, locale),
     r2Key,
     r2Url,

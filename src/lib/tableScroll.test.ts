@@ -90,4 +90,8 @@ describe("tableScrollPlugin", () => {
     );
     expect(tableLabel(table([], []))).toBe("Table");
   });
+
+  test("uses a Chinese prefix for Han headers", () => {
+    expect(tableLabel(table(["字段", "类型"], []))).toBe("表: 字段, 类型");
+  });
 });

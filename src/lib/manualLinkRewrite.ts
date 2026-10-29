@@ -66,7 +66,7 @@ export function resolveManualHref(
   const slug = index.get(normalized);
   if (slug === undefined) {
     throw new Error(
-      `manual link target is not published: "${href}" from "${sourcePath}"`,
+      `manual link target is not published: "${href}" from "${locale}/${sourcePath}"`,
     );
   }
   const suffix = fragment.length === 0 ? "" : `#${fragment}`;

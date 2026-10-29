@@ -52,9 +52,11 @@ function headerLabels(table: HastNode): readonly string[] {
 
 export function tableLabel(table: HastNode): string {
   const labels = headerLabels(table).slice(0, MAX_HEADER_LABELS);
-  return labels.length === 0
-    ? FALLBACK_LABEL
-    : `${FALLBACK_LABEL}: ${labels.join(", ")}`;
+  if (labels.length === 0) return FALLBACK_LABEL;
+  const prefix = labels.some((label) => /\p{Script=Han}/u.test(label))
+    ? "表"
+    : FALLBACK_LABEL;
+  return `${prefix}: ${labels.join(", ")}`;
 }
 
 export function tableWrapper(table: HastNode): HastNode {

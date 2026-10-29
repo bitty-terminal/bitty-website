@@ -17,7 +17,10 @@ const manualArchive = `${R2_MANUAL_BASE}/bitty-manual/v${version}/${locale}.tar.
 const manualZip = `${R2_MANUAL_BASE}/bitty-manual/v${version}/${locale}.zip`;
 ---
 
-<section class="docs-offline-box my-8" aria-label="Offline Documentation">
+<section
+  class="docs-offline-box my-8"
+  aria-label={isZh ? "离线手册" : "Offline documentation"}
+>
   <div class="toon-card p-5 sm:p-6 bg-[var(--bg-elevated)] border-2 border-[var(--card-border)] space-y-5">
     <!-- Header -->
     <div class="flex flex-wrap items-center justify-between gap-3 border-b-2 border-dashed border-[var(--card-border)] pb-3">

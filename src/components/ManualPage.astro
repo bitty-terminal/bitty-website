@@ -11,6 +11,7 @@ import SiteHeader from "./SiteHeader.astro";
 import {
   getAllManualDocEntries,
   loadManualManifest,
+  localizedSectionTitle,
 } from "../lib/manualDocs.ts";
 
 type Locale = "en" | "zh-CN";
@@ -79,7 +80,10 @@ const pageDescription = `${localizedTitle} — Bitty Manual`;
         <DocsSidebar locale={locale} currentSlug={activeSlug} />
         <div class="docs-article">
           <DocsBreadcrumbs slug={activeSlug} locale={locale} />
-          <p class="eyebrow">{entry.sectionTitle} · Bitty Manual</p>
+          <p class="eyebrow">
+            {localizedSectionTitle(entry.sectionId, entry.sectionTitle, locale)}{" "}
+            · Bitty Manual
+          </p>
           <DocsToc headings={headings} locale={locale} />
           <article class="prose bitty-prose">
             <Content />

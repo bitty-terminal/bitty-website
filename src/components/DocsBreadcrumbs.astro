@@ -16,15 +16,19 @@ type Props = {
 const { slug, locale = "en" } = Astro.props as Props;
 
 const info = getManualBreadcrumb(slug, locale);
-const sectionTitle = info?.sectionTitle ?? "Documentation";
+const isZh = locale === "zh-CN";
+const sectionTitle = info?.sectionTitle ?? (isZh ? "手册" : "Documentation");
 const r2Key = info?.r2Key ?? `${slug}.md`;
 const fileName = r2Key.split("/").pop() ?? r2Key;
 ---
 
-<nav class="docs-metadata-bar font-mono-tech text-xs" aria-label="Breadcrumb">
+<nav
+  class="docs-metadata-bar font-mono-tech text-xs"
+  aria-label={isZh ? "面包屑导航" : "Breadcrumb"}
+>
   <div class="breadcrumb-trail">
-    <a href={locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/"} class="crumb-link">
-      docs
+    <a href={isZh ? "/zh-CN/docs/" : "/docs/"} class="crumb-link">
+      {isZh ? "手册" : "docs"}
     </a>
     <span class="crumb-sep">/</span>
     <span class="crumb-locale">{locale}</span>

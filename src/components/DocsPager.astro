@@ -14,10 +14,11 @@ type Props = {
 const { locale = "en", currentSlug } = Astro.props as Props;
 
 const { previous, next } = getManualPager(currentSlug, locale);
+const isZh = locale === "zh-CN";
 ---
 
 {(previous !== null || next !== null) && (
-  <nav class="docs-pager" aria-label="Pagination">
+  <nav class="docs-pager" aria-label={isZh ? "分页导航" : "Pagination"}>
     {previous !== null ? (
       <a
         class="docs-pager-link docs-pager-prev blueprint-box"

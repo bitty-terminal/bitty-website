@@ -201,7 +201,7 @@ describe("a11y internal dead links", () => {
 describe("a11y docs shell audit", () => {
   const SHELL = [
     "<h1>ADR 0006 - os.getenv Exposure and Bitty Module Policy</h1>",
-    '<nav class="docs-breadcrumb" aria-label="Breadcrumb"><ol><li>Concepts</li></ol></nav>',
+    '<nav class="docs-metadata-bar" aria-label="Breadcrumb"><ol><li>Concepts</li></ol></nav>',
     '<nav class="docs-sidebar" aria-label="Documentation">',
     "<ul>",
     '<li class="docs-nav-group"><details class="docs-nav-group-details" open><summary>Concepts</summary><ul>',
@@ -249,8 +249,8 @@ describe("a11y docs shell audit", () => {
 
   test("flags a missing breadcrumb landmark", () => {
     const bare = SHELL.replace(
-      'aria-label="Breadcrumb"',
-      'aria-label="Sections"',
+      'class="docs-metadata-bar"',
+      'class="docs-other-bar"',
     );
     expect(auditDocsShell(bare).map((defect) => defect.kind)).toContain(
       "breadcrumb",

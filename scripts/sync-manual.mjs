@@ -246,6 +246,7 @@ async function main() {
   } finally {
     await rm(staging, { recursive: true, force: true });
     await rm(nextRoot, { recursive: true, force: true });
+    await rm(backupRoot, { recursive: true, force: true });
   }
 }
 

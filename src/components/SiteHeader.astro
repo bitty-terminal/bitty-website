@@ -26,9 +26,9 @@ const languageHref = locale === "zh-CN" ? "/" : "/zh-CN/";
     <!-- Left: Official Bitty Logo / Favicon + Brand Lockup -->
     <div class="flex items-center gap-3">
       <a
-        href="/"
+        href={locale === "zh-CN" ? "/zh-CN/" : "/"}
         class="flex items-center gap-2.5 group focus:outline-none"
-        aria-label="Bitty Home"
+        aria-label={locale === "zh-CN" ? "Bitty 首页" : "Bitty Home"}
       >
         <div
           class="w-10 h-10 rounded-xl flex items-center justify-center border-2 border-[var(--ink-border)] bg-[var(--bg-elevated)] shadow-[2px_2px_0px_var(--toon-shadow)] group-hover:rotate-6 transition-transform overflow-hidden p-0.5"
@@ -62,11 +62,11 @@ const languageHref = locale === "zh-CN" ? "/" : "/zh-CN/";
             ? "bg-[var(--accent)] text-[#0b0914] shadow-[1px_1px_0px_var(--toon-shadow)]"
             : "bg-[var(--bg-surface)] text-[var(--fg-primary)] hover:text-[var(--accent)]"
         }`}
-        aria-label="Documentation"
+        aria-label={locale === "zh-CN" ? "手册" : "Documentation"}
       >
         <span>📖</span>
         <span class="hidden sm:inline" data-i18n="navDocs">
-          Docs
+          {locale === "zh-CN" ? "手册" : "Docs"}
         </span>
       </a>
 
@@ -74,7 +74,11 @@ const languageHref = locale === "zh-CN" ? "/" : "/zh-CN/";
         href={languageHref}
         id="lang-toggle-btn"
         class="arcade-btn px-2.5 py-1.5 bg-[var(--bg-surface)] text-[var(--fg-primary)] hover:text-[var(--accent)] flex items-center gap-1 font-bold cursor-pointer select-none"
-        aria-label="Switch language between English and Chinese"
+        aria-label={
+          locale === "zh-CN"
+            ? "切换语言：英文 / 简体中文"
+            : "Switch language between English and Chinese"
+        }
         title={locale === "zh-CN" ? "Read in English" : "阅读简体中文"}
       >
         <span class="text-xs">🌐</span>

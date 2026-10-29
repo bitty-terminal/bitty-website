@@ -22,23 +22,28 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import {
+  buildManualPathIndex,
+  rewriteManualLinks,
+} from "../src/lib/manualLinkRewrite.ts";
+import {
+  assertRegularArchiveMember,
+  assertSafeArchivePath,
+} from "../src/lib/manualArchive.ts";
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const LOCK_PATH = join(ROOT, "src/content/manual.lock.json");
 const MANUAL_ROOT = join(ROOT, "src/content/manual");
 const SEARCH_INDEX_PATH = join(ROOT, "src/content/manual-search-index.json");
 const CDN_BASE = "https://cdn.bitty.run/manual/bitty-manual";
 const LOCALES = ["en", "zh-CN"];
+/** Bound the per-record body text so the client index stays small. */
+const SEARCH_TEXT_LIMIT = 1200;
 
 async function readLock() {
   const lock = JSON.parse(await readFile(LOCK_PATH, "utf8"));
   if (lock.schema !== 1 || lock.version === undefined) {
     throw new Error(`invalid manual lock: ${LOCK_PATH}`);
-  }
-  if (
-    typeof lock.search_index?.path !== "string" ||
-    !/^[a-f0-9]{64}$/u.test(lock.search_index.sha256)
-  ) {
-    throw new Error(`invalid search index in ${LOCK_PATH}`);
   }
   for (const locale of LOCALES) {
     const bundle = lock.bundles?.[locale];
@@ -79,32 +84,6 @@ async function sha256(path) {
   return createHash("sha256")
     .update(await readFile(path))
     .digest("hex");
-}
-
-function assertSafeArchivePath(path, locale) {
-  const normalized = path.replaceAll("\\", "/");
-  const prefix = `${locale}/`;
-  if (normalized === "manifest.json") return;
-  if (!normalized.startsWith(prefix)) {
-    throw new Error(`manual archive contains unexpected path: ${path}`);
-  }
-  const segments = normalized.slice(prefix.length).split("/");
-  if (segments.at(-1) === "") segments.pop();
-  if (
-    segments.some(
-      (segment) => segment === "" || segment === "." || segment === "..",
-    )
-  ) {
-    throw new Error(`manual archive contains unsafe path: ${path}`);
-  }
-}
-
-function assertRegularArchiveMember(type, path, locale) {
-  if (type !== "-" && type !== "d") {
-    throw new Error(
-      `manual archive contains unsupported ${type || "unknown"} member for ${locale}: ${path}`,
-    );
-  }
 }
 
 async function extractLocale(archive, locale, destination) {
@@ -154,13 +133,8 @@ async function extractLocale(archive, locale, destination) {
 async function main() {
   const lock = await readLock();
   const staging = await mkdtemp(join(tmpdir(), "bitty-manual-"));
-  const workspaceStage = join(
-    ROOT,
-    "..",
-    "recording",
-    "bitty-website",
-    "manual-sync-target",
-  );
+  const nextRoot = join(ROOT, "src/content/manual.next");
+  const backupRoot = join(ROOT, "src/content/manual.previous");
   try {
     const extracted = [];
     for (const locale of LOCALES) {
@@ -178,15 +152,6 @@ async function main() {
       extracted.push(locale);
     }
 
-    const searchIndexPath = join(staging, "search-index.json");
-    await download(`${CDN_BASE}/${lock.search_index.path}`, searchIndexPath);
-    const searchDigest = await sha256(searchIndexPath);
-    if (searchDigest !== lock.search_index.sha256) {
-      throw new Error(
-        `manual search index digest mismatch: expected ${lock.search_index.sha256}, got ${searchDigest}`,
-      );
-    }
-
     const manifestPath = join(staging, "manifest.json");
     const manifest = JSON.parse(await readFile(manifestPath, "utf8"));
     if (
@@ -201,6 +166,23 @@ async function main() {
     await cp(manifestPath, join(replacement, "manifest.json"));
     for (const locale of extracted) {
       await rename(join(staging, locale), join(replacement, locale));
+    }
+
+    // Rewrite cross-links on the generated copy so the site renders routes
+    // instead of relative `.md` file references. Unpublished targets throw.
+    const pathIndex = buildManualPathIndex(manifest);
+    for (const locale of LOCALES) {
+      for (const section of manifest.sections) {
+        for (const item of section.items) {
+          const path = join(replacement, locale, item.path);
+          const markdown = await readFile(path, "utf8");
+          await writeFile(
+            path,
+            rewriteManualLinks(markdown, item.path, locale, pathIndex),
+            "utf8",
+          );
+        }
+      }
     }
 
     const websiteSearchIndex = [];
@@ -236,7 +218,8 @@ async function main() {
             text: markdown
               .replace(/[`*_>#\[\]()]/gu, " ")
               .replace(/\s+/gu, " ")
-              .trim(),
+              .trim()
+              .slice(0, SEARCH_TEXT_LIMIT),
             headings,
           });
         }
@@ -248,11 +231,12 @@ async function main() {
       ),
     );
 
-    await rm(workspaceStage, { recursive: true, force: true });
-    await cp(replacement, workspaceStage, { recursive: true });
-    await rm(MANUAL_ROOT, { recursive: true, force: true });
-    await cp(workspaceStage, MANUAL_ROOT, { recursive: true });
-    await rm(join(MANUAL_ROOT, "search-index.json"), { force: true });
+    await rm(nextRoot, { recursive: true, force: true });
+    await rm(backupRoot, { recursive: true, force: true });
+    await cp(replacement, nextRoot, { recursive: true });
+    await rename(MANUAL_ROOT, backupRoot).catch(() => undefined);
+    await rename(nextRoot, MANUAL_ROOT);
+    await rm(backupRoot, { recursive: true, force: true });
     await writeFile(
       SEARCH_INDEX_PATH,
       `${JSON.stringify(websiteSearchIndex)}\n`,
@@ -261,7 +245,7 @@ async function main() {
     console.log(`synced bitty-manual ${lock.version} (${LOCALES.join(", ")})`);
   } finally {
     await rm(staging, { recursive: true, force: true });
-    await rm(workspaceStage, { recursive: true, force: true });
+    await rm(nextRoot, { recursive: true, force: true });
   }
 }
 

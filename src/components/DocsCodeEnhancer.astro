@@ -9,11 +9,14 @@
 ---
 
 <script>
-  const COPY_LABEL = "Copy code";
-  const COPIED_LABEL = "Copied";
-  const FAILED_LABEL = "Copy failed";
-  const COPIED_ANNOUNCEMENT = "Code copied to clipboard";
-  const FAILED_ANNOUNCEMENT = "Copy failed";
+  const isZh = document.documentElement.lang === "zh-CN";
+  const COPY_LABEL = isZh ? "复制代码" : "Copy code";
+  const COPIED_LABEL = isZh ? "已复制" : "Copied";
+  const FAILED_LABEL = isZh ? "复制失败" : "Copy failed";
+  const COPIED_ANNOUNCEMENT = isZh
+    ? "代码已复制到剪贴板"
+    : "Code copied to clipboard";
+  const FAILED_ANNOUNCEMENT = isZh ? "复制失败" : "Copy failed";
   const REVERT_MS = 2000;
 
   type CopyState = "idle" | "copied" | "failed";

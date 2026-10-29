@@ -14,6 +14,6 @@
     "build",
     "site",
     ".worktrees",
-    "src/content/docs",
+    "src/content/manual",
   ],
 }

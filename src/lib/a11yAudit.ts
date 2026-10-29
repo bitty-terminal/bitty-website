@@ -292,6 +292,13 @@ export function findBrokenInternalLinks(
     const leaf = resolved.endsWith("/")
       ? ""
       : (resolved.split("/").pop() ?? "");
+    // A Markdown file target is never a rendered route: the site publishes
+    // extensionless manual pages. Report it instead of skipping it, so an
+    // unwritten cross-link fails the accessibility gate.
+    if (leaf.endsWith(".md")) {
+      broken.push({ href: rawHref, resolved });
+      continue;
+    }
     if (leaf.includes(".")) continue;
     const target = resolved.endsWith("/")
       ? `${resolved}index.html`

@@ -165,7 +165,7 @@ describe("a11y asset policy", () => {
 describe("a11y internal dead links", () => {
   const KNOWN = new Set(["docs/index.html", "docs/guide/index.html"]);
 
-  test("flags only the dead relative doc link", () => {
+  test("flags dead routes and Markdown file links", () => {
     const html = [
       '<a href="./guide/">live relative</a>',
       '<a href="./findings/readme/">dead relative</a>',
@@ -178,11 +178,13 @@ describe("a11y internal dead links", () => {
       '<a href="../assets/diagram.css">asset file reference</a>',
     ].join("\n");
     const broken = findBrokenInternalLinks(html, "docs/index.html", KNOWN);
-    expect(broken).toHaveLength(1);
-    expect(broken[0]).toEqual({
-      href: "./findings/readme/",
-      resolved: "docs/findings/readme/index.html",
-    });
+    expect(broken).toEqual([
+      {
+        href: "./findings/readme/",
+        resolved: "docs/findings/readme/index.html",
+      },
+      { href: "./CHANGELOG.md", resolved: "docs/CHANGELOG.md" },
+    ]);
   });
 
   test("resolves parent-relative links against the holding page", () => {

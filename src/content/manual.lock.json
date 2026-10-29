@@ -2,10 +2,6 @@
   "schema": 1,
   "package": "bitty-manual",
   "version": "0.1.0",
-  "search_index": {
-    "path": "v0.1.0/search-index.json",
-    "sha256": "b94dab5942bcc2ffaf4c80451cca65eb50bb84839a18ba4d5549171d583931bf"
-  },
   "bundles": {
     "en": {
       "path": "v0.1.0/en.tar.gz",

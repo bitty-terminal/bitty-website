@@ -73,15 +73,12 @@ const manualZip = `${R2_MANUAL_BASE}/bitty-manual/v${version}/${locale}.zip`;
             <span>📦 .zip</span>
             <span class="text-[10px] text-[var(--fg-muted)]">(Windows)</span>
           </a>
-          <a
-            href={`${R2_MANUAL_BASE}/bitty-manual/SHA256SUMS.txt`}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="arcade-btn px-2.5 py-1.5 bg-[var(--bg-surface)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] flex items-center gap-1 text-[11px]"
-          >
-            <span>🔐 SHA-256</span>
-          </a>
         </div>
+        <p class="font-mono-tech text-[11px] text-[var(--fg-muted)]">
+          {isZh
+            ? `固定版本 v${version}，归档摘要记录在构建锁定文件中。`
+            : `Pinned to v${version}; the archive digest is recorded in the build lock.`}
+        </p>
       </div>
     </div>
   </div>

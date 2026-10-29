@@ -38,8 +38,9 @@ const { Content, headings } = await render(document);
 const localizedTitle =
   document.body?.match(/^#\s+(.+)$/mu)?.[1]?.trim() ?? entry.title;
 const docsPrefix = locale === "zh-CN" ? "/zh-CN/docs" : "/docs";
-const currentPath = `${docsPrefix}/${activeSlug}`;
-const alternatePath = `${locale === "en" ? "/zh-CN/docs" : "/docs"}/${activeSlug}`;
+const origin = Astro.site?.origin ?? "https://bitty.run";
+const currentPath = `${docsPrefix}/${activeSlug}/`;
+const alternatePath = `${locale === "en" ? "/zh-CN/docs" : "/docs"}/${activeSlug}/`;
 const pageDescription = `${localizedTitle} — Bitty Manual`;
 ---
 
@@ -49,21 +50,21 @@ const pageDescription = `${localizedTitle} — Bitty Manual`;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={pageDescription} />
-    <link rel="canonical" href={`https://bitty.run${currentPath}`} />
+    <link rel="canonical" href={`${origin}${currentPath}`} />
     <link
       rel="alternate"
       hreflang={locale === "en" ? "en" : "zh-CN"}
-      href={`https://bitty.run${currentPath}`}
+      href={`${origin}${currentPath}`}
     />
     <link
       rel="alternate"
       hreflang={locale === "en" ? "zh-CN" : "en"}
-      href={`https://bitty.run${alternatePath}`}
+      href={`${origin}${alternatePath}`}
     />
     <link
       rel="alternate"
       hreflang="x-default"
-      href={`https://bitty.run/docs/${activeSlug}`}
+      href={`${origin}/docs/${activeSlug}/`}
     />
     <link rel="icon" type="image/x-icon" href="/icons/favicon.ico" />
     <title>{localizedTitle} — Bitty Manual</title>

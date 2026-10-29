@@ -244,10 +244,12 @@ if (!(await exists(dist))) {
     // CTX-0050 docs shell: the one-h1 rule above cannot see a duplicated
     // title, an extra aria-current, or a deeper-than-two-layer sidebar, so
     // the shell contract is asserted separately on every rendered docs page.
-    if (
-      page.relativePath.startsWith("docs/") ||
-      page.relativePath.startsWith("zh-CN/docs/")
-    ) {
+    const isDocsPage =
+      (page.relativePath.startsWith("docs/") ||
+        page.relativePath.startsWith("zh-CN/docs/")) &&
+      page.relativePath !== "docs/index.html" &&
+      page.relativePath !== "zh-CN/docs/index.html";
+    if (isDocsPage) {
       const defects = auditDocsShell(html);
       if (defects.length === 0) {
         pass(

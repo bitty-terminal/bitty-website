@@ -1,0 +1,148 @@
+---
+/**
+ * Manual landing page: one card per section, with the reading order the
+ * manifest declares. This is a real page with its own canonical URL, so the
+ * first document is no longer duplicated at `/docs/`.
+ */
+import SiteFooter from "./SiteFooter.astro";
+import SiteHeader from "./SiteHeader.astro";
+import { getManualNavGroups } from "../lib/manualDocs.ts";
+import "../styles/global.css";
+
+type Locale = "en" | "zh-CN";
+const { locale = "en" } = Astro.props as { locale?: Locale };
+const isZh = locale === "zh-CN";
+const groups = getManualNavGroups("", locale);
+const docsPrefix = isZh ? "/zh-CN/docs" : "/docs";
+const origin = Astro.site?.origin ?? "https://bitty.run";
+const currentPath = `${docsPrefix}/`;
+const alternatePath = isZh ? "/docs/" : "/zh-CN/docs/";
+const title = isZh ? "Bitty 手册" : "Bitty Manual";
+const description = isZh
+  ? "Bitty 的安装、配置、插件与 Lua API 参考手册。"
+  : "Installation, configuration, plugin, and Lua API reference for Bitty.";
+---
+
+<!doctype html>
+<html lang={locale} data-theme="shibuya-pop">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={`${origin}${currentPath}`} />
+    <link
+      rel="alternate"
+      hreflang={isZh ? "zh-CN" : "en"}
+      href={`${origin}${currentPath}`}
+    />
+    <link
+      rel="alternate"
+      hreflang={isZh ? "en" : "zh-CN"}
+      href={`${origin}${alternatePath}`}
+    />
+    <link rel="alternate" hreflang="x-default" href={`${origin}/docs/`} />
+    <link rel="icon" type="image/x-icon" href="/icons/favicon.ico" />
+    <title>{title} — Bitty</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">
+      {isZh ? "跳转到正文" : "Skip to content"}
+    </a>
+    <SiteHeader locale={locale} activeNav="docs" />
+    <main id="main-content" class="manual-index" tabindex="-1">
+      <header class="manual-index-header">
+        <p class="manual-index-kicker">{isZh ? "文档" : "DOCUMENTATION"}</p>
+        <h1>{title}</h1>
+        <p>{description}</p>
+      </header>
+      <div class="manual-index-grid">
+        {groups.map((group) => (
+          <section
+            class="manual-section-card"
+            aria-labelledby={`section-${group.id}`}
+          >
+            <h2 id={`section-${group.id}`}>{group.label}</h2>
+            <ul>
+              {group.entries.map((entry) => (
+                <li>
+                  <a href={`${docsPrefix}/${entry.fullSlug}/`}>{entry.title}</a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </div>
+    </main>
+    <SiteFooter locale={locale} />
+  </body>
+</html>
+
+<style>
+  .manual-index {
+    width: min(72rem, calc(100% - 2rem));
+    margin-inline: auto;
+    padding-block: clamp(3rem, 8vw, 6rem);
+  }
+  .manual-index-header {
+    max-width: 46rem;
+    margin-bottom: 3rem;
+  }
+  .manual-index-kicker {
+    margin: 0;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 800;
+    letter-spacing: 0.12em;
+  }
+  .manual-index-header h1 {
+    margin: 0.4rem 0 1rem;
+    font-family: var(--font-display);
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
+  }
+  .manual-index-header p:last-child {
+    margin: 0;
+    color: var(--muted);
+    font-size: 1.05rem;
+    line-height: 1.65;
+  }
+  .manual-index-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+    gap: 1rem;
+  }
+  .manual-section-card {
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    background: var(--card);
+    box-shadow: var(--shadow);
+  }
+  .manual-section-card h2 {
+    margin: 0 0 0.85rem;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+  }
+  .manual-section-card ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .manual-section-card li + li {
+    border-top: 1px solid var(--line);
+  }
+  .manual-section-card a {
+    display: flex;
+    min-block-size: 2.75rem;
+    align-items: center;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    text-decoration: none;
+  }
+  .manual-section-card a:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+</style>

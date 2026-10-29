@@ -73,13 +73,15 @@ object is expected to be immutable, so advancing the site means publishing a
 # 1. Capture the digests of the new immutable objects.
 curl -fsSL https://cdn.bitty.run/manual/bitty-manual/v<version>/en.tar.gz | sha256sum
 curl -fsSL https://cdn.bitty.run/manual/bitty-manual/v<version>/zh-CN.tar.gz | sha256sum
-curl -fsSL https://cdn.bitty.run/manual/bitty-manual/v<version>/search-index.json | sha256sum
 
 # 2. Update version, paths, and digests in the lock.
 
 # 3. Re-materialize and verify.
 bun run sync:manual && just check
 ```
+
+The lock covers the two locale archives. The site derives its own search index
+from the verified Markdown, so no separate index artifact is pinned.
 
 Never republish content under an existing version. When a digest changes
 without a version bump, `sync:manual` fails closed on purpose: overwriting a

@@ -89,7 +89,7 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
   </head>
   <body class="site-body">
     <a href="#main-content" class="skip-link">
-      Skip to content
+      {isZh ? "跳转到正文" : "Skip to content"}
     </a>
     <SiteHeader locale={locale} activeNav="hero" />
 
@@ -110,7 +110,10 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
           </div>
         </div>
 
-        <aside class="terminal-card" aria-label="Bitty workspace preview">
+        <aside
+          class="terminal-card"
+          aria-label={isZh ? "Bitty 工作区预览" : "Bitty workspace preview"}
+        >
           <div class="terminal-card-bar">
             <span>bitty</span>
             <span>workspace / 01</span>

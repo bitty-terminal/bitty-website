@@ -1,8 +1,10 @@
 import { defineConfig } from "astro/config";
+import { satteri } from "@astrojs/markdown-satteri";
 import { fileURLToPath } from "node:url";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { writeSitemap } from "./src/lib/sitemap.ts";
+import { tableScrollPlugin } from "./src/lib/tableScroll.ts";
 
 const SITE_URL = "https://bitty.run";
 
@@ -23,6 +25,9 @@ function staticArtifacts() {
             "/docs/latest/zh-CN/* /zh-CN/docs/:splat 301",
             "/docs/stable/zh-CN/* /zh-CN/docs/:splat 301",
             "/docs/0.1.0/zh-CN/* /zh-CN/docs/:splat 301",
+            "/docs/latest/zh-CN /zh-CN/docs/ 301",
+            "/docs/stable/zh-CN /zh-CN/docs/ 301",
+            "/docs/0.1.0/zh-CN /zh-CN/docs/ 301",
             "/docs/latest/* /docs/:splat 301",
             "/docs/stable/* /docs/:splat 301",
             "/docs/0.1.0/* /docs/:splat 301",
@@ -53,6 +58,7 @@ export default defineConfig({
     },
   },
   markdown: {
+    processor: satteri({ hastPlugins: [tableScrollPlugin] }),
     shikiConfig: {
       themes: { light: "github-light", dark: "one-dark-pro" },
     },

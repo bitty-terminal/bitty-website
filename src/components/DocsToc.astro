@@ -27,9 +27,10 @@ type TocHeading = {
 
 type Props = {
   headings: readonly TocHeading[];
+  locale?: "en" | "zh-CN";
 };
 
-const { headings } = Astro.props as Props;
+const { headings, locale = "en" } = Astro.props as Props;
 const items = headings.filter(
   (heading) => heading.depth === 2 || heading.depth === 3,
 );
@@ -37,9 +38,14 @@ const items = headings.filter(
 
 {items.length > 0 && (
   <details class="docs-toc" open>
-    <summary>On this page</summary>
-    <nav class="docs-toc-nav" aria-label="On this page">
-      <p class="docs-toc-title">On this page</p>
+    <summary>{locale === "zh-CN" ? "本页内容" : "On this page"}</summary>
+    <nav
+      class="docs-toc-nav"
+      aria-label={locale === "zh-CN" ? "本页内容" : "On this page"}
+    >
+      <p class="docs-toc-title">
+        {locale === "zh-CN" ? "本页内容" : "On this page"}
+      </p>
       <ul>
         {items.map((item) => (
           <li data-depth={item.depth}>

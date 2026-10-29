@@ -55,28 +55,6 @@ async function exists(path) {
   }
 }
 
-/**
- * Dist-relative HTML paths covered by an exact rule in `dist/redirects.json`.
- *
- * A redirected route is a shipped route: the publication policy (website#97)
- * excludes pages from the site and every excluded route 301s to its nearest
- * surviving ancestor, so a link to one resolves instead of 404ing. Redirect
- * stubs are covered on their own by the collected HTML paths.
- */
-async function redirectCoveredRoutes() {
-  const file = join(dist, "redirects.json");
-  if (!(await exists(file))) return [];
-  const parsed = JSON.parse(await readFile(file, "utf8"));
-  const rules = Array.isArray(parsed?.redirects) ? parsed.redirects : [];
-  const covered = [];
-  for (const rule of rules) {
-    const from = typeof rule?.from === "string" ? rule.from : "";
-    if (!from.startsWith("/docs/") || !from.endsWith("/")) continue;
-    covered.push(`${from.slice(1)}index.html`);
-  }
-  return covered;
-}
-
 function checkHeadingOrder(html) {
   const levels = [];
   const pattern = /<h([1-6])\b[^>]*>/gi;
@@ -115,33 +93,24 @@ function checkSvgBlocks(html) {
   return { labelled: labelled.length, problems };
 }
 
-function auditPage(name, html, { strictHeadings, passthrough }) {
+function auditPage(name, html, { strictHeadings }) {
   if (/<html[^>]*\blang="(?:en|zh-CN|zh)"/.test(html)) {
     pass(`${name}: valid <html lang> attribute`);
   } else {
     fail(`${name}: missing or invalid <html lang> attribute`);
   }
-  if (passthrough) {
-    // Upstream standalone app mirrored verbatim (architecture/interactive/):
-    // it owns its own chrome and a11y, so site-template checks (skip link,
-    // footer landmark, programmatic focus target) do not apply. Asset policy
-    // still applies but warn-only — the mirror must not be hand-edited and the
-    // references are recorded as an accepted exception in docs/cdn-assets.md.
-    pass(`${name}: passthrough: site-chrome checks not applicable`);
+  if (
+    html.includes('class="skip-link"') &&
+    html.includes('href="#main-content"')
+  ) {
+    pass(`${name}: skip link present`);
   } else {
-    if (
-      html.includes('class="skip-link"') &&
-      html.includes('href="#main-content"')
-    ) {
-      pass(`${name}: skip link present`);
-    } else {
-      fail(`${name}: skip link missing`);
-    }
-    if (html.includes('id="main-content"')) {
-      pass(`${name}: skip-link target #main-content exists`);
-    } else {
-      fail(`${name}: skip-link target #main-content missing`);
-    }
+    fail(`${name}: skip link missing`);
+  }
+  if (html.includes('id="main-content"')) {
+    pass(`${name}: skip-link target #main-content exists`);
+  } else {
+    fail(`${name}: skip-link target #main-content missing`);
   }
   for (const landmark of ["<header", "<main"]) {
     if (html.includes(landmark)) {
@@ -150,9 +119,7 @@ function auditPage(name, html, { strictHeadings, passthrough }) {
       fail(`${name}: ${landmark}> landmark missing`);
     }
   }
-  if (passthrough) {
-    // Covered by the passthrough note above: footer is site chrome.
-  } else if (html.includes("<footer")) {
+  if (html.includes("<footer")) {
     pass(`${name}: <footer> landmark present`);
   } else {
     fail(`${name}: <footer> landmark missing`);
@@ -183,26 +150,16 @@ function auditPage(name, html, { strictHeadings, passthrough }) {
   }
   // Binary raster payloads are served from Cloudflare R2 (see
   // docs/cdn-assets.md), so the built site must stay text-only apart from the
-  // policy-approved bundled SVG vector formats. The classifier inspects every
-  // URL-bearing attribute and every srcset candidate, rather than trusting the
-  // first value found on an element. Passthrough mirrors keep their bundled
-  // raster references warn-only against the accepted exception recorded in
-  // docs/cdn-assets.md; every other page fails.
-  const assetFindings = assetPolicyFindings(name, html, passthrough);
+  // policy-approved bundled SVG vector formats.
+  const assetFindings = assetPolicyFindings(name, html);
   if (assetFindings.length === 0) {
     pass(`${name}: no bundled raster elements (R2-hosted assets allowed)`);
   } else {
     for (const finding of assetFindings) {
-      if (finding.severity === "warn") {
-        warn(finding.detail);
-      } else {
-        fail(finding.detail);
-      }
+      fail(finding.detail);
     }
   }
-  if (passthrough) {
-    // Covered by the passthrough note above: focus target is site chrome.
-  } else if (html.includes('tabindex="-1"')) {
+  if (html.includes('tabindex="-1"')) {
     pass(`${name}: programmatic focus target present`);
   } else {
     fail(`${name}: main target missing tabindex="-1"`);
@@ -220,7 +177,6 @@ async function auditCss() {
     [":focus-visible", "visible focus styling"],
     [".skip-link", "skip-link styling"],
     ["min-block-size: 2.75rem", "44px touch-target minimum"],
-    [".diagram-scroll", "responsive diagram scroll container"],
   ];
   for (const [token, label] of required) {
     if (css.includes(token)) {
@@ -276,9 +232,6 @@ if (!(await exists(dist))) {
     `audited ${renderedPages.length} rendered page(s) from ${pages.length} HTML file(s); skipped ${redirectStubs} redirect stub(s)`,
   );
   const knownPages = new Set(pages.map((entry) => entry.relativePath));
-  for (const covered of await redirectCoveredRoutes()) {
-    knownPages.add(covered);
-  }
   for (const page of renderedPages) {
     const name =
       page.path === join(dist, "index.html")
@@ -287,12 +240,14 @@ if (!(await exists(dist))) {
     const html = await readFile(page.path, "utf8");
     auditPage(name, html, {
       strictHeadings: page.path === join(dist, "index.html"),
-      passthrough: page.passthrough,
     });
     // CTX-0050 docs shell: the one-h1 rule above cannot see a duplicated
     // title, an extra aria-current, or a deeper-than-two-layer sidebar, so
     // the shell contract is asserted separately on every rendered docs page.
-    if (!page.passthrough && page.relativePath.startsWith("docs/")) {
+    if (
+      page.relativePath.startsWith("docs/") ||
+      page.relativePath.startsWith("zh-CN/docs/")
+    ) {
       const defects = auditDocsShell(html);
       if (defects.length === 0) {
         pass(
@@ -304,23 +259,14 @@ if (!(await exists(dist))) {
         }
       }
     }
-    if (!page.passthrough) {
-      // Site-internal doc links must resolve to a rendered page. Redirect
-      // stubs count as shipped routes. Upstream passthrough apps own their
-      // own links and are out of scope here.
-      // Warn-only: the dead targets are upstream `website_publish: false`
-      // pages linked from published indexes, and the mirror must not be
-      // hand-edited. Tracked in bitty-docs#374; flip back to fail once the
-      // upstream index stops linking unpublished targets.
-      for (const broken of findBrokenInternalLinks(
-        html,
-        page.relativePath,
-        knownPages,
-      )) {
-        warn(
-          `${name}: dead internal link ${broken.href} (resolves to ${broken.resolved}, no rendered page; tracked in bitty-docs#374)`,
-        );
-      }
+    for (const broken of findBrokenInternalLinks(
+      html,
+      page.relativePath,
+      knownPages,
+    )) {
+      fail(
+        `${name}: dead internal link ${broken.href} (resolves to ${broken.resolved}, no rendered page)`,
+      );
     }
   }
 }

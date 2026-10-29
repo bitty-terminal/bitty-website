@@ -6,9 +6,6 @@
 import { getManualBreadcrumb } from "../lib/manualDocs.ts";
 
 type Props = {
-  /** Raw version route segment, e.g. `latest`. */
-  version: string;
-  /** Canonical slug of the rendered page. */
   slug: string;
   /** Optional locale, default 'en'. */
   locale?: string;
@@ -16,7 +13,7 @@ type Props = {
   rawMarkdown?: string;
 };
 
-const { version, slug, locale = "en" } = Astro.props as Props;
+const { slug, locale = "en" } = Astro.props as Props;
 
 const info = getManualBreadcrumb(slug, locale);
 const sectionTitle = info?.sectionTitle ?? "Documentation";
@@ -26,11 +23,11 @@ const fileName = r2Key.split("/").pop() ?? r2Key;
 
 <nav class="docs-metadata-bar font-mono-tech text-xs" aria-label="Breadcrumb">
   <div class="breadcrumb-trail">
-    <a href={`/docs/${version}/`} class="crumb-link">
+    <a href={locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/"} class="crumb-link">
       docs
     </a>
     <span class="crumb-sep">/</span>
-    <span class="crumb-locale">/{locale}</span>
+    <span class="crumb-locale">{locale}</span>
     <span class="crumb-sep">/</span>
     <span class="crumb-section">{sectionTitle}</span>
     <span class="crumb-sep">/</span>
@@ -38,9 +35,7 @@ const fileName = r2Key.split("/").pop() ?? r2Key;
   </div>
 
   <div class="metadata-actions">
-    <span class="cf-cache-pill" title="Cloudflare Workers Cache API">
-      CF-Cache: HIT (ETag)
-    </span>
+    <span class="cf-cache-pill">bitty-manual · {locale}</span>
   </div>
 </nav>
 

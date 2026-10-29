@@ -3,8 +3,7 @@
  *
  * Pins the ranking contract: title outranks description, category/slug, then
  * capped body frequency; empty and stopword-only queries return nothing;
- * result URLs preserve the caller's version segment (`latest`, `stable`, or
- * explicit `x.y.z`) so version aliases keep working.
+ * result URLs preserve the caller's manual locale prefix.
  */
 
 import { describe, expect, test } from "bun:test";
@@ -51,6 +50,10 @@ describe("tokenize", () => {
       "configure",
       "themes",
     ]);
+  });
+
+  test("retains Simplified Chinese search terms", () => {
+    expect(tokenize("配置 主题")).toEqual(["配置", "主题"]);
   });
 });
 
@@ -104,25 +107,15 @@ describe("searchRecords ranking", () => {
 describe("recordHref", () => {
   const record = RECORDS[0] as SearchRecord;
 
-  test("preserves latest/stable/explicit version segments", () => {
-    expect(recordHref(record, "latest")).toBe(
-      "/docs/latest/configuration/themes/",
-    );
-    expect(recordHref(record, "stable")).toBe(
-      "/docs/stable/configuration/themes/",
-    );
-    expect(recordHref(record, "0.1.0")).toBe(
-      "/docs/0.1.0/configuration/themes/",
+  test("resolves English and Chinese manual routes", () => {
+    expect(recordHref(record, "en")).toBe("/docs/configuration/themes/");
+    expect(recordHref(record, "zh-CN")).toBe(
+      "/zh-CN/docs/configuration/themes/",
     );
   });
 
   test("revision index resolves to the version index", () => {
-    expect(recordHref({ slug: "" }, "latest")).toBe("/docs/latest/");
-  });
-
-  test("rejects empty or path-breaking segments", () => {
-    for (const bad of ["", "a/b", "..\\x", "has space"]) {
-      expect(() => recordHref(record, bad)).toThrow();
-    }
+    expect(recordHref({ slug: "" }, "en")).toBe("/docs/");
+    expect(recordHref({ slug: "" }, "zh-CN")).toBe("/zh-CN/docs/");
   });
 });

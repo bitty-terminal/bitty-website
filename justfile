@@ -25,19 +25,8 @@ fmt-check-files *FILES:
 markdownlint:
     bun run lint:md
 
-# Re-materialize every pinned source at its committed revision (idempotent:
-# the second run is a byte-for-byte no-op), or advance one source with
-# `just docs-sync --source <id> --pin <sha|tag>` (SY-2, bitty-website#98).
-docs-sync *args:
-    bun run sync:docs {{args}}
-
-# Fail closed when the committed mirror is stale vs a pinned source revision (SY-4).
-docs-check:
-    bun run docs:check
-
-# Print the machine-derived old -> new route table for the change (T4, #98).
-docs-route-moves *args:
-    bun run report:route-moves {{args}}
+manual-sync:
+    bun run sync:manual
 
 commit-lint FILE:
     command -v commitlint >/dev/null || { echo "commitlint missing; install it globally" >&2; exit 1; }

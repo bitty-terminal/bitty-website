@@ -1,153 +1,79 @@
 ---
-/**
- * Site footer — presentation-only provenance strip with Blueprint aesthetics.
- * The docs pin and the corpus-set identity are rendered from
- * src/content/docs-revision.json so the published corpus stays reproducible
- * without hand-maintained copies.
- */
-import docsRevision from "../content/docs-revision.json" with { type: "json" };
-import { corpusSetId, DOCS_CORPUS_ID_PREFIX } from "../lib/docsProvenance.ts";
-import { parseDocsPinSet, revisionIndexOwner } from "../lib/docsPins.ts";
+type Props = {
+  locale?: "en" | "zh-CN";
+};
 
-const pins = parseDocsPinSet(docsRevision);
-const owner = revisionIndexOwner(pins);
-const shortRevision = owner.revision.slice(0, 7);
-const corpusSet = corpusSetId(pins);
-const shortCorpusSet = corpusSet.slice(0, DOCS_CORPUS_ID_PREFIX.length + 12);
+const { locale = "en" } = Astro.props as Props;
+const isZh = locale === "zh-CN";
 ---
 
-<footer class="site-footer border-t border-[var(--border-subtle)] font-mono-tech text-xs">
-  <div class="footer-container">
-    <div class="footer-top">
-      <div class="footer-brand">
-        <span class="footer-logo font-display">bitty</span>
-        <span class="footer-tagline" data-i18n="footerTagline">
-          Microkernel GPU Terminal Emulator
-        </span>
-      </div>
-      <div class="footer-links">
-        <a
-          href="https://github.com/bitty-terminal/bitty"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          GitHub
-        </a>
-        <span>·</span>
-        <a
-          href="https://cdn.bitty.run/manual/bitty-manual-latest.tar.gz"
-          target="_blank"
-          rel="noopener noreferrer"
-          data-i18n="footerManualLink"
-        >
-          Manual download (R2)
-        </a>
-        <span>·</span>
-        <a href="/docs/latest/" data-i18n="footerDocLink">
-          Documentation
-        </a>
-      </div>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <strong>bitty</strong>
+      <span>
+        {isZh ? "可编程终端工作区" : "Programmable terminal workspace"}
+      </span>
     </div>
-
-    <div class="footer-provenance">
-      <p data-i18n="footerSummary">
-        Bitty Terminal · Microkernel Architecture · Pure-Rust Stackless Lua
-        Sandbox (Phodopus — Piccolo Fork).
-      </p>
-      <p class="provenance-detail">
-        <span data-i18n="footerProvenancePrefix">Canonical docs owned by</span>{" "}
-        <strong>{owner.id}</strong> (pinned <code>{shortRevision}</code>).{" "}
-        <span data-i18n="footerCorpusSetPrefix">Corpus set:</span>{" "}
-        <code>{shortCorpusSet}</code>.{" "}
-        <span data-i18n="footerRenderedEdge">
-          Rendered at Edge via Cloudflare Workers.
-        </span>
-      </p>
-    </div>
+    <nav aria-label={isZh ? "页脚导航" : "Footer navigation"}>
+      <a href={isZh ? "/zh-CN/docs/" : "/docs/"}>{isZh ? "手册" : "Manual"}</a>
+      <a
+        href="https://github.com/bitty-terminal/bitty"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        GitHub
+      </a>
+      <a
+        href="https://cdn.bitty.run/manual/bitty-manual/manifest.json"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        R2
+      </a>
+    </nav>
   </div>
 </footer>
 
 <style>
   .site-footer {
-    position: relative;
-    z-index: 10;
-    background: var(--bg-surface);
-    color: var(--fg-muted);
-    padding-block: 2rem 2.5rem;
-    border-top: 2px solid var(--card-border);
+    border-top: 1px solid var(--line);
+    padding: 1.5rem 1rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
   }
-
-  .footer-container {
-    max-width: var(--docs-content-width);
-    margin: 0 auto;
-    padding: 0 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-  }
-
-  .footer-top {
+  .footer-inner {
+    width: min(72rem, 100%);
+    margin-inline: auto;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    padding-bottom: 1.25rem;
-    border-bottom: 2px dashed var(--card-border);
   }
-
-  .footer-brand {
+  .footer-inner > div {
     display: flex;
-    align-items: baseline;
+    flex-wrap: wrap;
     gap: 0.75rem;
+    align-items: baseline;
   }
-
-  .footer-logo {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: var(--fg-primary);
+  .footer-inner strong {
+    color: var(--ink);
+    font-family: var(--font-display);
+    font-size: 1.1rem;
   }
-
-  .footer-tagline {
-    font-size: 0.75rem;
-    color: var(--fg-secondary);
-  }
-
-  .footer-links {
+  nav {
     display: flex;
-    align-items: center;
-    gap: 0.65rem;
+    flex-wrap: wrap;
+    gap: 1rem;
   }
-
-  .footer-links a {
-    color: var(--fg-secondary);
+  a {
+    color: inherit;
     text-decoration: none;
   }
-
-  .footer-links a:hover {
+  a:hover {
     color: var(--accent);
     text-decoration: underline;
-  }
-
-  .footer-provenance {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    font-size: 0.72rem;
-    line-height: 1.6;
-    color: var(--fg-muted);
-  }
-
-  .footer-provenance p {
-    margin: 0;
-  }
-
-  .provenance-detail code {
-    font-family: var(--font-mono);
-    color: var(--fg-secondary);
-    background: var(--bg-elevated);
-    padding: 0.1rem 0.3rem;
-    border-radius: 3px;
-    border: 1px solid var(--border-subtle);
   }
 </style>

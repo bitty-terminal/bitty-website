@@ -8,17 +8,13 @@
  */
 
 import { describe, expect, test } from "bun:test";
-import { existsSync, readFileSync } from "node:fs";
 import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import {
   BUNDLED_VECTOR_EXTENSIONS,
-  PASSTHROUGH_PATH_SEGMENT,
   RASTER_EXTENSIONS,
-  RECORDED_ASSET_EXCEPTION_DOC,
-  assetPolicyFindings,
   auditDocsShell,
   classifyAssetReference,
   collectRenderedPages,
@@ -120,95 +116,12 @@ describe("a11y asset policy", () => {
     }
   });
 
-  describe("a11y passthrough pages", () => {
-    test("marks interactive mirror pages passthrough, template pages not", async () => {
-      const root = await temporaryDirectory();
-      try {
-        await mkdir(
-          join(root, "docs", "0.1.0", "architecture", "interactive"),
-          {
-            recursive: true,
-          },
-        );
-        await mkdir(join(root, "docs", "0.1.0", "guide"), { recursive: true });
-        await writeFile(
-          join(
-            root,
-            "docs",
-            "0.1.0",
-            "architecture",
-            "interactive",
-            "index.html",
-          ),
-          '<html lang="en"><body><div class="diagram-app"></div></body></html>',
-        );
-        await writeFile(
-          join(root, "docs", "0.1.0", "guide", "index.html"),
-          '<html lang="en"><body></body></html>',
-        );
-
-        const pages = await collectRenderedPages(root);
-        expect(pages).toHaveLength(2);
-        const mirror = pages.find((page) =>
-          page.relativePath.includes("architecture/interactive/"),
-        );
-        const template = pages.find((page) =>
-          page.relativePath.includes("/guide/"),
-        );
-        expect(mirror).toBeDefined();
-        expect(mirror?.passthrough).toBe(true);
-        expect(template).toBeDefined();
-        expect(template?.passthrough).toBe(false);
-      } finally {
-        await rm(root, { recursive: true, force: true });
-      }
-    });
-
-    test("warns once, naming the recorded exception, on a passthrough page", () => {
-      const findings = assetPolicyFindings(
-        "page:docs/latest/architecture/interactive/index.html",
-        '<img src="assets/bitty-icon.png">',
-        true,
-      );
-      expect(findings).toHaveLength(1);
-      expect(findings[0]?.severity).toBe("warn");
-      expect(findings[0]?.detail).toContain(RECORDED_ASSET_EXCEPTION_DOC);
-    });
-
-    test("fails the same bundled raster markup on a non-passthrough page", () => {
-      const findings = assetPolicyFindings(
-        "page:docs/latest/guide/index.html",
-        '<img src="assets/bitty-icon.png">',
-        false,
-      );
-      expect(findings).toHaveLength(1);
-      expect(findings[0]?.severity).toBe("fail");
-      expect(findings[0]?.detail).not.toContain(RECORDED_ASSET_EXCEPTION_DOC);
-      expect(
-        findDisallowedAssetReferences('<img src="assets/bitty-icon.png">'),
-      ).toHaveLength(1);
-    });
-
-    test("cites a record that exists and records this exception", () => {
-      const record = join(
-        import.meta.dir,
-        "..",
-        "..",
-        RECORDED_ASSET_EXCEPTION_DOC,
-      );
-      expect(existsSync(record)).toBe(true);
-      const text = readFileSync(record, "utf8");
-      expect(text).toContain("## Recorded exceptions");
-      expect(text).toContain(PASSTHROUGH_PATH_SEGMENT);
-    });
-
-    test("reports media element names instead of a bare bracket", () => {
-      const problems = findDisallowedAssetReferences(
-        '<picture><source srcset="/_astro/local.png 1x"></picture>',
-      );
-      expect(problems).toHaveLength(1);
-      expect(problems[0]?.element).toBe("<source");
-    });
+  test("reports media element names instead of a bare bracket", () => {
+    const problems = findDisallowedAssetReferences(
+      '<picture><source srcset="/_astro/local.png 1x"></picture>',
+    );
+    expect(problems).toHaveLength(1);
+    expect(problems[0]?.element).toBe("<source");
   });
   test("finds a late nested raster reference and accepts a local SVG", async () => {
     const root = await temporaryDirectory();
@@ -250,32 +163,25 @@ describe("a11y asset policy", () => {
 });
 
 describe("a11y internal dead links", () => {
-  const KNOWN = new Set([
-    "docs/latest/index.html",
-    "docs/latest/guide/index.html",
-  ]);
+  const KNOWN = new Set(["docs/index.html", "docs/guide/index.html"]);
 
   test("flags only the dead relative doc link", () => {
     const html = [
       '<a href="./guide/">live relative</a>',
       '<a href="./findings/readme/">dead relative</a>',
       '<a href="./guide/?q=x#frag">live with query and hash</a>',
-      '<a href="/docs/latest/guide/">live absolute</a>',
-      '<a href="https://example.com/docs/latest/x/">external</a>',
+      '<a href="/docs/guide/">live absolute</a>',
+      '<a href="https://example.com/docs/x/">external</a>',
       '<a href="#anchor">anchor only</a>',
       '<a href="/">site root</a>',
       '<a href="./CHANGELOG.md">repo file reference</a>',
       '<a href="../assets/diagram.css">asset file reference</a>',
     ].join("\n");
-    const broken = findBrokenInternalLinks(
-      html,
-      "docs/latest/index.html",
-      KNOWN,
-    );
+    const broken = findBrokenInternalLinks(html, "docs/index.html", KNOWN);
     expect(broken).toHaveLength(1);
     expect(broken[0]).toEqual({
       href: "./findings/readme/",
-      resolved: "docs/latest/findings/readme/index.html",
+      resolved: "docs/findings/readme/index.html",
     });
   });
 
@@ -283,7 +189,7 @@ describe("a11y internal dead links", () => {
     const html = '<a href="../guide/">up one level</a>';
     const broken = findBrokenInternalLinks(
       html,
-      "docs/latest/nested/index.html",
+      "docs/nested/index.html",
       KNOWN,
     );
     expect(broken).toEqual([]);
@@ -297,7 +203,7 @@ describe("a11y docs shell audit", () => {
     '<nav class="docs-sidebar" aria-label="Documentation">',
     "<ul>",
     '<li class="docs-nav-group"><details class="docs-nav-group-details" open><summary>Concepts</summary><ul>',
-    '<li class="docs-nav-entry"><a href="/docs/latest/decisions/adrs/adr-0006-os-env-policy/" aria-current="page">os.getenv Exposure and Bitty Module Policy</a></li>',
+    '<li class="docs-nav-entry"><a href="/docs/configuration/overview/" aria-current="page">Configuration Overview</a></li>',
     "</ul></details></li>",
     "</ul>",
     "</nav>",
@@ -324,14 +230,14 @@ describe("a11y docs shell audit", () => {
 
   test("flags a second page-wide aria-current and a third list level", () => {
     const doubled = SHELL.replace(
-      '<a href="/docs/latest/decisions/adrs/adr-0006-os-env-policy/" aria-current="page">',
-      '<a href="/docs/latest/" aria-current="page">Docs</a><a href="/docs/latest/decisions/adrs/adr-0006-os-env-policy/" aria-current="page">',
+      '<a href="/docs/configuration/overview/" aria-current="page">',
+      '<a href="/docs/" aria-current="page">Docs</a><a href="/docs/configuration/overview/" aria-current="page">',
     );
     // A third list level nested inside the second one, which is the shape the
     // two-layer ceiling forbids.
     const nested = doubled.replace(
       "</a></li>",
-      '</a><ul><li class="docs-nav-entry"><a href="/docs/latest/decisions/">nested</a></li></ul></li>',
+      '</a><ul><li class="docs-nav-entry"><a href="/docs/configuration/">nested</a></li></ul></li>',
     );
     const kinds = auditDocsShell(nested).map((defect) => defect.kind);
     expect(kinds).toContain("aria-current");

@@ -1,0 +1,94 @@
+---
+import { getCollection, render } from "astro:content";
+import DocsBreadcrumbs from "./DocsBreadcrumbs.astro";
+import DocsCodeEnhancer from "./DocsCodeEnhancer.astro";
+import DocsOfflinePackage from "./DocsOfflinePackage.astro";
+import DocsPager from "./DocsPager.astro";
+import DocsSidebar from "./DocsSidebar.astro";
+import DocsToc from "./DocsToc.astro";
+import SiteFooter from "./SiteFooter.astro";
+import SiteHeader from "./SiteHeader.astro";
+import {
+  getAllManualDocEntries,
+  loadManualManifest,
+} from "../lib/manualDocs.ts";
+
+type Locale = "en" | "zh-CN";
+type Props = { locale: Locale; slug: string };
+
+const { locale, slug } = Astro.props as Props;
+const manifest = loadManualManifest();
+const allEntries = getAllManualDocEntries(manifest);
+const activeSlug = slug || allEntries[0]?.fullSlug || "";
+const entry = allEntries.find((item) => item.fullSlug === activeSlug);
+
+if (!entry) throw new Error(`Manual entry not found for slug "${activeSlug}"`);
+
+const docs = await getCollection("docs");
+const collectionPath = entry.path.replace(/\.md$/u, "");
+const document = docs.find(
+  (item) =>
+    item.id === `${locale}/${collectionPath}` ||
+    item.id === `${locale.toLowerCase()}/${collectionPath}`,
+);
+if (!document)
+  throw new Error(`Manual document not found for path "${collectionPath}"`);
+
+const { Content, headings } = await render(document);
+const localizedTitle =
+  document.body?.match(/^#\s+(.+)$/mu)?.[1]?.trim() ?? entry.title;
+const docsPrefix = locale === "zh-CN" ? "/zh-CN/docs" : "/docs";
+const currentPath = `${docsPrefix}/${activeSlug}`;
+const alternatePath = `${locale === "en" ? "/zh-CN/docs" : "/docs"}/${activeSlug}`;
+const pageDescription = `${localizedTitle} — Bitty Manual`;
+---
+
+<!doctype html>
+<html lang={locale} data-theme="shibuya-pop">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={pageDescription} />
+    <link rel="canonical" href={`https://bitty.run${currentPath}`} />
+    <link
+      rel="alternate"
+      hreflang={locale === "en" ? "en" : "zh-CN"}
+      href={`https://bitty.run${currentPath}`}
+    />
+    <link
+      rel="alternate"
+      hreflang={locale === "en" ? "zh-CN" : "en"}
+      href={`https://bitty.run${alternatePath}`}
+    />
+    <link
+      rel="alternate"
+      hreflang="x-default"
+      href={`https://bitty.run/docs/${activeSlug}`}
+    />
+    <link rel="icon" type="image/x-icon" href="/icons/favicon.ico" />
+    <title>{localizedTitle} — Bitty Manual</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">
+      {locale === "zh-CN" ? "跳转到正文" : "Skip to content"}
+    </a>
+    <SiteHeader locale={locale} activeNav="docs" />
+    <main id="main-content" class="docs-main" tabindex="-1">
+      <div class="docs-layout">
+        <DocsSidebar locale={locale} currentSlug={activeSlug} />
+        <div class="docs-article">
+          <DocsBreadcrumbs slug={activeSlug} locale={locale} />
+          <p class="eyebrow">{entry.sectionTitle} · Bitty Manual</p>
+          <DocsToc headings={headings} locale={locale} />
+          <article class="prose bitty-prose">
+            <Content />
+          </article>
+          <DocsPager locale={locale} currentSlug={activeSlug} />
+          <DocsOfflinePackage locale={locale} version={manifest.version} />
+        </div>
+      </div>
+    </main>
+    <SiteFooter locale={locale} />
+    <DocsCodeEnhancer />
+  </body>
+</html>

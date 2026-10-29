@@ -4,7 +4,7 @@
  * Lazy-loaded by `SiteSearch.astro` on first interaction, so pages stay
  * script-free until the visitor actually searches. Fetches the build-time
  * static index (`/search-index.json`) once, ranks with `siteSearch.ts`, and
- * renders version-aware result links for the page's own version segment.
+ * renders locale-aware result links for the page's own manual locale.
  *
  * Accessibility contract: the input is a labelled combobox, results are a
  * listbox with arrow-key navigation (`aria-activedescendant`), the match
@@ -60,7 +60,21 @@ export function initSiteSearch(root: HTMLElement): void {
   const maybeInput = root.querySelector("[data-search-input]");
   const maybeList = root.querySelector("[data-search-results]");
   const maybeStatus = root.querySelector("[data-search-status]");
-  const version = root.dataset["version"] ?? "latest";
+  const locale = root.dataset["locale"] === "zh-CN" ? "zh-CN" : "en";
+  const messages =
+    locale === "zh-CN"
+      ? {
+          unavailable: "搜索暂时不可用。",
+          noResults: (query: string) => `没有找到“${query}”的结果`,
+          results: (count: number, query: string) =>
+            `${count} 个结果：${query}`,
+        }
+      : {
+          unavailable: "Search is unavailable right now.",
+          noResults: (query: string) => `No results for "${query}"`,
+          results: (count: number, query: string) =>
+            `${count} result${count === 1 ? "" : "s"} for "${query}"`,
+        };
   if (
     !(maybeInput instanceof HTMLInputElement) ||
     !(maybeList instanceof HTMLUListElement) ||
@@ -109,17 +123,16 @@ export function initSiteSearch(root: HTMLElement): void {
 
   function render(records: readonly SearchRecord[], query: string): void {
     list.replaceChildren();
-    const versioned = records.map((record) => {
+    const localized = records.map((record) => {
       let href: string;
       try {
-        href = recordHref(record, version);
+        href = recordHref(record, locale);
       } catch {
-        href = recordHref(record, "latest");
+        href = recordHref(record, "en");
       }
       return { record, href };
     });
-    // Version segments that fail closed above still resolve; drop nothing.
-    hits = versioned;
+    hits = localized;
     activeIndex = -1;
     for (const [index, hit] of hits.entries()) {
       const item = document.createElement("li");
@@ -150,8 +163,8 @@ export function initSiteSearch(root: HTMLElement): void {
       query.length === 0
         ? ""
         : hits.length === 0
-          ? `No results for "${query}"`
-          : `${hits.length} result${hits.length === 1 ? "" : "s"} for "${query}"`,
+          ? messages.noResults(query)
+          : messages.results(hits.length, query),
     );
   }
 
@@ -170,12 +183,18 @@ export function initSiteSearch(root: HTMLElement): void {
           return;
         }
         render(
-          searchRecords(records, query).map((hit) => hit.record),
+          searchRecords(
+            records.filter(
+              (record) =>
+                record.locale === undefined || record.locale === locale,
+            ),
+            query,
+          ).map((hit) => hit.record),
           query,
         );
       },
       () => {
-        setStatus("Search is unavailable right now.");
+        setStatus(messages.unavailable);
       },
     );
   }

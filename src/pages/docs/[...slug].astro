@@ -1,0 +1,12 @@
+---
+import ManualPage from "../../components/ManualPage.astro";
+import { getManualPaths } from "../../lib/manualRoutes.ts";
+
+export function getStaticPaths() {
+  return getManualPaths("en");
+}
+
+const { slug = "" } = Astro.params;
+---
+
+<ManualPage locale="en" slug={slug} />

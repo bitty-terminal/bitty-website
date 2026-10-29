@@ -28,7 +28,7 @@ describe("manualDocs", () => {
   });
 
   test("getManualNavGroups marks active section as isCurrent", () => {
-    const groups = getManualNavGroups("plugins/composer", "latest");
+    const groups = getManualNavGroups("plugins/composer", "en");
     expect(groups.length).toBe(6);
 
     const pluginGroup = groups.find((g) => g.id === "plugins");
@@ -39,28 +39,28 @@ describe("manualDocs", () => {
   });
 
   test("getManualPager returns correct linear neighbours", () => {
-    const firstPager = getManualPager("getting-started/quickstart", "latest");
+    const firstPager = getManualPager("getting-started/quickstart", "en");
     expect(firstPager.previous).toBeNull();
     expect(firstPager.next?.slug).toBe("getting-started/cli");
-    expect(firstPager.next?.href).toBe("/docs/latest/getting-started/cli/");
+    expect(firstPager.next?.href).toBe("/docs/getting-started/cli/");
 
-    const middlePager = getManualPager("getting-started/cli", "latest");
+    const middlePager = getManualPager("getting-started/cli", "en");
     expect(middlePager.previous?.slug).toBe("getting-started/quickstart");
-    expect(middlePager.next?.slug).toBe("configuration/overview");
+    expect(middlePager.next?.slug).toBe("getting-started/onboarding-examples");
 
-    const lastPager = getManualPager("faq/troubleshooting", "latest");
+    const lastPager = getManualPager("faq/troubleshooting", "en");
     expect(lastPager.next).toBeNull();
     expect(lastPager.previous?.slug).toBe("api/system");
   });
 
   test("getManualBreadcrumb returns correct CDN R2 metadata", () => {
-    const bc = getManualBreadcrumb("plugins/upstream-components", "en");
+    const bc = getManualBreadcrumb("extensions/upstream-components", "en");
     expect(bc).not.toBeNull();
-    expect(bc?.sectionTitle).toBe("Plugin Architecture & Development");
+    expect(bc?.sectionTitle).toBe("Extension Catalog");
     expect(bc?.title).toBe("Native Component Boundary");
-    expect(bc?.r2Key).toBe("plugins/upstream-components.md");
+    expect(bc?.r2Key).toBe("extensions/upstream-components.md");
     expect(bc?.r2Url).toBe(
-      "https://cdn.bitty.run/manual/en/plugins/upstream-components.md",
+      "https://cdn.bitty.run/manual/bitty-manual/en/extensions/upstream-components.md",
     );
   });
 

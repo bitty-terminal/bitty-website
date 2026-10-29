@@ -1,26 +1,23 @@
 ---
 /**
- * Offline Documentation & bitty-manual Git Source Recommendation Banner.
+ * Offline bitty-manual archive links.
  * Positioned across the bottom of documentation pages.
  * Recommends users to directly download packaged docs from Cloudflare R2
- * or clone the canonical bitty-manual repository.
  */
 interface Props {
   locale?: string;
   version?: string;
 }
 
-const { locale = "en", version = "latest" } = Astro.props as Props;
+const { locale = "en", version = "0.1.0" } = Astro.props as Props;
 const isZh = locale === "zh-CN";
 
 const R2_MANUAL_BASE = "https://cdn.bitty.run/manual";
-const GITHUB_MANUAL_REPO = "https://github.com/bitty-terminal/bitty-manual.git";
+const manualArchive = `${R2_MANUAL_BASE}/bitty-manual/v${version}/${locale}.tar.gz`;
+const manualZip = `${R2_MANUAL_BASE}/bitty-manual/v${version}/${locale}.zip`;
 ---
 
-<section
-  class="docs-offline-box my-8"
-  aria-label="Offline Documentation and Sources"
->
+<section class="docs-offline-box my-8" aria-label="Offline Documentation">
   <div class="toon-card p-5 sm:p-6 bg-[var(--bg-elevated)] border-2 border-[var(--card-border)] space-y-5">
     <!-- Header -->
     <div class="flex flex-wrap items-center justify-between gap-3 border-b-2 border-dashed border-[var(--card-border)] pb-3">
@@ -28,14 +25,12 @@ const GITHUB_MANUAL_REPO = "https://github.com/bitty-terminal/bitty-manual.git";
         <span class="text-xl">📦</span>
         <div>
           <h2 class="font-cyber-display font-bold text-base sm:text-lg text-[var(--fg-primary)] tracking-tight">
-            {isZh
-              ? "离线手册下载与源码镜像"
-              : "Offline Manual & Git Source Mirror"}
+            {isZh ? "离线手册下载" : "Offline Manual"}
           </h2>
           <p class="font-mono-tech text-xs text-[var(--fg-secondary)]">
             {isZh
-              ? "推荐直接从 Cloudflare R2 下载全量打包文档，或直接克隆 bitty-manual 仓库。"
-              : "Download pre-packaged offline archives directly from Cloudflare R2 or clone bitty-manual."}
+              ? "从 Cloudflare R2 下载当前语言的完整手册归档。"
+              : "Download the complete manual archive for this language from Cloudflare R2."}
           </p>
         </div>
       </div>
@@ -44,29 +39,26 @@ const GITHUB_MANUAL_REPO = "https://github.com/bitty-terminal/bitty-manual.git";
       </span>
     </div>
 
-    <!-- Two-column Grid: R2 Direct Archives Left | Git Clone Right -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <!-- 1. Direct R2 Archives -->
+    <div class="grid grid-cols-1 gap-4">
       <div class="p-4 rounded-xl border border-[var(--card-border)] bg-[var(--bg-surface)] space-y-3">
         <div class="flex items-center justify-between">
           <span class="font-cyber-display font-bold text-xs uppercase tracking-wider text-[var(--accent-pop)]">
-            ⚡{" "}
-            {isZh ? "Cloudflare R2 离线归档包" : "Direct R2 Packaged Archives"}
+            ⚡ {isZh ? "Cloudflare R2 离线归档包" : "Direct R2 Manual Archive"}
           </span>
           <span class="font-mono-tech text-[10px] text-[var(--fg-muted)]">
-            v0.1.0 · SHA-256
+            v{version} · SHA-256
           </span>
         </div>
 
         <p class="font-mono-tech text-xs text-[var(--fg-secondary)] leading-relaxed">
           {isZh
-            ? "包含全部 Markdown 源文件、分类清单及 Mermaid 拓扑图，解压即可无网络本地阅读。"
-            : "Complete Markdown source tree, navigation manifest, and diagrams. Zero network required."}
+            ? "包含当前语言的 Markdown 源文件与导航清单，解压即可离线阅读。"
+            : "Complete Markdown source tree and navigation manifest for offline reading."}
         </p>
 
         <div class="flex flex-wrap gap-2 pt-1 font-mono-tech text-xs font-bold">
           <a
-            href={`${R2_MANUAL_BASE}/bitty-manual-latest.tar.gz`}
+            href={manualArchive}
             class="arcade-btn px-3 py-1.5 bg-[var(--bg-elevated)] text-[var(--fg-primary)] hover:text-[var(--accent)] flex items-center gap-1.5"
             download
           >
@@ -74,7 +66,7 @@ const GITHUB_MANUAL_REPO = "https://github.com/bitty-terminal/bitty-manual.git";
             <span class="text-[10px] text-[var(--fg-muted)]">(全量)</span>
           </a>
           <a
-            href={`${R2_MANUAL_BASE}/bitty-manual-latest.zip`}
+            href={manualZip}
             class="arcade-btn px-3 py-1.5 bg-[var(--bg-elevated)] text-[var(--fg-primary)] hover:text-[var(--accent)] flex items-center gap-1.5"
             download
           >
@@ -82,21 +74,7 @@ const GITHUB_MANUAL_REPO = "https://github.com/bitty-terminal/bitty-manual.git";
             <span class="text-[10px] text-[var(--fg-muted)]">(Windows)</span>
           </a>
           <a
-            href={`${R2_MANUAL_BASE}/bitty-manual-zh-CN-latest.tar.gz`}
-            class="arcade-btn px-2.5 py-1.5 bg-[var(--bg-elevated)] text-[var(--fg-primary)] hover:text-[var(--accent)] flex items-center gap-1"
-            download
-          >
-            <span>🇨🇳 中文包</span>
-          </a>
-          <a
-            href={`${R2_MANUAL_BASE}/bitty-manual-en-latest.tar.gz`}
-            class="arcade-btn px-2.5 py-1.5 bg-[var(--bg-elevated)] text-[var(--fg-primary)] hover:text-[var(--accent)] flex items-center gap-1"
-            download
-          >
-            <span>🇬🇧 English</span>
-          </a>
-          <a
-            href={`${R2_MANUAL_BASE}/SHA256SUMS.txt`}
+            href={`${R2_MANUAL_BASE}/bitty-manual/SHA256SUMS.txt`}
             target="_blank"
             rel="noopener noreferrer"
             class="arcade-btn px-2.5 py-1.5 bg-[var(--bg-surface)] text-[var(--fg-secondary)] hover:text-[var(--fg-primary)] flex items-center gap-1 text-[11px]"
@@ -105,73 +83,6 @@ const GITHUB_MANUAL_REPO = "https://github.com/bitty-terminal/bitty-manual.git";
           </a>
         </div>
       </div>
-
-      <!-- 2. Git Clone bitty-manual -->
-      <div class="p-4 rounded-xl border border-[var(--card-border)] bg-[var(--bg-surface)] space-y-3 flex flex-col justify-between">
-        <div class="space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="font-cyber-display font-bold text-xs uppercase tracking-wider text-[var(--accent-yellow)]">
-              🐙 {isZh ? "克隆 bitty-manual 仓库" : "Clone bitty-manual Repo"}
-            </span>
-            <a
-              href="https://github.com/bitty-terminal/bitty-manual"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="font-mono-tech text-[10px] text-[var(--fg-secondary)] hover:text-[var(--accent)]"
-            >
-              GitHub ↗
-            </a>
-          </div>
-
-          <p class="font-mono-tech text-xs text-[var(--fg-secondary)] leading-relaxed">
-            {isZh
-              ? "参与文档翻译或跟踪更新？直接克隆上游规范仓库，享受本地 Lint 与自动化测试："
-              : "Contribute translations or keep your local notes synced with upstream git history:"}
-          </p>
-
-          <!-- Copy Command Box -->
-          <div class="p-2.5 rounded-lg bg-[var(--bg-code)] border border-[var(--card-border)] flex items-center justify-between gap-2 font-mono-tech text-xs">
-            <div class="overflow-x-auto whitespace-nowrap text-[#f5f3ff] py-0.5">
-              <span class="text-[var(--accent-pop)] font-bold mr-1.5">❯</span>
-              <span id="clone-manual-cmd">git clone {GITHUB_MANUAL_REPO}</span>
-            </div>
-            <button
-              type="button"
-              id="copy-clone-manual-btn"
-              class="arcade-btn shrink-0 px-2.5 py-1 bg-[var(--bg-elevated)] font-mono-tech text-[11px] font-bold text-[var(--fg-primary)]"
-              aria-label="Copy git clone command"
-            >
-              <span id="copy-clone-label">COPY</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="pt-1 text-[11px] font-mono-tech text-[var(--fg-muted)] flex items-center justify-between">
-          <span>License: MIT / Apache-2.0</span>
-          <span>Docs Revision: Pinned</span>
-        </div>
-      </div>
     </div>
   </div>
 </section>
-
-<script>
-  (() => {
-    const copyBtn = document.getElementById("copy-clone-manual-btn");
-    const copyLabel = document.getElementById("copy-clone-label");
-    const cmdText = document.getElementById("clone-manual-cmd");
-
-    copyBtn?.addEventListener("click", async () => {
-      const text = cmdText?.textContent?.trim() || "";
-      try {
-        await navigator.clipboard.writeText(text);
-        if (copyLabel) {
-          copyLabel.textContent = "COPIED!";
-          setTimeout(() => {
-            copyLabel.textContent = "COPY";
-          }, 1800);
-        }
-      } catch {}
-    });
-  })();
-</script>

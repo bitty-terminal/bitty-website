@@ -1,10 +1,8 @@
 ---
-/** Not-found page (website#131).
+/** Not-found page.
  *
- * The site moves documentation routes behind redirect families, so any link
- * older than the last rename lands here. It renders inside the normal shell -
- * the same header, search and footer - because a reader who arrives from a
- * stale URL needs a way forward, not a blank body.
+ * It stays inside the normal shell so stale links have a clear path back to
+ * the manual or the home page.
  *
  * Served by `assets.not_found_handling: "404-page"` in `wrangler.jsonc`, which
  * is why the markup must stand on its own: it is the only recovery path for a
@@ -53,13 +51,10 @@ import SiteHeader from "../components/SiteHeader.astro";
     <main id="main-content" class="docs-main" tabindex="-1">
       <article class="prose">
         <h1>Page not found</h1>
-        <p>
-          This address does not serve a page. Documentation routes change as the
-          corpora converge, so an older link can land here.
-        </p>
+        <p>This address does not serve a page.</p>
         <p>
           Start from the
-          <a href="/docs/latest/">documentation map</a> or the
+          <a href="/docs/">documentation map</a> or the
           <a href="/">Bitty home page</a>.
         </p>
       </article>

@@ -9,27 +9,25 @@
  * split chunk on first focus or input — never on page load — and the static
  * index (`/search-index.json`) is fetched lazily with the same trigger.
  *
- * Result links resolve the index's canonical slugs against `version`, so the
- * box works on every hosted segment (`latest`, `stable`, `x.y.z`) without
- * reimplementing routing: the href rule stays in `../lib/siteSearch.ts`.
+ * Result links resolve the index's canonical slugs against the current locale.
  */
 type Props = {
-  /** Raw version route segment of the rendering page; defaults to latest. */
-  version?: string;
+  locale?: "en" | "zh-CN";
 };
 
-const { version = "latest" } = Astro.props as Props;
+const { locale = "en" } = Astro.props as Props;
+const isZh = locale === "zh-CN";
 ---
 
 <form
   class="site-search"
   role="search"
-  aria-label="Site search"
+  aria-label={isZh ? "搜索手册" : "Search manual"}
   data-site-search
-  data-version={version}
+  data-locale={locale}
 >
   <label class="site-search-label" for="site-search-input">
-    Search documentation
+    {isZh ? "搜索手册" : "Search manual"}
   </label>
   <input
     id="site-search-input"
@@ -42,7 +40,7 @@ const { version = "latest" } = Astro.props as Props;
     aria-expanded="false"
     autocomplete="off"
     spellcheck="false"
-    placeholder="Search docs"
+    placeholder={isZh ? "搜索手册" : "Search manual"}
     data-search-input
     data-i18n-placeholder="searchPlaceholder"
   />
@@ -57,13 +55,15 @@ const { version = "latest" } = Astro.props as Props;
     id="site-search-results"
     class="site-search-results"
     role="listbox"
-    aria-label="Search results"
+    aria-label={isZh ? "搜索结果" : "Search results"}
     hidden
     data-search-results
   ></ul>
   <noscript>
     <p class="site-search-fallback">
-      <a href="/docs/latest/">Browse all documentation</a> instead of searching.
+      <a href={locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/"}>
+        {isZh ? "浏览全部手册" : "Browse all documentation"}
+      </a>
     </p>
   </noscript>
 </form>

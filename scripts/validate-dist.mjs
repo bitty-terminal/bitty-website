@@ -87,6 +87,67 @@ for (const version of ["latest", "stable", "0.1.0"]) {
     }
   }
 }
+// Cloudflare does not evaluate `_redirects` strictly in file order, so the
+// generic version rule can win first. This fallback must exist so the
+// intermediate `/docs/zh-CN/...` path still lands on the Chinese manual.
+for (const rule of [
+  "/docs/zh-CN/* /zh-CN/docs/:splat 301",
+  "/docs/zh-CN/ /zh-CN/docs/ 301",
+]) {
+  if (!redirects.includes(rule)) {
+    throw new Error(`missing Chinese fallback redirect: ${rule}`);
+  }
+}
+
+/** Resolve the alias chain the way the edge does: first matching rule wins. */
+function resolveRedirect(path) {
+  const rules = redirects
+    .split("\n")
+    .filter(Boolean)
+    .map((line) => {
+      const [from = "", to = ""] = line.split(/\s+/u);
+      return { from, to };
+    });
+  let current = path;
+  for (let step = 0; step < 5; step += 1) {
+    let next = null;
+    for (const rule of rules) {
+      if (rule.from.endsWith("/*")) {
+        const base = rule.from.slice(0, -1);
+        if (current.startsWith(base)) {
+          next = rule.to.replace(":splat", current.slice(base.length));
+          break;
+        }
+      } else if (rule.from === current) {
+        next = rule.to;
+        break;
+      }
+    }
+    if (next === null) return current;
+    current = next;
+  }
+  throw new Error(`redirect chain does not settle: ${path}`);
+}
+
+for (const alias of [
+  "/docs/latest/zh-CN/",
+  "/docs/stable/zh-CN/",
+  "/docs/0.1.0/zh-CN/",
+  "/docs/0.1.0/zh-CN/getting-started/cli/",
+]) {
+  const resolved = resolveRedirect(alias);
+  if (!resolved.startsWith("/zh-CN/docs/")) {
+    throw new Error(`${alias} resolves to ${resolved}, not the Chinese manual`);
+  }
+  const target = resolved.endsWith("/")
+    ? `${resolved.slice(1)}index.html`
+    : `${resolved.slice(1)}/index.html`;
+  try {
+    await access(new URL(target, dist));
+  } catch {
+    throw new Error(`${alias} resolves to a missing page: ${resolved}`);
+  }
+}
 
 try {
   await access(new URL("_worker.js", dist));

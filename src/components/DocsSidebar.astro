@@ -6,29 +6,35 @@
 import { getManualNavGroups } from "../lib/manualDocs.ts";
 
 type Props = {
-  /** Raw version route segment, e.g. `latest`, `stable`, or `0.1.0`. */
-  version: string;
-  /** Canonical slug of the rendered page (`""` for the revision index). */
+  locale?: "en" | "zh-CN";
   currentSlug: string;
 };
 
-const { version, currentSlug } = Astro.props as Props;
-const groups = getManualNavGroups(currentSlug, version);
+const { locale = "en", currentSlug } = Astro.props as Props;
+const groups = getManualNavGroups(currentSlug, locale);
+const docsPrefix = locale === "zh-CN" ? "/zh-CN/docs" : "/docs";
 ---
 
 <details class="docs-nav-drawer" open>
-  <summary>Browse documentation</summary>
+  <summary>{locale === "zh-CN" ? "浏览手册" : "Browse manual"}</summary>
   <div class="r2-sync-pill">
     <div class="r2-sync-row">
-      <span class="r2-sync-tag">SOURCE BUCKET</span>
+      <span class="r2-sync-tag">
+        {locale === "zh-CN" ? "内容来源" : "MANUAL SOURCE"}
+      </span>
       <span class="r2-sync-status">
         <span class="r2-sync-dot"></span>
-        R2 Live
+        {locale === "zh-CN" ? "R2 内容" : "R2 content"}
       </span>
     </div>
-    <div class="r2-sync-path">cdn.bitty.run/manual/&#123;locale&#125;/...</div>
+    <div class="r2-sync-path">
+      cdn.bitty.run/manual/bitty-manual/{locale}/...
+    </div>
   </div>
-  <nav class="docs-sidebar" aria-label="Documentation">
+  <nav
+    class="docs-sidebar"
+    aria-label={locale === "zh-CN" ? "手册导航" : "Manual navigation"}
+  >
     <ul class="docs-nav-tree">
       {groups.map((group) => (
         <li class="docs-nav-group">
@@ -42,7 +48,7 @@ const groups = getManualNavGroups(currentSlug, version);
                 const isActive =
                   entry.fullSlug === currentSlug ||
                   (currentSlug === "" && entry.order === 0);
-                const href = `/docs/${version}/${entry.fullSlug}/`;
+                const href = `${docsPrefix}/${entry.fullSlug}/`;
                 return (
                   <li class="docs-nav-entry">
                     <a

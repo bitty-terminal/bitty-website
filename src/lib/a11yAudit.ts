@@ -56,53 +56,28 @@ export type RenderedPage = {
   readonly path: string;
   readonly relativePath: string;
   readonly redirectStub: boolean;
-  /**
-   * Upstream raw-HTML passthrough (currently `architecture/interactive/`):
-   * a standalone app mirrored verbatim, not rendered through the site
-   * template. Site-chrome checks (skip link, footer, focus target) do not
-   * apply; asset policy still applies but reports warn-only because the
-   * source lives upstream.
-   */
-  readonly passthrough: boolean;
 };
-
-/** Relative dist paths rendered outside the site template. */
-export const PASSTHROUGH_PATH_SEGMENT = "architecture/interactive/";
-
-/**
- * Policy record for the accepted bundled-raster exception on the interactive
- * architecture passthrough page. The audit cites this document (see its
- * "Recorded exceptions" section) instead of an open tracking issue: the page
- * is generated upstream and the mirror must not be hand-edited, so the
- * references stay warn-only rather than failing the build.
- */
-export const RECORDED_ASSET_EXCEPTION_DOC = "docs/cdn-assets.md";
 
 /** Severity the audit assigns to one disallowed asset reference. */
 export type AssetPolicyFinding = {
-  readonly severity: "warn" | "fail";
+  readonly severity: "fail";
   readonly detail: string;
 };
 
 /**
  * Severity and message for every disallowed asset reference on one page.
  *
- * Passthrough mirrors keep their bundled raster references warn-only and cite
- * the recorded exception in `docs/cdn-assets.md`; every other page fails, so
- * the same markup elsewhere still stops the build.
+ * Every disallowed bundled raster reference fails the build.
  */
 export function assetPolicyFindings(
   pageName: string,
   html: string,
-  passthrough: boolean,
 ): readonly AssetPolicyFinding[] {
   return findDisallowedAssetReferences(html).map((problem) => {
     const detail = `${pageName}: bundled raster dependence found in ${problem.element}[${problem.attribute}]: ${problem.value}`;
     return {
-      severity: passthrough ? "warn" : "fail",
-      detail: passthrough
-        ? `${detail} (accepted exception recorded in ${RECORDED_ASSET_EXCEPTION_DOC})`
-        : detail,
+      severity: "fail",
+      detail,
     };
   });
 }
@@ -311,13 +286,19 @@ export function findBrokenInternalLinks(
       ? href.slice(1)
       : normalizeDocPath(pageDir + href);
     if (!resolved.startsWith("docs/")) continue;
-    // File references (CHANGELOG.md, diagrams.css, data.json, sub-page .html
-    // of upstream passthrough apps) are not doc routes: upstream authors link
-    // them for the repository view, and the site never renders them as pages.
+    // File references (CHANGELOG.md, diagrams.css, data.json) are not doc
+    // routes: the site renders only extensionless manual pages.
     // Only extensionless route-style links are dead-link candidates.
     const leaf = resolved.endsWith("/")
       ? ""
       : (resolved.split("/").pop() ?? "");
+    // A Markdown file target is never a rendered route: the site publishes
+    // extensionless manual pages. Report it instead of skipping it, so an
+    // unwritten cross-link fails the accessibility gate.
+    if (leaf.endsWith(".md")) {
+      broken.push({ href: rawHref, resolved });
+      continue;
+    }
     if (leaf.includes(".")) continue;
     const target = resolved.endsWith("/")
       ? `${resolved}index.html`
@@ -358,8 +339,7 @@ function normalizeDocPath(path: string): string {
  *   level, ever),
  * - the breadcrumb landmark is present.
  *
- * The caller scopes this to rendered docs pages; redirect stubs and
- * passthrough mirrors have no shell.
+ * The caller scopes this to rendered docs pages; redirect stubs have no shell.
  */
 export type DocsShellDefect = {
   readonly kind: "title-echo" | "aria-current" | "sidebar-depth" | "breadcrumb";
@@ -471,7 +451,7 @@ export function auditDocsShell(html: string): readonly DocsShellDefect[] {
       detail: `sidebar renders ${depth} nested list levels (two-layer ceiling)`,
     });
   }
-  if (!html.includes('aria-label="Breadcrumb"')) {
+  if (!/class="docs-metadata-bar[^"]*"/u.test(html)) {
     defects.push({
       kind: "breadcrumb",
       detail: "breadcrumb landmark missing",
@@ -513,7 +493,6 @@ export async function collectRenderedPages(
       path,
       relativePath,
       redirectStub: isRedirectStub(html),
-      passthrough: relativePath.includes(PASSTHROUGH_PATH_SEGMENT),
     });
   }
   return pages;

@@ -1,30 +1,24 @@
-# Internationalization (placeholder)
+# Website internationalization
 
-This directory reserves the future locale layout for the website. It holds no
-locale content and introduces no routing; internationalization is deferred
-until an accepted cross-repository decision defines ownership, review, and
-synchronization.
+The public site supports English (`en`) and Simplified Chinese (`zh-CN`). The
+canonical translated documentation is shipped by the `bitty-manual` package;
+this directory is reserved for website-only interface strings and future
+locale-specific site metadata.
 
-## Current policy
+## Routes
 
-- Canonical documentation is English-only. The pinned `bitty-docs` corpus, its
-  metadata checks, and the website language gate stay English until a decision
-  changes that contract.
-- The website must not serve translated content derived from unofficial
-  sources.
+- `/` and `/docs/...` — English;
+- `/zh-CN/` and `/zh-CN/docs/...` — Simplified Chinese.
 
-## Planned layout (not implemented)
+The route prefix is explicit. The site does not rewrite pages based on the
+browser's language preference.
 
-When internationalization is accepted, this directory is expected to hold
-per-locale configuration and message catalogs separated by locale, for example
-an `en/` source-language directory plus reviewed locale directories.
+## Ownership
 
-The exact layout, catalog format, fallback rules, route prefixes, and any
-Astro Starlight i18n configuration belong to the owning scoped task and its
-accepted decision. No translation is published before that decision records
-translation status, review ownership, and source identity.
+- `bitty-manual/en/` is the canonical English manual;
+- `bitty-manual/zh-CN/` is the reviewed Simplified Chinese mirror;
+- website-only labels belong in Astro components or locale data modules;
+- `src/content/manual.lock.json` pins the exact manual release consumed by the
+  static build.
 
-## Related
-
-- Repository target direction: `README.md` and `AGENTS.md`.
-- Canonical content boundary: the `bitty-docs` website content contract.
+Locale parity is verified by `bun run sync:manual` before the website build.

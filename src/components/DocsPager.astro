@@ -7,26 +7,27 @@
 import { getManualPager } from "../lib/manualDocs.ts";
 
 type Props = {
-  /** Raw version route segment, e.g. `latest`. */
-  version: string;
-  /** Canonical slug of the rendered page (`""` for the revision index). */
+  locale?: "en" | "zh-CN";
   currentSlug: string;
 };
 
-const { version, currentSlug } = Astro.props as Props;
+const { locale = "en", currentSlug } = Astro.props as Props;
 
-const { previous, next } = getManualPager(currentSlug, version);
+const { previous, next } = getManualPager(currentSlug, locale);
+const isZh = locale === "zh-CN";
 ---
 
 {(previous !== null || next !== null) && (
-  <nav class="docs-pager" aria-label="Pagination">
+  <nav class="docs-pager" aria-label={isZh ? "分页导航" : "Pagination"}>
     {previous !== null ? (
       <a
         class="docs-pager-link docs-pager-prev blueprint-box"
         href={previous.href}
         rel="prev"
       >
-        <span class="docs-pager-hint">← Previous</span>
+        <span class="docs-pager-hint">
+          {locale === "zh-CN" ? "← 上一页" : "← Previous"}
+        </span>
         <span class="docs-pager-target">{previous.title}</span>
       </a>
     ) : (
@@ -38,7 +39,9 @@ const { previous, next } = getManualPager(currentSlug, version);
         href={next.href}
         rel="next"
       >
-        <span class="docs-pager-hint">Next →</span>
+        <span class="docs-pager-hint">
+          {locale === "zh-CN" ? "下一页 →" : "Next →"}
+        </span>
         <span class="docs-pager-target">{next.title}</span>
       </a>
     )}

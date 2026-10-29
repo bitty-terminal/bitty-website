@@ -3,20 +3,20 @@
  *
  * Browser-safe: no Node imports, so the search box can lazy-load this module
  * from any page. The record set comes from the build-time static index
- * (`dist/search-index.json`, written by `searchIndex.ts`); records carry
- * canonical version-less slugs and the caller resolves them against the
- * current page's version segment, so `latest`/`stable` aliases keep working
- * without triple-indexing every hosted version.
+ * (`dist/search-index.json`, generated from the pinned bitty-manual bundle);
+ * records carry locale-aware, version-less slugs and the caller resolves them
+ * against the current `/docs/` or `/zh-CN/docs/` route prefix.
  */
 
 export type SearchRecord = {
-  /** Canonical slug, e.g. `specifications/foo`; `""` for the revision index. */
+  /** Canonical manual slug, e.g. `configuration/themes`; `""` for the index. */
   readonly slug: string;
   readonly title: string;
   readonly description: string;
   readonly category: string;
   /** Plain article prose (tags stripped at build time). */
   readonly text: string;
+  readonly locale?: "en" | "zh-CN";
 };
 
 export type SearchHit = {
@@ -57,12 +57,11 @@ const STOP_WORDS: ReadonlySet<string> = new Set([
   "with",
 ]);
 
-/** Lowercase alphanumeric tokens; docs are English-only per repo policy. */
+/** Lowercase Latin/numeric and Han tokens for both supported locales. */
 export function tokenize(query: string): readonly string[] {
-  return query
-    .toLowerCase()
-    .split(/[^a-z0-9]+/u)
-    .filter((token) => token.length > 0 && !STOP_WORDS.has(token));
+  return (
+    query.toLocaleLowerCase().match(/[\p{Script=Han}]+|[a-z0-9]+/giu) ?? []
+  ).filter((token) => !STOP_WORDS.has(token));
 }
 
 function countOccurrences(haystack: string, needle: string): number {
@@ -119,25 +118,14 @@ export function searchRecords(
 }
 
 /**
- * Resolve a version-less record to the versioned docs route of the page the
- * search box is rendered on. The version segment passes through untouched, so
- * `latest`, `stable`, and explicit `x.y.z` segments all keep working.
+ * Resolve a version-less record to the localized manual route.
  *
- * @throws on an empty or path-breaking version segment (fail closed).
+ * @throws on a path-breaking slug (fail closed).
  */
 export function recordHref(
   record: Pick<SearchRecord, "slug">,
-  version: string,
+  locale: "en" | "zh-CN" = "en",
 ): string {
-  if (
-    version.length === 0 ||
-    version.includes("/") ||
-    version.includes("\\") ||
-    version.includes(" ")
-  ) {
-    throw new Error(`Invalid version segment "${version}"`);
-  }
-  return record.slug === ""
-    ? `/docs/${version}/`
-    : `/docs/${version}/${record.slug}/`;
+  const prefix = locale === "zh-CN" ? "/zh-CN/docs" : "/docs";
+  return record.slug === "" ? `${prefix}/` : `${prefix}/${record.slug}/`;
 }

@@ -1,10 +1,8 @@
 # CDN assets (`cdn.bitty.run`)
 
-Static binary assets for the website — screenshots, demo videos, font files —
-live in the Cloudflare R2 bucket `bitty`, publicly served at
-`https://cdn.bitty.run`. The Astro `dist/` output stays text-only; pages
-reference CDN URLs built with `cdnUrl()` from `src/lib/cdn.ts` instead of
-bundling binaries.
+Large public assets and release data live in the Cloudflare R2 bucket `bitty`,
+served from `https://cdn.bitty.run`. The Astro output keeps binary payloads out
+of the repository whenever the asset belongs in R2.
 
 ## Verified bucket state (2026-09-24)
 
@@ -21,8 +19,9 @@ bundling binaries.
 - Lifecycle holds the default rule aborting incomplete multipart uploads
   after 7 days. No expiry rule: hashed assets are immutable, mutable aliases
   are overwritten in place.
-- The bucket is empty: no real assets exist yet. Screenshots and demo media
-  land post-0.1.0 in a later lane.
+- Manual archives and product release artifacts are published under their own
+  namespaces and are documented by `bitty-manual` and the product packaging
+  contracts respectively.
 
 ## URL scheme
 
@@ -84,41 +83,9 @@ Then reference the asset from the site with `cdnUrl("images/hero-<sha>.avif")`;
 the `PUBLIC_CDN_BASE_URL` build-time constant in `astro.config.mjs` carries
 the same origin for client-side code.
 
-## Recorded exceptions
-
-Accepted deviations from the CDN-only raster rule, each entry stating the page
-and route it covers, why the site repository cannot resolve it, and what would
-retire it. A recorded exception is warn-only in `scripts/audit-a11y.mjs` for
-the passthrough page it names; the same markup on every other page fails the
-audit.
-
-### Bundled raster on the interactive architecture passthrough
-
-- **Page and route**: the interactive architecture explorer, published at
-  `/docs/<version>/projects/bitty/architecture/interactive/` (the `0.1.0`,
-  `latest`, and `stable` aliases). Its source lives in
-  `bitty-terminal-docs/architecture/interactive/`; this repository consumes it
-  through the `bitty-terminal-docs` entry of `src/content/docs-revision.json`,
-  whose mount `projects/bitty` carries the terminal-platform corpus. The mirror
-  file is
-  `src/content/docs/docs/projects/bitty/architecture/interactive/index.html`.
-- **Accepted references**: two bundled PNGs reached by relative `src`:
-  `assets/bitty-icon.png` (23,391 bytes, line 23) and `assets/hero.png`
-  (171,538 bytes, line 146).
-- **Why it is accepted**: the page is generated, not authored here. The mirror
-  must never be hand-edited, so the site repository cannot remove the
-  references; an edit here is overwritten on the next mirror sync.
-- **What would retire it**: the page's source repository replacing each PNG
-  reference with the vector sibling already checked in beside it —
-  `assets/bitty-icon.svg` (8,601 bytes) and `assets/hero.svg` (16,516 bytes) —
-  or hosting the PNGs on the CDN and referencing them through `cdnUrl()`.
-  Removing both bundled references, or dropping the page from the passthrough
-  set, ends the exception: retiring one of the two leaves the other still
-  warn-only under this same entry.
-- **Recorded from**: bitty-terminal/bitty-docs#373.
-
 ## Deliberately out of scope
 
-- Uploading real assets (none exist yet; screenshots are post-0.1.0).
-- Zone-level cache or transform rules.
-- Deploy workflow changes.
+- Runtime R2 Markdown rendering.
+- Runtime asset discovery or directory listings.
+- Server-side search, CMS, or upload APIs.
+- Deployment-time mutation of R2 objects.

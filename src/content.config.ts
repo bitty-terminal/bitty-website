@@ -3,7 +3,7 @@ import { glob } from "astro/loaders";
 
 /**
  * Bitty Manual Collection (CTX-0064).
- * Loads all user-facing documentation from bitty-manual (both English and Chinese).
+ * Loads the pinned bitty-manual bundle (English and Simplified Chinese).
  */
 const docs = defineCollection({
   loader: glob({
@@ -16,7 +16,7 @@ const docs = defineCollection({
       description: z.string().optional(),
       category: z.string().optional(),
     })
-    .passthrough(),
+    .catchall(z.unknown()),
 });
 
 export const collections = { docs };

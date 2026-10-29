@@ -1,0 +1,15 @@
+{
+  "schema": 1,
+  "package": "bitty-manual",
+  "version": "0.1.0",
+  "bundles": {
+    "en": {
+      "path": "v0.1.0/en.tar.gz",
+      "sha256": "ff02f4c4f7185062d00a881f56f6736fdbae6f7d03d86475f90e73bd74ceff7d"
+    },
+    "zh-CN": {
+      "path": "v0.1.0/zh-CN.tar.gz",
+      "sha256": "3d05fbe140feb8f7b18c548d2d5b7b312fa6fbab968c5aa96ad30125a6628d5f"
+    }
+  }
+}

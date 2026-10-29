@@ -1,0 +1,526 @@
+---
+import SiteFooter from "./SiteFooter.astro";
+import SiteHeader from "./SiteHeader.astro";
+import "../styles/global.css";
+
+type Locale = "en" | "zh-CN";
+const locale = (Astro.props as { locale?: Locale }).locale ?? "en";
+const isZh = locale === "zh-CN";
+const copy = {
+  badge: isZh
+    ? "GPU 渲染 · Rust 核心 · Lua 扩展"
+    : "GPU-RENDERED · RUST CORE · LUA EXTENSIONS",
+  title: isZh
+    ? "为长期生活在 Shell 中的人打造的可编程终端工作区。"
+    : "A programmable terminal workspace for people who live in the shell.",
+  description: isZh
+    ? "Bitty 将高性能终端核心、多面板工作区和明确授权的 Lua 扩展组合成一个专注的桌面应用。"
+    : "Bitty combines a fast terminal core, multi-pane workspaces, and explicit Lua extensions in one focused desktop application.",
+  install: isZh ? "安装 Bitty" : "Install Bitty",
+  docs: isZh ? "阅读手册" : "Read the manual",
+  release: isZh
+    ? "预发布阶段 · R2 发行渠道"
+    : "Pre-alpha · R2-backed release channel",
+  installTitle: isZh ? "选择安装方式" : "Choose your path",
+  installDescription: isZh
+    ? "独立安装脚本与 Debian/Ubuntu APT 渠道现在可用；其余发行版渠道在发布并验证后加入。"
+    : "Standalone installers and the Debian/Ubuntu APT channel are available now; other distribution channels follow once published and verified.",
+  unix: "Linux / macOS",
+  windows: "Windows",
+  debian: "Debian / Ubuntu",
+  redhat: "Red Hat / Fedora",
+  source: isZh ? "从源码构建" : "Build from source",
+  comingSoon: isZh ? "即将提供" : "Coming soon",
+  available: isZh ? "现在可用" : "Available",
+  copy: isZh ? "复制" : "Copy",
+  copied: isZh ? "已复制" : "Copied",
+  copyFailed: isZh ? "复制失败" : "Copy failed",
+  unixDescription: isZh
+    ? "Linux 与 macOS 用户级安装脚本。"
+    : "Linux and macOS user-local bootstrap.",
+  windowsDescription: isZh
+    ? "Windows 用户级 PowerShell 安装脚本。"
+    : "PowerShell user-local bootstrap.",
+  debianDescription: isZh
+    ? "Debian 11+ 与 Ubuntu 20.04+：一键脚本或 deb822 标准配置。"
+    : "Debian 11+ and Ubuntu 20.04+: one-line setup or the deb822 standard layout.",
+  redhatDescription: isZh
+    ? "yum 与 dnf 渠道，待 R2 发布。"
+    : "Native yum and dnf channels, pending R2 publication.",
+  sourceDescription: isZh
+    ? "使用固定 Rust 工具链构建二进制文件。"
+    : "Build the binary from the pinned Rust toolchain.",
+  note: isZh
+    ? "发行包由 Cloudflare R2 提供，并通过 SHA-256 sidecar 校验。"
+    : "Release artifacts are served from Cloudflare R2 and verified with SHA-256 sidecars.",
+};
+
+const installCommands = {
+  unix: "curl -fsSL https://cdn.bitty.run/install/install.sh | bash",
+  windows: "irm https://cdn.bitty.run/install/install.ps1 | iex",
+  debianA:
+    "curl -fsSL https://cdn.bitty.run/apt/setup.sh | sudo bash\nsudo apt install -y bitty",
+  debianB:
+    "sudo mkdir -p -m 0755 /etc/apt/keyrings\nsudo curl -fsSL https://cdn.bitty.run/apt/bitty-archive-keyring.gpg -o /etc/apt/keyrings/bitty-archive-keyring.gpg\nsudo curl -fsSL https://cdn.bitty.run/apt/bitty.sources -o /etc/apt/sources.list.d/bitty.sources\nsudo apt update\nsudo apt install -y bitty",
+  redhatYum: "sudo yum install -y bitty",
+  redhatDnf: "sudo dnf install -y bitty",
+  source:
+    "cargo +1.98.1 install --git https://github.com/bitty-terminal/bitty.git bitty-terminal --locked",
+} as const;
+
+const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
+---
+
+<!doctype html>
+<html lang={locale} data-theme="shibuya-pop">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={copy.description} />
+    <link
+      rel="canonical"
+      href={`https://bitty.run${locale === "zh-CN" ? "/zh-CN/" : "/"}`}
+    />
+    <link rel="alternate" hreflang="en" href="https://bitty.run/" />
+    <link rel="alternate" hreflang="zh-CN" href="https://bitty.run/zh-CN/" />
+    <link rel="alternate" hreflang="x-default" href="https://bitty.run/" />
+    <link rel="icon" type="image/x-icon" href="/icons/favicon.ico" />
+    <title>{isZh ? "Bitty — 可编程终端工作区" : "Bitty — Programmable Terminal Workspace"}</title>
+  </head>
+  <body class="site-body">
+    <a href="#main-content" class="skip-link">
+      {isZh ? "跳转到正文" : "Skip to content"}
+    </a>
+    <SiteHeader locale={locale} activeNav="hero" />
+
+    <main id="main-content" tabindex="-1">
+      <section class="hero-shell" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="hero-kicker">{copy.badge}</p>
+          <h1 id="hero-title">{copy.title}</h1>
+          <p class="hero-description">{copy.description}</p>
+          <p class="hero-release">{copy.release}</p>
+          <div class="hero-actions">
+            <a class="primary-action" href="#install">
+              {copy.install}
+            </a>
+            <a class="secondary-action" href={docsHref}>
+              {copy.docs}
+            </a>
+          </div>
+        </div>
+
+        <aside
+          class="terminal-card"
+          aria-label={isZh ? "Bitty 工作区预览" : "Bitty workspace preview"}
+        >
+          <div class="terminal-card-bar">
+            <span>bitty</span>
+            <span>workspace / 01</span>
+          </div>
+          <pre><code><span class="terminal-muted">$</span> bitty init --yes
+<span class="terminal-ok">✓</span> configuration ready
+<span class="terminal-muted">$</span> bitty
+
+<span class="terminal-accent">╭───────────────╮</span> <span class="terminal-blue">╭───────────────╮</span>
+<span class="terminal-accent">│</span> shell         <span class="terminal-accent">│</span> <span class="terminal-blue">│</span> extensions    <span class="terminal-blue">│</span>
+<span class="terminal-accent">╰───────────────╯</span> <span class="terminal-blue">╰───────────────╯</span></code></pre>
+        </aside>
+      </section>
+
+      <section
+        id="install"
+        class="install-shell"
+        aria-labelledby="install-title"
+      >
+        <div class="section-heading">
+          <p class="section-kicker">{isZh ? "下载" : "DOWNLOAD"}</p>
+          <h2 id="install-title">{copy.installTitle}</h2>
+          <p>{copy.installDescription}</p>
+        </div>
+
+        <div class="install-grid">
+          <article class="install-card install-card-featured">
+            <div class="install-card-heading">
+              <div>
+                <p class="install-label">{copy.available}</p>
+                <h3>{copy.unix}</h3>
+              </div>
+              <span class="status-dot status-available">●</span>
+            </div>
+            <p>{copy.unixDescription}</p>
+            <div class="command-block">
+              <code>{installCommands.unix}</code>
+              <button type="button" data-copy={installCommands.unix}>
+                {copy.copy}
+              </button>
+            </div>
+          </article>
+
+          <article class="install-card install-card-featured">
+            <div class="install-card-heading">
+              <div>
+                <p class="install-label">{copy.available}</p>
+                <h3>{copy.windows}</h3>
+              </div>
+              <span class="status-dot status-available">●</span>
+            </div>
+            <p>{copy.windowsDescription}</p>
+            <div class="command-block">
+              <code>{installCommands.windows}</code>
+              <button type="button" data-copy={installCommands.windows}>
+                {copy.copy}
+              </button>
+            </div>
+          </article>
+
+          <article class="install-card install-card-featured">
+            <div class="install-card-heading">
+              <div>
+                <p class="install-label">{copy.available}</p>
+                <h3>{copy.debian}</h3>
+              </div>
+              <span class="status-dot status-available">●</span>
+            </div>
+            <p>{copy.debianDescription}</p>
+            <div class="command-stack">
+              <div class="command-block">
+                <code>{installCommands.debianA}</code>
+                <button type="button" data-copy={installCommands.debianA}>
+                  {copy.copy}
+                </button>
+              </div>
+              <div class="command-block">
+                <code>{installCommands.debianB}</code>
+                <button type="button" data-copy={installCommands.debianB}>
+                  {copy.copy}
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="install-card">
+            <div class="install-card-heading">
+              <div>
+                <p class="install-label">{copy.comingSoon}</p>
+                <h3>{copy.redhat}</h3>
+              </div>
+              <span class="status-dot status-pending">○</span>
+            </div>
+            <p>{copy.redhatDescription}</p>
+            <div class="command-stack">
+              <div class="command-block">
+                <code>{installCommands.redhatYum}</code>
+                <button type="button" disabled title={copy.comingSoon}>
+                  {copy.copy}
+                </button>
+              </div>
+              <div class="command-block">
+                <code>{installCommands.redhatDnf}</code>
+                <button type="button" disabled title={copy.comingSoon}>
+                  {copy.copy}
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="install-card">
+            <div class="install-card-heading">
+              <div>
+                <p class="install-label">{copy.available}</p>
+                <h3>{copy.source}</h3>
+              </div>
+              <span class="status-dot status-available">●</span>
+            </div>
+            <p>{copy.sourceDescription}</p>
+            <div class="command-block">
+              <code>{installCommands.source}</code>
+              <button type="button" data-copy={installCommands.source}>
+                {copy.copy}
+              </button>
+            </div>
+          </article>
+        </div>
+        <p class="install-note">
+          {copy.note}{" "}
+          <a
+            href="https://cdn.bitty.run/install/latest.txt"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {isZh ? "最新发行指针" : "Latest release pointer"} ↗
+          </a>
+        </p>
+      </section>
+    </main>
+
+    <SiteFooter locale={locale} />
+
+    <script
+      define:vars={{
+        copiedMessage: copy.copied,
+        copyFailedMessage: copy.copyFailed,
+      }}
+    >
+      const copied = copiedMessage;
+      const copyFailed = copyFailedMessage;
+      for (const element of document.querySelectorAll("[data-copy]")) {
+        if (!(element instanceof HTMLButtonElement)) continue;
+        const button = element;
+        button.addEventListener("click", async () => {
+          const command = button.dataset.copy ?? "";
+          try {
+            await navigator.clipboard.writeText(command);
+            const original = button.textContent ?? "Copy";
+            button.textContent = copied;
+            window.setTimeout(() => {
+              button.textContent = original;
+            }, 1600);
+          } catch {
+            button.textContent = copyFailed;
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
+
+<style>
+  .site-body {
+    min-height: 100vh;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .hero-shell,
+  .install-shell {
+    width: min(72rem, calc(100% - 2rem));
+    margin-inline: auto;
+  }
+
+  .hero-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(20rem, 0.92fr);
+    gap: clamp(2rem, 6vw, 6rem);
+    align-items: center;
+    min-height: min(45rem, calc(100vh - 4rem));
+    padding-block: 5rem 4rem;
+  }
+
+  .hero-copy {
+    max-width: 46rem;
+  }
+  .hero-kicker,
+  .section-kicker,
+  .install-label {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .hero-kicker {
+    margin: 0 0 1.25rem;
+  }
+  .hero-copy h1 {
+    max-width: 12ch;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    line-height: 0.98;
+    letter-spacing: -0.045em;
+  }
+  .hero-description {
+    max-width: 42rem;
+    margin: 1.75rem 0 0;
+    color: var(--muted);
+    font-size: clamp(1.05rem, 1.8vw, 1.3rem);
+    line-height: 1.65;
+  }
+  .hero-release,
+  .install-note {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+  .primary-action,
+  .secondary-action {
+    display: inline-flex;
+    min-height: var(--touch-target);
+    align-items: center;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    text-decoration: none;
+  }
+  .primary-action {
+    background: var(--accent);
+    color: white;
+  }
+  .secondary-action {
+    background: var(--card);
+    color: var(--ink);
+  }
+  .primary-action:hover,
+  .secondary-action:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .terminal-card {
+    overflow: hidden;
+    border: 1px solid var(--ink);
+    background: var(--terminal-bg);
+    color: var(--terminal-ink);
+    box-shadow: 0.8rem 0.8rem 0 var(--accent-soft);
+  }
+  .terminal-card-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.7rem 1rem;
+    border-bottom: 1px solid var(--terminal-line);
+    color: var(--terminal-muted);
+    font: 0.75rem var(--font-mono);
+  }
+  .terminal-card pre {
+    margin: 0;
+    padding: 1.5rem;
+    overflow-x: auto;
+    font: 0.85rem/1.8 var(--font-mono);
+  }
+  .terminal-muted {
+    color: var(--terminal-muted);
+  }
+  .terminal-ok {
+    color: var(--ok-soft);
+  }
+  .terminal-accent {
+    color: var(--terminal-prompt);
+  }
+  .terminal-blue {
+    color: #8ab4f8;
+  }
+
+  .install-shell {
+    padding-block: 3rem 6rem;
+  }
+  .section-heading {
+    max-width: 42rem;
+    margin-bottom: 2rem;
+  }
+  .section-heading h2 {
+    margin: 0.3rem 0 0.75rem;
+    font: 700 clamp(2rem, 4vw, 3rem)/1.05 var(--font-display);
+  }
+  .section-heading p:last-child {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .install-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  .install-card {
+    padding: 1.25rem;
+    border: 1px solid var(--line);
+    background: var(--card);
+    box-shadow: var(--shadow);
+  }
+  .install-card-featured {
+    border-color: var(--accent);
+  }
+  .install-card-heading {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .install-card h3 {
+    margin: 0.25rem 0 0;
+    font: 700 1.2rem var(--font-display);
+  }
+  .install-card > p {
+    min-height: 2.8rem;
+    margin: 0.9rem 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  .install-label {
+    margin: 0;
+    font-size: 0.68rem;
+  }
+  .status-dot {
+    font-size: 1rem;
+  }
+  .status-available {
+    color: var(--ok);
+  }
+  .status-pending {
+    color: var(--muted);
+  }
+  .command-stack {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .command-block {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+    padding: 0.7rem;
+    background: var(--terminal-bg);
+    color: var(--terminal-ink);
+  }
+  .command-block code {
+    min-width: 0;
+    flex: 1;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font: 0.72rem/1.55 var(--font-mono);
+  }
+  .command-block button {
+    align-self: flex-start;
+    border: 1px solid var(--terminal-line);
+    padding: 0.35rem 0.55rem;
+    background: var(--terminal-panel);
+    color: var(--terminal-ink);
+    font: 700 0.68rem var(--font-mono);
+    cursor: pointer;
+  }
+  .command-block button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .install-note {
+    margin: 1.25rem 0 0;
+  }
+  .install-note a {
+    color: var(--accent);
+  }
+
+  @media (max-width: 800px) {
+    .hero-shell {
+      grid-template-columns: 1fr;
+      min-height: auto;
+      padding-block: 4rem;
+    }
+    .terminal-card {
+      max-width: 42rem;
+    }
+    .install-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

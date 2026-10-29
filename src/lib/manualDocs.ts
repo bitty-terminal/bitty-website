@@ -13,6 +13,8 @@ export interface ManualManifestSection {
   readonly items: readonly ManualManifestItem[];
 }
 
+export type ManualLocale = "en" | "zh-CN";
+
 export interface ManualManifestDistribution {
   readonly package: string;
   readonly cdn_base: string;
@@ -38,6 +40,10 @@ export interface ManualDocEntry {
   readonly title: string;
   readonly path: string;
   readonly order: number;
+}
+
+export function docsPrefix(locale: ManualLocale = "en"): string {
+  return locale === "zh-CN" ? "/zh-CN/docs" : "/docs";
 }
 
 export interface ManualNavGroup {
@@ -109,16 +115,57 @@ export function getAllManualDocEntries(
   return entries;
 }
 
+const localizedTitleCache = new Map<string, string>();
+
+function localizedTitle(entry: ManualDocEntry, locale: ManualLocale): string {
+  if (locale === "en") return entry.title;
+  const key = `${locale}:${entry.path}`;
+  const cached = localizedTitleCache.get(key);
+  if (cached !== undefined) return cached;
+  const raw = readManualRawMarkdown(entry.path, locale);
+  const title = raw.match(/^#\s+(.+)$/mu)?.[1]?.trim() || entry.title;
+  localizedTitleCache.set(key, title);
+  return title;
+}
+
+function localizedEntry(
+  entry: ManualDocEntry,
+  locale: ManualLocale,
+): ManualDocEntry {
+  return locale === "en"
+    ? entry
+    : { ...entry, title: localizedTitle(entry, locale) };
+}
+
+export const ZH_SECTION_TITLES: Readonly<Record<string, string>> = {
+  "getting-started": "快速开始",
+  configuration: "配置参考",
+  plugins: "插件架构与开发",
+  extensions: "扩展目录",
+  api: "Lua API 参考",
+  faq: "常见问题与诊断",
+};
+
+export function localizedSectionTitle(
+  sectionId: string,
+  title: string,
+  locale: ManualLocale,
+): string {
+  return locale === "zh-CN" ? (ZH_SECTION_TITLES[sectionId] ?? title) : title;
+}
+
 export function getManualNavGroups(
   currentFullSlug: string,
-  _version = "latest",
+  locale: ManualLocale = "en",
   manifest?: ManualManifest,
 ): readonly ManualNavGroup[] {
   const m = manifest ?? loadManualManifest();
   const allEntries = getAllManualDocEntries(m);
 
   return m.sections.map((section) => {
-    const entries = allEntries.filter((e) => e.sectionId === section.id);
+    const entries = allEntries
+      .filter((e) => e.sectionId === section.id)
+      .map((entry) => localizedEntry(entry, locale));
     const isCurrent = entries.some(
       (e) =>
         e.fullSlug === currentFullSlug ||
@@ -126,7 +173,7 @@ export function getManualNavGroups(
     );
     return {
       id: section.id,
-      label: section.title,
+      label: localizedSectionTitle(section.id, section.title, locale),
       entries,
       isCurrent,
     };
@@ -135,7 +182,7 @@ export function getManualNavGroups(
 
 export function getManualPager(
   currentFullSlug: string,
-  version = "latest",
+  locale: ManualLocale = "en",
   manifest?: ManualManifest,
 ): ManualPager {
   const allEntries = getAllManualDocEntries(manifest);
@@ -155,15 +202,15 @@ export function getManualPager(
     previous: prevEntry
       ? {
           slug: prevEntry.fullSlug,
-          title: prevEntry.title,
-          href: `/docs/${version}/${prevEntry.fullSlug}/`,
+          title: localizedTitle(prevEntry, locale),
+          href: `${docsPrefix(locale)}/${prevEntry.fullSlug}/`,
         }
       : null,
     next: nextEntry
       ? {
           slug: nextEntry.fullSlug,
-          title: nextEntry.title,
-          href: `/docs/${version}/${nextEntry.fullSlug}/`,
+          title: localizedTitle(nextEntry, locale),
+          href: `${docsPrefix(locale)}/${nextEntry.fullSlug}/`,
         }
       : null,
   };
@@ -171,7 +218,7 @@ export function getManualPager(
 
 export function getManualBreadcrumb(
   currentFullSlug: string,
-  locale = "en",
+  locale: ManualLocale = "en",
   manifest?: ManualManifest,
 ): ManualBreadcrumb | null {
   const m = manifest ?? loadManualManifest();
@@ -185,16 +232,22 @@ export function getManualBreadcrumb(
   }
 
   const cdnBase = m.distribution.cdn_base || "https://cdn.bitty.run/manual";
+  const packagePrefix =
+    m.distribution.canonical_prefix.split("/").at(-1) ?? "bitty-manual";
   const r2Key = `${entry.path}`;
-  // The published manual keys are `manual/<locale>/<path>`; the legacy
-  // `manual/bitty-manual/...` prefix is not served by the CDN origin.
-  const r2Url = `${cdnBase}/${locale}/${entry.path}`;
+  // Canonical raw keys are `manual/<package>/<locale>/<path>`; the legacy
+  // `manual/<locale>/<path>` alias still resolves but is not canonical.
+  const r2Url = `${cdnBase}/${packagePrefix}/${locale}/${entry.path}`;
 
   return {
     locale,
     sectionId: entry.sectionId,
-    sectionTitle: entry.sectionTitle,
-    title: entry.title,
+    sectionTitle: localizedSectionTitle(
+      entry.sectionId,
+      entry.sectionTitle,
+      locale,
+    ),
+    title: localizedTitle(entry, locale),
     r2Key,
     r2Url,
   };

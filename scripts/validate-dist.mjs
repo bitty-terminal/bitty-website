@@ -76,6 +76,18 @@ async function assertTablesAreScrollable(directory = dist) {
 
 await assertTablesAreScrollable();
 
+/** Redirect aliases must cover the Chinese versioned paths with and without
+ * a trailing slash; the generic `/docs/latest/*` rule otherwise sends them to
+ * a nonexistent `/docs/zh-CN/`. */
+const redirects = await readFile(new URL("_redirects", dist), "utf8");
+for (const version of ["latest", "stable", "0.1.0"]) {
+  for (const form of [`/docs/${version}/zh-CN/`, `/docs/${version}/zh-CN`]) {
+    if (!redirects.includes(`${form} /zh-CN/docs/ 301`)) {
+      throw new Error(`missing Chinese redirect rule for ${form}`);
+    }
+  }
+}
+
 try {
   await access(new URL("_worker.js", dist));
   throw new Error("unexpected Worker bundle in static output");

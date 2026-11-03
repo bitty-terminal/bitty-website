@@ -1,4 +1,6 @@
 import { describe, expect, test } from "bun:test";
+
+import manualLock from "../content/manual.lock.json";
 import {
   getAllManualDocEntries,
   getManualBreadcrumb,
@@ -12,7 +14,7 @@ describe("manualDocs", () => {
   test("loadManualManifest reads bitty-manual manifest", () => {
     const manifest = loadManualManifest();
     expect(manifest.name).toBe("Bitty Manual");
-    expect(manifest.version).toBe("0.1.0");
+    expect(manifest.version).toBe(manualLock.version);
     expect(manifest.locales).toContain("en");
     expect(manifest.locales).toContain("zh-CN");
     expect(manifest.sections.length).toBe(6);

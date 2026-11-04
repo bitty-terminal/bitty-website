@@ -46,7 +46,6 @@ const languageHref = isZh ? "/" : "/zh-CN/";
         <a
           href={docsHref}
           class:list={["header-link", { "is-active": activeNav === "docs" }]}
-          aria-label={isZh ? "手册" : "Documentation"}
         >
           <span aria-hidden="true">📖</span>
           <span class="nav-label">{isZh ? "手册" : "Docs"}</span>
@@ -58,9 +57,7 @@ const languageHref = isZh ? "/" : "/zh-CN/";
           id="lang-toggle-btn"
           class="header-link"
           aria-label={
-            isZh
-              ? "切换语言：英文 / 简体中文"
-              : "Switch language between English and Chinese"
+            isZh ? "切换到 EN（英文）" : "Switch to 中文 (Simplified Chinese)"
           }
           title={isZh ? "Read in English" : "阅读简体中文"}
         >
@@ -106,6 +103,11 @@ const languageHref = isZh ? "/" : "/zh-CN/";
   .github-mark {
     width: 0.9rem;
     height: 0.9rem;
+  }
+  @media (width < 23rem) {
+    .brand > span:last-child {
+      display: none;
+    }
   }
   @media (width < 48rem) {
     .nav-label {

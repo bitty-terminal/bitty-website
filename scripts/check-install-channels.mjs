@@ -27,9 +27,18 @@ function record(channel, detail, ok, kind = "required") {
   results.push({ channel, detail, ok, kind });
 }
 
+/** Compare the parsed origin so a crafted path cannot borrow the API token. */
+function isGitHubApi(url) {
+  try {
+    return new URL(url).origin === GITHUB_API;
+  } catch {
+    return false;
+  }
+}
+
 async function request(url, { method = "HEAD" } = {}) {
   const headers = { "user-agent": "bitty-website-channel-check" };
-  if (token && url.startsWith(GITHUB_API)) {
+  if (token && isGitHubApi(url)) {
     headers.authorization = `Bearer ${token}`;
   }
   try {
@@ -61,13 +70,11 @@ async function expectOk(channel, url) {
 
 async function expectMissing(channel, url) {
   const response = await statusOf(url);
-  const stillMissing = response.status !== 200;
-  record(
-    channel,
-    `${url} (must stay unpublished)`,
-    stillMissing,
-    stillMissing ? "required" : "unexpected",
-  );
+  const gone = response.status === 404 || response.status === 410;
+  // A 200 means the channel shipped and the page must be updated; any other
+  // status (403, 429, 5xx, network error) means the check could not verify it.
+  const kind = response.status === 200 ? "unexpected" : "required";
+  record(channel, `${url} (must stay unpublished)`, gone, kind);
   return response;
 }
 
@@ -98,10 +105,43 @@ for (const asset of [
   await expectOk("Debian / Ubuntu (APT)", `${CDN}/${asset}`);
 }
 
-for (const chroot of ["fedora-43", "epel-10"]) {
+for (const chroot of [
+  "fedora-43",
+  "epel-10",
+  "amazonlinux-2023",
+  "openeuler-24.03",
+]) {
   await expectOk(
     "Fedora / RHEL (Copr)",
     `https://copr.fedorainfracloud.org/coprs/xuepoo/bitty-terminal/repo/${chroot}/xuepoo-bitty-terminal.repo`,
+  );
+}
+
+const coprBuilds = await request(
+  "https://copr.fedorainfracloud.org/api_3/build/list?ownername=xuepoo&projectname=bitty-terminal&limit=1",
+  { method: "GET" },
+);
+if (coprBuilds.status === 200) {
+  const latest = (await coprBuilds.json())?.items?.[0];
+  record(
+    "Fedora / RHEL (Copr)",
+    `latest build ${latest?.source_package?.version ?? "unknown"}`,
+    latest?.state === "succeeded" &&
+      latest?.source_package?.version?.startsWith(`${version}-`) === true,
+  );
+} else {
+  record("Fedora / RHEL (Copr)", "build list unreadable", false);
+}
+
+for (const arch of ["amd64", "arm64"]) {
+  const packages = await text(
+    `${CDN}/apt/dists/stable/main/binary-${arch}/Packages`,
+  );
+  const published = packages.match(/^Version:\s*(\S+)/mu)?.[1];
+  record(
+    "Debian / Ubuntu (APT)",
+    `Packages ${arch} ${published ?? "unreadable"}`,
+    published === version,
   );
 }
 

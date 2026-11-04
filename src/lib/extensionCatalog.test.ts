@@ -1,6 +1,11 @@
 import { describe, expect, test } from "bun:test";
 
-import { extractStatus, extractSummary } from "./extensionCatalog.ts";
+import {
+  extractOfficialPluginIds,
+  extractPublishedVersion,
+  extractStatus,
+  extractSummary,
+} from "./extensionCatalog.ts";
 
 describe("extractStatus", () => {
   test("reads the published callout", () => {
@@ -59,6 +64,48 @@ describe("extractStatus", () => {
   });
 });
 
+describe("extractPublishedVersion", () => {
+  test("returns the version from a published callout", () => {
+    const markdown = [
+      "# graphics (native extension)",
+      "",
+      "## Install status",
+      "",
+      "> Published — `graphics 0.0.25` has live CDN tarballs.",
+    ].join("\n");
+    expect(extractPublishedVersion(markdown)).toBe("0.0.25");
+  });
+
+  test("returns null for unpublished or unknown pages", () => {
+    expect(
+      extractPublishedVersion(
+        "# ipc\n\n## Install status\n\n> Unpublished — 404.",
+      ),
+    ).toBeNull();
+    expect(extractPublishedVersion("# ipc\n\nNo status.")).toBeNull();
+  });
+});
+
+describe("extractOfficialPluginIds", () => {
+  test("reads the official catalog table in order", () => {
+    const markdown = [
+      "| Official id | Version |",
+      "| :-- | :-- |",
+      "| `bitty-featured.activity` | 0.0.1 |",
+      "| `bitty-terminal.dashboard` | 0.0.1 |",
+      "| `bitty-terminal.palette` | 0.0.1 |",
+      "",
+      "| Command | Meaning |",
+      "| `bitty plugin list` | list |",
+    ].join("\n");
+    expect(extractOfficialPluginIds(markdown)).toEqual([
+      "bitty-featured.activity",
+      "bitty-terminal.dashboard",
+      "bitty-terminal.palette",
+    ]);
+  });
+});
+
 describe("extractSummary", () => {
   test("uses the first prose sentence and strips markdown", () => {
     const markdown = [
@@ -70,6 +117,17 @@ describe("extractSummary", () => {
     ].join("\n");
     expect(extractSummary(markdown)).toBe(
       "Bounded PNG decode plus the raster subset for inline images.",
+    );
+  });
+
+  test("keeps identifiers inside code spans intact", () => {
+    const markdown = [
+      "# a11y (native extension)",
+      "",
+      "Ingests `Adapter::ingest_host` and exposes `Adapter::expose_to` with `src/kitty_decode.rs`.",
+    ].join("\n");
+    expect(extractSummary(markdown)).toBe(
+      "Ingests Adapter::ingest_host and exposes Adapter::expose_to with src/kitty_decode.rs.",
     );
   });
 

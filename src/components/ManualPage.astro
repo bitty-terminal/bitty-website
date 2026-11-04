@@ -6,6 +6,9 @@ import DocsOfflinePackage from "./DocsOfflinePackage.astro";
 import DocsPager from "./DocsPager.astro";
 import DocsSidebar from "./DocsSidebar.astro";
 import DocsToc from "./DocsToc.astro";
+import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
+import jetbrainsLatin from "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url";
+import literataLatin from "@fontsource-variable/literata/files/literata-latin-wght-normal.woff2?url";
 import SiteFooter from "./SiteFooter.astro";
 import SiteHeader from "./SiteHeader.astro";
 import "../styles/global.css";
@@ -52,6 +55,27 @@ const pageDescription = `${localizedTitle} — Bitty Manual`;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={pageDescription} />
+    <link
+      rel="preload"
+      href={literataLatin}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href={interLatin}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href={jetbrainsLatin}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
     <link rel="canonical" href={`${origin}${currentPath}`} />
     <link
       rel="alternate"

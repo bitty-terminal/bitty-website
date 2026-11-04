@@ -76,6 +76,63 @@ async function assertTablesAreScrollable(directory = dist) {
 
 await assertTablesAreScrollable();
 
+/** Every page must load the design system exactly once. Astro splits CSS per
+ * module graph, so a route that never imports `global.css` ships with only
+ * component-scoped rules and renders unstyled. The token below only exists in
+ * `src/styles/global.css`, which makes it a stable fingerprint. */
+const cssDir = new URL("_astro/", dist);
+const designSheets = new Set();
+for (const entry of await readdir(cssDir, { withFileTypes: true })) {
+  if (!entry.isFile() || !entry.name.endsWith(".css")) continue;
+  const contents = await readFile(new URL(entry.name, cssDir), "utf8");
+  if (contents.includes("--neutral-050")) {
+    designSheets.add(`/_astro/${entry.name}`);
+  }
+}
+if (designSheets.size === 0) {
+  throw new Error("no design-system stylesheet was emitted");
+}
+
+async function assertDesignSheet(directory = dist) {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      await assertDesignSheet(new URL(`${entry.name}/`, directory));
+      continue;
+    }
+    if (!entry.name.endsWith(".html")) continue;
+    const html = await readFile(new URL(entry.name, directory), "utf8");
+    const stylesheets = [
+      ...html.matchAll(/<link rel="stylesheet" href="([^"]+)"/gu),
+    ].map((match) => match[1]);
+    const loaded = stylesheets.filter((href) => designSheets.has(href)).length;
+    if (loaded !== 1) {
+      throw new Error(
+        `${entry.name}: expected exactly one design-system stylesheet, found ${loaded}`,
+      );
+    }
+  }
+}
+
+await assertDesignSheet();
+
+/** Both home pages must render the full extension overview derived from the
+ * pinned manual. A locale that omits the official plugin table would
+ * otherwise ship an empty list without failing the build. */
+for (const page of ["index.html", "zh-CN/index.html"]) {
+  const html = await readFile(new URL(page, dist), "utf8");
+  const cards = (html.match(/class="extension-card"/gu) ?? []).length;
+  const pluginList = html.match(
+    /<ul[^>]*class="plugin-list"[^>]*>([\s\S]*?)<\/ul>/u,
+  );
+  const plugins = (pluginList?.[1]?.match(/<li\b/gu) ?? []).length;
+  if (cards !== 11) {
+    throw new Error(`${page}: expected 11 native extensions, found ${cards}`);
+  }
+  if (plugins !== 11) {
+    throw new Error(`${page}: expected 11 official plugins, found ${plugins}`);
+  }
+}
+
 /** Redirect aliases must cover the Chinese versioned paths with and without
  * a trailing slash; the generic `/docs/latest/*` rule otherwise sends them to
  * a nonexistent `/docs/zh-CN/`. */

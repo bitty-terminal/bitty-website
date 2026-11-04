@@ -1,10 +1,12 @@
 ---
 /**
- * Site header — Cyber-Pop × Cel-Shaded Toon navigation bar.
+ * Site header.
  *
- * Left: Bitty wordmark.
- * Center: optional client-side manual search.
- * Right: localized docs link, language link, and GitHub.
+ * Uses the global three-zone header rules from `src/styles/global.css`
+ * (`site-header` + `brand` + `header-search` + `header-links`). The previous
+ * markup carried Tailwind utility classes, but this repository does not
+ * install Tailwind, so those classes were inert and the search box collapsed
+ * to a few pixels on narrow viewports.
  */
 import SiteSearch from "./SiteSearch.astro";
 import BittyLogo from "./BittyLogo.astro";
@@ -16,100 +18,105 @@ type Props = {
 };
 
 const { locale = "en", showSearch = true, activeNav } = Astro.props as Props;
+const isZh = locale === "zh-CN";
 const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
-const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
-const languageHref = locale === "zh-CN" ? "/" : "/zh-CN/";
+const docsHref = isZh ? "/zh-CN/docs/" : "/docs/";
+const languageHref = isZh ? "/" : "/zh-CN/";
 ---
 
-<header class="sticky top-0 z-40 backdrop-blur-xl border-b-2 border-[var(--card-border)] bg-[var(--bg-glass)]">
-  <div class="max-w-[1440px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-    <!-- Left: Official Bitty Logo / Favicon + Brand Lockup -->
-    <div class="flex items-center gap-3">
-      <a
-        href={locale === "zh-CN" ? "/zh-CN/" : "/"}
-        class="flex items-center gap-2.5 group focus:outline-none"
-        aria-label={locale === "zh-CN" ? "Bitty 首页" : "Bitty Home"}
-      >
-        <div
-          class="w-10 h-10 rounded-xl flex items-center justify-center border-2 border-[var(--ink-border)] bg-[var(--bg-elevated)] shadow-[2px_2px_0px_var(--toon-shadow)] group-hover:rotate-6 transition-transform overflow-hidden p-0.5"
-          title="Bitty Official Logo"
-        >
-          <BittyLogo />
-        </div>
-        <div>
-          <div class="flex items-center gap-1.5">
-            <span class="font-cyber-display font-bold text-xl tracking-tight text-[var(--fg-primary)]">
-              BITTY
-            </span>
-          </div>
-        </div>
-      </a>
-    </div>
+<header class="site-header">
+  <nav aria-label={isZh ? "站点导航" : "Site navigation"}>
+    <a
+      href={isZh ? "/zh-CN/" : "/"}
+      class="brand"
+      aria-label={isZh ? "Bitty 首页" : "Bitty home"}
+    >
+      <BittyLogo />
+      <span>BITTY</span>
+    </a>
 
-    <!-- Center: Search -->
     {showSearch && (
-      <div class="flex-1 max-w-md mx-2 min-w-0">
+      <div class="header-search">
         <SiteSearch locale={locale} />
       </div>
     )}
 
-    <!-- Right Controls: Docs, i18n Language, Light/Dark Arcade Toggle and GitHub -->
-    <div class="flex items-center gap-2 font-mono-tech text-xs shrink-0">
-      <a
-        href={docsHref}
-        class={`arcade-btn px-2.5 sm:px-3 py-1.5 flex items-center gap-1 font-bold ${
-          activeNav === "docs"
-            ? "bg-[var(--accent)] text-[#0b0914] shadow-[1px_1px_0px_var(--toon-shadow)]"
-            : "bg-[var(--bg-surface)] text-[var(--fg-primary)] hover:text-[var(--accent)]"
-        }`}
-        aria-label={locale === "zh-CN" ? "手册" : "Documentation"}
-      >
-        <span>📖</span>
-        <span class="hidden sm:inline" data-i18n="navDocs">
-          {locale === "zh-CN" ? "手册" : "Docs"}
-        </span>
-      </a>
-
-      <a
-        href={languageHref}
-        id="lang-toggle-btn"
-        class="arcade-btn px-2.5 py-1.5 bg-[var(--bg-surface)] text-[var(--fg-primary)] hover:text-[var(--accent)] flex items-center gap-1 font-bold cursor-pointer select-none"
-        aria-label={
-          locale === "zh-CN"
-            ? "切换语言：英文 / 简体中文"
-            : "Switch language between English and Chinese"
-        }
-        title={locale === "zh-CN" ? "Read in English" : "阅读简体中文"}
-      >
-        <span class="text-xs">🌐</span>
-        <span>{locale === "zh-CN" ? "EN" : "中文"}</span>
-      </a>
-
-      <!-- GitHub Link -->
-      <a
-        href={GITHUB_REPO_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="arcade-btn px-2.5 sm:px-3 py-1.5 bg-[var(--bg-surface)] text-[var(--fg-primary)] flex items-center gap-1.5 font-bold"
-        title="GitHub Repository"
-      >
-        <svg
-          class="w-3.5 h-3.5 fill-current"
-          viewBox="0 0 24 24"
-          fill="currentColor"
-          aria-hidden="true"
+    <ul class="header-links">
+      <li>
+        <a
+          href={docsHref}
+          class:list={["header-link", { "is-active": activeNav === "docs" }]}
         >
-          <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-        </svg>
-        <span class="hidden md:inline">GitHub</span>
-      </a>
-    </div>
-  </div>
+          <span aria-hidden="true">📖</span>
+          <span class="nav-label">{isZh ? "手册" : "Docs"}</span>
+        </a>
+      </li>
+      <li>
+        <a
+          href={languageHref}
+          id="lang-toggle-btn"
+          class="header-link"
+          aria-label={
+            isZh ? "切换到 EN（英文）" : "Switch to 中文 (Simplified Chinese)"
+          }
+          title={isZh ? "Read in English" : "阅读简体中文"}
+        >
+          <span aria-hidden="true">🌐</span>
+          <span>{isZh ? "EN" : "中文"}</span>
+        </a>
+      </li>
+      <li>
+        <a
+          href={GITHUB_REPO_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="header-github"
+          title="GitHub Repository"
+          aria-label="Bitty on GitHub"
+        >
+          <svg
+            class="github-mark"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+          </svg>
+          <span class="nav-label">GitHub</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
 </header>
 
 <style>
-  .arcade-btn svg {
-    fill: currentColor;
-    color: inherit;
+  .header-link,
+  .header-github {
+    gap: 0.35rem;
+  }
+  .header-link.is-active {
+    color: var(--accent);
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 0.3em;
+  }
+  .github-mark {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+  @media (width < 23rem) {
+    .brand > span:last-child {
+      display: none;
+    }
+  }
+  @media (width < 48rem) {
+    .nav-label {
+      position: absolute;
+      overflow: hidden;
+      clip-path: inset(50%);
+      inline-size: 1px;
+      block-size: 1px;
+      white-space: nowrap;
+    }
   }
 </style>

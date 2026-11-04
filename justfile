@@ -28,6 +28,12 @@ markdownlint:
 manual-sync:
     bun run sync:manual
 
+# Verify every install channel advertised on the home page against the live
+# release pointer. Network access is required, so this is a pre-release and
+# pre-merge evidence gate rather than part of `just check`.
+check-channels:
+    bun run check:channels
+
 commit-lint FILE:
     command -v commitlint >/dev/null || { echo "commitlint missing; install it globally" >&2; exit 1; }
     commitlint < "{{FILE}}"

@@ -6,7 +6,8 @@ Static Astro site for [bitty.run](https://bitty.run).
 
 The site has two product surfaces:
 
-- a small Hero page with verified installation paths and release links;
+- a small Hero page with verified installation paths, a native-extension and
+  Lua-plugin overview derived from the pinned manual, and release links;
 - one shared documentation template for the canonical `bitty-manual` in
   English and Simplified Chinese.
 
@@ -44,9 +45,12 @@ Product release artifacts use the separate R2 namespace:
 https://cdn.bitty.run/releases/<tag>/
 ```
 
-The website does not infer artifact names from a directory listing. A release
-manifest can be added later when the release workflow publishes one. Until
-then, only stable installer URLs and verified release links are shown.
+The website does not infer artifact names from a directory listing. The
+install section is driven by `src/data/installChannels.ts`: a channel appears
+as available only after its repository, manifest, or artifact is published,
+and `just check-channels` re-verifies every advertised endpoint against the
+current `install/latest.txt` pointer. Channels that are planned but not
+published stay in the pending list without copyable commands.
 
 ## Routes
 
@@ -98,8 +102,12 @@ bun run dev
 Quality checks:
 
 ```sh
-just check
+just check          # offline gates: format, lint, tests, build, a11y, dry-run
+just check-channels # live gate: every advertised install channel
 ```
+
+`just check-channels` needs network access; run it whenever the install
+section or the release pointer changes and record its output as evidence.
 
 The production target is Cloudflare Workers Static Assets. The repository does
 not publish or mutate R2 objects during a website build.

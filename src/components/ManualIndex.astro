@@ -109,15 +109,24 @@ const description = isZh
     line-height: 1.65;
   }
   .manual-index-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
-    gap: 1rem;
+    /* Two balanced columns avoid a tallest-row gap between the section cards. */
+    columns: 1;
+    column-gap: 1rem;
+  }
+  @media (min-width: 64rem) {
+    .manual-index-grid {
+      columns: 2;
+    }
   }
   .manual-section-card {
+    display: inline-block;
+    width: 100%;
+    margin-block-end: 1rem;
     padding: 1.25rem;
     border: 1px solid var(--line);
     background: var(--card);
     box-shadow: var(--shadow);
+    break-inside: avoid;
   }
   .manual-section-card h2 {
     margin: 0 0 0.85rem;

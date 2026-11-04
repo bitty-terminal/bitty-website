@@ -115,6 +115,24 @@ async function assertDesignSheet(directory = dist) {
 
 await assertDesignSheet();
 
+/** Both home pages must render the full extension overview derived from the
+ * pinned manual. A locale that omits the official plugin table would
+ * otherwise ship an empty list without failing the build. */
+for (const page of ["index.html", "zh-CN/index.html"]) {
+  const html = await readFile(new URL(page, dist), "utf8");
+  const cards = (html.match(/class="extension-card"/gu) ?? []).length;
+  const pluginList = html.match(
+    /<ul[^>]*class="plugin-list"[^>]*>([\s\S]*?)<\/ul>/u,
+  );
+  const plugins = (pluginList?.[1]?.match(/<li\b/gu) ?? []).length;
+  if (cards !== 11) {
+    throw new Error(`${page}: expected 11 native extensions, found ${cards}`);
+  }
+  if (plugins !== 11) {
+    throw new Error(`${page}: expected 11 official plugins, found ${plugins}`);
+  }
+}
+
 /** Redirect aliases must cover the Chinese versioned paths with and without
  * a trailing slash; the generic `/docs/latest/*` rule otherwise sends them to
  * a nonexistent `/docs/zh-CN/`. */

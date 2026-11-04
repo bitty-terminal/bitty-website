@@ -55,8 +55,8 @@ const copy = {
     : "The core stays small: optional capability ships as a native Rust extension or as a sandboxed Lua plugin. Both are documented in the manual.",
   nativeTitle: isZh ? "原生扩展" : "Native extensions",
   nativeDescription: isZh
-    ? "通过扩展目录按版本固定安装，每个页面都给出精确版本。"
-    : "Pinned installs from the extension catalog; every page lists the exact version.",
+    ? "通过扩展目录按版本固定安装；已发布的扩展会在各自页面给出精确版本。"
+    : "Pinned installs from the extension catalog; published extensions list their exact version on their page.",
   pluginTitle: isZh ? "Lua 插件" : "Lua plugins",
   pluginDescription: isZh
     ? "运行在沙箱中的 Lua 插件，每项都声明自己的能力与清单版本。"
@@ -195,7 +195,7 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
                       <button
                         type="button"
                         data-copy={command.code}
-                        aria-label={`${copy.copy}: ${channel.name[locale]}`}
+                        aria-label={`${copy.copy}: ${channel.name[locale]}${command.label ? ` — ${command.label[locale]}` : ""}`}
                       >
                         {copy.copy}
                       </button>
@@ -295,6 +295,8 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
           <p class="track-description">{copy.pluginDescription}</p>
           <p class="track-command">
             <code>bitty plugin install bitty-terminal.bar</code>
+          </p>
+          <p class="track-command">
             <code>bitty plugin enable bitty-terminal.bar</code>
           </p>
           <ul class="plugin-list">

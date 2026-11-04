@@ -152,8 +152,17 @@ export function getExtensionCatalog(
       };
     });
 
-  const pluginCatalogPage = readPage(locale, PLUGIN_CATALOG_PAGE, baseDir);
-  const plugins = extractOfficialPluginIds(pluginCatalogPage).map((id) => {
+  // The official id table is locale-independent; some translations omit it,
+  // so fall back to the English page rather than rendering an empty list.
+  let pluginIds = extractOfficialPluginIds(
+    readPage(locale, PLUGIN_CATALOG_PAGE, baseDir),
+  );
+  if (pluginIds.length === 0 && locale !== "en") {
+    pluginIds = extractOfficialPluginIds(
+      readPage("en", PLUGIN_CATALOG_PAGE, baseDir),
+    );
+  }
+  const plugins = pluginIds.map((id) => {
     const name = id.slice(id.indexOf(".") + 1);
     const page = bySlug.get(`catalog-${name}`);
     return {

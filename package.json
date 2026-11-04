@@ -9,7 +9,7 @@
     "format": "prettier --write README.md package.json tsconfig.json astro.config.mjs wrangler.jsonc .prettierrc.json \".github/workflows/*.yml\" \"src/**/*.astro\" \"src/**/*.ts\" \"src/**/*.css\" \"scripts/**/*.mjs\"",
     "format:check": "prettier --check README.md package.json tsconfig.json astro.config.mjs wrangler.jsonc .prettierrc.json \".github/workflows/*.yml\" \"src/**/*.astro\" \"src/**/*.ts\" \"src/**/*.css\" \"scripts/**/*.mjs\"",
     "lint:md": "markdownlint-cli2",
-    "test": "bun test src/lib",
+    "test": "bun test src",
     "typecheck": "ASTRO_TELEMETRY_DISABLED=1 astro sync && tsc --noEmit --project tsconfig.json",
     "build": "ASTRO_TELEMETRY_DISABLED=1 astro build",
     "validate:dist": "bun scripts/validate-dist.mjs",
@@ -17,7 +17,8 @@
     "wrangler:dry-run": "bash -euo pipefail -c 'repo_root=$(dirname \"$(git rev-parse --path-format=absolute --git-common-dir)\"); scratch=\"$repo_root/../recording/bitty-website\"; mkdir -p \"$scratch/wrangler-dry-run\"; log=\"$scratch/wrangler-dry-run.log\"; timeout --signal=INT --kill-after=5s --preserve-status 15s env WRANGLER_SEND_METRICS=false wrangler deploy --dry-run --outdir \"$scratch/wrangler-dry-run\" 2>&1 | tee \"$log\"; grep -Fq -- \"--dry-run: exiting now.\" \"$log\"; grep -Fq -- \"No bindings found.\" \"$log\"'",
     "check": "bun run sync:manual && bun run format:check && bun run lint:md && bun run test && bun run typecheck && bun run build && bun run validate:dist && bun run audit:a11y && bun run wrangler:dry-run",
     "deploy": "WRANGLER_SEND_METRICS=false wrangler deploy",
-    "sync:manual": "bun scripts/sync-manual.mjs"
+    "sync:manual": "bun scripts/sync-manual.mjs",
+    "check:channels": "bun scripts/check-install-channels.mjs"
   },
   "devDependencies": {
     "@astrojs/markdown-satteri": "0.4.1",

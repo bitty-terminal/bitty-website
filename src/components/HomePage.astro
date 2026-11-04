@@ -1,11 +1,19 @@
 ---
 import SiteFooter from "./SiteFooter.astro";
 import SiteHeader from "./SiteHeader.astro";
+import {
+  packageChannels,
+  pendingChannels,
+  primaryChannels,
+  RELEASE_POINTER,
+} from "../data/installChannels.ts";
+import { getExtensionCatalog } from "../lib/extensionCatalog.ts";
 import "../styles/global.css";
 
 type Locale = "en" | "zh-CN";
 const locale = (Astro.props as { locale?: Locale }).locale ?? "en";
 const isZh = locale === "zh-CN";
+const extensions = getExtensionCatalog(locale);
 const copy = {
   badge: isZh
     ? "GPU 渲染 · Rust 核心 · Lua 扩展"
@@ -18,56 +26,46 @@ const copy = {
     : "Bitty combines a fast terminal core, multi-pane workspaces, and explicit Lua extensions in one focused desktop application.",
   install: isZh ? "安装 Bitty" : "Install Bitty",
   docs: isZh ? "阅读手册" : "Read the manual",
+  extensionsAction: isZh ? "扩展体系" : "Extensions",
   release: isZh
     ? "预发布阶段 · R2 发行渠道"
     : "Pre-alpha · R2-backed release channel",
   installTitle: isZh ? "选择安装方式" : "Choose your path",
   installDescription: isZh
-    ? "独立安装脚本与 Debian/Ubuntu APT 渠道现在可用；其余发行版渠道在发布并验证后加入。"
-    : "Standalone installers and the Debian/Ubuntu APT channel are available now; other distribution channels follow once published and verified.",
-  unix: "Linux / macOS",
-  windows: "Windows",
-  debian: "Debian / Ubuntu",
-  redhat: "Red Hat / Fedora",
-  source: isZh ? "从源码构建" : "Build from source",
-  comingSoon: isZh ? "即将提供" : "Coming soon",
+    ? "安装脚本、发行版仓库与包管理器渠道并列如下。每个可用条目都已发布并可安装；未发布的渠道会明确标注。"
+    : "Install scripts, distribution repositories, and package managers side by side. Every available entry is published and installable; unpublished channels are labeled explicitly.",
+  packageTitle: isZh ? "包管理器渠道" : "Package managers",
+  pendingTitle: isZh ? "尚未发布" : "Not yet published",
   available: isZh ? "现在可用" : "Available",
+  comingSoon: isZh ? "即将提供" : "Coming soon",
   copy: isZh ? "复制" : "Copy",
   copied: isZh ? "已复制" : "Copied",
   copyFailed: isZh ? "复制失败" : "Copy failed",
-  unixDescription: isZh
-    ? "Linux 与 macOS 用户级安装脚本。"
-    : "Linux and macOS user-local bootstrap.",
-  windowsDescription: isZh
-    ? "Windows 用户级 PowerShell 安装脚本。"
-    : "PowerShell user-local bootstrap.",
-  debianDescription: isZh
-    ? "Debian 11+ 与 Ubuntu 20.04+：一键脚本或 deb822 标准配置。"
-    : "Debian 11+ and Ubuntu 20.04+: one-line setup or the deb822 standard layout.",
-  redhatDescription: isZh
-    ? "yum 与 dnf 渠道，待 R2 发布。"
-    : "Native yum and dnf channels, pending R2 publication.",
-  sourceDescription: isZh
-    ? "使用固定 Rust 工具链构建二进制文件。"
-    : "Build the binary from the pinned Rust toolchain.",
   note: isZh
-    ? "发行包由 Cloudflare R2 提供，并通过 SHA-256 sidecar 校验。"
-    : "Release artifacts are served from Cloudflare R2 and verified with SHA-256 sidecars.",
+    ? "发行包由 Cloudflare R2 提供并带 SHA-256 校验。"
+    : "Release artifacts are served from Cloudflare R2 with SHA-256 sidecars.",
+  packaging: isZh ? "完整打包说明" : "Full packaging reference",
+  pointer: isZh ? "最新发行指针" : "Latest release pointer",
+  extensionsTitle: isZh ? "扩展体系" : "Extensions",
+  extensionsDescription: isZh
+    ? "核心保持精简，可选能力以原生 Rust 扩展或沙箱 Lua 插件的形式安装。两者都在手册中有完整说明。"
+    : "The core stays small: optional capability ships as a native Rust extension or as a sandboxed Lua plugin. Both are documented in the manual.",
+  nativeTitle: isZh ? "原生扩展" : "Native extensions",
+  nativeDescription: isZh
+    ? "独立于 Core 发布，扩展目录会为当前平台解析最新可用产物。"
+    : "Released independently of the core; the catalog resolves the newest artifact for the host target.",
+  pluginTitle: isZh ? "Lua 插件" : "Lua plugins",
+  pluginDescription: isZh
+    ? "运行在沙箱中的 Lua 插件，每项都声明自己的能力与清单版本。"
+    : "Sandboxed Lua plugins, each with declared capabilities and its own manifest version.",
+  published: isZh ? "已发布" : "Published",
+  unpublished: isZh ? "未发布" : "Unpublished",
+  seeManual: isZh ? "见手册" : "See manual",
+  catalogLink: isZh ? "手册中的扩展目录" : "Extension catalog in the manual",
+  recipes: isZh
+    ? "Gentoo、Void、Solus、FreeBSD、OpenBSD 与 NetBSD 的配方位于 bitty 仓库的 packaging/ 目录，尚未作为官方渠道发布。"
+    : "Recipes for Gentoo, Void, Solus, FreeBSD, OpenBSD, and NetBSD live in the bitty repository's packaging/ directory and are not published channels yet.",
 };
-
-const installCommands = {
-  unix: "curl -fsSL https://cdn.bitty.run/install/install.sh | bash",
-  windows: "irm https://cdn.bitty.run/install/install.ps1 | iex",
-  debianA:
-    "curl -fsSL https://cdn.bitty.run/apt/setup.sh | sudo bash\nsudo apt install -y bitty",
-  debianB:
-    "sudo mkdir -p -m 0755 /etc/apt/keyrings\nsudo curl -fsSL https://cdn.bitty.run/apt/bitty-archive-keyring.gpg -o /etc/apt/keyrings/bitty-archive-keyring.gpg\nsudo curl -fsSL https://cdn.bitty.run/apt/bitty.sources -o /etc/apt/sources.list.d/bitty.sources\nsudo apt update\nsudo apt install -y bitty",
-  redhatYum: "sudo yum install -y bitty",
-  redhatDnf: "sudo dnf install -y bitty",
-  source:
-    "cargo +1.98.1 install --git https://github.com/bitty-terminal/bitty.git bitty-terminal --locked",
-} as const;
-
 const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
 ---
 
@@ -107,6 +105,9 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
             <a class="secondary-action" href={docsHref}>
               {copy.docs}
             </a>
+            <a class="secondary-action" href="#extensions">
+              {copy.extensionsAction}
+            </a>
           </div>
         </div>
 
@@ -139,108 +140,77 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
           <p>{copy.installDescription}</p>
         </div>
 
-        <div class="install-grid">
-          <article class="install-card install-card-featured">
-            <div class="install-card-heading">
-              <div>
-                <p class="install-label">{copy.available}</p>
-                <h3>{copy.unix}</h3>
+        <div class="install-primary">
+          {primaryChannels.map((channel) => (
+            <article class="install-card install-card-featured">
+              <div class="install-card-heading">
+                <div>
+                  <p class="install-label">{copy.available}</p>
+                  <h3>{channel.name[locale]}</h3>
+                </div>
+                <span class="status-dot status-available" aria-hidden="true">
+                  ●
+                </span>
               </div>
-              <span class="status-dot status-available">●</span>
-            </div>
-            <p>{copy.unixDescription}</p>
-            <div class="command-block">
-              <code>{installCommands.unix}</code>
-              <button type="button" data-copy={installCommands.unix}>
-                {copy.copy}
-              </button>
-            </div>
-          </article>
-
-          <article class="install-card install-card-featured">
-            <div class="install-card-heading">
-              <div>
-                <p class="install-label">{copy.available}</p>
-                <h3>{copy.windows}</h3>
+              <p class="install-arch">{channel.arch}</p>
+              <p>{channel.summary[locale]}</p>
+              <div class="command-stack">
+                {channel.commands.map((command) => (
+                  <div class="command-block">
+                    <code>{command.code}</code>
+                    <button type="button" data-copy={command.code}>
+                      {copy.copy}
+                    </button>
+                  </div>
+                ))}
               </div>
-              <span class="status-dot status-available">●</span>
-            </div>
-            <p>{copy.windowsDescription}</p>
-            <div class="command-block">
-              <code>{installCommands.windows}</code>
-              <button type="button" data-copy={installCommands.windows}>
-                {copy.copy}
-              </button>
-            </div>
-          </article>
-
-          <article class="install-card install-card-featured">
-            <div class="install-card-heading">
-              <div>
-                <p class="install-label">{copy.available}</p>
-                <h3>{copy.debian}</h3>
-              </div>
-              <span class="status-dot status-available">●</span>
-            </div>
-            <p>{copy.debianDescription}</p>
-            <div class="command-stack">
-              <div class="command-block">
-                <code>{installCommands.debianA}</code>
-                <button type="button" data-copy={installCommands.debianA}>
-                  {copy.copy}
-                </button>
-              </div>
-              <div class="command-block">
-                <code>{installCommands.debianB}</code>
-                <button type="button" data-copy={installCommands.debianB}>
-                  {copy.copy}
-                </button>
-              </div>
-            </div>
-          </article>
-
-          <article class="install-card">
-            <div class="install-card-heading">
-              <div>
-                <p class="install-label">{copy.comingSoon}</p>
-                <h3>{copy.redhat}</h3>
-              </div>
-              <span class="status-dot status-pending">○</span>
-            </div>
-            <p>{copy.redhatDescription}</p>
-            <div class="command-stack">
-              <div class="command-block">
-                <code>{installCommands.redhatYum}</code>
-                <button type="button" disabled title={copy.comingSoon}>
-                  {copy.copy}
-                </button>
-              </div>
-              <div class="command-block">
-                <code>{installCommands.redhatDnf}</code>
-                <button type="button" disabled title={copy.comingSoon}>
-                  {copy.copy}
-                </button>
-              </div>
-            </div>
-          </article>
-
-          <article class="install-card">
-            <div class="install-card-heading">
-              <div>
-                <p class="install-label">{copy.available}</p>
-                <h3>{copy.source}</h3>
-              </div>
-              <span class="status-dot status-available">●</span>
-            </div>
-            <p>{copy.sourceDescription}</p>
-            <div class="command-block">
-              <code>{installCommands.source}</code>
-              <button type="button" data-copy={installCommands.source}>
-                {copy.copy}
-              </button>
-            </div>
-          </article>
+            </article>
+          ))}
         </div>
+
+        <h3 class="install-subhead">{copy.packageTitle}</h3>
+        <div class="install-channels">
+          {packageChannels.map((channel) => (
+            <article class="install-card channel-card">
+              <div class="channel-heading">
+                <h4>{channel.name[locale]}</h4>
+                <span class="arch-chip">{channel.arch}</span>
+              </div>
+              <p>{channel.summary[locale]}</p>
+              <div class="command-stack">
+                {channel.commands.map((command) => (
+                  <div class="command-entry">
+                    {command.label && (
+                      <p class="command-label">{command.label[locale]}</p>
+                    )}
+                    <div class="command-block">
+                      <code>{command.code}</code>
+                      <button type="button" data-copy={command.code}>
+                        {copy.copy}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <section class="install-pending" aria-labelledby="pending-title">
+          <h3 id="pending-title">{copy.pendingTitle}</h3>
+          <ul>
+            {pendingChannels.map((channel) => (
+              <li>
+                <span class="pending-name">{channel.name[locale]}</span>
+                <span class="pending-detail">{channel.summary[locale]}</span>
+                <span class="pending-reason">
+                  {channel.pendingReason?.[locale]}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
         <p class="install-note">
           {copy.note}{" "}
           <a
@@ -248,8 +218,82 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
             target="_blank"
             rel="noopener noreferrer"
           >
-            {isZh ? "最新发行指针" : "Latest release pointer"} ↗
+            {copy.pointer} ↗
           </a>
+          {" · "}
+          <a
+            href="https://github.com/bitty-terminal/bitty/blob/main/packaging/INSTALL.md"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {copy.packaging} ↗
+          </a>
+        </p>
+        <p class="install-recipes">{copy.recipes}</p>
+      </section>
+
+      <section
+        id="extensions"
+        class="extensions-shell"
+        aria-labelledby="extensions-title"
+      >
+        <div class="section-heading">
+          <p class="section-kicker">{isZh ? "扩展" : "EXTENSIONS"}</p>
+          <h2 id="extensions-title">{copy.extensionsTitle}</h2>
+          <p>{copy.extensionsDescription}</p>
+        </div>
+
+        <div class="extension-track">
+          <h3>{copy.nativeTitle}</h3>
+          <p class="track-description">{copy.nativeDescription}</p>
+          <p class="track-command">
+            <code>bitty extension install graphics</code>
+          </p>
+          <ul class="extension-grid">
+            {extensions.native.map((extension) => (
+              <li>
+                <a class="extension-card" href={extension.href}>
+                  <span class="extension-head">
+                    <span class="extension-name">{extension.name}</span>
+                    <span
+                      class:list={[
+                        "extension-status",
+                        {
+                          "is-published": extension.status === "published",
+                        },
+                      ]}
+                    >
+                      {extension.status === "published"
+                        ? copy.published
+                        : extension.status === "unpublished"
+                          ? copy.unpublished
+                          : copy.seeManual}
+                    </span>
+                  </span>
+                  <span class="extension-summary">{extension.summary}</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="extension-track">
+          <h3>{copy.pluginTitle}</h3>
+          <p class="track-description">{copy.pluginDescription}</p>
+          <p class="track-command">
+            <code>bitty plugin install bar</code>
+          </p>
+          <ul class="plugin-list">
+            {extensions.plugins.map((plugin) => (
+              <li>
+                <a href={plugin.href}>{plugin.name}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <p class="extensions-note">
+          <a href={`${docsHref}extensions/overview/`}>{copy.catalogLink} ↗</a>
         </p>
       </section>
     </main>
@@ -293,7 +337,8 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
   }
 
   .hero-shell,
-  .install-shell {
+  .install-shell,
+  .extensions-shell {
     width: min(72rem, calc(100% - 2rem));
     margin-inline: auto;
   }
@@ -339,7 +384,8 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
     line-height: 1.65;
   }
   .hero-release,
-  .install-note {
+  .install-note,
+  .install-recipes {
     color: var(--muted);
     font-family: var(--font-mono);
     font-size: var(--text-xs);
@@ -414,7 +460,7 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
     padding-block: 3rem 6rem;
   }
   .section-heading {
-    max-width: 42rem;
+    max-width: 46rem;
     margin-bottom: 2rem;
   }
   .section-heading h2 {
@@ -426,12 +472,19 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
     color: var(--muted);
     line-height: 1.6;
   }
-  .install-grid {
+  .install-primary {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+  .install-channels {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
     gap: 1rem;
   }
   .install-card {
+    min-width: 0;
     padding: 1.25rem;
     border: 1px solid var(--line);
     background: var(--card);
@@ -457,6 +510,14 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
     font-size: 0.9rem;
     line-height: 1.5;
   }
+  .install-arch {
+    min-height: 0 !important;
+    margin: 0.55rem 0 0 !important;
+    color: var(--accent) !important;
+    font-family: var(--font-mono);
+    font-size: 0.68rem !important;
+    letter-spacing: 0.04em;
+  }
   .install-label {
     margin: 0;
     font-size: 0.68rem;
@@ -467,15 +528,61 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
   .status-available {
     color: var(--ok);
   }
-  .status-pending {
+  .install-subhead {
+    margin: 2.75rem 0 1rem;
+    font: 700 1.35rem var(--font-display);
+  }
+  .channel-card {
+    display: flex;
+    flex-direction: column;
+  }
+  .channel-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .channel-heading h4 {
+    margin: 0;
+    font: 700 1.05rem var(--font-display);
+  }
+  .arch-chip {
+    border: 1px solid var(--line);
+    padding: 0.1rem 0.4rem;
     color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    white-space: nowrap;
+  }
+  .channel-card > p {
+    min-height: 0;
+    margin: 0.5rem 0 0.85rem;
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.5;
   }
   .command-stack {
     display: grid;
+    min-width: 0;
     gap: 0.6rem;
+    margin-top: auto;
+  }
+  .command-entry {
+    display: grid;
+    gap: 0.3rem;
+  }
+  .command-label {
+    margin: 0;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
   .command-block {
     display: flex;
+    min-width: 0;
     align-items: stretch;
     gap: 0.5rem;
     padding: 0.7rem;
@@ -485,9 +592,8 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
   .command-block code {
     min-width: 0;
     flex: 1;
-    overflow-x: auto;
-    white-space: pre-wrap;
     overflow-wrap: anywhere;
+    white-space: pre-wrap;
     font: 0.72rem/1.55 var(--font-mono);
   }
   .command-block button {
@@ -503,11 +609,172 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
     border-color: var(--accent);
     color: var(--accent);
   }
+  .install-pending {
+    margin-top: 2.5rem;
+    padding: 1.25rem;
+    border: 1px dashed var(--line);
+  }
+  .install-pending h3 {
+    margin: 0 0 0.75rem;
+    font: 700 1rem var(--font-display);
+  }
+  .install-pending ul {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .install-pending li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.75rem;
+    align-items: baseline;
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+  .pending-name {
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-weight: 700;
+  }
+  .pending-reason {
+    flex-basis: 100%;
+    font-size: 0.82rem;
+  }
+  .extensions-shell {
+    padding-block: 2rem 6rem;
+  }
+  .extension-track + .extension-track {
+    margin-top: 2.5rem;
+  }
+  .extension-track h3 {
+    margin: 0 0 0.35rem;
+    font: 700 1.45rem var(--font-display);
+  }
+  .track-description {
+    max-width: 46rem;
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  .track-command {
+    margin: 0.75rem 0 1.25rem;
+  }
+  .track-command code {
+    display: inline-block;
+    padding: 0.45rem 0.6rem;
+    background: var(--terminal-bg);
+    color: var(--terminal-ink);
+    font: 0.75rem/1.4 var(--font-mono);
+  }
+  .extension-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .extension-grid li {
+    min-width: 0;
+  }
+  .extension-card {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    gap: 0.4rem;
+    padding: 1rem;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    text-decoration: none;
+    transition:
+      border-color 140ms ease,
+      transform 140ms ease;
+  }
+  .extension-card:hover,
+  .extension-card:focus-visible {
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+  .extension-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .extension-name {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+  .extension-status {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .extension-status.is-published {
+    color: var(--ok);
+  }
+  .extension-summary {
+    color: var(--muted);
+    font-size: 0.85rem;
+    line-height: 1.5;
+  }
+  .plugin-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .plugin-list a {
+    display: inline-flex;
+    min-block-size: 2.25rem;
+    align-items: center;
+    padding-inline: 0.6rem;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    text-decoration: none;
+  }
+  .plugin-list a:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .extensions-note {
+    margin: 2rem 0 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+  .extensions-note a {
+    color: var(--accent);
+  }
   .install-note {
-    margin: 1.25rem 0 0;
+    margin: 1.5rem 0 0;
   }
   .install-note a {
     color: var(--accent);
+  }
+  .install-recipes {
+    max-width: 52rem;
+    margin: 0.6rem 0 0;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 1000px) {
+    .install-primary {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
   }
 
   @media (max-width: 800px) {
@@ -519,7 +786,8 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
     .terminal-card {
       max-width: 42rem;
     }
-    .install-grid {
+    .install-primary,
+    .install-channels {
       grid-template-columns: 1fr;
     }
   }

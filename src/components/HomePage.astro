@@ -361,7 +361,7 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
 
   .hero-shell {
     display: grid;
-    grid-template-columns: minmax(0, 1.08fr) minmax(20rem, 0.92fr);
+    grid-template-columns: minmax(0, 1.14fr) minmax(20rem, 0.86fr);
     gap: clamp(2rem, 6vw, 6rem);
     align-items: center;
     min-height: min(45rem, calc(100vh - 4rem));
@@ -386,13 +386,12 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
     margin: 0 0 1.25rem;
   }
   .hero-copy h1 {
-    max-width: 12ch;
+    max-width: 18ch;
     margin: 0;
-    overflow-wrap: break-word;
     font-family: var(--font-display);
-    font-size: clamp(2.8rem, 7vw, 5.5rem);
-    line-height: 0.98;
-    letter-spacing: -0.045em;
+    font-size: clamp(2.5rem, 4.9vw, 3.5rem);
+    line-height: 1.02;
+    letter-spacing: -0.03em;
   }
   .hero-description {
     max-width: 42rem;
@@ -794,7 +793,8 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
 
   @media (width < 26rem) {
     .hero-copy h1 {
-      font-size: clamp(2.1rem, 11vw, 2.8rem);
+      font-size: clamp(1.9rem, 9.4vw, 2.45rem);
+      overflow-wrap: break-word;
     }
   }
 

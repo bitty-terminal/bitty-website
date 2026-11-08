@@ -83,7 +83,9 @@ describe("install channels", () => {
     const [command] = windows?.commands ?? [];
     expect(command?.code).toContain("-OutFile");
     expect(command?.code).toContain("$env:TEMP");
-    expect(command?.code).not.toMatch(/^\s*\(?irm\b[^\n]*\biex\b/imu);
+    // uBO compiles its guard with the `s` flag, so `.` spans newlines; this
+    // mirrors that so a future "download then iex" split is still caught.
+    expect(command?.code).not.toMatch(/^\s*\(?irm\b[\s\S]*?\biex\b/imu);
   });
 
   test("artifact downloads resolve through the release pointer", () => {

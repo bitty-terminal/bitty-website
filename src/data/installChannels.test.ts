@@ -67,6 +67,25 @@ describe("install channels", () => {
     );
   });
 
+  test("no command copies a pipe-to-iex ClickFix pattern", () => {
+    for (const channel of channels) {
+      for (const command of channel.commands) {
+        expect(command.code).not.toMatch(/\|\s*iex\b/iu);
+      }
+    }
+  });
+
+  test("the Windows installer downloads to a file before running", () => {
+    const windows = channels.find(
+      (channel) => channel.id === "windows-installer",
+    );
+    expect(windows).toBeDefined();
+    const [command] = windows?.commands ?? [];
+    expect(command?.code).toContain("-OutFile");
+    expect(command?.code).toContain("$env:TEMP");
+    expect(command?.code).not.toMatch(/^\s*\(?irm\b[^\n]*\biex\b/imu);
+  });
+
   test("artifact downloads resolve through the release pointer", () => {
     for (const channel of [...packageChannels, ...primaryChannels]) {
       for (const command of channel.commands) {

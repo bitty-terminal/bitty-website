@@ -54,11 +54,23 @@ export const primaryChannels: InstallChannel[] = [
     name: { en: "Windows", "zh-CN": "Windows" },
     arch: "x64 · arm64",
     summary: {
-      en: "PowerShell installer for the current user; no administrator rights required.",
-      "zh-CN": "为当前用户安装的 PowerShell 脚本，无需管理员权限。",
+      en: "Download the installer, review it, then run it for the current user; no administrator rights required.",
+      "zh-CN": "先下载并检查安装脚本，再以当前用户身份运行，无需管理员权限。",
     },
     status: "available",
-    commands: [{ code: "irm https://cdn.bitty.run/install/install.ps1 | iex" }],
+    commands: [
+      {
+        label: {
+          en: "Download, review, then run",
+          "zh-CN": "下载、检查后运行",
+        },
+        code: [
+          'irm https://cdn.bitty.run/install/install.ps1 -OutFile "$env:TEMP\\bitty-install.ps1"',
+          "Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass",
+          '& "$env:TEMP\\bitty-install.ps1"',
+        ].join("\n"),
+      },
+    ],
   },
   {
     id: "source",

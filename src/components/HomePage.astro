@@ -159,15 +159,20 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
               <p>{channel.summary[locale]}</p>
               <div class="command-stack">
                 {channel.commands.map((command) => (
-                  <div class="command-block">
-                    <code>{command.code}</code>
-                    <button
-                      type="button"
-                      data-copy={command.code}
-                      aria-label={`${copy.copy}: ${channel.name[locale]}`}
-                    >
-                      {copy.copy}
-                    </button>
+                  <div class="command-entry">
+                    {command.label && (
+                      <p class="command-label">{command.label[locale]}</p>
+                    )}
+                    <div class="command-block">
+                      <code>{command.code}</code>
+                      <button
+                        type="button"
+                        data-copy={command.code}
+                        aria-label={`${copy.copy}: ${channel.name[locale]}`}
+                      >
+                        {copy.copy}
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

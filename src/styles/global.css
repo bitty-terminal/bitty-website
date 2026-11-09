@@ -743,6 +743,17 @@ a:hover {
   line-height: 1.68;
 }
 
+/* English prose: compensate for Inter's smaller x-height relative to CJK
+ * glyphs. Chinese keeps the original 15px body size. */
+html[lang="en"] .prose,
+html[lang="en"] .bitty-prose {
+  font-size: 1rem;
+}
+
+html[lang="en"] .prose table {
+  font-size: 0.875rem;
+}
+
 .bitty-prose h1,
 .prose h1 {
   font-family: var(--font-display);

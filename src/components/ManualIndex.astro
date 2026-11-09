@@ -222,4 +222,13 @@ const description = isZh
     font-family: var(--font-mono);
     font-size: 0.68rem;
   }
+
+  /* English body copy: match the optical size of CJK glyphs. */
+  :global(html[lang="en"]) .manual-index-header p {
+    font-size: 0.83rem;
+  }
+
+  :global(html[lang="en"]) .entry-title {
+    font-size: 0.875rem;
+  }
 </style>

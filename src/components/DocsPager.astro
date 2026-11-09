@@ -2,7 +2,6 @@
 /**
  * Docs previous/next pager (CTX-0050, CTX-0064).
  * Reads the linear reading order from bitty-manual.
- * Styled with Blueprint dark surface and tactile hover focus.
  */
 import { getManualPager } from "../lib/manualDocs.ts";
 
@@ -21,12 +20,12 @@ const isZh = locale === "zh-CN";
   <nav class="docs-pager" aria-label={isZh ? "分页导航" : "Pagination"}>
     {previous !== null ? (
       <a
-        class="docs-pager-link docs-pager-prev blueprint-box"
+        class="docs-pager-link docs-pager-prev"
         href={previous.href}
         rel="prev"
       >
         <span class="docs-pager-hint">
-          {locale === "zh-CN" ? "← 上一页" : "← Previous"}
+          {locale === "zh-CN" ? "← 上一篇" : "← Previous"}
         </span>
         <span class="docs-pager-target">{previous.title}</span>
       </a>
@@ -34,13 +33,9 @@ const isZh = locale === "zh-CN";
       <div class="docs-pager-placeholder" aria-hidden="true"></div>
     )}
     {next !== null && (
-      <a
-        class="docs-pager-link docs-pager-next blueprint-box"
-        href={next.href}
-        rel="next"
-      >
+      <a class="docs-pager-link docs-pager-next" href={next.href} rel="next">
         <span class="docs-pager-hint">
-          {locale === "zh-CN" ? "下一页 →" : "Next →"}
+          {locale === "zh-CN" ? "下一篇 →" : "Next →"}
         </span>
         <span class="docs-pager-target">{next.title}</span>
       </a>
@@ -51,10 +46,10 @@ const isZh = locale === "zh-CN";
 <style>
   .docs-pager {
     display: grid;
-    gap: 1.25rem;
+    gap: 1rem;
     margin-block-start: 3rem;
-    padding-block-start: 2rem;
-    border-block-start: 1px solid var(--border-subtle);
+    padding-block-start: 1.75rem;
+    border-block-start: 1px solid var(--line);
   }
 
   @media (min-width: 40rem) {
@@ -66,31 +61,28 @@ const isZh = locale === "zh-CN";
   .docs-pager-link {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
+    gap: 0.3rem;
     min-block-size: var(--touch-target);
-    padding: 1rem 1.25rem;
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-sm);
+    padding: 0.95rem 1.15rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
     background: var(--bg-surface);
     color: var(--fg-primary);
     text-decoration: none;
+    box-shadow: var(--shadow-xs);
     transition:
-      border-color 0.2s ease,
-      background-color 0.2s ease,
+      border-color 0.15s ease,
+      background-color 0.15s ease,
       transform 0.15s ease;
   }
 
   .docs-pager-link:hover {
-    border-color: var(--border-focus);
+    border-color: var(--accent);
     background: var(--bg-elevated);
-    color: var(--accent);
     transform: translateY(-1px);
   }
 
-  .docs-pager-link:hover .docs-pager-target {
-    color: var(--accent);
-  }
-
+  .docs-pager-link:hover .docs-pager-target,
   .docs-pager-link:hover .docs-pager-hint {
     color: var(--accent);
   }
@@ -102,17 +94,18 @@ const isZh = locale === "zh-CN";
   .docs-pager-hint {
     color: var(--fg-muted);
     font-family: var(--font-mono);
-    font-size: var(--text-2xs);
-    letter-spacing: 0.06em;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
-    transition: color 0.2s ease;
+    transition: color 0.15s ease;
   }
 
   .docs-pager-target {
     color: var(--fg-primary);
-    font-size: var(--text-sm);
+    font-size: 0.9rem;
     font-weight: 600;
-    transition: color 0.2s ease;
+    transition: color 0.15s ease;
   }
 
   .docs-pager-placeholder {

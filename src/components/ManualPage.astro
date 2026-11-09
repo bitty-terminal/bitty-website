@@ -12,16 +12,16 @@ import literataLatin from "@fontsource-variable/literata/files/literata-latin-wg
 import SiteFooter from "./SiteFooter.astro";
 import SiteHeader from "./SiteHeader.astro";
 import "../styles/global.css";
+import { getUiMessages, type SiteLocale } from "../lib/i18n.ts";
 import {
   getAllManualDocEntries,
   loadManualManifest,
-  localizedSectionTitle,
 } from "../lib/manualDocs.ts";
 
-type Locale = "en" | "zh-CN";
-type Props = { locale: Locale; slug: string };
+type Props = { locale: SiteLocale; slug: string };
 
 const { locale, slug } = Astro.props as Props;
+const t = getUiMessages(locale);
 const manifest = loadManualManifest();
 const allEntries = getAllManualDocEntries(manifest);
 const activeSlug = slug || allEntries[0]?.fullSlug || "";
@@ -50,7 +50,7 @@ const pageDescription = `${localizedTitle} — Bitty Manual`;
 ---
 
 <!doctype html>
-<html lang={locale} data-theme="shibuya-pop">
+<html lang={locale} data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -94,21 +94,29 @@ const pageDescription = `${localizedTitle} — Bitty Manual`;
     />
     <link rel="icon" type="image/x-icon" href="/icons/favicon.ico" />
     <title>{localizedTitle} — Bitty Manual</title>
+    <script is:inline>
+      try {
+        const stored = window.localStorage.getItem("bitty-theme");
+        if (stored === "dark" || stored === "light") {
+          document.documentElement.setAttribute("data-theme", stored);
+        }
+      } catch {}
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">
-      {locale === "zh-CN" ? "跳转到正文" : "Skip to content"}
+      {t.skipToContent}
     </a>
-    <SiteHeader locale={locale} activeNav="docs" />
+    <SiteHeader
+      locale={locale}
+      activeNav="docs"
+      alternateHref={alternatePath}
+    />
     <main id="main-content" class="docs-main" tabindex="-1">
       <div class="docs-layout">
         <DocsSidebar locale={locale} currentSlug={activeSlug} />
         <div class="docs-article">
           <DocsBreadcrumbs slug={activeSlug} locale={locale} />
-          <p class="eyebrow">
-            {localizedSectionTitle(entry.sectionId, entry.sectionTitle, locale)}{" "}
-            · Bitty Manual
-          </p>
           <DocsToc headings={headings} locale={locale} />
           <article class="prose bitty-prose">
             <Content />

@@ -2,114 +2,238 @@
 /**
  * Site header.
  *
- * Uses the global three-zone header rules from `src/styles/global.css`
- * (`site-header` + `brand` + `header-search` + `header-links`). The previous
- * markup carried Tailwind utility classes, but this repository does not
- * install Tailwind, so those classes were inert and the search box collapsed
- * to a few pixels on narrow viewports.
+ * Soft, bright minimalist developer top bar with sticky glass surface,
+ * official CDN Bitty logo (`BittyLogo`), centered static manual search,
+ * centralized i18n route switcher (`EN / 中文`), and Soft Daylight / Slate Dusk
+ * theme toggle. Version-agnostic so the website stays decoupled from release
+ * cadence while documentation updates flow through Cloudflare R2.
  */
 import SiteSearch from "./SiteSearch.astro";
 import BittyLogo from "./BittyLogo.astro";
+import { getUiMessages, localizePath, type SiteLocale } from "../lib/i18n.ts";
 
 type Props = {
-  locale?: "en" | "zh-CN";
+  locale?: SiteLocale;
   showSearch?: boolean;
   activeNav?: "hero" | "docs";
+  alternateHref?: string;
 };
 
-const { locale = "en", showSearch = true, activeNav } = Astro.props as Props;
+const {
+  locale = "en",
+  showSearch = true,
+  activeNav,
+  alternateHref,
+} = Astro.props as Props;
 const isZh = locale === "zh-CN";
+const t = getUiMessages(locale);
 const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
+const homeHref = isZh ? "/zh-CN/" : "/";
 const docsHref = isZh ? "/zh-CN/docs/" : "/docs/";
-const languageHref = isZh ? "/" : "/zh-CN/";
+const installHref = isZh ? "/zh-CN/#install" : "/#install";
+const targetLocale: SiteLocale = isZh ? "en" : "zh-CN";
+const languageHref =
+  alternateHref ?? localizePath(Astro.url.pathname, targetLocale);
 ---
 
-<header class="site-header">
-  <nav aria-label={isZh ? "站点导航" : "Site navigation"}>
-    <a
-      href={isZh ? "/zh-CN/" : "/"}
-      class="brand"
-      aria-label={isZh ? "Bitty 首页" : "Bitty home"}
-    >
-      <BittyLogo />
-      <span>BITTY</span>
-    </a>
+<header class="site-header-wrap">
+  <div class="site-header">
+    <nav aria-label={t.navAriaLabel}>
+      <a href={homeHref} class="brand" aria-label={t.homeAriaLabel}>
+        <BittyLogo />
+        <span class="brand-name">bitty</span>
+      </a>
 
-    {showSearch && (
-      <div class="header-search">
-        <SiteSearch locale={locale} />
-      </div>
-    )}
+      {showSearch && (
+        <div class="header-search">
+          <SiteSearch locale={locale} />
+        </div>
+      )}
 
-    <ul class="header-links">
-      <li>
-        <a
-          href={docsHref}
-          class:list={["header-link", { "is-active": activeNav === "docs" }]}
-        >
-          <span aria-hidden="true">📖</span>
-          <span class="nav-label">{isZh ? "手册" : "Docs"}</span>
-        </a>
-      </li>
-      <li>
-        <a
-          href={languageHref}
-          id="lang-toggle-btn"
-          class="header-link"
-          aria-label={
-            isZh ? "切换到 EN（英文）" : "Switch to 中文 (Simplified Chinese)"
-          }
-          title={isZh ? "Read in English" : "阅读简体中文"}
-        >
-          <span aria-hidden="true">🌐</span>
-          <span>{isZh ? "EN" : "中文"}</span>
-        </a>
-      </li>
-      <li>
-        <a
-          href={GITHUB_REPO_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="header-github"
-          title="GitHub Repository"
-          aria-label="Bitty on GitHub"
-        >
-          <svg
-            class="github-mark"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            aria-hidden="true"
+      <ul class="header-links">
+        <li>
+          <a href={installHref} class="header-link header-link-secondary">
+            <span>{t.navInstall}</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href={docsHref}
+            class:list={["header-link", { "is-active": activeNav === "docs" }]}
           >
-            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
-          </svg>
-          <span class="nav-label">GitHub</span>
-        </a>
-      </li>
-    </ul>
-  </nav>
+            <span>{t.navDocs}</span>
+          </a>
+        </li>
+        <li>
+          <a
+            href={languageHref}
+            id="lang-toggle-btn"
+            class="locale-switch-pill"
+            aria-label={t.switchLocaleLabel}
+            title={t.switchLocaleTitle}
+          >
+            <span class:list={{ "loc-active": !isZh }}>EN</span>
+            <span class="loc-sep" aria-hidden="true">
+              /
+            </span>
+            <span class:list={{ "loc-active": isZh }}>中文</span>
+          </a>
+        </li>
+        <li>
+          <button
+            type="button"
+            id="theme-toggle-btn"
+            class="header-icon-btn theme-toggle"
+            aria-label={t.toggleThemeLabel}
+            title={t.toggleThemeTitle}
+          >
+            <svg
+              class="header-svg-icon icon-sun"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linecap="round"
+              aria-hidden="true"
+            >
+              <circle cx="8" cy="8" r="3"></circle>
+              <path d="M8 1.5v1.75M8 12.75v1.75M1.5 8h1.75M12.75 8h1.75M3.4 3.4l1.25 1.25M11.35 11.35l1.25 1.25M12.6 3.4l-1.25 1.25M4.65 11.35L3.4 12.6"></path>
+            </svg>
+            <svg
+              class="header-svg-icon icon-moon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M13.2 9.8A5.6 5.6 0 0 1 6.2 2.8a5.6 5.6 0 1 0 7 7z"></path>
+            </svg>
+          </button>
+        </li>
+        <li>
+          <a
+            href={GITHUB_REPO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="header-github"
+            title={t.githubTitle}
+            aria-label={t.githubAriaLabel}
+          >
+            <svg
+              class="github-mark"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              aria-hidden="true"
+            >
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+            </svg>
+            <span class="nav-label">GitHub</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </div>
 </header>
 
+<script is:inline>
+  (() => {
+    const root = document.documentElement;
+    const btn = document.getElementById("theme-toggle-btn");
+
+    const effectiveTheme = () => {
+      const explicit = root.getAttribute("data-theme");
+      return explicit === "dark" ? "dark" : "light";
+    };
+
+    const syncButtonState = () => {
+      if (!btn) return;
+      const current = effectiveTheme();
+      btn.setAttribute("data-active-theme", current);
+      btn.setAttribute("aria-pressed", String(current === "dark"));
+    };
+
+    try {
+      const stored = window.localStorage.getItem("bitty-theme");
+      if (stored === "dark" || stored === "light") {
+        root.setAttribute("data-theme", stored);
+      } else if (!root.hasAttribute("data-theme")) {
+        root.setAttribute("data-theme", "light");
+      }
+    } catch {
+      if (!root.hasAttribute("data-theme")) {
+        root.setAttribute("data-theme", "light");
+      }
+    }
+
+    syncButtonState();
+
+    btn?.addEventListener("click", () => {
+      const next = effectiveTheme() === "dark" ? "light" : "dark";
+      root.classList.add("theme-switching");
+      root.setAttribute("data-theme", next);
+      void root.offsetHeight;
+      root.classList.remove("theme-switching");
+      try {
+        window.localStorage.setItem("bitty-theme", next);
+      } catch {
+        // Ignore storage errors
+      }
+      syncButtonState();
+    });
+  })();
+</script>
+
 <style>
-  .header-link,
-  .header-github {
-    gap: 0.35rem;
-  }
-  .header-link.is-active {
-    color: var(--accent);
+  .brand-name {
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
     font-weight: 700;
-    text-decoration: underline;
-    text-underline-offset: 0.3em;
+    letter-spacing: -0.02em;
   }
+
+  .header-svg-icon {
+    width: 0.88rem;
+    height: 0.88rem;
+    flex-shrink: 0;
+  }
+
   .github-mark {
-    width: 0.9rem;
-    height: 0.9rem;
+    width: 0.88rem;
+    height: 0.88rem;
+    flex-shrink: 0;
   }
-  @media (width < 23rem) {
-    .brand > span:last-child {
+
+  .theme-toggle {
+    padding-inline: 0.5rem;
+  }
+
+  /* Soft Daylight default: show moon icon to switch to dark; in dark mode show sun */
+  .theme-toggle .icon-sun {
+    display: none;
+  }
+
+  .theme-toggle .icon-moon {
+    display: block;
+  }
+
+  :global([data-theme="dark"]) .theme-toggle .icon-sun {
+    display: block;
+  }
+
+  :global([data-theme="dark"]) .theme-toggle .icon-moon {
+    display: none;
+  }
+
+  @media (width < 56rem) {
+    .header-link-secondary {
       display: none;
     }
   }
-  @media (width < 48rem) {
+
+  @media (width < 36rem) {
     .nav-label {
       position: absolute;
       overflow: hidden;
@@ -117,6 +241,12 @@ const languageHref = isZh ? "/" : "/zh-CN/";
       inline-size: 1px;
       block-size: 1px;
       white-space: nowrap;
+    }
+  }
+
+  @media (width < 24rem) {
+    .brand-name {
+      display: none;
     }
   }
 </style>

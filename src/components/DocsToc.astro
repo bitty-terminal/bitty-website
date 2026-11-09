@@ -1,24 +1,11 @@
 ---
 /**
  * Per-article table of contents (CTX-0039, CTX-0050): the H2/H3 headings of
- * the rendered article as plain anchor links.
- *
- * Data source: the `headings` returned by Astro's `render(entry)` — the same
- * pipeline that emits the article's heading ids, so links match by
- * construction. The list is fully usable with JavaScript disabled; the
- * inline script only highlights the section in view via
- * IntersectionObserver and never owns routing or content.
- *
- * Placement (website#91): one `<nav>`, rendered between the article header
- * and the article body, so a narrow-viewport reader finds section navigation
- * directly under the title instead of at the end of the article. Below the
- * 70rem layout breakpoint it is a `<details>` disclosure that a tiny script
- * collapses (the same pattern as the sidebar drawer); from 70rem
- * `global.css` lifts it out of the article column into the sticky third
- * column and this component swaps the disclosure summary for the inline
- * "On this page" label. One `<nav>`, one set of heading anchors: nothing is
- * duplicated, so an anchor can never appear twice on the page.
+ * the rendered article as plain anchor links in the right column, with a
+ * collapse button to hide the right TOC rail.
  */
+import { getUiMessages, type SiteLocale } from "../lib/i18n.ts";
+
 type TocHeading = {
   readonly depth: number;
   readonly slug: string;
@@ -27,10 +14,11 @@ type TocHeading = {
 
 type Props = {
   headings: readonly TocHeading[];
-  locale?: "en" | "zh-CN";
+  locale?: SiteLocale;
 };
 
 const { headings, locale = "en" } = Astro.props as Props;
+const t = getUiMessages(locale);
 const items = headings.filter(
   (heading) => heading.depth === 2 || heading.depth === 3,
 );
@@ -38,14 +26,20 @@ const items = headings.filter(
 
 {items.length > 0 && (
   <details class="docs-toc" open>
-    <summary>{locale === "zh-CN" ? "本页内容" : "On this page"}</summary>
-    <nav
-      class="docs-toc-nav"
-      aria-label={locale === "zh-CN" ? "本页内容" : "On this page"}
-    >
-      <p class="docs-toc-title">
-        {locale === "zh-CN" ? "本页内容" : "On this page"}
-      </p>
+    <summary>{t.tocSummary}</summary>
+    <nav class="docs-toc-nav" aria-label={t.tocSummary}>
+      <div class="docs-toc-head">
+        <p class="docs-toc-title">{t.tocSummary}</p>
+        <button
+          type="button"
+          class="docs-rail-collapse-btn"
+          data-toggle-rail="right"
+          title={t.hideRailLabel}
+        >
+          <span>{t.hideRailLabel}</span>
+          <span aria-hidden="true">»</span>
+        </button>
+      </div>
       <ul>
         {items.map((item) => (
           <li data-depth={item.depth}>
@@ -58,13 +52,8 @@ const items = headings.filter(
 )}
 
 <script>
-  // CTX-0050: keep the disclosure collapsed on narrow viewports, where the
-  // TOC sits under the article title, and open (summary hidden by CSS) from
-  // the 70rem layout where it is the sticky right rail. Runs on breakpoint
-  // changes too, so a resize never leaves the rail hidden behind a summary
-  // that is display:none. Scoped to this component instance.
   const toc = document.querySelector("details.docs-toc");
-  const narrow = window.matchMedia("(max-width: 69.9375rem)");
+  const narrow = window.matchMedia("(max-width: 49.9375rem)");
   const syncToc = () => {
     if (toc instanceof HTMLDetailsElement) {
       toc.open = !narrow.matches;
@@ -75,9 +64,6 @@ const items = headings.filter(
 </script>
 
 <script>
-  // Progressive enhancement only: the server-rendered anchor links already
-  // navigate. Highlight the link whose heading is in view; without
-  // IntersectionObserver (or without JS) the TOC stays a plain link list.
   const tocRoot = document.querySelector(".docs-toc");
   if (tocRoot && "IntersectionObserver" in window) {
     const links = new Map<string, HTMLAnchorElement>();
@@ -110,7 +96,7 @@ const items = headings.filter(
             }
           }
         },
-        { rootMargin: "-15% 0px -70% 0px" },
+        { rootMargin: "-12% 0px -72% 0px" },
       );
       for (const id of links.keys()) {
         const heading = document.getElementById(id);
@@ -123,65 +109,75 @@ const items = headings.filter(
 <style>
   .docs-toc {
     min-width: 0;
-    margin-block-end: 2.5rem;
+    margin-block-end: 1.25rem;
     font-size: var(--text-xs);
-    line-height: 1.5;
+    line-height: 1.45;
   }
 
-  /* Narrow viewports: the summary is the section toggle, so it carries the
-   * "On this page" label and the inline title is hidden. */
   .docs-toc > summary {
     display: inline-flex;
     align-items: center;
     min-block-size: var(--touch-target);
+    padding: 0.35rem 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
     cursor: pointer;
     color: var(--fg-primary);
-    font-weight: 700;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    list-style: none;
+    box-shadow: var(--shadow-xs);
+  }
+
+  .docs-toc > summary::-webkit-details-marker {
+    display: none;
   }
 
   .docs-toc > summary::before {
     content: "\25B8";
-    margin-inline-end: 0.375rem;
+    margin-inline-end: 0.4rem;
     color: var(--fg-muted);
+    transition: transform 0.15s ease;
   }
 
   .docs-toc[open] > summary::before {
     transform: rotate(90deg);
   }
 
-  .docs-toc-title {
+  .docs-toc-head {
     display: none;
   }
 
   .docs-toc-nav ul {
-    margin: 0;
+    margin: 0.5rem 0 0;
     padding: 0;
     list-style: none;
-    border-inline-start: 1px solid var(--border-subtle);
+    border-inline-start: 1px solid var(--line);
   }
 
   .docs-toc-nav li[data-depth="3"] a {
-    padding-inline-start: 1.25rem;
+    padding-inline-start: 1.2rem;
+    font-size: 0.73rem;
   }
 
   .docs-toc-nav a {
     display: block;
-    min-block-size: 1.85rem;
+    min-block-size: 1.7rem;
     align-content: center;
-    padding-block: 0.2rem;
-    padding-inline-start: 0.75rem;
+    padding: 0.2rem 0.45rem 0.2rem 0.7rem;
+    margin-inline-start: -1px;
     border-inline-start: 2px solid transparent;
-    color: var(--fg-secondary);
+    color: var(--fg-muted);
     text-decoration: none;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.76rem;
     transition:
-      color 0.15s ease,
-      border-color 0.15s ease;
+      color 0.14s ease,
+      border-color 0.14s ease;
   }
 
   .docs-toc-nav a:hover {
-    color: var(--accent);
+    color: var(--fg-primary);
   }
 
   .docs-toc-nav a[aria-current="true"] {
@@ -190,33 +186,35 @@ const items = headings.filter(
     font-weight: 600;
   }
 
-  /* Wide viewports: the TOC is the sticky right rail and CSS keeps the
-   * disclosure open, so the summary is gone and the inline label returns. */
-  @media (width >= 70rem) {
+  @media (width >= 50rem) {
+    .docs-toc {
+      margin-block-end: 0;
+    }
+
     .docs-toc > summary {
       display: none;
     }
 
-    .docs-toc-title {
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-      margin-block-end: 0.75rem;
-      color: var(--fg-primary);
-      font-family: var(--font-mono);
-      font-size: 0.6875rem;
-      font-weight: 700;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
+    .docs-toc-nav ul {
+      margin-top: 0;
     }
 
-    .docs-toc-title::before {
-      content: "";
-      display: inline-block;
-      inline-size: 0.35rem;
-      block-size: 0.75rem;
-      background: var(--accent);
-      border-radius: 1px;
+    .docs-toc-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin: 0 0 0.6rem;
+      padding-bottom: 0.45rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .docs-toc-title {
+      margin: 0;
+      color: var(--fg-primary);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
     }
   }
 </style>

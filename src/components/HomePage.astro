@@ -712,4 +712,18 @@ const alternateHref = isZh ? "/" : "/zh-CN/";
       grid-template-columns: 1fr;
     }
   }
+
+  /* English body copy: Inter's x-height is much smaller than a CJK glyph,
+   * so the same computed size reads smaller. Lift only English body text. */
+  :global(html[lang="en"]) .hero-description {
+    font-size: 1.04rem;
+  }
+
+  :global(html[lang="en"]) .feature-card p {
+    font-size: 0.875rem;
+  }
+
+  :global(html[lang="en"]) .dock-pane-summary {
+    font-size: 0.85rem;
+  }
 </style>

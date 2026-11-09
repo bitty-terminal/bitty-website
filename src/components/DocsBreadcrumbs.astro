@@ -1,47 +1,151 @@
 ---
 /**
- * Docs breadcrumb trail & R2 metadata bar.
- * Shows the locale, section, document filename, and CF-Cache status.
+ * Minimal section breadcrumb bar above the article title, with desktop toggle
+ * controls to collapse or expand the Left Sidebar (Document List) and Right
+ * Sidebar (Table of Contents).
+ * Retains `class="docs-metadata-bar"` for `auditDocsShell` compliance.
  */
+import { getUiMessages, type SiteLocale } from "../lib/i18n.ts";
 import { getManualBreadcrumb } from "../lib/manualDocs.ts";
 
 type Props = {
   slug: string;
-  /** Optional locale, default 'en'. */
-  locale?: string;
-  /** Raw markdown content. */
+  locale?: SiteLocale;
   rawMarkdown?: string;
 };
 
 const { slug, locale = "en" } = Astro.props as Props;
-
-const info = getManualBreadcrumb(slug, locale);
 const isZh = locale === "zh-CN";
-const sectionTitle = info?.sectionTitle ?? (isZh ? "手册" : "Documentation");
-const r2Key = info?.r2Key ?? `${slug}.md`;
-const fileName = r2Key.split("/").pop() ?? r2Key;
+const t = getUiMessages(locale);
+const info = getManualBreadcrumb(slug, locale);
+const sectionTitle = info?.sectionTitle ?? (isZh ? "文档" : "Documentation");
 ---
 
-<nav
-  class="docs-metadata-bar font-mono-tech text-xs"
-  aria-label={isZh ? "面包屑导航" : "Breadcrumb"}
->
-  <div class="breadcrumb-trail">
-    <a href={isZh ? "/zh-CN/docs/" : "/docs/"} class="crumb-link">
-      {isZh ? "手册" : "docs"}
-    </a>
-    <span class="crumb-sep">/</span>
-    <span class="crumb-locale">{locale}</span>
-    <span class="crumb-sep">/</span>
-    <span class="crumb-section">{sectionTitle}</span>
-    <span class="crumb-sep">/</span>
-    <span class="crumb-file">{fileName}</span>
+<nav class="docs-metadata-bar" aria-label={t.breadcrumbAria}>
+  <div class="docs-bar-left">
+    <button
+      type="button"
+      class="docs-rail-toggle"
+      data-toggle-rail="left"
+      aria-pressed="true"
+      title={t.toggleLeftRail}
+    >
+      <svg
+        class="rail-toggle-icon"
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.4"
+        aria-hidden="true"
+      >
+        <rect x="1.75" y="2.25" width="12.5" height="11.5" rx="2"></rect>
+        <line x1="6" y1="2.25" x2="6" y2="13.75"></line>
+      </svg>
+      <span>{t.toggleLeftRail}</span>
+    </button>
+
+    <span class="docs-bar-divider" aria-hidden="true"></span>
+
+    <div class="breadcrumb-trail">
+      <a href={isZh ? "/zh-CN/docs/" : "/docs/"} class="crumb-link">
+        {t.breadcrumbRoot}
+      </a>
+      <span class="crumb-sep" aria-hidden="true">
+        /
+      </span>
+      <span class="crumb-section">{sectionTitle}</span>
+    </div>
   </div>
 
-  <div class="metadata-actions">
-    <span class="cf-cache-pill">bitty-manual · {locale}</span>
-  </div>
+  <button
+    type="button"
+    class="docs-rail-toggle docs-rail-toggle-right"
+    data-toggle-rail="right"
+    aria-pressed="true"
+    title={t.toggleRightRail}
+  >
+    <span>{t.toggleRightRail}</span>
+    <svg
+      class="rail-toggle-icon"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.4"
+      aria-hidden="true"
+    >
+      <rect x="1.75" y="2.25" width="12.5" height="11.5" rx="2"></rect>
+      <line x1="10" y1="2.25" x2="10" y2="13.75"></line>
+    </svg>
+  </button>
 </nav>
+
+<script is:inline>
+  (() => {
+    const layout = document.querySelector(".docs-layout");
+    if (!layout) return;
+
+    const syncButtons = () => {
+      const leftCollapsed =
+        layout.getAttribute("data-left-collapsed") === "true";
+      const rightCollapsed =
+        layout.getAttribute("data-right-collapsed") === "true";
+      for (const btn of document.querySelectorAll(
+        '[data-toggle-rail="left"]',
+      )) {
+        btn.setAttribute("aria-pressed", String(!leftCollapsed));
+        btn.classList.toggle("is-collapsed", leftCollapsed);
+      }
+      for (const btn of document.querySelectorAll(
+        '[data-toggle-rail="right"]',
+      )) {
+        btn.setAttribute("aria-pressed", String(!rightCollapsed));
+        btn.classList.toggle("is-collapsed", rightCollapsed);
+      }
+    };
+
+    try {
+      if (window.localStorage.getItem("bitty-docs-left") === "collapsed") {
+        layout.setAttribute("data-left-collapsed", "true");
+      }
+      if (window.localStorage.getItem("bitty-docs-right") === "collapsed") {
+        layout.setAttribute("data-right-collapsed", "true");
+      }
+    } catch {}
+
+    syncButtons();
+
+    document.addEventListener("click", (e) => {
+      const target =
+        e.target instanceof Element
+          ? e.target.closest("[data-toggle-rail]")
+          : null;
+      if (!target) return;
+      const side = target.getAttribute("data-toggle-rail");
+      if (side === "left") {
+        const next = layout.getAttribute("data-left-collapsed") !== "true";
+        if (next) layout.setAttribute("data-left-collapsed", "true");
+        else layout.removeAttribute("data-left-collapsed");
+        try {
+          window.localStorage.setItem(
+            "bitty-docs-left",
+            next ? "collapsed" : "open",
+          );
+        } catch {}
+      } else if (side === "right") {
+        const next = layout.getAttribute("data-right-collapsed") !== "true";
+        if (next) layout.setAttribute("data-right-collapsed", "true");
+        else layout.removeAttribute("data-right-collapsed");
+        try {
+          window.localStorage.setItem(
+            "bitty-docs-right",
+            next ? "collapsed" : "open",
+          );
+        } catch {}
+      }
+      syncButtons();
+    });
+  })();
+</script>
 
 <style>
   .docs-metadata-bar {
@@ -49,27 +153,81 @@ const fileName = r2Key.split("/").pop() ?? r2Key;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 0.75rem;
-    padding-block-end: 1rem;
-    margin-block-end: 1.5rem;
-    border-block-end: 1px solid var(--border-subtle);
+    gap: 0.65rem;
+    margin-block-end: 0.85rem;
+  }
+
+  .docs-bar-left {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .docs-bar-divider {
+    inline-size: 1px;
+    block-size: 0.95rem;
+    background: var(--line);
+  }
+
+  .docs-rail-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.24rem 0.55rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xs);
+    background: var(--bg-surface);
+    color: var(--fg-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-xs);
+    transition:
+      border-color 0.14s ease,
+      color 0.14s ease,
+      background-color 0.14s ease;
+  }
+
+  .docs-rail-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .docs-rail-toggle[aria-pressed="true"] {
+    border-color: var(--accent-border);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .rail-toggle-icon {
+    inline-size: 0.85rem;
+    block-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  @media (width < 50rem) {
+    .docs-rail-toggle,
+    .docs-bar-divider {
+      display: none;
+    }
   }
 
   .breadcrumb-trail {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.35rem;
+    gap: 0.4rem;
     color: var(--fg-muted);
+    font-size: 0.78rem;
+    font-weight: 500;
   }
 
   .crumb-link {
-    display: inline-flex;
-    min-block-size: 1.5rem;
-    align-items: center;
-    color: var(--fg-secondary);
+    color: var(--fg-muted);
     text-decoration: none;
-    transition: color 0.15s ease;
+    transition: color 0.14s ease;
   }
 
   .crumb-link:hover {
@@ -77,40 +235,12 @@ const fileName = r2Key.split("/").pop() ?? r2Key;
   }
 
   .crumb-sep {
-    color: var(--border-focus);
-    opacity: 0.4;
-  }
-
-  .crumb-locale {
-    padding: 0.1rem 0.35rem;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-subtle);
-    border-radius: 3px;
-    color: var(--fg-primary);
+    color: var(--fg-muted);
+    opacity: 0.45;
   }
 
   .crumb-section {
-    color: var(--fg-secondary);
-  }
-
-  .crumb-file {
     color: var(--accent);
     font-weight: 600;
-  }
-
-  .metadata-actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .cf-cache-pill {
-    display: inline-block;
-    padding: 0.2rem 0.5rem;
-    background: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-sm);
-    color: var(--fg-muted);
-    font-size: 0.65rem;
   }
 </style>

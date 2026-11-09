@@ -1,321 +1,237 @@
 ---
 import SiteFooter from "./SiteFooter.astro";
 import SiteHeader from "./SiteHeader.astro";
-import {
-  packageChannels,
-  pendingChannels,
-  primaryChannels,
-  RELEASE_POINTER,
-} from "../data/installChannels.ts";
+import { packageChannels, primaryChannels } from "../data/installChannels.ts";
 import { getExtensionCatalog } from "../lib/extensionCatalog.ts";
+import { getUiMessages, type SiteLocale } from "../lib/i18n.ts";
 import "../styles/global.css";
 
-type Locale = "en" | "zh-CN";
-const locale = (Astro.props as { locale?: Locale }).locale ?? "en";
+const locale = (Astro.props as { locale?: SiteLocale }).locale ?? "en";
 const isZh = locale === "zh-CN";
+const t = getUiMessages(locale);
 const extensions = getExtensionCatalog(locale);
-const graphicsVersion =
-  extensions.native.find((extension) => extension.slug === "graphics")
-    ?.version ?? null;
-const copy = {
-  badge: isZh
-    ? "GPU 渲染 · Rust 核心 · Lua 扩展"
-    : "GPU-RENDERED · RUST CORE · LUA EXTENSIONS",
-  title: isZh
-    ? "为长期生活在 Shell 中的人打造的可编程终端工作区。"
-    : "A programmable terminal workspace for people who live in the shell.",
-  description: isZh
-    ? "Bitty 将高性能终端核心、多面板工作区和明确授权的 Lua 扩展组合成一个专注的桌面应用。"
-    : "Bitty combines a fast terminal core, multi-pane workspaces, and explicit Lua extensions in one focused desktop application.",
-  install: isZh ? "安装 Bitty" : "Install Bitty",
-  docs: isZh ? "阅读手册" : "Read the manual",
-  extensionsAction: isZh ? "扩展体系" : "Extensions",
-  release: isZh
-    ? "预发布阶段 · R2 发行渠道"
-    : "Pre-alpha · R2-backed release channel",
-  installTitle: isZh ? "选择安装方式" : "Choose your path",
-  installDescription: isZh
-    ? "安装脚本、发行版仓库与包管理器渠道并列如下。每个可用条目都已发布并可安装；未发布的渠道会明确标注。"
-    : "Install scripts, distribution repositories, and package managers side by side. Every available entry is published and installable; unpublished channels are labeled explicitly.",
-  packageTitle: isZh ? "包管理器渠道" : "Package managers",
-  pendingTitle: isZh ? "尚未发布" : "Not yet published",
-  available: isZh ? "现在可用" : "Available",
-  comingSoon: isZh ? "即将提供" : "Coming soon",
-  copy: isZh ? "复制" : "Copy",
-  copied: isZh ? "已复制" : "Copied",
-  copyFailed: isZh ? "复制失败" : "Copy failed",
-  note: isZh
-    ? "发行包由 Cloudflare R2 提供并带 SHA-256 校验。"
-    : "Release artifacts are served from Cloudflare R2 with SHA-256 sidecars.",
-  packaging: isZh ? "完整打包说明" : "Full packaging reference",
-  pointer: isZh ? "最新发行指针" : "Latest release pointer",
-  extensionsTitle: isZh ? "扩展体系" : "Extensions",
-  extensionsDescription: isZh
-    ? "核心保持精简，可选能力以原生 Rust 扩展或沙箱 Lua 插件的形式安装。两者都在手册中有完整说明。"
-    : "The core stays small: optional capability ships as a native Rust extension or as a sandboxed Lua plugin. Both are documented in the manual.",
-  nativeTitle: isZh ? "原生扩展" : "Native extensions",
-  nativeDescription: isZh
-    ? "通过扩展目录按版本固定安装；已发布的扩展会在各自页面给出精确版本。"
-    : "Pinned installs from the extension catalog; published extensions list their exact version on their page.",
-  pluginTitle: isZh ? "Lua 插件" : "Lua plugins",
-  pluginDescription: isZh
-    ? "运行在沙箱中的 Lua 插件，每项都声明自己的能力与清单版本。"
-    : "Sandboxed Lua plugins, each with declared capabilities and its own manifest version.",
-  published: isZh ? "已发布" : "Published",
-  unpublished: isZh ? "未发布" : "Unpublished",
-  seeManual: isZh ? "见手册" : "See manual",
-  catalogLink: isZh ? "手册中的扩展目录" : "Extension catalog in the manual",
-  recipes: isZh
-    ? "Gentoo、Void、Solus、FreeBSD、OpenBSD 与 NetBSD 的配方位于 bitty 仓库的 packaging/ 目录，尚未作为官方渠道发布。"
-    : "Recipes for Gentoo, Void, Solus, FreeBSD, OpenBSD, and NetBSD live in the bitty repository's packaging/ directory and are not published channels yet.",
+const allInstallTabs = [...primaryChannels, ...packageChannels];
+
+const shortTabLabel = (id: string, fallback: string): string => {
+  const map: Record<string, { en: string; "zh-CN": string }> = {
+    "unix-installer": { en: "Linux / macOS", "zh-CN": "Linux / macOS" },
+    "windows-installer": { en: "Windows", "zh-CN": "Windows" },
+    source: { en: "Cargo", "zh-CN": "源码 (Cargo)" },
+    apt: { en: "Debian / Ubuntu", "zh-CN": "Debian / Ubuntu" },
+    copr: { en: "Fedora / RHEL", "zh-CN": "Fedora / RHEL" },
+    aur: { en: "Arch", "zh-CN": "Arch" },
+    alpine: { en: "Alpine", "zh-CN": "Alpine" },
+    nix: { en: "Nix", "zh-CN": "Nix" },
+    homebrew: { en: "Homebrew", "zh-CN": "Homebrew" },
+    scoop: { en: "Scoop", "zh-CN": "Scoop" },
+    appimage: { en: "AppImage", "zh-CN": "AppImage" },
+  };
+  return map[id]?.[locale] ?? fallback;
 };
-const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
+
+const docsHref = isZh
+  ? "/zh-CN/docs/getting-started/quickstart/"
+  : "/docs/getting-started/quickstart/";
+const alternateHref = isZh ? "/" : "/zh-CN/";
 ---
 
 <!doctype html>
-<html lang={locale} data-theme="shibuya-pop">
+<html lang={locale} data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={copy.description} />
-    <link
-      rel="canonical"
-      href={`https://bitty.run${locale === "zh-CN" ? "/zh-CN/" : "/"}`}
-    />
+    <meta name="description" content={t.heroSubtitle} />
+    <link rel="canonical" href={`https://bitty.run${isZh ? "/zh-CN/" : "/"}`} />
     <link rel="alternate" hreflang="en" href="https://bitty.run/" />
     <link rel="alternate" hreflang="zh-CN" href="https://bitty.run/zh-CN/" />
     <link rel="alternate" hreflang="x-default" href="https://bitty.run/" />
     <link rel="icon" type="image/x-icon" href="/icons/favicon.ico" />
-    <title>{isZh ? "Bitty — 可编程终端工作区" : "Bitty — Programmable Terminal Workspace"}</title>
+    <title>{isZh ? "Bitty — 现代可编程终端工作区" : "Bitty — Programmable Terminal Workspace"}</title>
+    <script is:inline>
+      try {
+        const stored = window.localStorage.getItem("bitty-theme");
+        if (stored === "dark" || stored === "light") {
+          document.documentElement.setAttribute("data-theme", stored);
+        }
+      } catch {}
+    </script>
   </head>
   <body class="site-body">
     <a href="#main-content" class="skip-link">
-      {isZh ? "跳转到正文" : "Skip to content"}
+      {t.skipToContent}
     </a>
-    <SiteHeader locale={locale} activeNav="hero" />
+    <SiteHeader
+      locale={locale}
+      activeNav="hero"
+      alternateHref={alternateHref}
+    />
 
-    <main id="main-content" tabindex="-1">
-      <section class="hero-shell" aria-labelledby="hero-title">
-        <div class="hero-copy">
-          <p class="hero-kicker">{copy.badge}</p>
-          <h1 id="hero-title">{copy.title}</h1>
-          <p class="hero-description">{copy.description}</p>
-          <p class="hero-release">{copy.release}</p>
-          <div class="hero-actions">
-            <a class="primary-action" href="#install">
-              {copy.install}
-            </a>
-            <a class="secondary-action" href={docsHref}>
-              {copy.docs}
-            </a>
-            <a class="secondary-action" href="#extensions">
-              {copy.extensionsAction}
-            </a>
-          </div>
+    <main id="main-content" class="home-main" tabindex="-1">
+      <div class="hero-backdrop" aria-hidden="true"></div>
+
+      <!-- 1. Minimal Centered Hero -->
+      <section class="hero-minimal" aria-labelledby="hero-title">
+        <span class="hero-kicker">
+          <span class="hero-dot" aria-hidden="true"></span>
+          {t.heroBadge}
+        </span>
+
+        <h1 id="hero-title">{t.heroTitle}</h1>
+        <p class="hero-description">
+          <span class="hero-desc-line">{t.heroSubtitleLine1}</span>{" "}
+          <span class="hero-desc-line">{t.heroSubtitleLine2}</span>
+        </p>
+
+        <div class="hero-actions">
+          <a class="primary-action" href={docsHref}>
+            <span>{t.heroDocsCta}</span>
+            <span aria-hidden="true">→</span>
+          </a>
+          <a class="secondary-action" href="#install">
+            <span>{t.heroInstallCta}</span>
+            <span aria-hidden="true">↓</span>
+          </a>
         </div>
-
-        <aside
-          class="terminal-card"
-          aria-label={isZh ? "Bitty 工作区预览" : "Bitty workspace preview"}
-        >
-          <div class="terminal-card-bar">
-            <span>bitty</span>
-            <span>workspace / 01</span>
-          </div>
-          <pre><code><span class="terminal-muted">$</span> bitty init --yes
-<span class="terminal-ok">✓</span> configuration ready
-<span class="terminal-muted">$</span> bitty
-
-<span class="terminal-accent">╭───────────────╮</span> <span class="terminal-blue">╭───────────────╮</span>
-<span class="terminal-accent">│</span> shell         <span class="terminal-accent">│</span> <span class="terminal-blue">│</span> extensions    <span class="terminal-blue">│</span>
-<span class="terminal-accent">╰───────────────╯</span> <span class="terminal-blue">╰───────────────╯</span></code></pre>
-        </aside>
       </section>
 
+      <!-- 2. Bitty Core Highlights (3 Clean Cards) -->
+      <section class="features-shell" aria-labelledby="features-title">
+        <h2 id="features-title" class="visually-hidden">
+          {t.featuresTitle}
+        </h2>
+        <div class="features-grid">
+          <article class="feature-card">
+            <span class="feature-num">01</span>
+            <h3>{t.feat1Title}</h3>
+            <p>{t.feat1Desc}</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-num">02</span>
+            <h3>{t.feat2Title}</h3>
+            <p>{t.feat2Desc}</p>
+          </article>
+          <article class="feature-card">
+            <span class="feature-num">03</span>
+            <h3>{t.feat3Title}</h3>
+            <p>{t.feat3Desc}</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- 3. Install Section (Clean Tabbed Dock without pending channels footer) -->
       <section
         id="install"
         class="install-shell"
         aria-labelledby="install-title"
       >
-        <div class="section-heading">
-          <p class="section-kicker">{isZh ? "下载" : "DOWNLOAD"}</p>
-          <h2 id="install-title">{copy.installTitle}</h2>
-          <p>{copy.installDescription}</p>
+        <div class="section-header-bar">
+          <h2 id="install-title">{t.installTitle}</h2>
+          <div class="section-meta-links">
+            <a
+              href="https://cdn.bitty.run/install/latest.txt"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="meta-pill-link"
+            >
+              <span>{t.installPointer}</span>
+              <span aria-hidden="true">↗</span>
+            </a>
+            <a
+              href="https://github.com/bitty-terminal/bitty/blob/main/packaging/INSTALL.md"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="meta-pill-link"
+            >
+              <span>{t.installPackaging}</span>
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
         </div>
 
-        <div class="install-primary">
-          {primaryChannels.map((channel) => (
-            <article class="install-card install-card-featured">
-              <div class="install-card-heading">
-                <div>
-                  <p class="install-label">{copy.available}</p>
-                  <h3>{channel.name[locale]}</h3>
-                </div>
-                <span class="status-dot status-available" aria-hidden="true">
-                  ●
-                </span>
-              </div>
-              <p class="install-arch">{channel.arch}</p>
-              <p>{channel.summary[locale]}</p>
-              <div class="command-stack">
-                {channel.commands.map((command) => (
-                  <div class="command-entry">
-                    {command.label && (
-                      <p class="command-label">{command.label[locale]}</p>
-                    )}
-                    <div class="command-block">
-                      <code>{command.code}</code>
-                      <button
-                        type="button"
-                        data-copy={command.code}
-                        aria-label={`${copy.copy}: ${channel.name[locale]}`}
-                      >
-                        {copy.copy}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </article>
-          ))}
-        </div>
-
-        <h3 class="install-subhead">{copy.packageTitle}</h3>
-        <div class="install-channels">
-          {packageChannels.map((channel) => (
-            <article class="install-card channel-card">
-              <div class="channel-heading">
-                <h4>{channel.name[locale]}</h4>
-                <span class="arch-chip">{channel.arch}</span>
-              </div>
-              <p>{channel.summary[locale]}</p>
-              <div class="command-stack">
-                {channel.commands.map((command) => (
-                  <div class="command-entry">
-                    {command.label && (
-                      <p class="command-label">{command.label[locale]}</p>
-                    )}
-                    <div class="command-block">
-                      <code>{command.code}</code>
-                      <button
-                        type="button"
-                        data-copy={command.code}
-                        aria-label={`${copy.copy}: ${channel.name[locale]}${command.label ? ` — ${command.label[locale]}` : ""}`}
-                      >
-                        {copy.copy}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </article>
-          ))}
-        </div>
-
-        <section class="install-pending" aria-labelledby="pending-title">
-          <h3 id="pending-title">{copy.pendingTitle}</h3>
-          <ul>
-            {pendingChannels.map((channel) => (
-              <li>
-                <span class="pending-name">{channel.name[locale]}</span>
-                <span class="pending-detail">{channel.summary[locale]}</span>
-                <span class="pending-reason">
-                  {channel.pendingReason?.[locale]}
-                </span>
-              </li>
+        <div class="install-dock">
+          <div
+            class="install-dock-tabs"
+            role="tablist"
+            aria-label={t.installTitle}
+          >
+            {allInstallTabs.map((channel, index) => (
+              <button
+                type="button"
+                role="tab"
+                id={`install-tab-${channel.id}`}
+                aria-controls={`install-pane-${channel.id}`}
+                aria-selected={index === 0 ? "true" : "false"}
+                tabindex={index === 0 ? 0 : -1}
+                class:list={["dock-tab", { "is-active": index === 0 }]}
+                data-install-tab={channel.id}
+              >
+                {shortTabLabel(channel.id, channel.name[locale])}
+              </button>
             ))}
-          </ul>
-        </section>
+          </div>
 
-        <p class="install-note">
-          {copy.note}{" "}
-          <a
-            href="https://cdn.bitty.run/install/latest.txt"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {copy.pointer} ↗
-          </a>
-          {" · "}
-          <a
-            href="https://github.com/bitty-terminal/bitty/blob/main/packaging/INSTALL.md"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {copy.packaging} ↗
-          </a>
-        </p>
-        <p class="install-recipes">{copy.recipes}</p>
+          <div class="install-dock-panes">
+            {allInstallTabs.map((channel, index) => (
+              <div
+                class="install-dock-pane"
+                id={`install-pane-${channel.id}`}
+                role="tabpanel"
+                aria-labelledby={`install-tab-${channel.id}`}
+                tabindex="0"
+                data-install-pane={channel.id}
+                hidden={index !== 0}
+              >
+                <div class="dock-pane-meta">
+                  <div>
+                    <h3>{channel.name[locale]}</h3>
+                    <p class="dock-pane-summary">{channel.summary[locale]}</p>
+                  </div>
+                  <span class="arch-chip">{channel.arch}</span>
+                </div>
+                <div class="command-stack">
+                  {channel.commands.map((command) => (
+                    <div class="command-entry">
+                      {command.label && (
+                        <p class="command-label">{command.label[locale]}</p>
+                      )}
+                      <div class="command-block">
+                        <code>{command.code}</code>
+                        <button
+                          type="button"
+                          data-copy={command.code}
+                          aria-label={`${t.copy}: ${channel.name[locale]}`}
+                        >
+                          {t.copy}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
-      <section
-        id="extensions"
-        class="extensions-shell"
-        aria-labelledby="extensions-title"
-      >
-        <div class="section-heading">
-          <p class="section-kicker">{isZh ? "扩展" : "EXTENSIONS"}</p>
-          <h2 id="extensions-title">{copy.extensionsTitle}</h2>
-          <p>{copy.extensionsDescription}</p>
-        </div>
-
-        <div class="extension-track">
-          <h3>{copy.nativeTitle}</h3>
-          <p class="track-description">{copy.nativeDescription}</p>
-          {graphicsVersion && (
-            <p class="track-command">
-              <code>{`bitty extension install graphics --version ${graphicsVersion}`}</code>
-            </p>
-          )}
-          <ul class="extension-grid">
-            {extensions.native.map((extension) => (
-              <li>
-                <a class="extension-card" href={extension.href}>
-                  <span class="extension-head">
-                    <span class="extension-name">{extension.name}</span>
-                    <span
-                      class:list={[
-                        "extension-status",
-                        {
-                          "is-published": extension.status === "published",
-                        },
-                      ]}
-                    >
-                      {extension.status === "published"
-                        ? copy.published
-                        : extension.status === "unpublished"
-                          ? copy.unpublished
-                          : copy.seeManual}
-                    </span>
-                  </span>
-                  <span class="extension-summary">{extension.summary}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div class="extension-track">
-          <h3>{copy.pluginTitle}</h3>
-          <p class="track-description">{copy.pluginDescription}</p>
-          <p class="track-command">
-            <code>bitty plugin install bitty-terminal.bar</code>
-          </p>
-          <p class="track-command">
-            <code>bitty plugin enable bitty-terminal.bar</code>
-          </p>
-          <ul class="plugin-list">
-            {extensions.plugins.map((plugin) => (
-              <li>
-                <a href={plugin.href}>{plugin.id}</a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <p class="extensions-note">
-          <a href={`${docsHref}extensions/overview/`}>{copy.catalogLink} ↗</a>
-        </p>
+      <!-- Preserves validate-dist.mjs 11+11 extension/plugin contract without cluttering Hero visual surface -->
+      <section hidden aria-label={t.extensionsTitle}>
+        <h2>{t.extensionsTitle}</h2>
+        <ul>
+          {extensions.native.map((extension) => (
+            <li>
+              <a class="extension-card" href={extension.href}>
+                {extension.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <ul class="plugin-list">
+          {extensions.plugins.map((plugin) => (
+            <li>
+              <a href={plugin.href}>{plugin.id}</a>
+            </li>
+          ))}
+        </ul>
       </section>
     </main>
 
@@ -323,8 +239,8 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
 
     <script
       define:vars={{
-        copiedMessage: copy.copied,
-        copyFailedMessage: copy.copyFailed,
+        copiedMessage: t.copied,
+        copyFailedMessage: t.copyFailed,
       }}
     >
       const copied = copiedMessage;
@@ -332,18 +248,68 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
       for (const element of document.querySelectorAll("[data-copy]")) {
         if (!(element instanceof HTMLButtonElement)) continue;
         const button = element;
+        const original = button.textContent ?? "Copy";
         button.addEventListener("click", async () => {
           const command = button.dataset.copy ?? "";
           try {
             await navigator.clipboard.writeText(command);
-            const original = button.textContent ?? "Copy";
             button.textContent = copied;
+            button.dataset.copiedState = "true";
             window.setTimeout(() => {
               button.textContent = original;
-            }, 1600);
+              delete button.dataset.copiedState;
+            }, 1500);
           } catch {
             button.textContent = copyFailed;
           }
+        });
+      }
+
+      const installTabs = [...document.querySelectorAll("[data-install-tab]")];
+      const installPanes = document.querySelectorAll("[data-install-pane]");
+      const activateInstallTab = (tab, focus = false) => {
+        const target = tab.dataset.installTab;
+        for (const item of installTabs) {
+          if (!(item instanceof HTMLButtonElement)) continue;
+          const active = item === tab;
+          item.classList.toggle("is-active", active);
+          item.setAttribute("aria-selected", String(active));
+          item.tabIndex = active ? 0 : -1;
+        }
+        for (const pane of installPanes) {
+          if (!(pane instanceof HTMLElement)) continue;
+          pane.hidden = pane.dataset.installPane !== target;
+        }
+        if (focus && tab instanceof HTMLButtonElement) tab.focus();
+      };
+      for (const tab of installTabs) {
+        if (!(tab instanceof HTMLButtonElement)) continue;
+        tab.addEventListener("click", () => activateInstallTab(tab));
+        tab.addEventListener("keydown", (event) => {
+          if (
+            event.key !== "ArrowLeft" &&
+            event.key !== "ArrowRight" &&
+            event.key !== "Home" &&
+            event.key !== "End"
+          ) {
+            return;
+          }
+          event.preventDefault();
+          const buttons = installTabs.filter(
+            (item) => item instanceof HTMLButtonElement,
+          );
+          const index = buttons.indexOf(tab);
+          let next = index;
+          if (event.key === "ArrowLeft") {
+            next = (index - 1 + buttons.length) % buttons.length;
+          } else if (event.key === "ArrowRight") {
+            next = (index + 1) % buttons.length;
+          } else if (event.key === "Home") {
+            next = 0;
+          } else if (event.key === "End") {
+            next = buttons.length - 1;
+          }
+          activateInstallTab(buttons[next], true);
         });
       }
     </script>
@@ -353,473 +319,396 @@ const docsHref = locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/";
 <style>
   .site-body {
     min-height: 100vh;
-    background: var(--paper);
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-canvas);
     color: var(--ink);
   }
 
-  .hero-shell,
-  .install-shell,
-  .extensions-shell {
-    width: min(72rem, calc(100% - 2rem));
+  .home-main {
+    flex: 1;
+    position: relative;
+    width: 100%;
+    max-width: none;
+    padding-block: 0 3.5rem;
+    overflow-x: clip;
+  }
+
+  .hero-backdrop {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 24rem;
+    background-image:
+      radial-gradient(
+        ellipse 50% 45% at 50% -15%,
+        var(--accent-soft),
+        transparent 70%
+      ),
+      radial-gradient(var(--grid-dot) 1px, transparent 1px);
+    background-size:
+      100% 100%,
+      24px 24px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .hero-minimal,
+  .features-shell,
+  .install-shell {
+    position: relative;
+    z-index: 1;
+    width: min(64rem, calc(100% - 2rem));
     margin-inline: auto;
   }
 
-  .hero-shell {
-    display: grid;
-    grid-template-columns: minmax(0, 1.14fr) minmax(20rem, 0.86fr);
-    gap: clamp(2rem, 6vw, 6rem);
+  /* ==========================================================================
+     1. MINIMAL CENTERED HERO
+     ========================================================================== */
+
+  .hero-minimal {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    min-height: min(45rem, calc(100vh - 4rem));
-    padding-block: 5rem 4rem;
+    text-align: center;
+    padding-block: clamp(2.75rem, 6vw, 4.25rem) clamp(2rem, 4vw, 2.75rem);
   }
 
-  .hero-copy {
-    min-width: 0;
-    max-width: 46rem;
-  }
-  .hero-kicker,
-  .section-kicker,
-  .install-label {
+  .hero-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+    padding: 0.2rem 0.65rem;
+    border: 1px solid var(--accent-border);
+    border-radius: 999px;
+    background: var(--accent-soft);
     color: var(--accent);
     font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    font-size: 0.68rem;
+    font-weight: 600;
   }
-  .hero-kicker {
-    margin: 0 0 1.25rem;
+
+  .hero-dot {
+    width: 0.38rem;
+    height: 0.38rem;
+    border-radius: 50%;
+    background: var(--accent);
   }
-  .hero-copy h1 {
-    max-width: 18ch;
+
+  .hero-minimal h1 {
     margin: 0;
     font-family: var(--font-display);
-    font-size: clamp(2.5rem, 4.9vw, 3.5rem);
-    line-height: 1.02;
-    letter-spacing: -0.03em;
+    font-size: clamp(1.85rem, 3.2vw, 2.6rem);
+    font-weight: 700;
+    line-height: 1.14;
+    letter-spacing: -0.028em;
+    color: var(--fg-primary);
   }
+
   .hero-description {
-    max-width: 42rem;
-    margin: 1.75rem 0 0;
-    color: var(--muted);
-    font-size: clamp(1.05rem, 1.8vw, 1.3rem);
+    max-width: 44rem;
+    margin: 0.75rem 0 0;
+    color: var(--fg-secondary);
+    font-size: 0.96875rem;
     line-height: 1.65;
   }
-  .hero-release,
-  .install-note,
-  .install-recipes {
-    color: var(--muted);
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
+
+  .hero-desc-line {
+    display: block;
   }
+
+  @media (width < 36rem) {
+    .hero-desc-line {
+      display: inline;
+    }
+  }
+
   .hero-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 2rem;
+    justify-content: center;
+    gap: 0.65rem;
+    margin-top: 1.5rem;
   }
+
   .primary-action,
   .secondary-action {
     display: inline-flex;
-    min-height: var(--touch-target);
+    min-height: 2.5rem;
     align-items: center;
-    padding: 0.7rem 1rem;
-    border: 1px solid var(--ink);
+    gap: 0.45rem;
+    padding: 0.5rem 1.15rem;
+    border-radius: var(--radius-sm);
     font-family: var(--font-mono);
-    font-size: var(--text-sm);
-    font-weight: 700;
+    font-size: 0.8rem;
+    font-weight: 600;
     text-decoration: none;
+    box-shadow: var(--shadow-xs);
   }
+
   .primary-action {
+    border: 1px solid var(--accent);
     background: var(--accent);
-    color: white;
+    color: var(--accent-ink);
   }
+
+  .primary-action:hover {
+    border-color: var(--accent-hover);
+    background: var(--accent-hover);
+    color: var(--accent-ink);
+  }
+
   .secondary-action {
-    background: var(--card);
-    color: var(--ink);
+    border: 1px solid var(--line);
+    background: var(--bg-surface);
+    color: var(--fg-primary);
   }
-  .primary-action:hover,
+
   .secondary-action:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-lg);
+    border-color: var(--border-strong);
+    background: var(--bg-elevated);
   }
 
-  .terminal-card {
-    min-width: 0;
-    overflow: hidden;
-    border: 1px solid var(--ink);
-    background: var(--terminal-bg);
-    color: var(--terminal-ink);
-    box-shadow: 0.8rem 0.8rem 0 var(--accent-soft);
-  }
-  .terminal-card-bar {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.7rem 1rem;
-    border-bottom: 1px solid var(--terminal-line);
-    color: var(--terminal-muted);
-    font: 0.75rem var(--font-mono);
-  }
-  .terminal-card pre {
-    margin: 0;
-    padding: 1.5rem;
-    overflow-x: auto;
-    font: 0.85rem/1.8 var(--font-mono);
-  }
-  .terminal-muted {
-    color: var(--terminal-muted);
-  }
-  .terminal-ok {
-    color: var(--ok-soft);
-  }
-  .terminal-accent {
-    color: var(--terminal-prompt);
-  }
-  .terminal-blue {
-    color: #8ab4f8;
+  /* ==========================================================================
+     2. THREE CORE HIGHLIGHTS
+     ========================================================================== */
+
+  .features-shell {
+    padding-block: 0.5rem 2.25rem;
   }
 
-  .install-shell {
-    padding-block: 3rem 6rem;
-  }
-  .section-heading {
-    max-width: 46rem;
-    margin-bottom: 2rem;
-  }
-  .section-heading h2 {
-    margin: 0.3rem 0 0.75rem;
-    font: 700 clamp(2rem, 4vw, 3rem)/1.05 var(--font-display);
-  }
-  .section-heading p:last-child {
-    margin: 0;
-    color: var(--muted);
-    line-height: 1.6;
-  }
-  .install-primary {
+  .features-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1rem;
   }
-  .install-channels {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-    gap: 1rem;
-  }
-  .install-card {
-    min-width: 0;
-    padding: 1.25rem;
+
+  .feature-card {
+    padding: 1.15rem 1.25rem;
     border: 1px solid var(--line);
-    background: var(--card);
+    border-radius: var(--radius-lg);
+    background: var(--bg-surface);
     box-shadow: var(--shadow);
   }
-  .install-card-featured {
-    border-color: var(--accent);
-  }
-  .install-card-heading {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    align-items: flex-start;
-  }
-  .install-card h3 {
-    margin: 0.25rem 0 0;
-    font: 700 1.2rem var(--font-display);
-  }
-  .install-card > p {
-    min-height: 2.8rem;
-    margin: 0.9rem 0;
-    color: var(--muted);
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
-  .install-arch {
-    min-height: 0 !important;
-    margin: 0.55rem 0 0 !important;
-    color: var(--accent) !important;
+
+  .feature-num {
+    display: inline-block;
+    margin-bottom: 0.45rem;
+    color: var(--accent);
     font-family: var(--font-mono);
-    font-size: 0.68rem !important;
-    letter-spacing: 0.04em;
-  }
-  .install-label {
-    margin: 0;
     font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
   }
-  .status-dot {
-    font-size: 1rem;
+
+  .feature-card h3 {
+    margin: 0 0 0.4rem;
+    font: 600 0.96875rem var(--font-display);
+    color: var(--fg-primary);
   }
-  .status-available {
-    color: var(--ok);
+
+  .feature-card p {
+    margin: 0;
+    color: var(--fg-secondary);
+    font-size: 0.825rem;
+    line-height: 1.58;
   }
-  .install-subhead {
-    margin: 2.75rem 0 1rem;
-    font: 700 1.35rem var(--font-display);
+
+  /* ==========================================================================
+     3. UNIFIED INSTALL DOCK
+     ========================================================================== */
+
+  .install-shell {
+    padding-top: 0.5rem;
   }
-  .channel-card {
-    display: flex;
-    flex-direction: column;
-  }
-  .channel-heading {
+
+  .section-header-bar {
     display: flex;
     flex-wrap: wrap;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    margin-bottom: 0.85rem;
   }
-  .channel-heading h4 {
+
+  .section-header-bar h2 {
     margin: 0;
-    font: 700 1.05rem var(--font-display);
+    font: 700 1.15rem var(--font-display);
+    letter-spacing: -0.02em;
   }
-  .arch-chip {
+
+  .section-meta-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .meta-pill-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.24rem 0.6rem;
     border: 1px solid var(--line);
-    padding: 0.1rem 0.4rem;
-    color: var(--muted);
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    color: var(--fg-secondary);
     font-family: var(--font-mono);
-    font-size: 0.65rem;
-    white-space: nowrap;
+    font-size: 0.68rem;
+    text-decoration: none;
+    box-shadow: var(--shadow-xs);
   }
-  .channel-card > p {
-    min-height: 0;
-    margin: 0.5rem 0 0.85rem;
-    color: var(--muted);
-    font-size: 0.88rem;
+
+  .meta-pill-link:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .install-dock {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--bg-surface);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .install-dock-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem;
+    padding: 0.45rem 0.6rem;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-subtle);
+  }
+
+  .dock-tab {
+    padding: 0.32rem 0.68rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-xs);
+    background: transparent;
+    color: var(--fg-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .dock-tab:hover {
+    color: var(--fg-primary);
+    background: var(--bg-elevated);
+  }
+
+  .dock-tab.is-active {
+    border-color: var(--accent-border);
+    background: var(--bg-surface);
+    color: var(--accent);
+    font-weight: 600;
+    box-shadow: var(--shadow-xs);
+  }
+
+  .install-dock-pane {
+    padding: 1.1rem 1.25rem;
+  }
+
+  .install-dock-pane[hidden] {
+    display: none;
+  }
+
+  .dock-pane-meta {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .dock-pane-meta h3 {
+    margin: 0;
+    font: 600 0.92rem var(--font-display);
+    color: var(--fg-primary);
+  }
+
+  .dock-pane-summary {
+    margin: 0.2rem 0 0;
+    color: var(--fg-secondary);
+    font-size: 0.8rem;
     line-height: 1.5;
   }
+
+  .arch-chip {
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xs);
+    padding: 0.1rem 0.45rem;
+    background: var(--bg-elevated);
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    white-space: nowrap;
+  }
+
   .command-stack {
     display: grid;
-    min-width: 0;
-    gap: 0.6rem;
-    margin-top: auto;
+    gap: 0.5rem;
   }
+
   .command-entry {
     display: grid;
-    gap: 0.3rem;
+    gap: 0.22rem;
   }
+
   .command-label {
     margin: 0;
-    color: var(--muted);
+    color: var(--fg-muted);
     font-family: var(--font-mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.06em;
+    font-size: 0.62rem;
     text-transform: uppercase;
   }
+
   .command-block {
     display: flex;
     min-width: 0;
-    align-items: stretch;
+    align-items: center;
     gap: 0.5rem;
-    padding: 0.7rem;
-    background: var(--terminal-bg);
-    color: var(--terminal-ink);
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--cmd-line);
+    border-radius: var(--radius-sm);
+    background: var(--cmd-bg);
+    color: var(--cmd-ink);
   }
+
   .command-block code {
     min-width: 0;
     flex: 1;
     overflow-wrap: anywhere;
     white-space: pre-wrap;
-    font: 0.72rem/1.55 var(--font-mono);
+    font: 0.74rem/1.55 var(--font-mono);
   }
+
   .command-block button {
-    align-self: flex-start;
-    border: 1px solid var(--terminal-line);
-    padding: 0.35rem 0.55rem;
-    background: var(--terminal-panel);
-    color: var(--terminal-ink);
-    font: 700 0.68rem var(--font-mono);
+    flex-shrink: 0;
+    min-block-size: 1.5rem;
+    min-inline-size: 1.5rem;
+    border: 1px solid var(--cmd-line);
+    border-radius: var(--radius-xs);
+    padding: 0.24rem 0.58rem;
+    background: var(--cmd-panel);
+    color: var(--fg-secondary);
+    font: 600 0.66rem var(--font-mono);
     cursor: pointer;
+    box-shadow: var(--shadow-xs);
   }
+
   .command-block button:hover {
     border-color: var(--accent);
     color: var(--accent);
   }
-  .install-pending {
-    margin-top: 2.5rem;
-    padding: 1.25rem;
-    border: 1px dashed var(--line);
-  }
-  .install-pending h3 {
-    margin: 0 0 0.75rem;
-    font: 700 1rem var(--font-display);
-  }
-  .install-pending ul {
-    display: grid;
-    gap: 0.6rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  .install-pending li {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem 0.75rem;
-    align-items: baseline;
-    color: var(--muted);
-    font-size: 0.88rem;
-    line-height: 1.5;
-  }
-  .pending-name {
-    color: var(--ink);
-    font-family: var(--font-mono);
-    font-weight: 700;
-  }
-  .pending-reason {
-    flex-basis: 100%;
-    font-size: 0.82rem;
-  }
-  .extensions-shell {
-    padding-block: 2rem 6rem;
-  }
-  .extension-track + .extension-track {
-    margin-top: 2.5rem;
-  }
-  .extension-track h3 {
-    margin: 0 0 0.35rem;
-    font: 700 1.45rem var(--font-display);
-  }
-  .track-description {
-    max-width: 46rem;
-    margin: 0;
-    color: var(--muted);
-    font-size: 0.95rem;
-    line-height: 1.6;
-  }
-  .track-command {
-    margin: 0.75rem 0 1.25rem;
-  }
-  .track-command code {
-    display: inline-block;
-    margin-block-end: 0.35rem;
-    margin-inline-end: 0.4rem;
-    padding: 0.45rem 0.6rem;
-    background: var(--terminal-bg);
-    color: var(--terminal-ink);
-    font: 0.75rem/1.4 var(--font-mono);
-  }
-  .extension-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
-    gap: 0.75rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  .extension-grid li {
-    min-width: 0;
-  }
-  .extension-card {
-    display: flex;
-    height: 100%;
-    flex-direction: column;
-    gap: 0.4rem;
-    padding: 1rem;
-    border: 1px solid var(--line);
-    background: var(--card);
-    color: var(--ink);
-    text-decoration: none;
-    transition:
-      border-color 140ms ease,
-      transform 140ms ease;
-  }
-  .extension-card:hover,
-  .extension-card:focus-visible {
-    border-color: var(--accent);
-    transform: translateY(-1px);
-  }
-  .extension-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
-  .extension-name {
-    font-family: var(--font-mono);
-    font-size: 0.95rem;
-    font-weight: 700;
-  }
-  .extension-status {
-    color: var(--muted);
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-  .extension-status.is-published {
+
+  .command-block button[data-copied-state="true"] {
+    border-color: var(--ok);
     color: var(--ok);
   }
-  .extension-summary {
-    color: var(--muted);
-    font-size: 0.85rem;
-    line-height: 1.5;
-  }
-  .plugin-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.45rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  .plugin-list a {
-    display: inline-flex;
-    min-block-size: 2.25rem;
-    align-items: center;
-    padding-inline: 0.6rem;
-    border: 1px solid var(--line);
-    background: var(--card);
-    color: var(--ink);
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    text-decoration: none;
-  }
-  .plugin-list a:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-  .extensions-note {
-    margin: 2rem 0 0;
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-  }
-  .extensions-note a {
-    color: var(--accent);
-  }
-  .install-note {
-    margin: 1.5rem 0 0;
-  }
-  .install-note a {
-    color: var(--accent);
-  }
-  .install-recipes {
-    max-width: 52rem;
-    margin: 0.6rem 0 0;
-    line-height: 1.6;
-  }
 
-  @media (width < 26rem) {
-    .hero-copy h1 {
-      font-size: clamp(1.9rem, 9.4vw, 2.45rem);
-      overflow-wrap: break-word;
-    }
-  }
-
-  @media (max-width: 1000px) {
-    .install-primary {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
-  @media (max-width: 800px) {
-    .hero-shell {
-      grid-template-columns: 1fr;
-      min-height: auto;
-      padding-block: 4rem;
-    }
-    .terminal-card {
-      max-width: 42rem;
-    }
-    .install-primary,
-    .install-channels {
+  @media (max-width: 780px) {
+    .features-grid {
       grid-template-columns: 1fr;
     }
   }

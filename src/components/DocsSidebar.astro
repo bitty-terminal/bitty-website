@@ -1,47 +1,42 @@
 ---
 /**
  * Documentation sidebar navigation.
- * Renders the 6 canonical categories and 41 items from bitty-manual.
+ * Clean left rail listing the 6 canonical sections and their documents, with a
+ * collapse button in the rail header.
  */
+import { getUiMessages, type SiteLocale } from "../lib/i18n.ts";
 import { getManualNavGroups } from "../lib/manualDocs.ts";
 
 type Props = {
-  locale?: "en" | "zh-CN";
+  locale?: SiteLocale;
   currentSlug: string;
 };
 
 const { locale = "en", currentSlug } = Astro.props as Props;
+const t = getUiMessages(locale);
 const groups = getManualNavGroups(currentSlug, locale);
 const docsPrefix = locale === "zh-CN" ? "/zh-CN/docs" : "/docs";
 ---
 
 <details class="docs-nav-drawer" open>
-  <summary>{locale === "zh-CN" ? "浏览手册" : "Browse manual"}</summary>
-  <div class="r2-sync-pill">
-    <div class="r2-sync-row">
-      <span class="r2-sync-tag">
-        {locale === "zh-CN" ? "内容来源" : "MANUAL SOURCE"}
-      </span>
-      <span class="r2-sync-status">
-        <span class="r2-sync-dot"></span>
-        {locale === "zh-CN" ? "R2 内容" : "R2 content"}
-      </span>
+  <summary>{t.sidebarToggle}</summary>
+  <nav class="docs-sidebar" aria-label={t.sidebarAria}>
+    <div class="docs-rail-head">
+      <span class="docs-rail-head-title">{t.toggleLeftRail}</span>
+      <button
+        type="button"
+        class="docs-rail-collapse-btn"
+        data-toggle-rail="left"
+        title={t.hideRailLabel}
+      >
+        <span aria-hidden="true">«</span>
+        <span>{t.hideRailLabel}</span>
+      </button>
     </div>
-    <div class="r2-sync-path">
-      cdn.bitty.run/manual/bitty-manual/{locale}/...
-    </div>
-  </div>
-  <nav
-    class="docs-sidebar"
-    aria-label={locale === "zh-CN" ? "手册导航" : "Manual navigation"}
-  >
     <ul class="docs-nav-tree">
       {groups.map((group) => (
         <li class="docs-nav-group">
-          <details
-            class="docs-nav-group-details"
-            open={group.isCurrent || group.id === "getting-started"}
-          >
+          <details class="docs-nav-group-details" open>
             <summary>{group.label}</summary>
             <ul>
               {group.entries.map((entry) => {
@@ -70,7 +65,6 @@ const docsPrefix = locale === "zh-CN" ? "/zh-CN/docs" : "/docs";
 </details>
 
 <script is:inline>
-  // CTX-0047: collapse the drawer on narrow viewports BEFORE first paint.
   const drawer = document.querySelector("details.docs-nav-drawer");
   const narrow = window.matchMedia("(max-width: 49.9375rem)");
   const syncDrawer = () => {
@@ -95,71 +89,89 @@ const docsPrefix = locale === "zh-CN" ? "/zh-CN/docs" : "/docs";
     display: inline-flex;
     align-items: center;
     min-block-size: var(--touch-target);
+    padding: 0.4rem 0.8rem;
+    margin-bottom: 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
     cursor: pointer;
     color: var(--fg-primary);
-    font-size: var(--text-sm);
-    font-weight: 700;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    list-style: none;
+    box-shadow: var(--shadow-xs);
+  }
+
+  .docs-nav-drawer > summary::-webkit-details-marker {
+    display: none;
   }
 
   .docs-nav-drawer > summary::before {
     content: "\25B8";
-    margin-inline-end: 0.375rem;
+    margin-inline-end: 0.45rem;
     color: var(--fg-muted);
+    transition: transform 0.15s ease;
   }
 
   .docs-nav-drawer[open] > summary::before {
     transform: rotate(90deg);
   }
 
-  .r2-sync-pill {
-    margin-block: 0.5rem 1rem;
-    padding: 0.625rem 0.75rem;
-    background: var(--bg-surface);
-    border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-sm);
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
+  .docs-rail-head {
+    display: none;
   }
 
-  .r2-sync-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-block-end: 0.25rem;
-  }
+  @media (width >= 50rem) {
+    .docs-nav-drawer > summary {
+      display: none;
+    }
 
-  .r2-sync-tag {
-    color: var(--fg-muted);
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
+    .docs-rail-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.65rem;
+      padding: 0 0.25rem 0.45rem;
+      border-bottom: 1px solid var(--line);
+    }
 
-  .r2-sync-status {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    color: var(--accent-mint);
-    font-weight: 600;
-  }
+    .docs-rail-head-title {
+      color: var(--fg-muted);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
 
-  .r2-sync-dot {
-    inline-size: 0.375rem;
-    block-size: 0.375rem;
-    border-radius: 50%;
-    background: var(--accent-mint);
-    box-shadow: 0 0 6px var(--accent-mint);
-  }
+    .docs-rail-collapse-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      padding: 0.12rem 0.42rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-xs);
+      background: var(--bg-surface);
+      color: var(--fg-muted);
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      cursor: pointer;
+      transition:
+        border-color 0.14s ease,
+        color 0.14s ease;
+    }
 
-  .r2-sync-path {
-    color: var(--fg-primary);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    .docs-rail-collapse-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
   }
 
   .docs-sidebar {
     font-size: var(--text-xs);
-    line-height: 1.5;
+    line-height: 1.45;
+    padding-inline-end: 0.5rem;
   }
 
   .docs-nav-tree,
@@ -169,48 +181,77 @@ const docsPrefix = locale === "zh-CN" ? "/zh-CN/docs" : "/docs";
     list-style: none;
   }
 
+  .docs-nav-group + .docs-nav-group {
+    margin-top: 0.9rem;
+  }
+
   .docs-nav-tree ul {
-    margin: 0 0 0.5rem;
-    padding-inline-start: 0.75rem;
-    border-inline-start: 1px solid var(--border-subtle);
+    margin: 0.25rem 0 0 0.25rem;
+    padding-inline-start: 0.65rem;
+    border-inline-start: 1px solid var(--line);
   }
 
   .docs-nav-group-details > summary {
     display: flex;
-    align-items: baseline;
+    align-items: center;
+    justify-content: space-between;
     gap: 0.5rem;
-    min-block-size: 2rem;
-    align-content: center;
-    padding-block: 0.375rem;
+    padding: 0.25rem 0.35rem;
+    border-radius: var(--radius-xs);
     cursor: pointer;
     color: var(--fg-primary);
+    font-size: 0.76rem;
     font-weight: 700;
+    letter-spacing: -0.01em;
+    list-style: none;
+    user-select: none;
+  }
+
+  .docs-nav-group-details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .docs-nav-group-details > summary:hover {
+    color: var(--accent);
+  }
+
+  .docs-nav-group-details > summary::after {
+    content: "\25B8";
+    color: var(--fg-muted);
+    font-size: 0.65rem;
+    transition: transform 0.15s ease;
+  }
+
+  .docs-nav-group-details[open] > summary::after {
+    transform: rotate(90deg);
   }
 
   .docs-sidebar li a {
     display: block;
-    min-block-size: 2rem;
+    min-block-size: 1.9rem;
     align-content: center;
-    padding-block: 0.25rem;
-    padding-inline-start: 0.75rem;
+    padding: 0.24rem 0.6rem;
+    margin-inline-start: -1px;
     border-inline-start: 2px solid transparent;
     color: var(--fg-secondary);
+    font-size: 0.8rem;
     text-decoration: none;
-    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
     transition:
-      color 0.15s ease,
-      background-color 0.15s ease;
+      color 0.12s ease,
+      background-color 0.12s ease,
+      border-color 0.12s ease;
   }
 
   .docs-sidebar li a:hover {
-    color: var(--accent);
+    color: var(--fg-primary);
     background-color: var(--bg-elevated);
   }
 
   .docs-sidebar li a[aria-current="page"] {
     border-inline-start-color: var(--accent);
-    color: var(--fg-primary);
+    color: var(--accent);
     background-color: var(--accent-soft);
-    font-weight: 700;
+    font-weight: 600;
   }
 </style>

@@ -3,10 +3,6 @@
  *
  * It stays inside the normal shell so stale links have a clear path back to
  * the manual or the home page.
- *
- * Served by `assets.not_found_handling: "404-page"` in `wrangler.jsonc`, which
- * is why the markup must stand on its own: it is the only recovery path for a
- * URL outside the redirect families.
  */
 import "../styles/global.css";
 import SiteFooter from "../components/SiteFooter.astro";
@@ -14,7 +10,7 @@ import SiteHeader from "../components/SiteHeader.astro";
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -42,15 +38,23 @@ import SiteHeader from "../components/SiteHeader.astro";
       href="/icons/apple-touch-icon.png"
     />
     <title>Page not found | Bitty</title>
+    <script is:inline>
+      try {
+        const t = window.localStorage.getItem("bitty-theme");
+        if (t === "dark" || t === "light") {
+          document.documentElement.setAttribute("data-theme", t);
+        }
+      } catch {}
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#main-content">
       Skip to content
     </a>
-    <SiteHeader />
+    <SiteHeader alternateHref="/zh-CN/" />
     <main id="main-content" class="not-found" tabindex="-1">
-      <article class="prose">
-        <p class="not-found-kicker">404</p>
+      <article class="prose not-found-card">
+        <p class="not-found-kicker">HTTP 404 // ROUTE NOT FOUND</p>
         <h1>Page not found</h1>
         <p>This address does not serve a page.</p>
         <p>
@@ -69,17 +73,24 @@ import SiteHeader from "../components/SiteHeader.astro";
 
 <style>
   .not-found {
-    width: min(48rem, calc(100% - 2rem));
+    width: min(46rem, calc(100% - 2rem));
     margin-inline: auto;
-    padding-block: clamp(3rem, 8vw, 6rem);
+    padding-block: clamp(3.5rem, 8vw, 6rem);
+  }
+  .not-found-card {
+    padding: 2rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--bg-surface);
+    box-shadow: var(--shadow);
   }
   .not-found-kicker {
     margin: 0 0 0.5rem;
     color: var(--accent);
     font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    font-weight: 800;
-    letter-spacing: 0.14em;
+    font-size: var(--text-2xs);
+    font-weight: 700;
+    letter-spacing: 0.1em;
   }
   .not-found :global(a) {
     color: var(--accent);

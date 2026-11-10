@@ -170,7 +170,7 @@ export function getExtensionCatalog(
       name,
       href: page
         ? `${prefix}/${page.fullSlug}/`
-        : `${prefix}/plugins/getting-started/`,
+        : `https://plugins.bitty.run/plugins/${id}`,
     };
   });
 

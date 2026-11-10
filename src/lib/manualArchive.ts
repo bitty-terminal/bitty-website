@@ -11,7 +11,7 @@
 export function assertSafeArchivePath(path: string, locale: string): void {
   const normalized = path.replaceAll("\\", "/");
   const prefix = `${locale}/`;
-  if (normalized === "manifest.json") return;
+  if (normalized === "manifest.json" || normalized === "toc.json") return;
   if (!normalized.startsWith(prefix)) {
     throw new Error(`manual archive contains unexpected path: ${path}`);
   }

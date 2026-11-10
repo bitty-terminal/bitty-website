@@ -138,10 +138,8 @@ export function initSiteSearch(root: HTMLElement): void {
       const item = document.createElement("li");
       item.setAttribute("role", "option");
       item.setAttribute("aria-selected", "false");
+      item.dataset["href"] = hit.href;
       item.id = `site-search-option-${index}`;
-      const link = document.createElement("a");
-      link.href = hit.href;
-      link.tabIndex = -1;
       const title = document.createElement("span");
       title.className = "site-search-title";
       title.textContent = hit.record.title;
@@ -151,8 +149,10 @@ export function initSiteSearch(root: HTMLElement): void {
         hit.record.category.length > 0
           ? `${hit.record.category} · ${hit.record.slug}`
           : hit.record.slug;
-      link.append(title, meta);
-      item.append(link);
+      item.append(title, meta);
+      item.addEventListener("click", () => {
+        goTo(index);
+      });
       list.append(item);
     }
     open = hits.length > 0;

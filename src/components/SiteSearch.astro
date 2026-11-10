@@ -239,7 +239,7 @@ const isZh = locale === "zh-CN";
     display: none;
   }
 
-  .site-search-results :global(li[role="option"] a) {
+  .site-search-results :global(li[role="option"]) {
     display: flex;
     flex-direction: column;
     gap: 0.15rem;
@@ -247,11 +247,12 @@ const isZh = locale === "zh-CN";
     border-radius: var(--radius-xs);
     color: var(--ink);
     text-decoration: none;
+    cursor: pointer;
     transition: background-color 0.12s ease;
   }
 
-  .site-search-results :global(li[role="option"][aria-selected="true"] a),
-  .site-search-results :global(li[role="option"] a:hover) {
+  .site-search-results :global(li[role="option"][aria-selected="true"]),
+  .site-search-results :global(li[role="option"]:hover) {
     background: var(--bg-elevated);
   }
 

@@ -225,6 +225,10 @@ const sectionTitle = info?.sectionTitle ?? (isZh ? "文档" : "Documentation");
   }
 
   .crumb-link {
+    display: inline-flex;
+    align-items: center;
+    min-inline-size: 1.5rem;
+    min-block-size: 1.5rem;
     color: var(--fg-muted);
     text-decoration: none;
     transition: color 0.14s ease;

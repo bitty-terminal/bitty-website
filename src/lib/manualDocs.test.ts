@@ -20,7 +20,7 @@ describe("manualDocs", () => {
     expect(manifest.sections.length).toBe(6);
   });
 
-  test("getAllManualDocEntries flattens all 41 items in manifest order", () => {
+  test("getAllManualDocEntries flattens all 27 items in manifest order", () => {
     const entries = getAllManualDocEntries();
     const first = entries[0];
     const last = entries[entries.length - 1];
@@ -30,7 +30,7 @@ describe("manualDocs", () => {
   });
 
   test("getManualNavGroups marks active section as isCurrent", () => {
-    const groups = getManualNavGroups("plugins/composer", "en");
+    const groups = getManualNavGroups("plugins/getting-started", "en");
     expect(groups.length).toBe(6);
 
     const pluginGroup = groups.find((g) => g.id === "plugins");

@@ -6,12 +6,13 @@ import {
 } from "./manualArchive.ts";
 
 describe("assertSafeArchivePath", () => {
-  test("accepts locale documents, locale roots, and the manifest", () => {
+  test("accepts locale documents, locale roots, the manifest, and toc", () => {
     expect(() =>
       assertSafeArchivePath("en/getting-started/quickstart.md", "en"),
     ).not.toThrow();
     expect(() => assertSafeArchivePath("en/extensions/", "en")).not.toThrow();
     expect(() => assertSafeArchivePath("manifest.json", "en")).not.toThrow();
+    expect(() => assertSafeArchivePath("toc.json", "en")).not.toThrow();
   });
 
   test("rejects traversal, absolute paths, and other locales", () => {

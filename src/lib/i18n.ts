@@ -22,6 +22,7 @@ export interface UiMessages {
   readonly homeAriaLabel: string;
   readonly navInstall: string;
   readonly navDocs: string;
+  readonly navPlugins: string;
   readonly toggleThemeLabel: string;
   readonly toggleThemeTitle: string;
   readonly githubTitle: string;
@@ -77,6 +78,7 @@ export interface UiMessages {
   readonly footerTagline: string;
   readonly footerAria: string;
   readonly footerManual: string;
+  readonly footerPlugins: string;
   readonly footerInstall: string;
   readonly footerManifest: string;
 }
@@ -91,6 +93,7 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     homeAriaLabel: "Bitty home",
     navInstall: "Install",
     navDocs: "Document",
+    navPlugins: "Plugins",
     toggleThemeLabel: "Toggle light or dark theme",
     toggleThemeTitle: "Toggle light/dark theme",
     githubTitle: "GitHub Repository",
@@ -154,6 +157,7 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     footerTagline: "GPU-rendered · Rust core · Sandboxed Lua",
     footerAria: "Footer navigation",
     footerManual: "Document",
+    footerPlugins: "Plugins",
     footerInstall: "Install",
     footerManifest: "R2 Manifest",
   },
@@ -166,6 +170,7 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     homeAriaLabel: "Bitty 首页",
     navInstall: "安装",
     navDocs: "文档",
+    navPlugins: "插件",
     toggleThemeLabel: "切换柔和浅色或深色模式",
     toggleThemeTitle: "切换浅色/深色模式",
     githubTitle: "GitHub 仓库",
@@ -226,6 +231,7 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     footerTagline: "GPU 渲染 · Rust 核心 · 沙箱 Lua 扩展",
     footerAria: "页脚导航",
     footerManual: "文档",
+    footerPlugins: "插件",
     footerInstall: "安装",
     footerManifest: "R2 清单",
   },

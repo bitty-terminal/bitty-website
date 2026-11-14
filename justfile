@@ -19,11 +19,7 @@ fmt-check:
     bun run format:check
 
 fmt-check-files *FILES:
-    command -v prettier >/dev/null || { echo "prettier missing; install it globally" >&2; exit 1; }
-    prettier --check --ignore-unknown {{FILES}}
-
-markdownlint:
-    bun run lint:md
+    bun fmt --no-script --no-config --check --ignore-unknown {{FILES}}
 
 manual-sync:
     bun run sync:manual
@@ -34,12 +30,9 @@ manual-sync:
 check-channels:
     bun run check:channels
 
-commit-lint FILE:
-    command -v commitlint >/dev/null || { echo "commitlint missing; install it globally" >&2; exit 1; }
-    commitlint < "{{FILE}}"
-
 hooks-install:
-    lefthook install
+    lefthook install pre-commit
+    carryctx hooks install --compose
 
 typecheck: ensure-deps
     bun run typecheck

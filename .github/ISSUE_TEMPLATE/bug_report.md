@@ -22,7 +22,7 @@ A clear and concise description of what you expected to happen.
 
 - OS: [e.g. CachyOS, Arch Linux, macOS 15]
 - Browser: [e.g. Chrome 126, Firefox 128, Safari 18]
-- Bun version: [e.g. 1.4.0]
+- Bun version: [e.g. 1.4.4]
 - Website commit: [e.g. 3ab00b7 or commit SHA]
 
 **Additional context**

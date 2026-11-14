@@ -239,7 +239,13 @@ if (!(await exists(dist))) {
         : `page:${page.relativePath}`;
     const html = await readFile(page.path, "utf8");
     auditPage(name, html, {
-      strictHeadings: page.path === join(dist, "index.html"),
+      strictHeadings:
+        page.path === join(dist, "index.html") ||
+        page.relativePath === "zh-CN/index.html" ||
+        page.relativePath === "plugins/index.html" ||
+        page.relativePath === "zh-CN/plugins/index.html" ||
+        page.relativePath === "ai/index.html" ||
+        page.relativePath === "zh-CN/ai/index.html",
     });
     // CTX-0050 docs shell: the one-h1 rule above cannot see a duplicated
     // title, an extra aria-current, or a deeper-than-two-layer sidebar, so

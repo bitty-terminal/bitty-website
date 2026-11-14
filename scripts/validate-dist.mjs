@@ -19,11 +19,34 @@ async function required(name, nonEmpty = false) {
   }
 }
 
-await required("index.html", true);
-await required("sitemap.xml", true);
-await required("search-index.json", true);
-await required("_redirects", true);
-await required("_headers", true);
+const REQUIRED_FILES = [
+  "index.html",
+  "zh-CN/index.html",
+  "plugins/index.html",
+  "zh-CN/plugins/index.html",
+  "ai/index.html",
+  "zh-CN/ai/index.html",
+  "sitemap.xml",
+  "search-index.json",
+  "_redirects",
+  "_headers",
+];
+
+for (const file of REQUIRED_FILES) {
+  await required(file, true);
+}
+
+const sitemapXml = await readFile(new URL("sitemap.xml", dist), "utf8");
+for (const route of [
+  "https://bitty.run/plugins/",
+  "https://bitty.run/zh-CN/plugins/",
+  "https://bitty.run/ai/",
+  "https://bitty.run/zh-CN/ai/",
+]) {
+  if (!sitemapXml.includes(`<loc>${route}</loc>`)) {
+    throw new Error(`sitemap.xml is missing required product route: ${route}`);
+  }
+}
 
 const records = JSON.parse(
   await readFile(new URL("search-index.json", dist), "utf8"),
@@ -130,6 +153,38 @@ for (const page of ["index.html", "zh-CN/index.html"]) {
   }
   if (plugins !== 11) {
     throw new Error(`${page}: expected 11 official plugins, found ${plugins}`);
+  }
+}
+
+for (const page of ["plugins/index.html", "zh-CN/plugins/index.html"]) {
+  const html = await readFile(new URL(page, dist), "utf8");
+  const luaCards = (html.match(/class="catalog-card"/gu) ?? []).length;
+  const nativeCards = (html.match(/class="native-card"/gu) ?? []).length;
+  if (luaCards !== 13) {
+    throw new Error(
+      `${page}: expected 13 official Lua plugin cards, found ${luaCards}`,
+    );
+  }
+  if (nativeCards !== 11) {
+    throw new Error(
+      `${page}: expected 11 native extension cards, found ${nativeCards}`,
+    );
+  }
+}
+
+for (const page of ["ai/index.html", "zh-CN/ai/index.html"]) {
+  const html = await readFile(new URL(page, dist), "utf8");
+  const capCards = (html.match(/class="pillar-card"/gu) ?? []).length;
+  const stackCards = (html.match(/class="stack-card"/gu) ?? []).length;
+  if (capCards !== 4) {
+    throw new Error(
+      `${page}: expected 4 AI capability cards, found ${capCards}`,
+    );
+  }
+  if (stackCards !== 3) {
+    throw new Error(
+      `${page}: expected 3 AI extension stack cards, found ${stackCards}`,
+    );
   }
 }
 

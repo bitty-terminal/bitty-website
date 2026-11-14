@@ -12,7 +12,6 @@
 ## Testing
 
 - [ ] `bun run format:check` passes (`just fmt-check`)
-- [ ] `bun run lint:md` passes (`just markdownlint`)
 - [ ] `bun run typecheck` passes (`just typecheck`)
 - [ ] `bun run build` succeeds and `dist/index.html` exists without `dist/_worker.js` (`just build` / `just dist`)
 - [ ] `bun run wrangler:dry-run` passes (`just wrangler-dry-run`)

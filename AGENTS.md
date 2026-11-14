@@ -67,7 +67,7 @@
   refuses to replace a non-empty local DB without `--force`, preserves the
   committed `.carryctx/config.toml`, and prints provenance and restored counts.
   Snapshots are redacted publication artifacts from `carryctx export
-  --publication`: never merge them back, and rotate at the source any secret
+--publication`: never merge them back, and rotate at the source any secret
   that leaked before rotation.
 
 ## Documentation and content
@@ -115,7 +115,7 @@
   `Tsconfig not found astro/tsconfigs/strictest`; that error means missing
   dependencies, never a dot-path problem. Checkouts under the mandated
   `.worktrees/` location are supported (verified CTX-0026); `just
-  typecheck`/`build`/`check` fail fast with the remediation when deps are
+typecheck`/`build`/`check` fail fast with the remediation when deps are
   absent.
 - Keep edits inside the active CarryCtx scope and preserve unrelated work.
 - Run formatting, links, metadata, language, accessibility, build, and security

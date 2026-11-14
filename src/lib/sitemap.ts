@@ -3,6 +3,17 @@ import { join, relative } from "node:path";
 
 export const SITEMAP_FILENAME = "sitemap.xml";
 
+export const CORE_SITE_PATHS = [
+  "/",
+  "/zh-CN/",
+  "/docs/",
+  "/zh-CN/docs/",
+  "/plugins/",
+  "/zh-CN/plugins/",
+  "/ai/",
+  "/zh-CN/ai/",
+] as const;
+
 async function collectRoutes(
   root: string,
   directory = root,
@@ -28,6 +39,14 @@ async function collectRoutes(
     );
   }
   return routes.sort();
+}
+
+export async function collectSitePaths(outDir?: string): Promise<string[]> {
+  if (!outDir) {
+    return [...CORE_SITE_PATHS].sort();
+  }
+  const discovered = await collectRoutes(outDir);
+  return [...new Set([...CORE_SITE_PATHS, ...discovered])].sort();
 }
 
 export function renderSitemap(

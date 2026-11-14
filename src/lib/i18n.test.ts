@@ -4,6 +4,7 @@ import {
   SUPPORTED_LOCALES,
   UI_MESSAGES,
   getUiMessages,
+  localePath,
   localizePath,
 } from "./i18n.ts";
 
@@ -31,5 +32,13 @@ describe("i18n messages", () => {
     expect(localizePath("/zh-CN/docs/getting-started/quickstart/", "en")).toBe(
       "/docs/getting-started/quickstart/",
     );
+    expect(localizePath("/plugins/", "zh-CN")).toBe("/zh-CN/plugins/");
+    expect(localizePath("/zh-CN/plugins/", "en")).toBe("/plugins/");
+    expect(localizePath("/ai/", "zh-CN")).toBe("/zh-CN/ai/");
+    expect(localizePath("/zh-CN/ai/", "en")).toBe("/ai/");
+    expect(localePath("en", "/plugins/")).toBe("/plugins/");
+    expect(localePath("zh-CN", "/plugins/")).toBe("/zh-CN/plugins/");
+    expect(localePath("en", "/ai/")).toBe("/ai/");
+    expect(localePath("zh-CN", "/ai/")).toBe("/zh-CN/ai/");
   });
 });

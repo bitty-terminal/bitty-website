@@ -23,6 +23,7 @@ export interface UiMessages {
   readonly navInstall: string;
   readonly navDocs: string;
   readonly navPlugins: string;
+  readonly navAi: string;
   readonly toggleThemeLabel: string;
   readonly toggleThemeTitle: string;
   readonly githubTitle: string;
@@ -79,6 +80,8 @@ export interface UiMessages {
   readonly footerAria: string;
   readonly footerManual: string;
   readonly footerPlugins: string;
+  readonly footerAi: string;
+  readonly footerStore: string;
   readonly footerInstall: string;
   readonly footerManifest: string;
 }
@@ -94,6 +97,7 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     navInstall: "Install",
     navDocs: "Document",
     navPlugins: "Plugins",
+    navAi: "AI",
     toggleThemeLabel: "Toggle light or dark theme",
     toggleThemeTitle: "Toggle light/dark theme",
     githubTitle: "GitHub Repository",
@@ -158,6 +162,8 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     footerAria: "Footer navigation",
     footerManual: "Document",
     footerPlugins: "Plugins",
+    footerAi: "Bitty AI",
+    footerStore: "Plugin Store",
     footerInstall: "Install",
     footerManifest: "R2 Manifest",
   },
@@ -171,6 +177,7 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     navInstall: "安装",
     navDocs: "文档",
     navPlugins: "插件",
+    navAi: "AI",
     toggleThemeLabel: "切换柔和浅色或深色模式",
     toggleThemeTitle: "切换浅色/深色模式",
     githubTitle: "GitHub 仓库",
@@ -232,6 +239,8 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     footerAria: "页脚导航",
     footerManual: "文档",
     footerPlugins: "插件",
+    footerAi: "Bitty AI",
+    footerStore: "插件商店",
     footerInstall: "安装",
     footerManifest: "R2 清单",
   },
@@ -254,4 +263,11 @@ export function localizePath(
     return stripped === "/" ? "/zh-CN/" : `/zh-CN${stripped}`;
   }
   return stripped;
+}
+
+/**
+ * Return the localized route path for a given locale and canonical path.
+ */
+export function localePath(locale: SiteLocale, pathname: string): string {
+  return localizePath(pathname, locale);
 }

@@ -1,0 +1,1170 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SiteFooter from "./SiteFooter.astro";
+import SiteHeader from "./SiteHeader.astro";
+import { getUiMessages, localePath, type SiteLocale } from "../lib/i18n.ts";
+
+type Props = {
+  locale?: SiteLocale;
+};
+
+const { locale = "en" } = Astro.props as Props;
+const isZh = locale === "zh-CN";
+const t = getUiMessages(locale);
+
+const currentPath = localePath(locale, "/ai/");
+const alternatePath = localePath(isZh ? "en" : "zh-CN", "/ai/");
+const aiDocHref = localePath(locale, "/docs/extensions/ai/");
+const agentDocHref = localePath(locale, "/docs/extensions/agent/");
+const executionDocHref = localePath(locale, "/docs/extensions/execution/");
+const upstreamDocHref = localePath(
+  locale,
+  "/docs/extensions/upstream-components/",
+);
+
+const pageTitle = isZh
+  ? "Bitty AI 与 Wheel — 零信任进程隔离的终端智能体体系"
+  : "Bitty AI & Wheel — Zero-Trust Terminal Intelligence & Agent Harness";
+const pageDescription = isZh
+  ? "了解 Bitty AI (bittyd) 与 Wheel 智能体套件：零凭据终端核心、0600 权限本地 Unix 套接字守护进程、跨进程审批队列、五档思考档位与 MCP 协议桥接。"
+  : "Explore Bitty AI (bittyd) and the Wheel agent harness: credential-free terminal core, 0600 local Unix domain socket daemon, cross-process approval queues, 5 thinking gears, and MCP integration.";
+
+const capabilityCards = isZh
+  ? [
+      {
+        num: "01",
+        badge: "bitty ↔ bittyd ↔ wheel",
+        title: "零信任三方进程边界",
+        desc: "bitty 终端核心不持有任何 AI 密钥，也不具备自主命令执行权。API 凭据仅存于 ~/.config/wheel/credentials.toml（0600 权限），通过 ~/.local/state/bitty/bittyd.sock（0600）与能力令牌进行受控跨进程通信。",
+      },
+      {
+        num: "02",
+        badge: ".approvals.lock · 5 Gears",
+        title: "跨进程审批队列与五档思考深度",
+        desc: "高风险 Shell 与文件修改操作首先进入原子化 .approvals.lock 暂存队列，可直接在终端内通过 :WheelApprove、:WheelDeny 或 wheel approve 审批；使用 :WheelThinking 在 off、low、medium、high、auto 五档思考模式间即时切换。",
+      },
+      {
+        num: "03",
+        badge: "bitty-terminal.dashboard",
+        title: "实时遥测覆盖层 (Dashboard Overlay)",
+        desc: "使用 Ctrl+Shift+D（或 :Dashboard）呼出实时 AI 与系统遥测覆盖面板，直观查看活跃的 wheel 会话、待审批队列、Token 缓存命中率以及状态栏延迟火花线。",
+      },
+      {
+        num: "04",
+        badge: "MCP · Multi-Provider",
+        title: "多模型提供商与原生 MCP 生态",
+        desc: "内置 opencode-go、OpenRouter、Anthropic 及 OpenAI 兼容端点模板，集成 bitty-ai 原生 Model Context Protocol（MCP，256 KiB 有界帧）桥接与 bitty-agent 协议编排。",
+      },
+    ]
+  : [
+      {
+        num: "01",
+        badge: "bitty ↔ bittyd ↔ wheel",
+        title: "Zero-Trust Process Boundary",
+        desc: "The bitty terminal core holds zero AI credentials and zero autonomous execution authority. Credentials live exclusively in ~/.config/wheel/credentials.toml (0600), while bittyd (~/.local/state/bitty/bittyd.sock, 0600) enforces capability tokens.",
+      },
+      {
+        num: "02",
+        badge: ".approvals.lock · 5 Gears",
+        title: "Cross-Process Approval Queue & Thinking Gears",
+        desc: "High-risk shell and file mutations stage into an atomic .approvals.lock queue. Approve or deny directly from the terminal (:WheelApprove, :WheelDeny, wheel approve) and switch across 5 thinking gears (off, low, medium, high, auto via :WheelThinking).",
+      },
+      {
+        num: "03",
+        badge: "bitty-terminal.dashboard",
+        title: "Dashboard Overlay (bitty-terminal.dashboard)",
+        desc: "Toggle the live AI and system telemetry overlay with Ctrl+Shift+D (:Dashboard) to inspect active wheel sessions, pending approvals, token cache hit rates, and latency sparklines in the status bar.",
+      },
+      {
+        num: "04",
+        badge: "MCP · Multi-Provider",
+        title: "Multi-Provider & MCP Ecosystem",
+        desc: "Built-in provider templates (opencode-go, OpenRouter, Anthropic, and OpenAI-compatible endpoints) paired with first-class Model Context Protocol (bitty-ai MCP bridge, bounded 256 KiB frames) and bitty-agent orchestration.",
+      },
+    ];
+
+const dailyCliCommands = isZh
+  ? [
+      {
+        label: "启动交互式软件工程会话（Bittie 仓鼠助手）",
+        code: "wheel chat",
+      },
+      {
+        label: "针对当前终端上下文发起单次提问",
+        code: 'wheel ask "explain the last failing cargo test"',
+      },
+      {
+        label: "查看 bittyd 守护进程、会话与待审批队列状态",
+        code: "wheel status",
+      },
+      {
+        label: "通过 CLI 批准暂存队列中的高风险操作",
+        code: "wheel approve <id>",
+      },
+      {
+        label: "创建隔离的工作区智能体新会话",
+        code: "wheel-session new",
+      },
+    ]
+  : [
+      {
+        label: "Launch an interactive engineering session with Bittie",
+        code: "wheel chat",
+      },
+      {
+        label: "Ask a one-shot question with bounded terminal context",
+        code: 'wheel ask "explain the last failing cargo test"',
+      },
+      {
+        label: "Inspect bittyd daemon health, active sessions, and approvals",
+        code: "wheel status",
+      },
+      {
+        label: "Approve a staged mutation in the atomic approval queue",
+        code: "wheel approve <id>",
+      },
+      {
+        label: "Create a fresh isolated agent session",
+        code: "wheel-session new",
+      },
+    ];
+
+const inTerminalCommands = isZh
+  ? [
+      {
+        cmd: ":WheelSend",
+        key: "Command Palette",
+        desc: "将当前有界选区或终端快照（最高 32 KiB）发送至活跃的 Wheel 会话。",
+      },
+      {
+        cmd: ":WheelApprove",
+        key: "Approval Gate",
+        desc: "在终端内直接批准当前排队等待的 .approvals.lock 工具调用。",
+      },
+      {
+        cmd: ":WheelDeny",
+        key: "Approval Gate",
+        desc: "拒绝当前暂存的高风险工具调用并记录审计原因。",
+      },
+      {
+        cmd: ":WheelThinking high",
+        key: "off | low | medium | high | auto",
+        desc: "动态切换智能体推理预算档位（五档思考深度可调）。",
+      },
+      {
+        cmd: ":Dashboard",
+        key: "Ctrl+Shift+D",
+        desc: "切换实时运行时与 AI 遥测覆盖层（会话、审批、缓存命中率与延迟）。",
+      },
+    ]
+  : [
+      {
+        cmd: ":WheelSend",
+        key: "Command Palette",
+        desc: "Send bounded selection or terminal context (capped at 32 KiB) to the active Wheel session.",
+      },
+      {
+        cmd: ":WheelApprove",
+        key: "Approval Gate",
+        desc: "Approve the staged mutation in the cross-process .approvals.lock queue.",
+      },
+      {
+        cmd: ":WheelDeny",
+        key: "Approval Gate",
+        desc: "Reject the staged tool or shell execution request and record the denial.",
+      },
+      {
+        cmd: ":WheelThinking high",
+        key: "off | low | medium | high | auto",
+        desc: "Switch reasoning budget across the 5 thinking gears on the fly.",
+      },
+      {
+        cmd: ":Dashboard",
+        key: "Ctrl+Shift+D",
+        desc: "Toggle the live AI & runtime telemetry overlay (sessions, approvals, cache hit rate, latency).",
+      },
+    ];
+
+const extensionStack = isZh
+  ? [
+      {
+        id: "bitty-ai",
+        slug: "ai",
+        badge: "DIR-030 · bittyd",
+        title: "AI 扩展与 bittyd 运行时",
+        summary:
+          "负责模型提供商路由、有界终端上下文采集、MCP 工具派发与 ai.* helper 控制面协议，确保 Bitty 核心保持零凭据边界。",
+        docHref: aiDocHref,
+        docLabel: "阅读 AI 扩展手册 →",
+        repoUrl: "https://github.com/bitty-terminal/bitty-ai",
+      },
+      {
+        id: "bitty-agent",
+        slug: "agent",
+        badge: "bitty.agent-1",
+        title: "Agent 编排与主机中立协议",
+        summary:
+          "定义 bitty.agent-1 协议词汇表：有界消息结构、工具调用存根、只读上下文观察与跨进程协调队列，与具体 LLM 后端和窗口层完全解耦。",
+        docHref: agentDocHref,
+        docLabel: "阅读 Agent 协议手册 →",
+        repoUrl: "https://github.com/bitty-terminal/bitty-agent",
+      },
+      {
+        id: "bitty-execution",
+        slug: "execution",
+        badge: "W-132 Supervisor",
+        title: "能力门控执行与审计链",
+        summary:
+          "实现 W-132 进程监管契约：作业生命周期管理、超时取消、cgroup/OOM 资源隔离、命令风险分级（command_risk）与有界输出保留。",
+        docHref: executionDocHref,
+        docLabel: "阅读 Execution 监管手册 →",
+        repoUrl: "https://github.com/bitty-terminal/bitty-execution",
+      },
+    ]
+  : [
+      {
+        id: "bitty-ai",
+        slug: "ai",
+        badge: "DIR-030 · bittyd",
+        title: "AI Extension & bittyd Runtime",
+        summary:
+          "Owns provider and model selection, bounded context collection, MCP tool dispatch, and the helper-side ai.* control surface while keeping Core credential-free.",
+        docHref: aiDocHref,
+        docLabel: "Read AI Extension Docs →",
+        repoUrl: "https://github.com/bitty-terminal/bitty-ai",
+      },
+      {
+        id: "bitty-agent",
+        slug: "agent",
+        badge: "bitty.agent-1",
+        title: "Agent Orchestration & Protocol",
+        summary:
+          "Host-neutral bitty.agent-1 protocol vocabulary: bounded messages, tool-call stubs, read-only observations, and coordination queues with zero LLM or GPU coupling.",
+        docHref: agentDocHref,
+        docLabel: "Read Agent Protocol Docs →",
+        repoUrl: "https://github.com/bitty-terminal/bitty-agent",
+      },
+      {
+        id: "bitty-execution",
+        slug: "execution",
+        badge: "W-132 Supervisor",
+        title: "Capability-Gated Execution & Audit Chain",
+        summary:
+          "W-132 execution supervisor governing job lifetime, cancellation, cgroup/OOM limits, command risk classification, and bounded output retention.",
+        docHref: executionDocHref,
+        docLabel: "Read Execution Supervisor Docs →",
+        repoUrl: "https://github.com/bitty-terminal/bitty-execution",
+      },
+    ];
+
+const capabilityHeads = isZh
+  ? [
+      {
+        family: "ai",
+        head: "ai.provider",
+        param: "无",
+        effect: "使用白名单允许的 AI 模型提供商",
+      },
+      {
+        family: "ai",
+        head: "ai.stream",
+        param: "无",
+        effect: "为当前智能体流式接收 AI 响应",
+      },
+      {
+        family: "ai",
+        head: "ai.model",
+        param: "无",
+        effect: "在受控范围内为智能体选择模型",
+      },
+      {
+        family: "mcp",
+        head: "mcp.invoke",
+        param: "按工具名",
+        effect: "调用白名单 MCP 工具（单帧上限 256 KiB）",
+      },
+      {
+        family: "agent",
+        head: "agent.context.terminal",
+        param: "无",
+        effect: "读取有界终端上下文快照（上限 32 KiB）",
+      },
+      {
+        family: "agent",
+        head: "agent.context.workspace",
+        param: "无",
+        effect: "读取有界工作区布局与状态上下文（上限 32 KiB）",
+      },
+      {
+        family: "agent",
+        head: "agent.memory",
+        param: "按作用域",
+        effect: "显式开启的对话记忆持久化（0600 权限，最长保留 7 天）",
+      },
+    ]
+  : [
+      {
+        family: "ai",
+        head: "ai.provider",
+        param: "none",
+        effect: "Use an allowlisted AI provider",
+      },
+      {
+        family: "ai",
+        head: "ai.stream",
+        param: "none",
+        effect: "Stream AI responses for this agent",
+      },
+      {
+        family: "ai",
+        head: "ai.model",
+        param: "none",
+        effect: "Select an AI model for this agent (bounded)",
+      },
+      {
+        family: "mcp",
+        head: "mcp.invoke",
+        param: "per tool",
+        effect: "Invoke an allowlisted MCP tool (bounded 256 KiB frame)",
+      },
+      {
+        family: "agent",
+        head: "agent.context.terminal",
+        param: "none",
+        effect: "Observe terminal context for this agent (bounded 32 KiB)",
+      },
+      {
+        family: "agent",
+        head: "agent.context.workspace",
+        param: "none",
+        effect: "Observe workspace context for this agent (bounded 32 KiB)",
+      },
+      {
+        family: "agent",
+        head: "agent.memory",
+        param: "per scope",
+        effect: "Persist conversational memory (opt-in, 0600, max 7 days)",
+      },
+    ];
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  currentPath={currentPath}
+  alternatePath={alternatePath}
+>
+  <SiteHeader
+    locale={locale}
+    activeNav="ai"
+    currentPath={currentPath}
+    alternateHref={alternatePath}
+  />
+
+  <main id="main-content" class="product-main" tabindex="-1">
+    <div class="hero-backdrop" aria-hidden="true"></div>
+
+    <!-- 1. Hero Section -->
+    <section class="product-hero" aria-labelledby="ai-hero-title">
+      <span class="hero-kicker">
+        <span class="hero-dot" aria-hidden="true"></span>
+        {
+          isZh
+            ? "零信任进程边界 · bitty-ai (bittyd) · Wheel 智能体套件"
+            : "Zero-Trust Boundary · bitty-ai (bittyd) · Wheel Agent Harness"
+        }
+      </span>
+
+      <h1 id="ai-hero-title">
+        {
+          isZh
+            ? "Bitty AI 与 Wheel — 安全优先的终端智能体体系"
+            : "Bitty AI & Wheel — Zero-Trust Terminal Intelligence"
+        }
+      </h1>
+
+      <p class="hero-lead">
+        {
+          isZh
+            ? "Bitty 遵循严格的权限分离原则：bitty 终端模拟器核心持有零 AI 密钥与零自主命令执行权；bitty-ai (bittyd) 作为本地 Rust AI 运行时与 Unix 域套接字守护进程（~/.local/state/bitty/bittyd.sock，0600 权限），提供受能力围栏保护的终端上下文、MCP 桥接与加密审计链；wheel（仓鼠助手 Bittie）则是构建于 bitty-ai 之上的独立进程软件工程智能体套件，驱动交互式编码会话、跨进程审批队列与终端内覆盖面板。"
+            : "Built on strict separation of powers: the bitty terminal emulator core holds zero AI credentials and zero autonomous command execution authority. bitty-ai (bittyd) runs as the Rust AI runtime and local Unix domain socket daemon (~/.local/state/bitty/bittyd.sock, 0600 permissions) providing capability-fenced terminal context, MCP integration, and cryptographic audit trails, while wheel (Bittie the hamster) operates out-of-process to drive interactive coding sessions, cross-process approval queues, and in-terminal overlays."
+        }
+      </p>
+
+      <div class="hero-actions">
+        <a class="primary-action" href={aiDocHref}>
+          <span>
+            {isZh ? "阅读 AI 架构手册" : "Read AI Architecture Docs"}
+          </span>
+          <span aria-hidden="true">→</span>
+        </a>
+        <a
+          class="secondary-action"
+          href="https://github.com/bitty-terminal/wheel"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span>{isZh ? "Wheel 仓库 (Bittie)" : "Wheel Repository"}</span>
+          <span aria-hidden="true">↗</span>
+        </a>
+        <a
+          class="secondary-action"
+          href="https://github.com/bitty-terminal/bitty-ai"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span>{isZh ? "Bitty AI 运行时" : "Bitty AI Runtime"}</span>
+          <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+
+      <div
+        class="boundary-strip"
+        role="list"
+        aria-label={isZh ? "三层安全进程拓扑" : "Three-process security topology"}
+      >
+        <div class="boundary-node" role="listitem">
+          <span class="node-role">bitty (Core)</span>
+          <span class="node-detail">
+            {isZh ? "0 密钥 · 0 自主执行 · 纯渲染与 PTY 权威" : "0 Keys · 0 Autonomous Exec · GPU & PTY Truth"}
+          </span>
+        </div>
+        <span class="boundary-arrow" aria-hidden="true">⇄</span>
+        <div class="boundary-node" role="listitem">
+          <span class="node-role">bittyd (bitty-ai)</span>
+          <span class="node-detail">
+            {isZh ? "bittyd.sock (0600) · 能力门控 · MCP 桥接" : "bittyd.sock (0600) · Capability Gate · MCP Bridge"}
+          </span>
+        </div>
+        <span class="boundary-arrow" aria-hidden="true">⇄</span>
+        <div class="boundary-node" role="listitem">
+          <span class="node-role">wheel (Bittie)</span>
+          <span class="node-detail">
+            {isZh ? "credentials.toml (0600) · .approvals.lock 队列" : "credentials.toml (0600) · .approvals.lock Queue"}
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. Four Core Capability Cards -->
+    <section class="product-section" aria-labelledby="ai-capabilities-title">
+      <div class="section-header-bar">
+        <div>
+          <p class="eyebrow">
+            {isZh ? "CORE SECURITY & AGENT CAPABILITIES" : "CORE SECURITY & AGENT CAPABILITIES"}
+          </p>
+          <h2 id="ai-capabilities-title">
+            {isZh ? "四大核心安全与智能体能力" : "Four Core Capability Pillars"}
+          </h2>
+        </div>
+        <a class="meta-pill-link" href={upstreamDocHref}>
+          <span>{isZh ? "DIR-030 原生组件边界" : "DIR-030 Component Boundary"}</span>
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <div class="pillars-grid">
+        {
+          capabilityCards.map((card) => (
+            <article class="pillar-card">
+              <div class="pillar-top">
+                <span class="feature-num">{card.num}</span>
+                <code class="code-badge">{card.badge}</code>
+              </div>
+              <h3>{card.title}</h3>
+              <p>{card.desc}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- 3. Interactive CLI & Keybindings Reference -->
+    <section class="product-section" aria-labelledby="cli-keybindings-title">
+      <div class="section-header-bar">
+        <div>
+          <p class="eyebrow">
+            {isZh ? "WORKFLOW & OPERATOR CONTROLS" : "WORKFLOW & OPERATOR CONTROLS"}
+          </p>
+          <h2 id="cli-keybindings-title">
+            {
+              isZh
+                ? "交互式 CLI 与终端内命令参考"
+                : "Interactive CLI & Keybindings Reference"
+            }
+          </h2>
+        </div>
+        <span class="section-count-pill">wheel · wheel-session · :Wheel*</span>
+      </div>
+
+      <div class="reference-split">
+        <div class="reference-pane">
+          <h3>
+            {
+              isZh
+                ? "日常 CLI 命令 (wheel & wheel-session)"
+                : "Daily-Driver CLI (wheel & wheel-session)"
+            }
+          </h3>
+          <div class="command-stack">
+            {
+              dailyCliCommands.map((cmd) => (
+                <div class="command-entry">
+                  <p class="command-label">{cmd.label}</p>
+                  <div class="command-block">
+                    <code>{cmd.code}</code>
+                    <button
+                      type="button"
+                      data-copy={cmd.code}
+                      aria-label={`${t.copy}: ${cmd.label}`}
+                    >
+                      {t.copy}
+                    </button>
+                  </div>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+
+        <div class="reference-pane">
+          <h3>
+            {
+              isZh
+                ? "终端内命令与快捷键 (:Wheel* & :Dashboard)"
+                : "In-Terminal Commands & Keybindings"
+            }
+          </h3>
+          <ul class="keybind-list">
+            {
+              inTerminalCommands.map((item) => (
+                <li class="keybind-item">
+                  <div class="keybind-top">
+                    <code class="cmd-name">{item.cmd}</code>
+                    <span class="kbd-cap">{item.key}</span>
+                  </div>
+                  <p class="keybind-desc">{item.desc}</p>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. AI Extension Stack Cards & Capability Table -->
+    <section class="product-section" aria-labelledby="ai-stack-title">
+      <div class="section-header-bar">
+        <div>
+          <p class="eyebrow">
+            {isZh ? "L1 NATIVE AI EXTENSION STACK" : "L1 NATIVE AI EXTENSION STACK"}
+          </p>
+          <h2 id="ai-stack-title">
+            {
+              isZh
+                ? "AI 扩展技术栈与能力门控表"
+                : "AI Extension Stack & Capability Heads"
+            }
+          </h2>
+        </div>
+        <a class="meta-pill-link" href={aiDocHref}>
+          <span>{isZh ? "完整 AI 扩展规范" : "Full AI Extension Spec"}</span>
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
+
+      <div class="stack-grid">
+        {
+          extensionStack.map((item) => (
+            <article class="stack-card">
+              <div class="stack-card-head">
+                <div>
+                  <span class="plugin-id-badge">{item.id}</span>
+                  <h3>{item.title}</h3>
+                </div>
+                <code class="code-badge">{item.badge}</code>
+              </div>
+              <p class="stack-summary">{item.summary}</p>
+              <div class="stack-links">
+                <a href={item.docHref} class="card-action-link">
+                  <span>{item.docLabel}</span>
+                </a>
+                <a
+                  href={item.repoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="card-action-link"
+                >
+                  <span>GitHub ({item.id})</span>
+                  <span aria-hidden="true">↗</span>
+                </a>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+
+      <div class="capability-table-card">
+        <h3>
+          {
+            isZh
+              ? "AI 扩展贡献的 7 个能力头 (Capability Heads)"
+              : "Seven Capability Heads Contributed by the AI Extension"
+          }
+        </h3>
+        <div class="table-scroll" tabindex="0">
+          <table class="cap-table">
+            <thead>
+              <tr>
+                <th>{isZh ? "能力族" : "Family"}</th>
+                <th>{isZh ? "能力头 (Head)" : "Capability Head"}</th>
+                <th>{isZh ? "参数" : "Parameter"}</th>
+                <th>{isZh ? "安全边界与效果" : "Security Boundary & Effect"}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {
+                capabilityHeads.map((row) => (
+                  <tr>
+                    <td>
+                      <code>{row.family}</code>
+                    </td>
+                    <td>
+                      <code>{row.head}</code>
+                    </td>
+                    <td>{row.param}</td>
+                    <td>{row.effect}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <SiteFooter locale={locale} />
+
+  <script
+    define:vars={{
+      copiedMessage: t.copied,
+      copyFailedMessage: t.copyFailed,
+    }}
+  >
+    const copied = copiedMessage;
+    const copyFailed = copyFailedMessage;
+    for (const element of document.querySelectorAll("[data-copy]")) {
+      if (!(element instanceof HTMLButtonElement)) continue;
+      const button = element;
+      const original = button.textContent ?? "Copy";
+      button.addEventListener("click", async () => {
+        const command = button.dataset.copy ?? "";
+        try {
+          await navigator.clipboard.writeText(command);
+          button.textContent = copied;
+          button.dataset.copiedState = "true";
+          window.setTimeout(() => {
+            button.textContent = original;
+            delete button.dataset.copiedState;
+          }, 1500);
+        } catch {
+          button.textContent = copyFailed;
+        }
+      });
+    }
+  </script>
+</BaseLayout>
+
+<style>
+  .product-main {
+    flex: 1;
+    position: relative;
+    width: 100%;
+    padding-block: 0 4rem;
+    overflow-x: clip;
+  }
+
+  .hero-backdrop {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 26rem;
+    background-image:
+      radial-gradient(
+        ellipse 55% 45% at 50% -15%,
+        var(--accent-soft),
+        transparent 70%
+      ),
+      radial-gradient(var(--grid-dot) 1px, transparent 1px);
+    background-size:
+      100% 100%,
+      24px 24px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .product-hero,
+  .product-section {
+    position: relative;
+    z-index: 1;
+    width: min(68rem, calc(100% - 2rem));
+    margin-inline: auto;
+  }
+
+  .product-hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-block: clamp(2.5rem, 5vw, 4rem) clamp(1.75rem, 3.5vw, 2.5rem);
+  }
+
+  .hero-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.8rem;
+    padding: 0.22rem 0.7rem;
+    border: 1px solid var(--accent-border);
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+  }
+
+  .hero-dot {
+    width: 0.38rem;
+    height: 0.38rem;
+    border-radius: 50%;
+    background: var(--accent);
+  }
+
+  .product-hero h1 {
+    max-width: 28ch;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3.2vw, 2.55rem);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.028em;
+    color: var(--fg-primary);
+  }
+
+  .hero-lead {
+    max-width: 52rem;
+    margin: 0.85rem 0 0;
+    color: var(--fg-secondary);
+    font-size: 0.95rem;
+    line-height: 1.68;
+  }
+
+  :global(html[lang="en"]) .hero-lead {
+    font-size: 1.02rem;
+  }
+
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-top: 1.45rem;
+  }
+
+  .primary-action,
+  .secondary-action {
+    display: inline-flex;
+    min-block-size: var(--touch-target);
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.5rem 1.05rem;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: var(--shadow-xs);
+  }
+
+  .primary-action {
+    border: 1px solid var(--accent);
+    background: var(--accent);
+    color: var(--accent-ink);
+  }
+
+  .primary-action:hover {
+    border-color: var(--accent-hover);
+    background: var(--accent-hover);
+    color: var(--accent-ink);
+  }
+
+  .secondary-action {
+    border: 1px solid var(--line);
+    background: var(--bg-surface);
+    color: var(--fg-primary);
+  }
+
+  .secondary-action:hover {
+    border-color: var(--border-strong);
+    background: var(--bg-elevated);
+    color: var(--fg-primary);
+  }
+
+  .boundary-strip {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1.6rem;
+  }
+
+  .boundary-node {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.18rem;
+    padding: 0.55rem 0.85rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    box-shadow: var(--shadow-xs);
+    text-align: left;
+  }
+
+  .node-role {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  .node-detail {
+    color: var(--fg-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+  }
+
+  .boundary-arrow {
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .product-section {
+    padding-top: 2.25rem;
+  }
+
+  .section-header-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.65rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .section-header-bar h2 {
+    margin: 0;
+    font: 700 1.25rem var(--font-display);
+    letter-spacing: -0.02em;
+    color: var(--fg-primary);
+  }
+
+  .meta-pill-link,
+  .section-count-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.28rem 0.65rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--bg-surface);
+    color: var(--fg-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-decoration: none;
+    box-shadow: var(--shadow-xs);
+  }
+
+  .meta-pill-link:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .pillar-card,
+  .reference-pane,
+  .stack-card,
+  .capability-table-card {
+    padding: 1.15rem 1.25rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    background: var(--bg-surface);
+    box-shadow: var(--shadow);
+  }
+
+  .pillar-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .feature-num {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+
+  .code-badge {
+    padding: 0.14rem 0.48rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xs);
+    background: var(--bg-elevated);
+    color: var(--fg-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    font-weight: 600;
+  }
+
+  .pillar-card h3,
+  .reference-pane h3,
+  .stack-card h3,
+  .capability-table-card h3 {
+    margin: 0 0 0.45rem;
+    font: 600 0.98rem var(--font-display);
+    color: var(--fg-primary);
+  }
+
+  .pillar-card p,
+  .stack-summary {
+    margin: 0;
+    color: var(--fg-secondary);
+    font-size: 0.825rem;
+    line-height: 1.58;
+  }
+
+  :global(html[lang="en"]) .pillar-card p,
+  :global(html[lang="en"]) .stack-summary {
+    font-size: 0.875rem;
+  }
+
+  .reference-split {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .command-stack {
+    display: grid;
+    gap: 0.6rem;
+    margin-top: 0.5rem;
+  }
+
+  .command-entry {
+    display: grid;
+    gap: 0.22rem;
+  }
+
+  .command-label {
+    margin: 0;
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+  }
+
+  .command-block {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid var(--cmd-line);
+    border-radius: var(--radius-sm);
+    background: var(--cmd-bg);
+    color: var(--cmd-ink);
+  }
+
+  .command-block code {
+    min-width: 0;
+    flex: 1;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    font: 0.73rem/1.5 var(--font-mono);
+  }
+
+  .command-block button {
+    flex-shrink: 0;
+    min-block-size: 1.5rem;
+    min-inline-size: 1.5rem;
+    border: 1px solid var(--cmd-line);
+    border-radius: var(--radius-xs);
+    padding: 0.24rem 0.58rem;
+    background: var(--cmd-panel);
+    color: var(--fg-secondary);
+    font: 600 0.66rem var(--font-mono);
+    cursor: pointer;
+    box-shadow: var(--shadow-xs);
+  }
+
+  .command-block button:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .command-block button[data-copied-state="true"] {
+    border-color: var(--ok);
+    color: var(--ok);
+  }
+
+  .keybind-list {
+    margin: 0.5rem 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .keybind-item {
+    padding: 0.65rem 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--bg-subtle);
+  }
+
+  .keybind-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .cmd-name {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .keybind-desc {
+    margin: 0;
+    color: var(--fg-secondary);
+    font-size: 0.78rem;
+    line-height: 1.5;
+  }
+
+  :global(html[lang="en"]) .keybind-desc {
+    font-size: 0.82rem;
+  }
+
+  .stack-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .stack-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .stack-card-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.45rem;
+  }
+
+  .plugin-id-badge {
+    display: inline-block;
+    margin-bottom: 0.2rem;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+  }
+
+  .stack-links {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: 0.9rem;
+    padding-top: 0.65rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .card-action-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--fg-primary);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .card-action-link:hover {
+    color: var(--accent);
+  }
+
+  .cap-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    text-align: left;
+  }
+
+  .cap-table th,
+  .cap-table td {
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .cap-table th {
+    color: var(--fg-primary);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: var(--bg-subtle);
+  }
+
+  .cap-table td {
+    color: var(--fg-secondary);
+  }
+
+  .cap-table code {
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.73rem;
+  }
+
+  @media (max-width: 860px) {
+    .pillars-grid,
+    .reference-split,
+    .stack-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -5,6 +5,7 @@ import {
   extractPublishedVersion,
   extractStatus,
   extractSummary,
+  getExtensionCatalog,
 } from "./extensionCatalog.ts";
 
 describe("extractStatus", () => {
@@ -157,5 +158,32 @@ describe("extractSummary", () => {
 
   test("returns an empty string when there is no prose", () => {
     expect(extractSummary("# entry\n\n## Section\n")).toBe("");
+  });
+});
+
+describe("getExtensionCatalog", () => {
+  test("returns all 11 native extensions and all 13 official Lua plugins for en and zh-CN", () => {
+    for (const locale of ["en", "zh-CN"] as const) {
+      const catalog = getExtensionCatalog(locale);
+      expect(catalog.nativeExtensions.length).toBe(11);
+      expect(catalog.luaPlugins.length).toBe(13);
+      expect(catalog.luaPlugins.filter((p) => p.featured).length).toBe(5);
+      for (const ext of catalog.nativeExtensions) {
+        expect(ext.id.length).toBeGreaterThan(0);
+        expect(ext.title.length).toBeGreaterThan(0);
+        expect(ext.statusLabel.length).toBeGreaterThan(0);
+        expect(
+          ext.href.startsWith(locale === "zh-CN" ? "/zh-CN/docs/" : "/docs/"),
+        ).toBe(true);
+      }
+      for (const plugin of catalog.luaPlugins) {
+        expect(plugin.id.startsWith("bitty-")).toBe(true);
+        expect(plugin.title.length).toBeGreaterThan(0);
+        expect(plugin.summary.length).toBeGreaterThan(0);
+        expect(plugin.repoUrl).toBe(
+          `https://github.com/bitty-terminal/${plugin.slug}`,
+        );
+      }
+    }
   });
 });

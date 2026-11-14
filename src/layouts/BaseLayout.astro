@@ -1,0 +1,70 @@
+---
+import { getUiMessages, localizePath, type SiteLocale } from "../lib/i18n.ts";
+import "../styles/global.css";
+
+type Props = {
+  locale?: SiteLocale;
+  title: string;
+  description: string;
+  currentPath: string;
+  alternatePath?: string;
+  xDefaultPath?: string;
+};
+
+const {
+  locale = "en",
+  title,
+  description,
+  currentPath,
+  alternatePath,
+  xDefaultPath,
+} = Astro.props as Props;
+
+const isZh = locale === "zh-CN";
+const t = getUiMessages(locale);
+const origin = Astro.site?.origin ?? "https://bitty.run";
+const resolvedAlternate =
+  alternatePath ?? localizePath(currentPath, isZh ? "en" : "zh-CN");
+const resolvedDefault = xDefaultPath ?? localizePath(currentPath, "en");
+const enHref = isZh ? `${origin}${resolvedAlternate}` : `${origin}${currentPath}`;
+const zhHref = isZh ? `${origin}${currentPath}` : `${origin}${resolvedAlternate}`;
+---
+
+<!doctype html>
+<html lang={locale} data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="canonical" href={`${origin}${currentPath}`} />
+    <link rel="alternate" hreflang="en" href={enHref} />
+    <link rel="alternate" hreflang="zh-CN" href={zhHref} />
+    <link rel="alternate" hreflang="x-default" href={`${origin}${resolvedDefault}`} />
+    <link rel="icon" type="image/x-icon" href="/icons/favicon.ico" />
+    <title>{title}</title>
+    <script is:inline>
+      try {
+        const stored = window.localStorage.getItem("bitty-theme");
+        if (stored === "dark" || stored === "light") {
+          document.documentElement.setAttribute("data-theme", stored);
+        }
+      } catch {}
+    </script>
+  </head>
+  <body class="site-body">
+    <a href="#main-content" class="skip-link">
+      {t.skipToContent}
+    </a>
+    <slot />
+  </body>
+</html>
+
+<style>
+  .site-body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-canvas);
+    color: var(--ink);
+  }
+</style>

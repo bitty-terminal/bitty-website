@@ -138,14 +138,19 @@ async function assertDesignSheet(directory = dist) {
 
 await assertDesignSheet();
 
-/** Top-level pages must render the hidden-by-default unified sidebar and core links. */
+/** Top-level pages must render the unified sidebar with collapsed manual groups and core links. */
 for (const page of ["index.html", "zh-CN/index.html"]) {
   const html = await readFile(new URL(page, dist), "utf8");
   if (
     !html.includes('id="site-sidebar"') ||
     !html.includes('aria-expanded="false"')
   ) {
-    throw new Error(`${page}: missing hidden-by-default site sidebar`);
+    throw new Error(`${page}: missing site sidebar toggle state`);
+  }
+  if (/<details class="docs-nav-group-details"[^>]*\bopen\b/u.test(html)) {
+    throw new Error(
+      `${page}: manual sidebar groups must be collapsed by default`,
+    );
   }
   if (!html.includes('id="install"')) {
     throw new Error(`${page}: missing #install section`);

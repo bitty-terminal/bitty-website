@@ -502,7 +502,7 @@ export function getExtensionCatalog(
       name,
       href: page
         ? `${prefix}/${page.fullSlug}/`
-        : `https://plugins.bitty.run/plugins/${id}`,
+        : `https://github.com/bitty-terminal/${name}`,
     };
   });
 
@@ -525,7 +525,7 @@ export function getExtensionCatalog(
         href: manualHref,
         manualHref,
         repoUrl: `https://github.com/bitty-terminal/${meta.slug}`,
-        registryUrl: `https://plugins.bitty.run/plugins/${meta.id}`,
+        registryUrl: manualHref,
       };
     },
   );

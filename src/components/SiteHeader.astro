@@ -2,11 +2,9 @@
 /**
  * Site header.
  *
- * Soft, bright minimalist developer top bar with sticky glass surface,
- * official CDN Bitty logo (`BittyLogo`), centered static manual search,
- * centralized i18n route switcher (`EN / 中文`), and Soft Daylight / Slate Dusk
- * theme toggle. Version-agnostic so the website stays decoupled from release
- * cadence while documentation updates flow through Cloudflare R2.
+ * Minimal niri-docs style top bar: sidebar toggle + `bitty` brand on the left,
+ * centered static manual search, and EN/中文 switcher, theme toggle, and GitHub
+ * link on the right.
  */
 import SiteSearch from "./SiteSearch.astro";
 import BittyLogo from "./BittyLogo.astro";
@@ -28,7 +26,6 @@ type Props = {
 const {
   locale = "en",
   showSearch = true,
-  activeNav,
   alternateHref,
   currentPath,
 } = Astro.props as Props;
@@ -36,10 +33,6 @@ const isZh = locale === "zh-CN";
 const t = getUiMessages(locale);
 const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
 const homeHref = localePath(locale, "/");
-const docsHref = localePath(locale, "/docs/");
-const pluginsHref = localePath(locale, "/plugins/");
-const aiHref = localePath(locale, "/ai/");
-const installHref = `${homeHref}#install`;
 const targetLocale: SiteLocale = isZh ? "en" : "zh-CN";
 const languageHref =
   alternateHref ??
@@ -49,10 +42,34 @@ const languageHref =
 <header class="site-header-wrap">
   <div class="site-header">
     <nav aria-label={t.navAriaLabel}>
-      <a href={homeHref} class="brand" aria-label={t.homeAriaLabel}>
-        <BittyLogo />
-        <span class="brand-name">bitty</span>
-      </a>
+      <div class="header-left">
+        <button
+          type="button"
+          id="sidebar-toggle-btn"
+          class="header-icon-btn sidebar-toggle-btn"
+          aria-expanded="false"
+          aria-controls="site-sidebar"
+          aria-label={t.sidebarToggle}
+          title={t.sidebarToggle}
+        >
+          <svg
+            class="header-svg-icon"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M2.5 4h11M2.5 8h11M2.5 12h11" />
+          </svg>
+        </button>
+
+        <a href={homeHref} class="brand" aria-label={t.homeAriaLabel}>
+          <BittyLogo />
+          <span class="brand-name">bitty</span>
+        </a>
+      </div>
 
       {showSearch && (
         <div class="header-search">
@@ -61,49 +78,6 @@ const languageHref =
       )}
 
       <ul class="header-links">
-        <li>
-          <a href={installHref} class="header-link header-link-secondary">
-            <span>{t.navInstall}</span>
-          </a>
-        </li>
-        <li>
-          <a
-            href={docsHref}
-            class:list={[
-              "header-link",
-              "nav-link",
-              { "is-active": activeNav === "docs" },
-            ]}
-          >
-            <span>{t.navDocs}</span>
-          </a>
-        </li>
-        <li>
-          <a
-            href={pluginsHref}
-            class:list={[
-              "header-link",
-              "nav-link",
-              { "is-active": activeNav === "plugins" },
-            ]}
-            aria-current={activeNav === "plugins" ? "page" : undefined}
-          >
-            <span>{t.navPlugins}</span>
-          </a>
-        </li>
-        <li>
-          <a
-            href={aiHref}
-            class:list={[
-              "header-link",
-              "nav-link",
-              { "is-active": activeNav === "ai" },
-            ]}
-            aria-current={activeNav === "ai" ? "page" : undefined}
-          >
-            <span>{t.navAi}</span>
-          </a>
-        </li>
         <li>
           <a
             href={languageHref}
@@ -223,10 +197,63 @@ const languageHref =
       }
       syncButtonState();
     });
+
+    const toggleBtn = document.getElementById("sidebar-toggle-btn");
+    const closeBtn = document.getElementById("sidebar-close-btn");
+    const sidebar = document.getElementById("site-sidebar");
+    const backdrop = document.getElementById("site-sidebar-backdrop");
+
+    const setSidebarOpen = (open) => {
+      if (!sidebar || !toggleBtn) return;
+      if (open) {
+        sidebar.removeAttribute("hidden");
+        backdrop?.removeAttribute("hidden");
+        toggleBtn.setAttribute("aria-expanded", "true");
+        closeBtn?.focus();
+      } else {
+        sidebar.setAttribute("hidden", "");
+        backdrop?.setAttribute("hidden", "");
+        toggleBtn.setAttribute("aria-expanded", "false");
+      }
+    };
+
+    toggleBtn?.addEventListener("click", () => {
+      const isOpen = toggleBtn.getAttribute("aria-expanded") === "true";
+      setSidebarOpen(!isOpen);
+    });
+
+    closeBtn?.addEventListener("click", () => {
+      setSidebarOpen(false);
+      toggleBtn?.focus();
+    });
+
+    backdrop?.addEventListener("click", () => {
+      setSidebarOpen(false);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (
+        event.key === "Escape" &&
+        toggleBtn?.getAttribute("aria-expanded") === "true"
+      ) {
+        setSidebarOpen(false);
+        toggleBtn.focus();
+      }
+    });
   })();
 </script>
 
 <style>
+  .header-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .sidebar-toggle-btn {
+    padding-inline: 0.5rem;
+  }
+
   .brand-name {
     font-family: var(--font-mono);
     font-size: 0.95rem;
@@ -250,7 +277,6 @@ const languageHref =
     padding-inline: 0.5rem;
   }
 
-  /* Soft Daylight default: show moon icon to switch to dark; in dark mode show sun */
   .theme-toggle .icon-sun {
     display: none;
   }
@@ -265,12 +291,6 @@ const languageHref =
 
   :global([data-theme="dark"]) .theme-toggle .icon-moon {
     display: none;
-  }
-
-  @media (width < 56rem) {
-    .header-link-secondary {
-      display: none;
-    }
   }
 
   @media (width < 36rem) {

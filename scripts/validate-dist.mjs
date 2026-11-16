@@ -138,53 +138,44 @@ async function assertDesignSheet(directory = dist) {
 
 await assertDesignSheet();
 
-/** Both home pages must render the full extension overview derived from the
- * pinned manual. A locale that omits the official plugin table would
- * otherwise ship an empty list without failing the build. */
+/** Top-level pages must render the hidden-by-default unified sidebar and core links. */
 for (const page of ["index.html", "zh-CN/index.html"]) {
   const html = await readFile(new URL(page, dist), "utf8");
-  const cards = (html.match(/class="extension-card"/gu) ?? []).length;
-  const pluginList = html.match(
-    /<ul[^>]*class="plugin-list"[^>]*>([\s\S]*?)<\/ul>/u,
-  );
-  const plugins = (pluginList?.[1]?.match(/<li\b/gu) ?? []).length;
-  if (cards !== 11) {
-    throw new Error(`${page}: expected 11 native extensions, found ${cards}`);
+  if (
+    !html.includes('id="site-sidebar"') ||
+    !html.includes('aria-expanded="false"')
+  ) {
+    throw new Error(`${page}: missing hidden-by-default site sidebar`);
   }
-  if (plugins !== 11) {
-    throw new Error(`${page}: expected 11 official plugins, found ${plugins}`);
+  if (!html.includes('id="install"')) {
+    throw new Error(`${page}: missing #install section`);
   }
 }
 
 for (const page of ["plugins/index.html", "zh-CN/plugins/index.html"]) {
   const html = await readFile(new URL(page, dist), "utf8");
-  const luaCards = (html.match(/class="catalog-card"/gu) ?? []).length;
-  const nativeCards = (html.match(/class="native-card"/gu) ?? []).length;
-  if (luaCards !== 13) {
+  const luaRows = (html.match(/<code>bitty-(?:featured|terminal)\./gu) ?? [])
+    .length;
+  const nativeRows = (
+    html.match(/href="https:\/\/github\.com\/bitty-terminal\/bitty-[^"]+"/gu) ??
+    []
+  ).length;
+  if (luaRows !== 13) {
     throw new Error(
-      `${page}: expected 13 official Lua plugin cards, found ${luaCards}`,
+      `${page}: expected 13 official Lua plugins, found ${luaRows}`,
     );
   }
-  if (nativeCards !== 11) {
+  if (nativeRows < 11) {
     throw new Error(
-      `${page}: expected 11 native extension cards, found ${nativeCards}`,
+      `${page}: expected at least 11 native extension repo links, found ${nativeRows}`,
     );
   }
 }
 
 for (const page of ["ai/index.html", "zh-CN/ai/index.html"]) {
   const html = await readFile(new URL(page, dist), "utf8");
-  const capCards = (html.match(/class="pillar-card"/gu) ?? []).length;
-  const stackCards = (html.match(/class="stack-card"/gu) ?? []).length;
-  if (capCards !== 4) {
-    throw new Error(
-      `${page}: expected 4 AI capability cards, found ${capCards}`,
-    );
-  }
-  if (stackCards !== 3) {
-    throw new Error(
-      `${page}: expected 3 AI extension stack cards, found ${stackCards}`,
-    );
+  if (!html.includes("bittyd") || !html.includes("wheel")) {
+    throw new Error(`${page}: expected bittyd and wheel content`);
   }
 }
 

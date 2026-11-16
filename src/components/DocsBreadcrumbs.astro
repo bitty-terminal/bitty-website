@@ -23,29 +23,6 @@ const sectionTitle = info?.sectionTitle ?? (isZh ? "文档" : "Documentation");
 
 <nav class="docs-metadata-bar" aria-label={t.breadcrumbAria}>
   <div class="docs-bar-left">
-    <button
-      type="button"
-      class="docs-rail-toggle"
-      data-toggle-rail="left"
-      aria-pressed="true"
-      title={t.toggleLeftRail}
-    >
-      <svg
-        class="rail-toggle-icon"
-        viewBox="0 0 16 16"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.4"
-        aria-hidden="true"
-      >
-        <rect x="1.75" y="2.25" width="12.5" height="11.5" rx="2"></rect>
-        <line x1="6" y1="2.25" x2="6" y2="13.75"></line>
-      </svg>
-      <span>{t.toggleLeftRail}</span>
-    </button>
-
-    <span class="docs-bar-divider" aria-hidden="true"></span>
-
     <div class="breadcrumb-trail">
       <a href={isZh ? "/zh-CN/docs/" : "/docs/"} class="crumb-link">
         {t.breadcrumbRoot}

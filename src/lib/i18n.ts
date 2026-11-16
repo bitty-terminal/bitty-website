@@ -20,6 +20,7 @@ export interface UiMessages {
   readonly skipToContent: string;
   readonly navAriaLabel: string;
   readonly homeAriaLabel: string;
+  readonly navHome: string;
   readonly navInstall: string;
   readonly navDocs: string;
   readonly navPlugins: string;
@@ -61,6 +62,7 @@ export interface UiMessages {
   readonly manualTitle: string;
   readonly manualSubtitle: string;
   readonly sidebarToggle: string;
+  readonly sidebarClose: string;
   readonly sidebarAria: string;
   readonly sidebarSource: string;
   readonly sidebarPinned: string;
@@ -94,6 +96,7 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     skipToContent: "Skip to content",
     navAriaLabel: "Site navigation",
     homeAriaLabel: "Bitty home",
+    navHome: "Overview",
     navInstall: "Install",
     navDocs: "Document",
     navPlugins: "Plugins",
@@ -141,8 +144,9 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     manualTitle: "Bitty Manual",
     manualSubtitle:
       "Installation, configuration, plugin, and Lua API reference.",
-    sidebarToggle: "Browse manual",
-    sidebarAria: "Manual navigation",
+    sidebarToggle: "Toggle navigation",
+    sidebarClose: "Close navigation",
+    sidebarAria: "Site navigation",
     sidebarSource: "SOURCE",
     sidebarPinned: "R2 pinned",
     tocSummary: "On this page",
@@ -174,6 +178,7 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     skipToContent: "跳转到正文",
     navAriaLabel: "站点导航",
     homeAriaLabel: "Bitty 首页",
+    navHome: "概览",
     navInstall: "安装",
     navDocs: "文档",
     navPlugins: "插件",
@@ -218,8 +223,9 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     statusDocs: "文档",
     manualTitle: "Bitty 手册",
     manualSubtitle: "安装、配置、插件与 Lua API 参考。",
-    sidebarToggle: "浏览文档目录",
-    sidebarAria: "文档导航",
+    sidebarToggle: "切换导航栏",
+    sidebarClose: "关闭导航栏",
+    sidebarAria: "站点导航",
     sidebarSource: "内容源",
     sidebarPinned: "R2 已锁定",
     tocSummary: "本页目录",

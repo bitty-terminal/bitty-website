@@ -1,0 +1,302 @@
+---
+/**
+ * Unified site-wide sidebar drawer (hidden by default on every page).
+ *
+ * Includes top-level site sections (Overview, Plugins, AI, Manual) and all
+ * 6 canonical manual sections inside collapsible `<details>` groups.
+ * Toggled by `#sidebar-toggle-btn` in `SiteHeader.astro` with zero layout shift.
+ */
+import { getUiMessages, localePath, type SiteLocale } from "../lib/i18n.ts";
+import { getManualNavGroups } from "../lib/manualDocs.ts";
+
+type Props = {
+  locale?: SiteLocale;
+  activeSection?: "home" | "plugins" | "ai" | "manual-index" | "docs";
+  currentSlug?: string;
+};
+
+const {
+  locale = "en",
+  activeSection,
+  currentSlug = "",
+} = Astro.props as Props;
+
+const t = getUiMessages(locale);
+const groups = getManualNavGroups(currentSlug, locale);
+const homeHref = localePath(locale, "/");
+const pluginsHref = localePath(locale, "/plugins/");
+const aiHref = localePath(locale, "/ai/");
+const docsIndexHref = localePath(locale, "/docs/");
+const docsPrefix = locale === "zh-CN" ? "/zh-CN/docs" : "/docs";
+
+const topLinks = [
+  { href: homeHref, label: t.navHome, active: activeSection === "home" },
+  {
+    href: pluginsHref,
+    label: t.navPlugins,
+    active: activeSection === "plugins",
+  },
+  { href: aiHref, label: t.navAi, active: activeSection === "ai" },
+  {
+    href: docsIndexHref,
+    label: t.navDocs,
+    active: activeSection === "manual-index",
+  },
+];
+---
+
+<div id="site-sidebar-backdrop" class="site-sidebar-backdrop" hidden></div>
+
+<aside
+  id="site-sidebar"
+  class="site-sidebar-drawer"
+  aria-label={t.sidebarAria}
+  hidden
+>
+  <div class="site-sidebar-head">
+    <span class="site-sidebar-title">bitty</span>
+    <button
+      type="button"
+      id="sidebar-close-btn"
+      class="site-sidebar-close"
+      aria-label={t.sidebarClose}
+      title={t.sidebarClose}
+    >
+      <svg
+        viewBox="0 0 16 16"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <path d="M4 4l8 8M12 4l-8 8" />
+      </svg>
+    </button>
+  </div>
+
+  <nav class="docs-sidebar" aria-label={t.sidebarAria}>
+    <ul class="docs-nav-tree site-nav-primary">
+      {
+        topLinks.map((item) => (
+          <li class="docs-nav-entry">
+            <a
+              href={item.href}
+              aria-current={item.active ? "page" : undefined}
+              class={item.active ? "active" : undefined}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <hr class="site-sidebar-sep" />
+
+    <ul class="docs-nav-tree">
+      {
+        groups.map((group) => {
+          const hasActive = group.entries.some(
+            (entry) => entry.fullSlug === currentSlug,
+          );
+          const defaultOpen =
+            hasActive || (!currentSlug && group.id === "getting-started");
+          return (
+            <li class="docs-nav-group">
+              <details class="docs-nav-group-details" open={defaultOpen}>
+                <summary>{group.label}</summary>
+                <ul>
+                  {group.entries.map((entry) => {
+                    const isActive =
+                      activeSection === "docs" &&
+                      entry.fullSlug === currentSlug;
+                    const href = `${docsPrefix}/${entry.fullSlug}/`;
+                    return (
+                      <li class="docs-nav-entry">
+                        <a
+                          href={href}
+                          aria-current={isActive ? "page" : undefined}
+                          class={isActive ? "active" : undefined}
+                        >
+                          {entry.title}
+                        </a>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </details>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </nav>
+</aside>
+
+<style>
+  .site-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--layer-modal, 50) - 1);
+    background: oklch(0 0 0 / 0.35);
+    backdrop-filter: blur(2px);
+  }
+
+  .site-sidebar-backdrop[hidden] {
+    display: none;
+  }
+
+  .site-sidebar-drawer {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: var(--layer-modal, 50);
+    inline-size: min(19rem, 86vw);
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-surface);
+    border-inline-end: 1px solid var(--line);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+
+  .site-sidebar-drawer[hidden] {
+    display: none;
+  }
+
+  .site-sidebar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-block-end: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+
+  .site-sidebar-title {
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  .site-sidebar-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--touch-target);
+    min-inline-size: var(--touch-target);
+    margin: -0.35rem -0.5rem;
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--fg-muted);
+    cursor: pointer;
+  }
+
+  .site-sidebar-close:hover {
+    color: var(--ink);
+    background: var(--paper-deep);
+  }
+
+  .site-sidebar-close svg {
+    inline-size: 1rem;
+    block-size: 1rem;
+  }
+
+  .docs-sidebar {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.85rem 0.9rem 2rem;
+    font-size: var(--text-xs);
+    line-height: 1.45;
+  }
+
+  .site-sidebar-sep {
+    margin: 0.85rem 0;
+    border: 0;
+    border-block-start: 1px solid var(--line);
+  }
+
+  .docs-nav-tree,
+  .docs-nav-tree ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .docs-nav-group + .docs-nav-group {
+    margin-top: 0.65rem;
+  }
+
+  .docs-nav-group-details > ul {
+    margin: 0.2rem 0 0 0.25rem;
+    padding-inline-start: 0.65rem;
+    border-inline-start: 1px solid var(--line);
+  }
+
+  .docs-nav-group-details > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.3rem 0.35rem;
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    color: var(--fg-primary);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    list-style: none;
+    user-select: none;
+  }
+
+  .docs-nav-group-details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .docs-nav-group-details > summary:hover {
+    color: var(--accent);
+  }
+
+  .docs-nav-group-details > summary::after {
+    content: "\25B8";
+    color: var(--fg-muted);
+    font-size: 0.65rem;
+    transition: transform 0.15s ease;
+  }
+
+  .docs-nav-group-details[open] > summary::after {
+    transform: rotate(90deg);
+  }
+
+  .docs-sidebar li a {
+    display: block;
+    min-block-size: 1.95rem;
+    align-content: center;
+    padding: 0.26rem 0.6rem;
+    border-inline-start: 2px solid transparent;
+    color: var(--fg-secondary);
+    font-size: 0.82rem;
+    text-decoration: none;
+    border-radius: var(--radius-xs);
+    transition:
+      color 0.12s ease,
+      background-color 0.12s ease,
+      border-color 0.12s ease;
+  }
+
+  .docs-sidebar li a:hover {
+    color: var(--fg-primary);
+    background-color: var(--bg-elevated);
+  }
+
+  .docs-sidebar li a.active {
+    color: var(--accent);
+    background-color: var(--accent-soft);
+    border-inline-start-color: var(--accent);
+    font-weight: 600;
+  }
+</style>

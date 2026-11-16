@@ -4,8 +4,8 @@ import DocsBreadcrumbs from "./DocsBreadcrumbs.astro";
 import DocsCodeEnhancer from "./DocsCodeEnhancer.astro";
 import DocsOfflinePackage from "./DocsOfflinePackage.astro";
 import DocsPager from "./DocsPager.astro";
-import DocsSidebar from "./DocsSidebar.astro";
 import DocsToc from "./DocsToc.astro";
+import SiteSidebar from "./SiteSidebar.astro";
 import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
 import jetbrainsLatin from "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url";
 import literataLatin from "@fontsource-variable/literata/files/literata-latin-wght-normal.woff2?url";
@@ -112,9 +112,13 @@ const pageDescription = `${localizedTitle} — Bitty Manual`;
       activeNav="docs"
       alternateHref={alternatePath}
     />
+    <SiteSidebar
+      locale={locale}
+      activeSection="docs"
+      currentSlug={activeSlug}
+    />
     <main id="main-content" class="docs-main" tabindex="-1">
       <div class="docs-layout">
-        <DocsSidebar locale={locale} currentSlug={activeSlug} />
         <div class="docs-article">
           <DocsBreadcrumbs slug={activeSlug} locale={locale} />
           <DocsToc headings={headings} locale={locale} />

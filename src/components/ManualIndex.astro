@@ -4,6 +4,7 @@
  */
 import SiteFooter from "./SiteFooter.astro";
 import SiteHeader from "./SiteHeader.astro";
+import SiteSidebar from "./SiteSidebar.astro";
 import { getManualNavGroups } from "../lib/manualDocs.ts";
 import "../styles/global.css";
 
@@ -59,6 +60,7 @@ const description = isZh
       activeNav="docs"
       alternateHref={alternatePath}
     />
+    <SiteSidebar locale={locale} activeSection="manual-index" />
     <main id="main-content" class="manual-index" tabindex="-1">
       <header class="manual-index-header">
         <h1>{title}</h1>

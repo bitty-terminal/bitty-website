@@ -1,733 +1,161 @@
 ---
+import BaseLayout from "../layouts/BaseLayout.astro";
 import SiteFooter from "./SiteFooter.astro";
 import SiteHeader from "./SiteHeader.astro";
-import { packageChannels, primaryChannels } from "../data/installChannels.ts";
-import { getExtensionCatalog } from "../lib/extensionCatalog.ts";
-import { getUiMessages, type SiteLocale } from "../lib/i18n.ts";
-import "../styles/global.css";
+import SiteSidebar from "./SiteSidebar.astro";
+import { getUiMessages, localePath, type SiteLocale } from "../lib/i18n.ts";
 
 const locale = (Astro.props as { locale?: SiteLocale }).locale ?? "en";
 const isZh = locale === "zh-CN";
 const t = getUiMessages(locale);
-const extensions = getExtensionCatalog(locale);
-const allInstallTabs = [...primaryChannels, ...packageChannels];
 
-const shortTabLabel = (id: string, fallback: string): string => {
-  const map: Record<string, { en: string; "zh-CN": string }> = {
-    "unix-installer": { en: "Linux / macOS", "zh-CN": "Linux / macOS" },
-    "windows-installer": { en: "Windows", "zh-CN": "Windows" },
-    source: { en: "Cargo", "zh-CN": "源码 (Cargo)" },
-    apt: { en: "Debian / Ubuntu", "zh-CN": "Debian / Ubuntu" },
-    copr: { en: "Fedora / RHEL", "zh-CN": "Fedora / RHEL" },
-    aur: { en: "Arch", "zh-CN": "Arch" },
-    alpine: { en: "Alpine", "zh-CN": "Alpine" },
-    nix: { en: "Nix", "zh-CN": "Nix" },
-    homebrew: { en: "Homebrew", "zh-CN": "Homebrew" },
-    scoop: { en: "Scoop", "zh-CN": "Scoop" },
-    appimage: { en: "AppImage", "zh-CN": "AppImage" },
-  };
-  return map[id]?.[locale] ?? fallback;
-};
+const currentPath = localePath(locale, "/");
+const alternatePath = localePath(isZh ? "en" : "zh-CN", "/");
+const quickstartHref = localePath(locale, "/docs/getting-started/quickstart/");
+const configHref = localePath(locale, "/docs/configuration/overview/");
+const pluginsHref = localePath(locale, "/plugins/");
+const aiHref = localePath(locale, "/ai/");
+const manualHref = localePath(locale, "/docs/");
 
-const docsHref = isZh
-  ? "/zh-CN/docs/getting-started/quickstart/"
-  : "/docs/getting-started/quickstart/";
-const alternateHref = isZh ? "/" : "/zh-CN/";
+const pageTitle = isZh
+  ? "Bitty — 现代可编程终端工作区"
+  : "Bitty — Programmable Terminal Workspace";
+const pageDescription = t.heroSubtitle;
 ---
 
-<!doctype html>
-<html lang={locale} data-theme="light">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={t.heroSubtitle} />
-    <link rel="canonical" href={`https://bitty.run${isZh ? "/zh-CN/" : "/"}`} />
-    <link rel="alternate" hreflang="en" href="https://bitty.run/" />
-    <link rel="alternate" hreflang="zh-CN" href="https://bitty.run/zh-CN/" />
-    <link rel="alternate" hreflang="x-default" href="https://bitty.run/" />
-    <link rel="icon" type="image/x-icon" href="/icons/favicon.ico" />
-    <title>{isZh ? "Bitty — 现代可编程终端工作区" : "Bitty — Programmable Terminal Workspace"}</title>
-    <script is:inline>
-      try {
-        const stored = window.localStorage.getItem("bitty-theme");
-        if (stored === "dark" || stored === "light") {
-          document.documentElement.setAttribute("data-theme", stored);
-        }
-      } catch {}
-    </script>
-  </head>
-  <body class="site-body">
-    <a href="#main-content" class="skip-link">
-      {t.skipToContent}
-    </a>
-    <SiteHeader
-      locale={locale}
-      activeNav="hero"
-      alternateHref={alternateHref}
-    />
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  currentPath={currentPath}
+  alternatePath={alternatePath}
+  xDefaultPath="/"
+>
+  <SiteHeader
+    locale={locale}
+    activeNav="hero"
+    alternateHref={alternatePath}
+    currentPath={currentPath}
+  />
+  <SiteSidebar locale={locale} activeSection="home" />
 
-    <main id="main-content" class="home-main" tabindex="-1">
-      <div class="hero-backdrop" aria-hidden="true"></div>
+  <main id="main-content" class="niri-main" tabindex="-1">
+    <article class="niri-prose">
+      <h1>bitty</h1>
 
-      <!-- 1. Minimal Centered Hero -->
-      <section class="hero-minimal" aria-labelledby="hero-title">
-        <span class="hero-kicker">
-          <span class="hero-dot" aria-hidden="true"></span>
-          {t.heroBadge}
-        </span>
-
-        <h1 id="hero-title">{t.heroTitle}</h1>
-        <p class="hero-description">
-          <span class="hero-desc-line">{t.heroSubtitleLine1}</span>{" "}
-          <span class="hero-desc-line">{t.heroSubtitleLine2}</span>
-        </p>
-
-        <div class="hero-actions">
-          <a class="primary-action" href={docsHref}>
-            <span>{t.heroDocsCta}</span>
-            <span aria-hidden="true">→</span>
-          </a>
-          <a class="secondary-action" href="#install">
-            <span>{t.heroInstallCta}</span>
-            <span aria-hidden="true">↓</span>
-          </a>
-        </div>
-      </section>
-
-      <!-- 2. Bitty Core Highlights (3 Clean Cards) -->
-      <section class="features-shell" aria-labelledby="features-title">
-        <h2 id="features-title" class="visually-hidden">
-          {t.featuresTitle}
-        </h2>
-        <div class="features-grid">
-          <article class="feature-card">
-            <span class="feature-num">01</span>
-            <h3>{t.feat1Title}</h3>
-            <p>{t.feat1Desc}</p>
-          </article>
-          <article class="feature-card">
-            <span class="feature-num">02</span>
-            <h3>{t.feat2Title}</h3>
-            <p>{t.feat2Desc}</p>
-          </article>
-          <article class="feature-card">
-            <span class="feature-num">03</span>
-            <h3>{t.feat3Title}</h3>
-            <p>{t.feat3Desc}</p>
-          </article>
-        </div>
-      </section>
-
-      <!-- 3. Install Section (Clean Tabbed Dock without pending channels footer) -->
-      <section
-        id="install"
-        class="install-shell"
-        aria-labelledby="install-title"
-      >
-        <div class="section-header-bar">
-          <h2 id="install-title">{t.installTitle}</h2>
-          <div class="section-meta-links">
-            <a
-              href="https://cdn.bitty.run/install/latest.txt"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="meta-pill-link"
-            >
-              <span>{t.installPointer}</span>
-              <span aria-hidden="true">↗</span>
-            </a>
-            <a
-              href="https://github.com/bitty-terminal/bitty/blob/main/packaging/INSTALL.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="meta-pill-link"
-            >
-              <span>{t.installPackaging}</span>
-              <span aria-hidden="true">↗</span>
-            </a>
-          </div>
-        </div>
-
-        <div class="install-dock">
-          <div
-            class="install-dock-tabs"
-            role="tablist"
-            aria-label={t.installTitle}
-          >
-            {allInstallTabs.map((channel, index) => (
-              <button
-                type="button"
-                role="tab"
-                id={`install-tab-${channel.id}`}
-                aria-controls={`install-pane-${channel.id}`}
-                aria-selected={index === 0 ? "true" : "false"}
-                tabindex={index === 0 ? 0 : -1}
-                class:list={["dock-tab", { "is-active": index === 0 }]}
-                data-install-tab={channel.id}
-              >
-                {shortTabLabel(channel.id, channel.name[locale])}
-              </button>
-            ))}
-          </div>
-
-          <div class="install-dock-panes">
-            {allInstallTabs.map((channel, index) => (
-              <div
-                class="install-dock-pane"
-                id={`install-pane-${channel.id}`}
-                role="tabpanel"
-                aria-labelledby={`install-tab-${channel.id}`}
-                tabindex="0"
-                data-install-pane={channel.id}
-                hidden={index !== 0}
-              >
-                <div class="dock-pane-meta">
-                  <div>
-                    <h3>{channel.name[locale]}</h3>
-                    <p class="dock-pane-summary">{channel.summary[locale]}</p>
-                  </div>
-                  <span class="arch-chip">{channel.arch}</span>
-                </div>
-                <div class="command-stack">
-                  {channel.commands.map((command) => (
-                    <div class="command-entry">
-                      {command.label && (
-                        <p class="command-label">{command.label[locale]}</p>
-                      )}
-                      <div class="command-block">
-                        <code>{command.code}</code>
-                        <button
-                          type="button"
-                          data-copy={command.code}
-                          aria-label={`${t.copy}: ${channel.name[locale]}`}
-                        >
-                          {t.copy}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <!-- Preserves validate-dist.mjs 11+11 extension/plugin contract without cluttering Hero visual surface -->
-      <section hidden aria-label={t.extensionsTitle}>
-        <h2>{t.extensionsTitle}</h2>
-        <ul>
-          {extensions.native.map((extension) => (
-            <li>
-              <a class="extension-card" href={extension.href}>
-                {extension.name}
-              </a>
-            </li>
-          ))}
-        </ul>
-        <ul class="plugin-list">
-          {extensions.plugins.map((plugin) => (
-            <li>
-              <a href={plugin.href}>{plugin.id}</a>
-            </li>
-          ))}
-        </ul>
-      </section>
-    </main>
-
-    <SiteFooter locale={locale} />
-
-    <script
-      define:vars={{
-        copiedMessage: t.copied,
-        copyFailedMessage: t.copyFailed,
-      }}
-    >
-      const copied = copiedMessage;
-      const copyFailed = copyFailedMessage;
-      for (const element of document.querySelectorAll("[data-copy]")) {
-        if (!(element instanceof HTMLButtonElement)) continue;
-        const button = element;
-        const original = button.textContent ?? "Copy";
-        button.addEventListener("click", async () => {
-          const command = button.dataset.copy ?? "";
-          try {
-            await navigator.clipboard.writeText(command);
-            button.textContent = copied;
-            button.dataset.copiedState = "true";
-            window.setTimeout(() => {
-              button.textContent = original;
-              delete button.dataset.copiedState;
-            }, 1500);
-          } catch {
-            button.textContent = copyFailed;
-          }
-        });
+      {
+        isZh ? (
+          <>
+            <p>
+              <strong>bitty</strong> 是一个基于 Rust 与 <code>wgpu</code>{" "}
+              构建的 GPU 加速终端工作区，在 Linux、macOS 与 Windows
+              上提供低延迟帧渲染与确定性终端状态机。
+            </p>
+            <p>
+              工作区内置类似 Hyprland 的 Dwindle
+              平铺分屏、原生标签页与可组合状态栏，并搭载无栈 Phodopus Lua 5.4
+              沙箱引擎——通过 <code>bitty-plugin.toml</code>{" "}
+              显式声明能力授权，零默认权限、零 VM 延迟激活。
+            </p>
+            <p>
+              针对 AI 辅助开发，bitty 通过零信任本地守护进程{" "}
+              <code>bittyd</code> 与 <code>wheel</code>{" "}
+              智能体套件隔离凭据与高风险执行操作，所有变更均需经过跨进程审批队列确认。
+            </p>
+          </>
+        ) : (
+          <>
+            <p>
+              <strong>bitty</strong> is a GPU-accelerated terminal workspace
+              written in Rust with a low-latency <code>wgpu</code> frame
+              pipeline and deterministic terminal state across Linux, macOS, and
+              Windows.
+            </p>
+            <p>
+              It combines Hyprland-like Dwindle tiling, native splits and tabs,
+              and a sandboxed Phodopus Lua 5.4 plugin runtime with explicit{" "}
+              <code>bitty-plugin.toml</code> capability grants and zero-VM lazy
+              activation.
+            </p>
+            <p>
+              For AI workflows, bitty enforces a zero-trust boundary via the{" "}
+              <code>bittyd</code> local daemon and the <code>wheel</code> agent
+              harness, keeping credentials out of the terminal core and staging
+              mutations behind an explicit approval queue.
+            </p>
+          </>
+        )
       }
 
-      const installTabs = [...document.querySelectorAll("[data-install-tab]")];
-      const installPanes = document.querySelectorAll("[data-install-pane]");
-      const activateInstallTab = (tab, focus = false) => {
-        const target = tab.dataset.installTab;
-        for (const item of installTabs) {
-          if (!(item instanceof HTMLButtonElement)) continue;
-          const active = item === tab;
-          item.classList.toggle("is-active", active);
-          item.setAttribute("aria-selected", String(active));
-          item.tabIndex = active ? 0 : -1;
+      <h2 id="install">{isZh ? "快速安装" : "Quick Install"}</h2>
+      <p>
+        {
+          isZh
+            ? "通过官方安装脚本或 Arch AUR 安装最新稳定版本："
+            : "Install the latest release with the installer script or from the Arch AUR:"
         }
-        for (const pane of installPanes) {
-          if (!(pane instanceof HTMLElement)) continue;
-          pane.hidden = pane.dataset.installPane !== target;
-        }
-        if (focus && tab instanceof HTMLButtonElement) tab.focus();
-      };
-      for (const tab of installTabs) {
-        if (!(tab instanceof HTMLButtonElement)) continue;
-        tab.addEventListener("click", () => activateInstallTab(tab));
-        tab.addEventListener("keydown", (event) => {
-          if (
-            event.key !== "ArrowLeft" &&
-            event.key !== "ArrowRight" &&
-            event.key !== "Home" &&
-            event.key !== "End"
-          ) {
-            return;
-          }
-          event.preventDefault();
-          const buttons = installTabs.filter(
-            (item) => item instanceof HTMLButtonElement,
-          );
-          const index = buttons.indexOf(tab);
-          let next = index;
-          if (event.key === "ArrowLeft") {
-            next = (index - 1 + buttons.length) % buttons.length;
-          } else if (event.key === "ArrowRight") {
-            next = (index + 1) % buttons.length;
-          } else if (event.key === "Home") {
-            next = 0;
-          } else if (event.key === "End") {
-            next = buttons.length - 1;
-          }
-          activateInstallTab(buttons[next], true);
-        });
-      }
-    </script>
-  </body>
-</html>
+      </p>
+      <pre><code>curl -fsSL https://cdn.bitty.run/install.sh | sh
+paru -S bitty-bin</code></pre>
+      <p>
+        {isZh ? "更多平台与包管理器请见 " : "See "}
+        <a
+          href="https://github.com/bitty-terminal/bitty/blob/main/packaging/INSTALL.md"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          packaging/INSTALL.md
+        </a>
+        {isZh ? " 与 " : " and "}
+        <a
+          href="https://cdn.bitty.run/install/latest.txt"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          {t.installPointer}
+        </a>
+        {isZh ? "。" : "."}
+      </p>
 
-<style>
-  .site-body {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: var(--bg-canvas);
-    color: var(--ink);
-  }
+      <h2>{isZh ? "文档与生态" : "Documentation"}</h2>
+      <ul>
+        <li>
+          <a href={quickstartHref}>
+            {isZh ? "快速开始" : "Getting Started"}
+          </a>
+          {isZh
+            ? " — 安装、首次启动与基本快捷键"
+            : " — installation, first launch, and keybindings"}
+        </li>
+        <li>
+          <a href={configHref}>
+            {isZh ? "配置参考" : "Configuration"}
+          </a>
+          {isZh
+            ? " — 主题、分屏布局、动作目录与插件配置"
+            : " — themes, workspaces, actions, and plugin settings"}
+        </li>
+        <li>
+          <a href={pluginsHref}>{isZh ? "插件与扩展" : "Plugins"}</a>
+          {isZh
+            ? " — L1 原生 Rust 扩展与 13 款官方 Lua 插件"
+            : " — L1 native Rust extensions and 13 official Lua plugins"}
+        </li>
+        <li>
+          <a href={aiHref}>{isZh ? "Bitty AI 与 Wheel" : "AI"}</a>
+          {isZh
+            ? " — 零信任进程边界、审批队列与命令面板集成"
+            : " — zero-trust process boundary, approval queue, and CLI"}
+        </li>
+        <li>
+          <a href={manualHref}>{isZh ? "完整手册目录" : "Full Manual"}</a>
+          {isZh
+            ? " — 浏览全部 6 个章节文档"
+            : " — browse all 6 manual sections"}
+        </li>
+      </ul>
+    </article>
+  </main>
 
-  .home-main {
-    flex: 1;
-    position: relative;
-    width: 100%;
-    max-width: none;
-    padding-block: 0 3.5rem;
-    overflow-x: clip;
-  }
-
-  .hero-backdrop {
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 24rem;
-    background-image:
-      radial-gradient(
-        ellipse 50% 45% at 50% -15%,
-        var(--accent-soft),
-        transparent 70%
-      ),
-      radial-gradient(var(--grid-dot) 1px, transparent 1px);
-    background-size:
-      100% 100%,
-      24px 24px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .hero-minimal,
-  .features-shell,
-  .install-shell {
-    position: relative;
-    z-index: 1;
-    width: min(64rem, calc(100% - 2rem));
-    margin-inline: auto;
-  }
-
-  /* ==========================================================================
-     1. MINIMAL CENTERED HERO
-     ========================================================================== */
-
-  .hero-minimal {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding-block: clamp(2.75rem, 6vw, 4.25rem) clamp(2rem, 4vw, 2.75rem);
-  }
-
-  .hero-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin-bottom: 0.75rem;
-    padding: 0.2rem 0.65rem;
-    border: 1px solid var(--accent-border);
-    border-radius: 999px;
-    background: var(--accent-soft);
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    font-weight: 600;
-  }
-
-  .hero-dot {
-    width: 0.38rem;
-    height: 0.38rem;
-    border-radius: 50%;
-    background: var(--accent);
-  }
-
-  .hero-minimal h1 {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: clamp(1.85rem, 3.2vw, 2.6rem);
-    font-weight: 700;
-    line-height: 1.14;
-    letter-spacing: -0.028em;
-    color: var(--fg-primary);
-  }
-
-  .hero-description {
-    max-width: 44rem;
-    margin: 0.75rem 0 0;
-    color: var(--fg-secondary);
-    font-size: 0.96875rem;
-    line-height: 1.65;
-  }
-
-  .hero-desc-line {
-    display: block;
-  }
-
-  @media (width < 36rem) {
-    .hero-desc-line {
-      display: inline;
-    }
-  }
-
-  .hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.65rem;
-    margin-top: 1.5rem;
-  }
-
-  .primary-action,
-  .secondary-action {
-    display: inline-flex;
-    min-height: 2.5rem;
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.5rem 1.15rem;
-    border-radius: var(--radius-sm);
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    box-shadow: var(--shadow-xs);
-  }
-
-  .primary-action {
-    border: 1px solid var(--accent);
-    background: var(--accent);
-    color: var(--accent-ink);
-  }
-
-  .primary-action:hover {
-    border-color: var(--accent-hover);
-    background: var(--accent-hover);
-    color: var(--accent-ink);
-  }
-
-  .secondary-action {
-    border: 1px solid var(--line);
-    background: var(--bg-surface);
-    color: var(--fg-primary);
-  }
-
-  .secondary-action:hover {
-    border-color: var(--border-strong);
-    background: var(--bg-elevated);
-  }
-
-  /* ==========================================================================
-     2. THREE CORE HIGHLIGHTS
-     ========================================================================== */
-
-  .features-shell {
-    padding-block: 0.5rem 2.25rem;
-  }
-
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-  }
-
-  .feature-card {
-    padding: 1.15rem 1.25rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    background: var(--bg-surface);
-    box-shadow: var(--shadow);
-  }
-
-  .feature-num {
-    display: inline-block;
-    margin-bottom: 0.45rem;
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-  }
-
-  .feature-card h3 {
-    margin: 0 0 0.4rem;
-    font: 600 0.96875rem var(--font-display);
-    color: var(--fg-primary);
-  }
-
-  .feature-card p {
-    margin: 0;
-    color: var(--fg-secondary);
-    font-size: 0.825rem;
-    line-height: 1.58;
-  }
-
-  /* ==========================================================================
-     3. UNIFIED INSTALL DOCK
-     ========================================================================== */
-
-  .install-shell {
-    padding-top: 0.5rem;
-  }
-
-  .section-header-bar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem;
-    margin-bottom: 0.85rem;
-  }
-
-  .section-header-bar h2 {
-    margin: 0;
-    font: 700 1.15rem var(--font-display);
-    letter-spacing: -0.02em;
-  }
-
-  .section-meta-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-  }
-
-  .meta-pill-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.24rem 0.6rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    background: var(--bg-surface);
-    color: var(--fg-secondary);
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    text-decoration: none;
-    box-shadow: var(--shadow-xs);
-  }
-
-  .meta-pill-link:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  .install-dock {
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    background: var(--bg-surface);
-    box-shadow: var(--shadow);
-    overflow: hidden;
-  }
-
-  .install-dock-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.2rem;
-    padding: 0.45rem 0.6rem;
-    border-bottom: 1px solid var(--line);
-    background: var(--bg-subtle);
-  }
-
-  .dock-tab {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-block-size: var(--touch-target);
-    padding: 0.32rem 0.68rem;
-    border: 1px solid transparent;
-    border-radius: var(--radius-xs);
-    background: transparent;
-    color: var(--fg-secondary);
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 500;
-    cursor: pointer;
-  }
-
-  .dock-tab:hover {
-    color: var(--fg-primary);
-    background: var(--bg-elevated);
-  }
-
-  .dock-tab.is-active {
-    border-color: var(--accent-border);
-    background: var(--bg-surface);
-    color: var(--accent);
-    font-weight: 600;
-    box-shadow: var(--shadow-xs);
-  }
-
-  .install-dock-pane {
-    padding: 1.1rem 1.25rem;
-  }
-
-  .install-dock-pane[hidden] {
-    display: none;
-  }
-
-  .dock-pane-meta {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .dock-pane-meta h3 {
-    margin: 0;
-    font: 600 0.92rem var(--font-display);
-    color: var(--fg-primary);
-  }
-
-  .dock-pane-summary {
-    margin: 0.2rem 0 0;
-    color: var(--fg-secondary);
-    font-size: 0.8rem;
-    line-height: 1.5;
-  }
-
-  .arch-chip {
-    border: 1px solid var(--line);
-    border-radius: var(--radius-xs);
-    padding: 0.1rem 0.45rem;
-    background: var(--bg-elevated);
-    color: var(--fg-muted);
-    font-family: var(--font-mono);
-    font-size: 0.64rem;
-    white-space: nowrap;
-  }
-
-  .command-stack {
-    display: grid;
-    gap: 0.5rem;
-  }
-
-  .command-entry {
-    display: grid;
-    gap: 0.22rem;
-  }
-
-  .command-label {
-    margin: 0;
-    color: var(--fg-muted);
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    text-transform: uppercase;
-  }
-
-  .command-block {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.55rem 0.75rem;
-    border: 1px solid var(--cmd-line);
-    border-radius: var(--radius-sm);
-    background: var(--cmd-bg);
-    color: var(--cmd-ink);
-  }
-
-  .command-block code {
-    min-width: 0;
-    flex: 1;
-    overflow-wrap: anywhere;
-    white-space: pre-wrap;
-    font: 0.74rem/1.55 var(--font-mono);
-  }
-
-  .command-block button {
-    flex-shrink: 0;
-    min-block-size: 1.5rem;
-    min-inline-size: 1.5rem;
-    border: 1px solid var(--cmd-line);
-    border-radius: var(--radius-xs);
-    padding: 0.24rem 0.58rem;
-    background: var(--cmd-panel);
-    color: var(--fg-secondary);
-    font: 600 0.66rem var(--font-mono);
-    cursor: pointer;
-    box-shadow: var(--shadow-xs);
-  }
-
-  .command-block button:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  .command-block button[data-copied-state="true"] {
-    border-color: var(--ok);
-    color: var(--ok);
-  }
-
-  @media (max-width: 780px) {
-    .features-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  /* English body copy: Inter's x-height is much smaller than a CJK glyph,
-   * so the same computed size reads smaller. Lift only English body text. */
-  :global(html[lang="en"]) .hero-description {
-    font-size: 1.04rem;
-  }
-
-  :global(html[lang="en"]) .feature-card p {
-    font-size: 0.875rem;
-  }
-
-  :global(html[lang="en"]) .dock-pane-summary {
-    font-size: 0.85rem;
-  }
-</style>
+  <SiteFooter locale={locale} />
+</BaseLayout>

@@ -1136,22 +1136,12 @@ main.docs-main {
 
 @media (width >= 50rem) {
   .docs-layout {
-    grid-template-columns: var(--docs-sidebar-width) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     align-items: start;
   }
 
-  .docs-layout > .docs-nav-drawer {
-    grid-column: 1;
-    grid-row: 1;
-    align-self: stretch;
-  }
-
-  .docs-layout > .docs-nav-drawer::details-content {
-    block-size: 100%;
-  }
-
   .docs-layout > .docs-article {
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 1;
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--docs-toc-width);
@@ -1189,47 +1179,150 @@ main.docs-main {
     grid-row: 1 / span 6;
     padding-inline-start: 1rem;
     border-inline-start: 1px solid var(--line);
-  }
-
-  .docs-layout .docs-sidebar,
-  .docs-layout .docs-toc {
     position: sticky;
     top: 4.25rem;
     max-block-size: calc(100vh - 5.25rem);
     overflow-block: auto;
   }
 
-  .docs-nav-drawer > summary {
-    display: none;
-  }
-
-  /* Collapsible Left Sidebar (Document List) & Right Sidebar (TOC) */
-  .docs-layout[data-left-collapsed="true"] {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .docs-layout[data-left-collapsed="true"] > .docs-nav-drawer {
-    display: none;
-  }
-
-  .docs-layout[data-left-collapsed="true"] > .docs-article {
-    grid-column: 1;
-  }
-
   .docs-layout[data-right-collapsed="true"] > .docs-article {
     grid-template-columns: minmax(0, 1fr);
+    max-inline-size: 54rem;
+    inline-size: 100%;
+    margin-inline: auto;
   }
 
   .docs-layout[data-right-collapsed="true"] .docs-toc {
     display: none;
   }
+}
 
-  .docs-layout[data-left-collapsed="true"][data-right-collapsed="true"]
-    > .docs-article {
-    max-inline-size: 54rem;
-    inline-size: 100%;
-    margin-inline: auto;
-  }
+/* Clean, minimal niri-docs style page container for top-level pages */
+.niri-main {
+  flex: 1;
+  width: min(52rem, calc(100% - 2rem));
+  margin-inline: auto;
+  padding-block: 2.5rem 4rem;
+}
+
+.niri-prose {
+  max-width: 100%;
+}
+
+.niri-prose h1 {
+  margin: 0 0 1rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.niri-prose h2 {
+  margin: 2rem 0 0.75rem;
+  padding-block-end: 0.35rem;
+  border-block-end: 1px solid var(--line);
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+
+.niri-prose h3 {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.niri-prose p {
+  margin: 0 0 0.95rem;
+  color: var(--fg-secondary);
+  line-height: 1.65;
+}
+
+.niri-prose ul {
+  margin: 0.5rem 0 1rem;
+  padding-inline-start: 1.35rem;
+  color: var(--fg-secondary);
+  line-height: 1.65;
+}
+
+.niri-prose li + li {
+  margin-top: 0.35rem;
+}
+
+.niri-prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.niri-prose a:hover {
+  color: var(--accent-hover);
+}
+
+.niri-prose pre {
+  margin: 0.75rem 0 1.25rem;
+  padding: 0.9rem 1.05rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.niri-prose code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+}
+
+.niri-prose :not(pre) > code {
+  padding: 0.12em 0.35em;
+  border-radius: var(--radius-xs);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--ink);
+}
+
+.niri-prose .table-scroll {
+  margin: 0.75rem 0 1.5rem;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+}
+
+.niri-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.niri-prose th,
+.niri-prose td {
+  padding: 0.55rem 0.8rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: top;
+}
+
+.niri-prose th {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--fg-muted);
+  background: var(--paper-deep);
+}
+
+.niri-prose tr:last-child td {
+  border-bottom: 0;
 }
 
 /* ==========================================================================

@@ -1,0 +1,480 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import DocsCodeEnhancer from "./DocsCodeEnhancer.astro";
+import DocsToc from "./DocsToc.astro";
+import SiteFooter from "./SiteFooter.astro";
+import SiteHeader from "./SiteHeader.astro";
+import SiteSidebar from "./SiteSidebar.astro";
+import { getUiMessages, localePath, type SiteLocale } from "../lib/i18n.ts";
+import {
+  getOfficialPluginBySlug,
+  getPluginDetailHref,
+} from "../lib/pluginDetails.ts";
+
+type Props = {
+  locale?: SiteLocale;
+  slug: string;
+};
+
+const { locale = "en", slug } = Astro.props as Props;
+const isZh = locale === "zh-CN";
+const t = getUiMessages(locale);
+
+const plugin = getOfficialPluginBySlug(slug);
+if (!plugin) {
+  throw new Error(`Official plugin not found for slug "${slug}"`);
+}
+
+const currentPath = getPluginDetailHref(locale, plugin.slug);
+const alternatePath = getPluginDetailHref(
+  isZh ? "en" : "zh-CN",
+  plugin.slug,
+);
+const xDefaultPath = getPluginDetailHref("en", plugin.slug);
+const pluginsHref = localePath(locale, "/plugins/");
+
+const pageTitle = isZh
+  ? `${plugin.name} — Bitty 官方插件`
+  : `${plugin.name} — Bitty Official Plugin`;
+const pageDescription =
+  plugin.description || plugin.overview.summary || `${plugin.name} (${plugin.id})`;
+
+const headings = [
+  {
+    depth: 2,
+    slug: "overview",
+    text: isZh ? "功能简介" : "Overview",
+  },
+  {
+    depth: 2,
+    slug: "install",
+    text: isZh ? "安装与配置命令" : "Install & Configure",
+  },
+  {
+    depth: 2,
+    slug: "capabilities",
+    text: isZh ? "能力授权" : "Capabilities",
+  },
+  {
+    depth: 2,
+    slug: "commands",
+    text: isZh ? "命令与快捷键" : "Commands & Keybindings",
+  },
+  {
+    depth: 2,
+    slug: "configuration",
+    text: isZh ? "配置项 ([settings])" : "Configuration ([settings])",
+  },
+] as const;
+
+const installCommands = [
+  `bitty plugin install ${plugin.id}`,
+  `bitty plugin enable ${plugin.id}`,
+  `bitty plugin config show ${plugin.id}`,
+  `bitty plugin config scaffold ${plugin.id}`,
+].join("\n");
+---
+
+<BaseLayout
+  locale={locale}
+  title={pageTitle}
+  description={pageDescription}
+  currentPath={currentPath}
+  alternatePath={alternatePath}
+  xDefaultPath={xDefaultPath}
+>
+  <SiteHeader
+    locale={locale}
+    activeNav="plugins"
+    alternateHref={alternatePath}
+    currentPath={currentPath}
+  />
+  <SiteSidebar
+    locale={locale}
+    activeSection="plugins"
+    currentPluginSlug={plugin.slug}
+  />
+
+  <main id="main-content" class="docs-main" tabindex="-1">
+    <div class="docs-layout">
+      <div class="docs-article">
+        <nav class="docs-metadata-bar" aria-label={t.breadcrumbAria}>
+          <div class="docs-bar-left">
+            <div class="breadcrumb-trail">
+              <a href={pluginsHref} class="crumb-link">
+                {isZh ? "插件" : "Plugins"}
+              </a>
+              <span class="crumb-sep" aria-hidden="true">/</span>
+              <span class="crumb-section">{plugin.name}</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="docs-rail-toggle docs-rail-toggle-right"
+            data-toggle-rail="right"
+            aria-pressed="true"
+            title={t.toggleRightRail}
+          >
+            <span>{t.toggleRightRail}</span>
+            <svg
+              class="rail-toggle-icon"
+              viewBox="0 0 16 16"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.4"
+              aria-hidden="true"
+            >
+              <rect x="1.75" y="2.25" width="12.5" height="11.5" rx="2"></rect>
+              <line x1="10" y1="2.25" x2="10" y2="13.75"></line>
+            </svg>
+          </button>
+        </nav>
+
+        <DocsToc headings={headings} locale={locale} />
+
+        <article class="prose bitty-prose">
+          <h1>{plugin.name}</h1>
+
+          <p class="plugin-meta-line">
+            <code>{plugin.id}</code>
+            <span aria-hidden="true">·</span>
+            <span>v{plugin.version}</span>
+            <span aria-hidden="true">·</span>
+            <span>{plugin.license}</span>
+            <span aria-hidden="true">·</span>
+            <span>bitty {plugin.compat.bitty}</span>
+            <span aria-hidden="true">·</span>
+            <span>plugin-api {plugin.compat.pluginApi}</span>
+            <span aria-hidden="true">·</span>
+            <a
+              href={plugin.repository}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              GitHub
+            </a>
+          </p>
+
+          <h2 id="overview">{isZh ? "功能简介" : "Overview"}</h2>
+          {plugin.description && <p>{plugin.description}</p>}
+          {
+            plugin.overview.summary &&
+              plugin.overview.summary !== plugin.description && (
+                <p>{plugin.overview.summary}</p>
+              )
+          }
+          {
+            plugin.overview.highlights.length > 0 && (
+              <ul>
+                {plugin.overview.highlights.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+            )
+          }
+
+          <h2 id="install">{isZh ? "安装与配置命令" : "Install & Configure"}</h2>
+          <pre><code>{installCommands}</code></pre>
+          <p>
+            {
+              isZh ? (
+                <>
+                  配置文件路径：<code>~/.config/bitty/plugins/{plugin.id}.lua</code>
+                </>
+              ) : (
+                <>
+                  Configuration file path:{" "}
+                  <code>~/.config/bitty/plugins/{plugin.id}.lua</code>
+                </>
+              )
+            }
+          </p>
+
+          <h2 id="capabilities">{isZh ? "能力授权" : "Capabilities"}</h2>
+          {
+            plugin.capabilities.length > 0 ? (
+              <ul>
+                {plugin.capabilities.map((cap) => (
+                  <li>
+                    <code>{cap}</code>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>
+                {isZh
+                  ? "该插件未声明额外能力授权。"
+                  : "This plugin declares no additional capabilities."}
+              </p>
+            )
+          }
+
+          <h2 id="commands">
+            {isZh ? "命令与快捷键" : "Commands & Keybindings"}
+          </h2>
+          {
+            plugin.commands.length > 0 ? (
+              <div class="table-scroll" tabindex="0">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>{isZh ? "命令" : "Command"}</th>
+                      <th>{isZh ? "说明" : "Description"}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {plugin.commands.map((cmd) => (
+                      <tr>
+                        <td>
+                          <code>{cmd.id}</code>
+                        </td>
+                        <td>{cmd.description || cmd.title}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p>
+                {isZh
+                  ? "该插件未声明可调用命令。"
+                  : "This plugin declares no commands."}
+              </p>
+            )
+          }
+
+          {
+            plugin.keybindings.length > 0 ? (
+              <div class="table-scroll" tabindex="0">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>{isZh ? "快捷键" : "Chord"}</th>
+                      <th>{isZh ? "命令 / 动作" : "Command / Action"}</th>
+                      <th>{isZh ? "上下文" : "Context"}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {plugin.keybindings.map((kb) => (
+                      <tr>
+                        <td>
+                          <code>{kb.chord}</code>
+                        </td>
+                        <td>
+                          <code>{kb.command}</code>
+                        </td>
+                        <td>
+                          <code>{kb.context}</code>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p>
+                {isZh
+                  ? "该插件默认不绑定全局快捷键；可在用户配置中自行绑定上述命令。"
+                  : "This plugin installs no default keybindings; bind any command above in your user config."}
+              </p>
+            )
+          }
+
+          <h2 id="configuration">
+            {isZh ? "配置项 ([settings])" : "Configuration ([settings])"}
+          </h2>
+          {
+            plugin.settings.length > 0 ? (
+              <div class="table-scroll" tabindex="0">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>{isZh ? "配置键" : "Key"}</th>
+                      <th>{isZh ? "类型" : "Type"}</th>
+                      <th>{isZh ? "默认值" : "Default"}</th>
+                      <th>{isZh ? "说明" : "Description"}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {plugin.settings.map((setting) => (
+                      <tr>
+                        <td>
+                          <code>{setting.key}</code>
+                        </td>
+                        <td>
+                          <code>{setting.type}</code>
+                        </td>
+                        <td>
+                          <code>{setting.default}</code>
+                        </td>
+                        <td>{setting.description || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p>
+                {isZh
+                  ? "该插件未声明 [settings] 配置项。"
+                  : "This plugin declares no [settings] keys."}
+              </p>
+            )
+          }
+        </article>
+      </div>
+    </div>
+  </main>
+
+  <SiteFooter locale={locale} />
+  <DocsCodeEnhancer />
+</BaseLayout>
+
+<script is:inline>
+  (() => {
+    const layout = document.querySelector(".docs-layout");
+    if (!layout) return;
+
+    const syncButtons = () => {
+      const rightCollapsed =
+        layout.getAttribute("data-right-collapsed") === "true";
+      for (const btn of document.querySelectorAll(
+        '[data-toggle-rail="right"]',
+      )) {
+        btn.setAttribute("aria-pressed", String(!rightCollapsed));
+        btn.classList.toggle("is-collapsed", rightCollapsed);
+      }
+    };
+
+    try {
+      if (window.localStorage.getItem("bitty-docs-right") === "collapsed") {
+        layout.setAttribute("data-right-collapsed", "true");
+      }
+    } catch {}
+
+    syncButtons();
+
+    document.addEventListener("click", (e) => {
+      const target =
+        e.target instanceof Element
+          ? e.target.closest('[data-toggle-rail="right"]')
+          : null;
+      if (!target) return;
+      const next = layout.getAttribute("data-right-collapsed") !== "true";
+      if (next) layout.setAttribute("data-right-collapsed", "true");
+      else layout.removeAttribute("data-right-collapsed");
+      try {
+        window.localStorage.setItem(
+          "bitty-docs-right",
+          next ? "collapsed" : "open",
+        );
+      } catch {}
+      syncButtons();
+    });
+  })();
+</script>
+
+<style>
+  .docs-metadata-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.65rem;
+    margin-block-end: 0.85rem;
+  }
+
+  .docs-bar-left {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
+  .docs-rail-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.24rem 0.55rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-xs);
+    background: var(--bg-surface);
+    color: var(--fg-secondary);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: var(--shadow-xs);
+    transition:
+      border-color 0.14s ease,
+      color 0.14s ease,
+      background-color 0.14s ease;
+  }
+
+  .docs-rail-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .docs-rail-toggle[aria-pressed="true"] {
+    border-color: var(--accent-border);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .rail-toggle-icon {
+    inline-size: 0.85rem;
+    block-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  @media (width < 50rem) {
+    .docs-rail-toggle {
+      display: none;
+    }
+  }
+
+  .breadcrumb-trail {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--fg-muted);
+    font-size: 0.78rem;
+    font-weight: 500;
+  }
+
+  .crumb-link {
+    display: inline-flex;
+    align-items: center;
+    min-inline-size: 1.5rem;
+    min-block-size: 1.5rem;
+    color: var(--fg-muted);
+    text-decoration: none;
+    transition: color 0.14s ease;
+  }
+
+  .crumb-link:hover {
+    color: var(--accent);
+  }
+
+  .crumb-sep {
+    color: var(--fg-muted);
+    opacity: 0.45;
+  }
+
+  .crumb-section {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .plugin-meta-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.45rem;
+    color: var(--fg-secondary);
+    font-size: var(--text-sm);
+  }
+</style>

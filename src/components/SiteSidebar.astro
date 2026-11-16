@@ -10,21 +10,31 @@
  */
 import { getUiMessages, localePath, type SiteLocale } from "../lib/i18n.ts";
 import { getManualNavGroups } from "../lib/manualDocs.ts";
+import {
+  getAllOfficialPlugins,
+  getPluginDetailHref,
+} from "../lib/pluginDetails.ts";
 
 type Props = {
   locale?: SiteLocale;
   activeSection?: "home" | "plugins" | "ai" | "manual-index" | "docs";
   currentSlug?: string;
+  currentPluginSlug?: string;
 };
 
 const {
   locale = "en",
   activeSection,
   currentSlug = "",
+  currentPluginSlug = "",
 } = Astro.props as Props;
 
+const isZh = locale === "zh-CN";
 const t = getUiMessages(locale);
 const groups = getManualNavGroups(currentSlug, locale);
+const officialPlugins = getAllOfficialPlugins();
+const isPluginDetail =
+  activeSection === "plugins" && currentPluginSlug.length > 0;
 const homeHref = localePath(locale, "/");
 const pluginsHref = localePath(locale, "/plugins/");
 const aiHref = localePath(locale, "/ai/");
@@ -36,7 +46,7 @@ const topLinks = [
   {
     href: pluginsHref,
     label: t.navPlugins,
-    active: activeSection === "plugins",
+    active: activeSection === "plugins" && !isPluginDetail,
   },
   { href: aiHref, label: t.navAi, active: activeSection === "ai" },
   {
@@ -97,6 +107,37 @@ const topLinks = [
     <hr class="site-sidebar-sep" />
 
     <ul class="docs-nav-tree">
+      <li class="docs-nav-group">
+        <details class="docs-nav-group-details" open={isPluginDetail}>
+          <summary>
+            {
+              isZh
+                ? `官方插件 (${officialPlugins.length})`
+                : `Official Plugins (${officialPlugins.length})`
+            }
+          </summary>
+          <ul>
+            {
+              officialPlugins.map((plugin) => {
+                const isActive =
+                  isPluginDetail && plugin.slug === currentPluginSlug;
+                const href = getPluginDetailHref(locale, plugin.slug);
+                return (
+                  <li class="docs-nav-entry">
+                    <a
+                      href={href}
+                      aria-current={isActive ? "page" : undefined}
+                      class={isActive ? "active" : undefined}
+                    >
+                      {plugin.name}
+                    </a>
+                  </li>
+                );
+              })
+            }
+          </ul>
+        </details>
+      </li>
       {
         groups.map((group) => {
           const hasActive =

@@ -19,6 +19,13 @@ async function required(name, nonEmpty = false) {
   }
 }
 
+const officialPlugins = JSON.parse(
+  await readFile(
+    new URL("../src/data/officialPlugins.json", import.meta.url),
+    "utf8",
+  ),
+);
+
 const REQUIRED_FILES = [
   "index.html",
   "zh-CN/index.html",
@@ -30,6 +37,10 @@ const REQUIRED_FILES = [
   "search-index.json",
   "_redirects",
   "_headers",
+  ...officialPlugins.flatMap((plugin) => [
+    `plugins/${plugin.slug}/index.html`,
+    `zh-CN/plugins/${plugin.slug}/index.html`,
+  ]),
 ];
 
 for (const file of REQUIRED_FILES) {
@@ -42,6 +53,10 @@ for (const route of [
   "https://bitty.run/zh-CN/plugins/",
   "https://bitty.run/ai/",
   "https://bitty.run/zh-CN/ai/",
+  ...officialPlugins.flatMap((plugin) => [
+    `https://bitty.run/plugins/${plugin.slug}/`,
+    `https://bitty.run/zh-CN/plugins/${plugin.slug}/`,
+  ]),
 ]) {
   if (!sitemapXml.includes(`<loc>${route}</loc>`)) {
     throw new Error(`sitemap.xml is missing required product route: ${route}`);

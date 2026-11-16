@@ -5,6 +5,7 @@ import SiteHeader from "./SiteHeader.astro";
 import SiteSidebar from "./SiteSidebar.astro";
 import { getExtensionCatalog } from "../lib/extensionCatalog.ts";
 import { localePath, type SiteLocale } from "../lib/i18n.ts";
+import { getPluginDetailHref } from "../lib/pluginDetails.ts";
 
 type Props = {
   locale?: SiteLocale;
@@ -120,27 +121,36 @@ bitty ext status</code></pre>
           </thead>
           <tbody>
             {
-              catalog.luaPlugins.map((plugin) => (
-                <tr>
-                  <td>
-                    <code>{plugin.id}</code>
-                  </td>
-                  <td>{plugin.summary}</td>
-                  <td>
-                    <a href={plugin.manualHref}>
-                      {isZh ? "文档" : "Docs"}
-                    </a>{" "}
-                    ·{" "}
-                    <a
-                      href={plugin.repoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      GitHub
-                    </a>
-                  </td>
-                </tr>
-              ))
+              catalog.luaPlugins.map((plugin) => {
+                const detailHref = getPluginDetailHref(locale, plugin.slug);
+                return (
+                  <tr>
+                    <td>
+                      <a href={detailHref}>
+                        <code>{plugin.id}</code>
+                      </a>
+                    </td>
+                    <td>{plugin.summary}</td>
+                    <td>
+                      <a href={detailHref}>
+                        {isZh ? "详情" : "Details"}
+                      </a>{" "}
+                      ·{" "}
+                      <a href={plugin.manualHref}>
+                        {isZh ? "手册" : "Manual"}
+                      </a>{" "}
+                      ·{" "}
+                      <a
+                        href={plugin.repoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        GitHub
+                      </a>
+                    </td>
+                  </tr>
+                );
+              })
             }
           </tbody>
         </table>

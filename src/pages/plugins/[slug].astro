@@ -1,0 +1,12 @@
+---
+import PluginDetailPage from "../../components/PluginDetailPage.astro";
+import { getOfficialPluginPaths } from "../../lib/pluginDetails.ts";
+
+export function getStaticPaths() {
+  return getOfficialPluginPaths();
+}
+
+const { slug = "" } = Astro.params;
+---
+
+<PluginDetailPage locale="en" slug={slug} />

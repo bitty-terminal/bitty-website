@@ -1,6 +1,8 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 
+import { OFFICIAL_PLUGIN_SLUGS } from "./pluginDetails.ts";
+
 export const SITEMAP_FILENAME = "sitemap.xml";
 
 export const CORE_SITE_PATHS = [
@@ -13,6 +15,12 @@ export const CORE_SITE_PATHS = [
   "/ai/",
   "/zh-CN/ai/",
 ] as const;
+
+export const OFFICIAL_PLUGIN_SITE_PATHS: readonly string[] =
+  OFFICIAL_PLUGIN_SLUGS.flatMap((slug) => [
+    `/plugins/${slug}/`,
+    `/zh-CN/plugins/${slug}/`,
+  ]);
 
 async function collectRoutes(
   root: string,
@@ -42,11 +50,12 @@ async function collectRoutes(
 }
 
 export async function collectSitePaths(outDir?: string): Promise<string[]> {
+  const staticPaths = [...CORE_SITE_PATHS, ...OFFICIAL_PLUGIN_SITE_PATHS];
   if (!outDir) {
-    return [...CORE_SITE_PATHS].sort();
+    return staticPaths.sort();
   }
   const discovered = await collectRoutes(outDir);
-  return [...new Set([...CORE_SITE_PATHS, ...discovered])].sort();
+  return [...new Set([...staticPaths, ...discovered])].sort();
 }
 
 export function renderSitemap(

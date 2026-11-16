@@ -1,0 +1,1119 @@
+[
+  {
+    "slug": "activity",
+    "id": "bitty-featured.activity",
+    "name": "Bitty Activity",
+    "version": "0.0.1",
+    "description": "Privacy-first local activity timeline plugin for the Bitty terminal.",
+    "license": "MIT",
+    "repository": "https://github.com/bitty-terminal/activity",
+    "compat": {
+      "bitty": ">=0.0.24",
+      "pluginApi": "^1.0"
+    },
+    "capabilities": ["terminal.semantic-read", "platform.notify"],
+    "commands": [
+      {
+        "id": "bitty-featured.activity:summary",
+        "title": "summary",
+        "description": "Prunes the retention window, returns a bounded summary of local aggregates, and shows one local notification."
+      },
+      {
+        "id": "bitty-featured.activity:clear",
+        "title": "clear",
+        "description": "Deletes every stored activity aggregate and resets in-memory state, session pairing, and error bookkeeping."
+      }
+    ],
+    "keybindings": [],
+    "settings": [
+      {
+        "key": "retention_days",
+        "type": "int",
+        "default": "7",
+        "description": "Days of aggregates to retain, clamped to 1..90. The current setting takes precedence over the window in stored data."
+      },
+      {
+        "key": "store_command_args",
+        "type": "bool",
+        "default": "false",
+        "description": "Reserved opt-in. v1 never stores command arguments, so true changes nothing; the key stays read-only and inert."
+      }
+    ],
+    "overview": {
+      "summary": "Bitty Activity keeps a privacy-first local timeline of terminal activity: sessions opened and closed, working-directory changes, process exits, and session-duration buckets. Aggregates live in the plugin store and are returned by the summary command and a low-urgency local notification. The plugin opens no socket, spawns no process, and never stores command text, terminal contents, full paths, or environment values. Run bitty-featured.activity:summary from the command palette or a user keymap; the plugin installs no default chord. A first invocation on a fresh install reports zero sessions, because aggregates only appear after activity is observed. bitty-featured.activity:clear purges the stored aggregates and resets the in-memory pairing state.",
+      "highlights": []
+    }
+  },
+  {
+    "slug": "bar",
+    "id": "bitty-terminal.bar",
+    "name": "Unified Bar",
+    "version": "0.0.1",
+    "description": "Consolidated workspace-bar, tabs, and statusline presentation over generic chrome insets.",
+    "license": "MIT",
+    "repository": "https://github.com/bitty-terminal/bar",
+    "compat": {
+      "bitty": ">=0.0.24",
+      "pluginApi": "^1.0"
+    },
+    "capabilities": [
+      "ui.rich",
+      "ui.overlay",
+      "workspace.read",
+      "workspace.control",
+      "platform.notify",
+      "platform.cpu-read",
+      "platform.memory-read",
+      "platform.battery-read",
+      "platform.network.read",
+      "platform.essid.read",
+      "platform.bluetooth.read",
+      "platform.bluetooth.control",
+      "platform.backlight.read",
+      "platform.backlight.control",
+      "platform.idle.read",
+      "platform.idle.control",
+      "audio.state.read",
+      "audio.state.control",
+      "audio.spectrum"
+    ],
+    "commands": [
+      {
+        "id": "bitty-terminal.bar:focus",
+        "title": "focus",
+        "description": "Focus a workspace by stable id (public command; capsule clicks use workspace-action)."
+      },
+      {
+        "id": "bitty-terminal.bar:detail",
+        "title": "detail",
+        "description": "Show a module's detail text as a notification (explicit fallback; hover uses the overlay tooltip)."
+      },
+      {
+        "id": "bitty-terminal.bar:hover",
+        "title": "hover",
+        "description": "Update the non-modal overlay tooltip on pointer enter/leave (Core band hover; no capture, no modal)."
+      },
+      {
+        "id": "bitty-terminal.bar:workspace-action",
+        "title": "workspace-action",
+        "description": "Capsule target: left focuses, wheel cycles previous/next, middle/right show the workspace detail."
+      },
+      {
+        "id": "bitty-terminal.bar:clock-action",
+        "title": "clock-action",
+        "description": "Clock target: right cycles short/date/calendar, middle shows the full date-time, left is a no-op."
+      },
+      {
+        "id": "bitty-terminal.bar:network-action",
+        "title": "network-action",
+        "description": "Network target: left/middle show the link detail; right toggles the radio when a control head is granted."
+      },
+      {
+        "id": "bitty-terminal.bar:audio-toggle",
+        "title": "audio-toggle",
+        "description": "PulseAudio target: left/middle toggle sink mute, right shows the sink detail."
+      },
+      {
+        "id": "bitty-terminal.bar:audio-step",
+        "title": "audio-step",
+        "description": "Step the default sink volume; delta is a host-computed signed line count."
+      },
+      {
+        "id": "bitty-terminal.bar:microphone-action",
+        "title": "microphone-action",
+        "description": "Microphone target: left/right toggle source mute, middle shows the microphone detail."
+      },
+      {
+        "id": "bitty-terminal.bar:microphone-step",
+        "title": "microphone-step",
+        "description": "Step the source volume; delta is a host-computed signed line count."
+      },
+      {
+        "id": "bitty-terminal.bar:bluetooth-toggle",
+        "title": "bluetooth-toggle",
+        "description": "Flip Bluetooth radio power through bluetooth.control; degrades to a notification when denied."
+      },
+      {
+        "id": "bitty-terminal.bar:backlight-step",
+        "title": "backlight-step",
+        "description": "Step backlight brightness by delta percent points through backlight.control."
+      },
+      {
+        "id": "bitty-terminal.bar:idle-toggle",
+        "title": "idle-toggle",
+        "description": "Flip idle inhibition through idle.control; degrades to a notification when denied."
+      }
+    ],
+    "keybindings": [],
+    "settings": [
+      {
+        "key": "show",
+        "type": "bool",
+        "default": "true",
+        "description": "Mount and paint the bar."
+      },
+      {
+        "key": "edge",
+        "type": "string",
+        "default": "\"bottom\"",
+        "description": "Band slot, \"top\" or \"bottom\"; any other string falls back to \"bottom\"."
+      },
+      {
+        "key": "show_single",
+        "type": "bool",
+        "default": "false",
+        "description": "Keep the bar visible when only one workspace exists. An occupied scratchpad also forces it visible."
+      },
+      {
+        "key": "name_max_chars",
+        "type": "int",
+        "default": "32",
+        "description": "Maximum characters per workspace name in name and both label modes, 1..32."
+      },
+      {
+        "key": "label",
+        "type": "string",
+        "default": "\"index\"",
+        "description": "Capsule label mode: \"index\", \"name\", or \"both\"; an unknown value falls back to \"index\"."
+      },
+      {
+        "key": "icons",
+        "type": "string",
+        "default": "\"ascii\"",
+        "description": "Icon map: \"ascii\" (default, unchanged output), \"pua\", \"nerd\", or a state-keyed icon table; invalid values fall back to \"ascii\"."
+      },
+      {
+        "key": "max_length",
+        "type": "int",
+        "default": "0",
+        "description": "Maximum display cells per module text (0 = unbounded, 1..256); over-length strings truncate with … (U+2026)."
+      },
+      {
+        "key": "rewrite",
+        "type": "string-array",
+        "default": "[]",
+        "description": "Ordered Lua pattern rewrite rules (\"pattern=>replacement\" or { pattern, replacement }, <= 16 rules, <= 1 capture %1/$1)."
+      },
+      {
+        "key": "modules_left",
+        "type": "string-array",
+        "default": "[\"workspaces\"]",
+        "description": "Ordered module names for the left group; anchored to the left inset edge."
+      },
+      {
+        "key": "modules_center",
+        "type": "string-array",
+        "default": "[\"clock\"]",
+        "description": "Ordered module names for the center group; centered on the full band row (never \"after left\")."
+      },
+      {
+        "key": "modules_right",
+        "type": "string-array",
+        "default": "[\"network\",\"cpu\",\"memory\",\"battery\"]",
+        "description": "Ordered module names for the right group; flush to the right inset edge."
+      },
+      {
+        "key": "workspaces",
+        "type": "string-array",
+        "default": "[]",
+        "description": "Per-module option collection for workspaces. Strict v1 settings accept a string array only, so option maps keep module defaults."
+      },
+      {
+        "key": "clock",
+        "type": "string-array",
+        "default": "[]",
+        "description": "Per-module option collection for clock; same string-array limit as above."
+      },
+      {
+        "key": "network",
+        "type": "string-array",
+        "default": "[]",
+        "description": "Per-module option collection for network; same string-array limit as above."
+      },
+      {
+        "key": "bluetooth",
+        "type": "string-array",
+        "default": "[]",
+        "description": "Per-module option collection for bluetooth; same string-array limit as above."
+      },
+      {
+        "key": "backlight",
+        "type": "string-array",
+        "default": "[]",
+        "description": "Per-module option collection for backlight; same string-array limit as above."
+      },
+      {
+        "key": "idle",
+        "type": "string-array",
+        "default": "[]",
+        "description": "Per-module option collection for idle; same string-array limit as above."
+      },
+      {
+        "key": "pulseaudio",
+        "type": "string-array",
+        "default": "[]",
+        "description": "Per-module option collection for pulseaudio; same string-array limit as above."
+      },
+      {
+        "key": "microphone",
+        "type": "string-array",
+        "default": "[]",
+        "description": "Per-module option collection for microphone; same string-array limit as above."
+      },
+      {
+        "key": "spectrum",
+        "type": "string-array",
+        "default": "[]",
+        "description": "Per-module option collection for spectrum; same string-array limit as above."
+      },
+      {
+        "key": "cpu",
+        "type": "string-array",
+        "default": "[]",
+        "description": "Per-module option collection for cpu; same string-array limit as above."
+      },
+      {
+        "key": "memory",
+        "type": "string-array",
+        "default": "[]",
+        "description": "Per-module option collection for memory; same string-array limit as above."
+      },
+      {
+        "key": "battery",
+        "type": "string-array",
+        "default": "[]",
+        "description": "Per-module option collection for battery; same string-array limit as above."
+      }
+    ],
+    "overview": {
+      "summary": "Unified Bar renders the workspace capsule strip and a configurable set of system modules (clock, CPU, memory, battery, network, Bluetooth, backlight, idle, and audio) in one chrome band. Workspace mechanism stays in Core; the plugin presents bitty.workspace.list() and forwards an explicit focus request. System modules read optional broker providers and hide fail closed when a provider is absent or ungranted. The bar has no open command: it mounts automatically on activation when show = true and repaints on workspace, focus, and provider events. The plugin installs no default keyboard chord; interaction is pointer-driven (left-click a capsule to focus it, wheel to cycle, middle or right for detail), and every target dispatches a registered command. For example, clicking a capsule dispatches bitty-terminal.bar:focus with that capsule's stable id, and the band repaints with the workspace focused.",
+      "highlights": []
+    }
+  },
+  {
+    "slug": "beacon",
+    "id": "bitty-terminal.beacon",
+    "name": "Beacon",
+    "version": "0.0.1",
+    "description": "Spatial and semantic workspace targeting policy over the public targeting, label-allocation, overlay, and workspace host APIs. Presentation and dispatch policy only; never mutates Terminal Truth.",
+    "license": "MIT",
+    "repository": "https://github.com/bitty-terminal/beacon",
+    "compat": {
+      "bitty": ">=0.0.31",
+      "pluginApi": "^1.0"
+    },
+    "capabilities": [
+      "ui.rich",
+      "ui.overlay",
+      "ui.overlay.focus",
+      "workspace.read",
+      "workspace.control"
+    ],
+    "commands": [
+      {
+        "id": "bitty-terminal.beacon:start",
+        "title": "start",
+        "description": "Start an action-first targeting session in the configured default scope (all, workspace, panel)."
+      },
+      {
+        "id": "bitty-terminal.beacon:goto-workspace",
+        "title": "goto-workspace",
+        "description": "Start a workspace-scoped focus targeting session (Action = focus, Scope = workspace)."
+      },
+      {
+        "id": "bitty-terminal.beacon:move-panel",
+        "title": "move-panel",
+        "description": "Start a workspace-scoped panel-move targeting session (Action = move, Scope = workspace)."
+      },
+      {
+        "id": "bitty-terminal.beacon:pick",
+        "title": "pick",
+        "description": "Start a target-first session: select a target by label, then pick an action from the overlay menu."
+      },
+      {
+        "id": "bitty-terminal.beacon:cancel",
+        "title": "cancel",
+        "description": "Cancel any active Beacon targeting session and release overlay capture."
+      }
+    ],
+    "keybindings": [
+      {
+        "chord": "alt+b",
+        "command": "bitty-terminal.beacon:start",
+        "context": "global"
+      },
+      {
+        "chord": "alt+g",
+        "command": "bitty-terminal.beacon:goto-workspace",
+        "context": "global"
+      },
+      {
+        "chord": "alt+m",
+        "command": "bitty-terminal.beacon:move-panel",
+        "context": "global"
+      }
+    ],
+    "settings": [
+      {
+        "key": "open_chord",
+        "type": "string",
+        "default": "\"alt+b\"",
+        "description": "Suggested global shortcut for bitty-terminal.beacon:start."
+      },
+      {
+        "key": "workspace_chord",
+        "type": "string",
+        "default": "\"alt+g\"",
+        "description": "Suggested global shortcut for bitty-terminal.beacon:goto-workspace."
+      },
+      {
+        "key": "move_chord",
+        "type": "string",
+        "default": "\"alt+m\"",
+        "description": "Suggested global shortcut for bitty-terminal.beacon:move-panel."
+      },
+      {
+        "key": "default_scope",
+        "type": "string",
+        "default": "\"all\"",
+        "description": "Default target scope for start and pick (all, workspace, panel, block, node, link)."
+      },
+      {
+        "key": "label_home",
+        "type": "string",
+        "default": "\"asdfghjkl\"",
+        "description": "Home-row label charset ([a-z0-9], duplicate-free, split into left/right spatial pools)."
+      },
+      {
+        "key": "label_overflow",
+        "type": "string",
+        "default": "\"asdfghjkl\"",
+        "description": "Second-character overflow charset ([a-z0-9], duplicate-free) when targets exceed single labels."
+      },
+      {
+        "key": "viewport_width",
+        "type": "int",
+        "default": "80",
+        "description": "Viewport width in cells (1..=65535) used to partition left-hand and right-hand label pools."
+      }
+    ],
+    "overview": {
+      "summary": "Beacon turns the Bitty workspace into a keyboard-addressable surface inspired by flash.nvim and Which-Key. Instead of cycling sequentially through panels or workspaces, pressing a single Beacon chord collects a live target snapshot (bitty.ui.targets.snapshot), assigns ergonomic home-row labels (bitty.ui.labels.set_policy / bitty.ui.targets.session_start), presents spatial hint badges directly over targets on the compositor annotation layer alongside a compact status/picker overlay, and dispatches the selected command or workspace mutation after Core revalidates the target's generation handle (bitty.ui.targets.dispatch). Beacon is pure policy over the accepted Core mechanism/policy split (ADR 0018):",
+      "highlights": [
+        "Action-first operators: jump directly to any workspace or panel (start, goto-workspace) or move the focused panel to a labeled workspace (move-panel).",
+        "Target-first picker (pick): select any labeled target first, then choose an action from the in-overlay action menu ([f] Focus workspace, [m] Move focused panel here, [n] Next workspace, [c] Close workspace, [Esc] Cancel).",
+        "Spatial home-row allocation: single-character home-row labels come first (split into left-hand and right-hand spatial pools around the viewport center), spilling to two-character overflow labels when needed.",
+        "Fail-closed generation safety: every label selection is validated against Core's live TargetRegistry; stale targets (StaleTarget), unknown labels, and revoked capabilities fail closed and immediately release both the targeting session and overlay block."
+      ]
+    }
+  },
+  {
+    "slug": "composer",
+    "id": "bitty-terminal.composer",
+    "name": "Composer",
+    "version": "0.0.1",
+    "description": "Editable command-line policy over the public overlay, submit, and editor host APIs: modal buffer, chord routing, bounded paste, and external-editor round trip. Presentation state only; never mutates Terminal Truth.",
+    "license": "MIT",
+    "repository": "https://github.com/bitty-terminal/composer",
+    "compat": {
+      "bitty": ">=0.0.21",
+      "pluginApi": "^1.0"
+    },
+    "capabilities": [
+      "ui.overlay.focus",
+      "terminal.input.submit",
+      "process.editor"
+    ],
+    "commands": [
+      {
+        "id": "bitty-terminal.composer:open",
+        "title": "open",
+        "description": "Open the modal on the current draft (or the entry hint when empty)."
+      },
+      {
+        "id": "bitty-terminal.composer:submit",
+        "title": "submit",
+        "description": "Submit the buffer through the paste pipeline; the buffer clears only on an accepted submit."
+      },
+      {
+        "id": "bitty-terminal.composer:cancel",
+        "title": "cancel",
+        "description": "Discard the unsubmitted buffer and close the session; writes nothing."
+      },
+      {
+        "id": "bitty-terminal.composer:close",
+        "title": "close",
+        "description": "Close the modal and preserve the draft for the next open; writes nothing."
+      },
+      {
+        "id": "bitty-terminal.composer:editor",
+        "title": "editor",
+        "description": "Round-trip the draft through the allowlisted external editor; a failed round trip keeps the draft."
+      }
+    ],
+    "keybindings": [],
+    "settings": [
+      {
+        "key": "newline",
+        "type": "string",
+        "default": "\"enter\"",
+        "description": "In-modal chord that inserts a newline."
+      },
+      {
+        "key": "submit",
+        "type": "string",
+        "default": "\"ctrl+enter\"",
+        "description": "In-modal chord that submits the buffer."
+      },
+      {
+        "key": "close",
+        "type": "string",
+        "default": "\"escape\"",
+        "description": "In-modal chord that closes the modal and keeps the draft."
+      },
+      {
+        "key": "external_editor",
+        "type": "string",
+        "default": "\"alt+e\"",
+        "description": "In-modal chord that starts the external-editor round trip."
+      },
+      {
+        "key": "open_chord",
+        "type": "string",
+        "default": "\"alt+e\"",
+        "description": "Manual-open chord advertised to the host keymap. Must be <mod>+...+<single-char>; an invalid value falls back."
+      }
+    ],
+    "overview": {
+      "summary": "Composer opens a focusable overlay with an editable command line, routes a small chord vocabulary while the modal holds input capture, and submits the buffer to the focused panel through the Core paste pipeline. It can also hand the draft to an allowlisted external editor (nvim, vim, or vi) on a Core-owned temporary file. Opening is manual only: while the modal is closed, input bytes flow to the PTY and the plugin touches nothing. Presentation state only; it never mutates Terminal Truth. Open it with bitty-terminal.composer:open, or press the suggested alt+e chord; the host applies that chord only when it is free, and open_chord changes it. For example, run bitty-terminal.composer:open, type git status, and press ctrl+enter: the modal closes and the focused panel receives the line through the Core paste pipeline. escape closes the modal and keeps the draft for the next open; the other in-modal roles (newline, submit, close, external_editor) are settings, not global bindings.",
+      "highlights": []
+    }
+  },
+  {
+    "slug": "copy-mode",
+    "id": "bitty-terminal.copy-mode",
+    "name": "Copy mode",
+    "version": "0.0.1",
+    "description": "Modal visual-selection policy over the public history snapshot API: bounded scoped transcript queries with typed denials, untrusted labels, anchor/cursor selection over the cached page, and grant-gated yank. Presentation state only; never mutates Terminal Truth.",
+    "license": "MIT",
+    "repository": "https://github.com/bitty-terminal/copy-mode",
+    "compat": {
+      "bitty": ">=0.0.24",
+      "pluginApi": "^1.0"
+    },
+    "capabilities": ["history.transcript.read", "clipboard.write"],
+    "commands": [
+      {
+        "id": "bitty-terminal.copy-mode:open",
+        "title": "open",
+        "description": "Run one bounded snapshot query with an explicit scope and enter visual selection on the first row."
+      },
+      {
+        "id": "bitty-terminal.copy-mode:move",
+        "title": "move",
+        "description": "Move the visual cursor by delta rows over the cached page; the anchor stays, widening or narrowing the selection."
+      },
+      {
+        "id": "bitty-terminal.copy-mode:anchor",
+        "title": "anchor",
+        "description": "Restart the selection at the current cursor row; no host call."
+      },
+      {
+        "id": "bitty-terminal.copy-mode:yank",
+        "title": "yank",
+        "description": "Export the selected span through the clipboard gate; needs clipboard.write."
+      },
+      {
+        "id": "bitty-terminal.copy-mode:close",
+        "title": "close",
+        "description": "Drop the cached page and leave visual selection; the next open starts fresh."
+      }
+    ],
+    "keybindings": [],
+    "settings": [
+      {
+        "key": "row_count",
+        "type": "int",
+        "default": "10",
+        "description": "Default rows per snapshot query, clamped to 1..16. An explicit open argument overrides it."
+      },
+      {
+        "key": "max_bytes",
+        "type": "int",
+        "default": "4096",
+        "description": "Default byte budget per snapshot query, clamped to 1..4096. An explicit open argument overrides it."
+      }
+    ],
+    "overview": {
+      "summary": "Copy mode opens one bounded, explicitly scoped transcript snapshot and lets you move a visual cursor over the cached rows. anchor restarts the selection at the cursor, and yank copies the selected span through the Core clipboard gate. Rows are untrusted observation text: the plugin selects and copies them verbatim, never executes or interpolates them. It never streams, polls, or subscribes to events; a fresh result requires a new open. Open a page with bitty-terminal.copy-mode:open, which needs an explicit panel and/or workspace scope; the plugin installs no default chord. For example, run bitty-terminal.copy-mode:open with { panel = \"<panel-id>\", op = \"tail\", row_count = 10 } to cache the last ten rows of that panel and enter selection state on the first; the command returns ok and caches the page. move with { delta = 1 } extends the cached selection, anchor restarts it at the cursor, yank copies it, and close drops the page. The package paints no overlay of its own: the cached selection is its presentation state.",
+      "highlights": []
+    }
+  },
+  {
+    "slug": "dashboard",
+    "id": "bitty-terminal.dashboard",
+    "name": "Dashboard",
+    "version": "0.3.0",
+    "description": "Configuration and status dashboard: inspect runtime state and edit settings, plugins, and profiles in one panel.",
+    "license": "MIT",
+    "repository": "https://github.com/bitty-terminal/dashboard",
+    "compat": {
+      "bitty": ">=0.0.31",
+      "pluginApi": "^1.0"
+    },
+    "capabilities": ["runtime.inspect", "ui.overlay.focus", "config.manage"],
+    "commands": [
+      {
+        "id": "bitty-terminal.dashboard:toggle_dashboard",
+        "title": "toggle_dashboard",
+        "description": "Open the panel when closed; close and release capture when open."
+      }
+    ],
+    "keybindings": [
+      {
+        "chord": "j / Down",
+        "command": "Next row",
+        "context": "overlay"
+      },
+      {
+        "chord": "k / Up",
+        "command": "Previous row",
+        "context": "overlay"
+      },
+      {
+        "chord": "h / Left",
+        "command": "Previous section",
+        "context": "overlay"
+      },
+      {
+        "chord": "l / Right, Tab",
+        "command": "Next section",
+        "context": "overlay"
+      },
+      {
+        "chord": "Shift+Tab",
+        "command": "Previous section",
+        "context": "overlay"
+      },
+      {
+        "chord": "1 … 7",
+        "command": "Jump to a section",
+        "context": "overlay"
+      },
+      {
+        "chord": "g / Home",
+        "command": "First row",
+        "context": "overlay"
+      },
+      {
+        "chord": "G / End",
+        "command": "Last row",
+        "context": "overlay"
+      },
+      {
+        "chord": "PageUp / PageDown",
+        "command": "One page up or down",
+        "context": "overlay"
+      },
+      {
+        "chord": "Mouse wheel",
+        "command": "Scroll the active section",
+        "context": "overlay"
+      },
+      {
+        "chord": "Enter",
+        "command": "Edit the selected setting, or preview the selected toggle/switch",
+        "context": "overlay"
+      },
+      {
+        "chord": "Space",
+        "command": "Toggle the selected plugin",
+        "context": "overlay"
+      },
+      {
+        "chord": "n / a",
+        "command": "Create a new profile on the Profiles tab",
+        "context": "overlay"
+      },
+      {
+        "chord": "c",
+        "command": "Clone the selected profile on the Profiles tab",
+        "context": "overlay"
+      },
+      {
+        "chord": "e / R",
+        "command": "Rename the selected profile on the Profiles tab",
+        "context": "overlay"
+      },
+      {
+        "chord": "d / x",
+        "command": "Preview deleting the selected profile on the Profiles tab",
+        "context": "overlay"
+      },
+      {
+        "chord": "a (Wheel provider)",
+        "command": "Set API key for the selected Wheel provider (masked * input)",
+        "context": "overlay"
+      },
+      {
+        "chord": "x (Wheel provider)",
+        "command": "Clear stored API key for the selected Wheel provider",
+        "context": "overlay"
+      },
+      {
+        "chord": "Enter/s/d",
+        "command": "Resolve a pending Wheel approval (allow_once/allow_session/deny)",
+        "context": "overlay"
+      },
+      {
+        "chord": "Enter (again)",
+        "command": "Apply the previewed change",
+        "context": "overlay"
+      },
+      {
+        "chord": "Esc",
+        "command": "Cancel the edit or confirm step, or close the panel",
+        "context": "overlay"
+      },
+      {
+        "chord": "r",
+        "command": "Re-read the snapshot and the managed values",
+        "context": "overlay"
+      },
+      {
+        "chord": "q",
+        "command": "Close the panel",
+        "context": "overlay"
+      }
+    ],
+    "settings": [],
+    "overview": {
+      "summary": "Dashboard is one panel over the runtime's own inspection snapshot and its typed configuration surface: runtime diagnostics, installed plugins, installed extensions, editable settings, profiles, and resolved paths. It answers \"what is this terminal actually running?\" and lets you change the presentation settings, plugin enablement, and active profile without hand-editing Lua or remembering CLI verbs. Reads come from bitty.runtime.inspect() (bitty#2396, merged in bitty#2410). Writes go through the typed config.manage surface (bitty#2393): one consent-bound grant covering a bounded read query and three token-bound write pairs. The plugin has no filesystem access and no process or network authority.",
+      "highlights": []
+    }
+  },
+  {
+    "slug": "devtools",
+    "id": "bitty-featured.devtools",
+    "name": "Bitty DevTools",
+    "version": "0.2.1",
+    "description": "Read-only inspection and event tracing of the Bitty plugin runtime.",
+    "license": "MIT",
+    "repository": "https://github.com/bitty-terminal/devtools",
+    "compat": {
+      "bitty": ">=0.0.21",
+      "pluginApi": "^1.0"
+    },
+    "capabilities": [
+      "debug.inspect",
+      "debug.trace",
+      "platform.notify",
+      "ui.rich"
+    ],
+    "commands": [
+      {
+        "id": "bitty-featured.devtools:plugins",
+        "title": "plugins",
+        "description": "Summarize bitty.debug.inspect(\"plugins\"): id, version, lifecycle state, generation."
+      },
+      {
+        "id": "bitty-featured.devtools:commands",
+        "title": "commands",
+        "description": "Summarize registered commands (plugin:id - title)."
+      },
+      {
+        "id": "bitty-featured.devtools:events",
+        "title": "events",
+        "description": "Summarize event subscriptions (plugin <- kind)."
+      },
+      {
+        "id": "bitty-featured.devtools:grants",
+        "title": "grants",
+        "description": "List the capabilities granted to this plugin (the host never exposes other plugins' grants)."
+      },
+      {
+        "id": "bitty-featured.devtools:trace-start",
+        "title": "trace-start",
+        "description": "Open one trace over the declared event kinds. Optional argument filter (exact kind, or a prefix ending in , such as terminal.; at most 128 bytes)."
+      },
+      {
+        "id": "bitty-featured.devtools:trace-dump",
+        "title": "trace-dump",
+        "description": "Drain the buffered records and summarize the most recent ones, with the drained and dropped counts."
+      },
+      {
+        "id": "bitty-featured.devtools:trace-stop",
+        "title": "trace-stop",
+        "description": "Drain the final records and close the trace. If the final drain fails, the trace is still closed and the drain error is reported."
+      },
+      {
+        "id": "bitty-featured.devtools:view-open",
+        "title": "view-open",
+        "description": "Mount the live view. Optional target (plugins | commands | events | grants), optional filter (same grammar as trace-start), optional interval_ms (clamped to 500–10000)."
+      },
+      {
+        "id": "bitty-featured.devtools:view-close",
+        "title": "view-close",
+        "description": "Hide the live view, cancel its timer, and release its own trace handle. Reports the record, dropped, and error counts."
+      },
+      {
+        "id": "bitty-featured.devtools:view-toggle",
+        "title": "view-toggle",
+        "description": "Open the live view when it is closed, otherwise close it. Takes the same optional arguments as view-open; the result is the same text the matching half reports."
+      },
+      {
+        "id": "bitty-featured.devtools:view-pause",
+        "title": "view-pause",
+        "description": "Freeze the live view and cancel its timer. The trace keeps recording in the bounded host buffer until resume."
+      },
+      {
+        "id": "bitty-featured.devtools:view-resume",
+        "title": "view-resume",
+        "description": "Drain the records buffered while paused and restart the refresh timer."
+      }
+    ],
+    "keybindings": [],
+    "settings": [],
+    "overview": {
+      "summary": "Read-only inspection and event tracing of the Bitty plugin runtime (bitty-featured.devtools). It summarizes what the plugin host knows (plugins, commands, event subscriptions, its own grants) and records bounded event traces, and shows the results as host-rendered text notifications — optionally in a docked live view refreshed on a timer. Run any command as bitty-featured.devtools:<name> from the command palette or a user keymap; the plugin installs no default chord. For example, run bitty-featured.devtools:plugins and the command result summarizes every plugin id, version, lifecycle state, and generation the host reports; a one-line notice is also queued as a notification when the host drains them. The plugin has no panel or overlay surface: results are bounded text notifications and command results.",
+      "highlights": []
+    }
+  },
+  {
+    "slug": "file-manager",
+    "id": "bitty-terminal.file-manager",
+    "name": "File Manager",
+    "version": "0.1.3",
+    "description": "Bounded read-only directory listing, navigation, and preview for a caller-chosen root",
+    "license": "MIT",
+    "repository": "https://github.com/bitty-terminal/file-manager",
+    "compat": {
+      "bitty": ">=0.0.24",
+      "pluginApi": "^1.0"
+    },
+    "capabilities": [
+      "terminal.semantic-read",
+      "ui.rich",
+      "filesystem.read (**)"
+    ],
+    "commands": [
+      {
+        "id": "bitty-terminal.file-manager:open",
+        "title": "open",
+        "description": "Mount or update the bounded directory listing for the scope root and select one row."
+      },
+      {
+        "id": "bitty-terminal.file-manager:close",
+        "title": "close",
+        "description": "Hide the mounted listing; the block handle is reused by the next open."
+      },
+      {
+        "id": "bitty-terminal.file-manager:preview",
+        "title": "preview",
+        "description": "Show the bounded preview entry for one in-scope path, or for the selected row when path is absent."
+      },
+      {
+        "id": "bitty-terminal.file-manager:rename",
+        "title": "rename",
+        "description": "Validate one user-confirmed rename inside the scope root; the host performs the mutation."
+      }
+    ],
+    "keybindings": [],
+    "settings": [
+      {
+        "key": "root",
+        "type": "string",
+        "default": "\"\"",
+        "description": "Optional scope root. Empty uses the mounted listing root, then the observed terminal cwd; a bare / is treated as unavailable."
+      },
+      {
+        "key": "entries",
+        "type": "string-array",
+        "default": "[]",
+        "description": "Optional bounded candidate paths for open. When non-empty they replace the host listing; paths still resolve against root."
+      },
+      {
+        "key": "width",
+        "type": "int",
+        "default": "0",
+        "description": "Band width in cells for name truncation. 0 derives the width from the semantic snapshot."
+      }
+    ],
+    "overview": {
+      "summary": "Bitty File Manager lists directory entries in a bounded band over the observed terminal working directory and supports keyboard navigation and preview. Directory enumeration goes through the host-mediated bitty.fs.list bridge; the plugin validates and shapes the result, never calling Lua I/O directly. It requests read-only authority only, and rename validates one pair while the host mediates any mutation. Presentation is a declarative band block; there is no process, network, or terminal-input surface. Open it with bitty-terminal.file-manager:open; the plugin installs no default chord. With no arguments it lists the observed terminal cwd in a bottom band of at most 12 rows. For example, run bitty-terminal.file-manager:open and the band lists the focused pane's directory with the first row selected; run it again with { delta = 1 } to move the selection down, then bitty-terminal.file-manager:preview with no arguments to preview the selected entry. Directory rows carry an open click target and file rows carry a preview target.",
+      "highlights": []
+    }
+  },
+  {
+    "slug": "git-panel",
+    "id": "bitty-terminal.git-panel",
+    "name": "Git Panel",
+    "version": "0.1.0",
+    "description": "Read-only branch, status, diff, and log panel for the Git repository behind the focused pane",
+    "license": "MIT",
+    "repository": "https://github.com/bitty-terminal/git-panel",
+    "compat": {
+      "bitty": ">=0.0.24",
+      "pluginApi": "^1.0"
+    },
+    "capabilities": [
+      "ui.overlay.focus",
+      "terminal.semantic-read",
+      "process.spawn:git",
+      "filesystem.read (**)"
+    ],
+    "commands": [
+      {
+        "id": "bitty-terminal.git-panel:open",
+        "title": "open",
+        "description": "Opens the panel overlay with branch, bounded status rows, and recent-log rows; returns the cwd, root, branch, and counts."
+      },
+      {
+        "id": "bitty-terminal.git-panel:status",
+        "title": "status",
+        "description": "Shows bounded working-tree entries from git status --porcelain."
+      },
+      {
+        "id": "bitty-terminal.git-panel:diff",
+        "title": "diff",
+        "description": "Shows bounded git diff --stat lines."
+      },
+      {
+        "id": "bitty-terminal.git-panel:log",
+        "title": "log",
+        "description": "Shows recent commits from git log --oneline -n 10."
+      },
+      {
+        "id": "bitty-terminal.git-panel:branch",
+        "title": "branch",
+        "description": "Shows local and remote branches from git branch -a."
+      }
+    ],
+    "keybindings": [],
+    "settings": [],
+    "overview": {
+      "summary": "Git Panel shows the git state of the repository behind the focused terminal pane: branch, working-tree status, diff stat, and recent commits. It runs a fixed set of read-only git commands through the host's [tools.git] spawn grant, so it never stages, commits, or otherwise writes to the repository. Output is bounded and rendered as panel content, not injected into the terminal. open presents a panel overlay with the current branch, bounded status rows, and recent-log rows. The repository is resolved from the focused pane's directory, so a checkout outside ~/projects works. A pane that is not inside a git repository raises the typed E_NOT_A_GIT_REPO error instead of showing an empty panel.",
+      "highlights": []
+    }
+  },
+  {
+    "slug": "help",
+    "id": "bitty-terminal.help",
+    "name": "Help",
+    "version": "0.0.1",
+    "description": "Help and which-key shortcut overlay over the live keymap registry.",
+    "license": "MIT",
+    "repository": "https://github.com/bitty-terminal/help",
+    "compat": {
+      "bitty": ">=0.0.31",
+      "pluginApi": "^1.0"
+    },
+    "capabilities": [
+      "runtime.keymaps.read",
+      "ui.rich",
+      "ui.overlay",
+      "ui.present"
+    ],
+    "commands": [
+      {
+        "id": "bitty-terminal.help:toggle_help",
+        "title": "toggle_help",
+        "description": "Regenerate rows from the live keymap registry and show the panel, or hide it."
+      }
+    ],
+    "keybindings": [
+      {
+        "chord": "alt+`",
+        "command": "bitty-terminal.help:toggle_help",
+        "context": "global"
+      },
+      {
+        "chord": "alt+?",
+        "command": "bitty-terminal.help:toggle_help",
+        "context": "global"
+      },
+      {
+        "chord": "alt+shift+?",
+        "command": "bitty-terminal.help:toggle_help",
+        "context": "global"
+      },
+      {
+        "chord": "alt+shift+/",
+        "command": "bitty-terminal.help:toggle_help",
+        "context": "global"
+      }
+    ],
+    "settings": [],
+    "overview": {
+      "summary": "Help renders a floating, non-modal shortcut reference panel built from the terminal's live keymap and command registries. Every time the panel opens, it queries bitty.keymaps.list (bitty#2405), joins command:<owner:id> bindings against bitty.commands.list() for human-readable command titles, formats bounded <chord> <label> rows, mounts a declarative List scene in the overlay slot, and presents it through bitty.ui.present.show (bitty#2406). The panel is informational and non-focusable (NonModal on the Popup tier):",
+      "highlights": [
+        "It never acquires keyboard or pointer capture (ui.overlay.focus is not",
+        "Pressing Esc dismisses the overlay in Core without consuming the key press",
+        "Repeating the toggle chord hides the panel through bitty.ui.present.hide.",
+        "No row cache survives across opens: reloading configuration or enabling",
+        "When runtime.keymaps.read is denied or the live keymap table is empty, the"
+      ]
+    }
+  },
+  {
+    "slug": "history",
+    "id": "bitty-terminal.history",
+    "name": "History",
+    "version": "0.0.1",
+    "description": "Opt-in history policy over the public history-read host APIs: scoped bounded snapshot queries over transcript, commands, and own KV with redacted truncated attributed answers or typed denials. Never streams, never touches session snapshots.",
+    "license": "MIT",
+    "repository": "https://github.com/bitty-terminal/history",
+    "compat": {
+      "bitty": ">=0.0.24",
+      "pluginApi": "^1.0"
+    },
+    "capabilities": [
+      "history.transcript.read",
+      "history.commands.read",
+      "history.kv.read",
+      "ui.overlay.focus"
+    ],
+    "commands": [
+      {
+        "id": "bitty-terminal.history:query-transcript",
+        "title": "query-transcript",
+        "description": "One bounded snapshot over sealed transcript segments while opt-in capture holds."
+      },
+      {
+        "id": "bitty-terminal.history:query-commands",
+        "title": "query-commands",
+        "description": "One bounded list, tail, or search read over command history."
+      },
+      {
+        "id": "bitty-terminal.history:query-kv",
+        "title": "query-kv",
+        "description": "One bounded snapshot read of the plugin's own KV namespace; cross-plugin reads are unrepresentable."
+      }
+    ],
+    "keybindings": [],
+    "settings": [
+      {
+        "key": "default_panel",
+        "type": "string",
+        "default": "\"\"",
+        "description": "Panel id used as the default scope axis when a dispatch carries no explicit scope. Empty means unset; wildcard, blank, control, or over-long ids fail as E_DEF_INVALID."
+      },
+      {
+        "key": "default_workspace",
+        "type": "string",
+        "default": "\"\"",
+        "description": "Workspace id used as the default scope axis when a dispatch carries no explicit scope. Empty means unset; the same validation applies."
+      },
+      {
+        "key": "row_count",
+        "type": "int",
+        "default": "16",
+        "description": "Rows requested when a dispatch carries no explicit row_count. Accepted 1–16; an out-of-window value falls back to the shipped cap (16)."
+      },
+      {
+        "key": "max_bytes",
+        "type": "int",
+        "default": "4096",
+        "description": "Byte budget when a dispatch carries no explicit max_bytes. Accepted 1–4096; an out-of-window value falls back to the shipped cap (4096)."
+      }
+    ],
+    "overview": {
+      "summary": "History answers bounded, read-only snapshot queries over Bitty's persisted history: sealed transcript segments, command history, and the plugin's own key-value namespace. Every answer is redacted, truncated, attributed, and labeled untrusted-observation, or replaced by a typed denial. The plugin never streams, holds no cursor across calls, and never reads session snapshots. Open a page with bitty-terminal.history:query-transcript (or query-commands / query-kv); the plugin installs no default chord. For example, run bitty-terminal.history:query-transcript with { scope = { panel = \"<panel-id>\" }, op = \"tail\", row_count = 10 } and the focusable overlay opens with up to ten of that panel's most recent transcript rows under a History: transcript title. Esc closes the overlay; the next query opens a fresh one.",
+      "highlights": []
+    }
+  },
+  {
+    "slug": "palette",
+    "id": "bitty-terminal.palette",
+    "name": "Palette",
+    "version": "0.0.1",
+    "description": "Command palette and picker UI via overlay slot, declarative primitives only",
+    "license": "MIT",
+    "repository": "https://github.com/bitty-terminal/palette",
+    "compat": {
+      "bitty": ">=0.0.24",
+      "pluginApi": "^1.0"
+    },
+    "capabilities": ["ui.overlay.focus"],
+    "commands": [
+      {
+        "id": "bitty-terminal.palette:toggle",
+        "title": "toggle",
+        "description": "Opens the palette and returns the number of displayed rows, or closes it and returns 0."
+      }
+    ],
+    "keybindings": [],
+    "settings": [
+      {
+        "key": "query",
+        "type": "string",
+        "default": "\"\"",
+        "description": "Initial case-insensitive substring filter applied when the overlay opens. Live typing replaces it for that session."
+      }
+    ],
+    "overview": {
+      "summary": "Palette opens a focusable overlay listing the command catalog the host publishes. Typing narrows the list with a case-insensitive substring match over the command id, title, and owning plugin id; Up/Down (and j/k) move the highlight, and Enter runs the highlighted command through the host-mediated bitty.commands.invoke surface. The overlay closes on success and stays open with a typed row when the host refuses the invocation (including a command that needs arguments). The overlay is also released when toggled closed or when input capture ends. If the host cannot serve the catalog, the overlay says so instead of showing an empty list. Open it with bitty-terminal.palette:toggle; the plugin installs no default chord. For example, bind the command to ctrl+p as shown under Keybindings, press it, type a fragment of a command title (for example dash when Dashboard is installed) to filter the catalog, and press Enter: the highlighted command runs through the host and the overlay closes. If the highlighted command needs arguments, the overlay stays open with Needs arguments: <title>.",
+      "highlights": []
+    }
+  },
+  {
+    "slug": "search",
+    "id": "bitty-terminal.search",
+    "name": "Search",
+    "version": "0.0.1",
+    "description": "Scrollback search policy over the public history snapshot API: bounded scoped transcript queries with typed denials, untrusted labels, result navigation, and grant-gated export. Presentation state only; never mutates Terminal Truth.",
+    "license": "MIT",
+    "repository": "https://github.com/bitty-terminal/search",
+    "compat": {
+      "bitty": ">=0.0.24",
+      "pluginApi": "^1.0"
+    },
+    "capabilities": ["history.transcript.read"],
+    "commands": [
+      {
+        "id": "bitty-terminal.search:search",
+        "title": "search",
+        "description": "Runs one bounded transcript search and replaces the cached page on success."
+      },
+      {
+        "id": "bitty-terminal.search:next",
+        "title": "next",
+        "description": "Moves the cursor to the next cached match; no host call."
+      },
+      {
+        "id": "bitty-terminal.search:prev",
+        "title": "prev",
+        "description": "Moves the cursor to the previous cached match; no host call."
+      },
+      {
+        "id": "bitty-terminal.search:clear",
+        "title": "clear",
+        "description": "Drops the cached result page."
+      },
+      {
+        "id": "bitty-terminal.search:copy",
+        "title": "copy",
+        "description": "Exports the current match through the clipboard gate."
+      }
+    ],
+    "keybindings": [],
+    "settings": [
+      {
+        "key": "row_count",
+        "type": "int",
+        "default": "10",
+        "description": "Rows per command query when the caller omits row_count. Accepted 1–16; an out-of-window configured value falls back to 10."
+      },
+      {
+        "key": "max_bytes",
+        "type": "int",
+        "default": "4096",
+        "description": "Byte budget per command query when the caller omits max_bytes. Accepted 1–4096; an out-of-window configured value falls back to 4096."
+      }
+    ],
+    "overview": {
+      "summary": "Search runs bounded, scoped snapshot queries over already-persisted transcript history, then keeps one result page as presentation state for cursor navigation. It never mutates Terminal Truth, never streams, and never retries a denial silently: a failed refresh keeps the previous page intact. Record bodies are untrusted observation text, displayed verbatim and never executed. Start a query with bitty-terminal.search:search, which needs a panel and/or workspace scope plus a needle; the plugin installs no default chord. For example, run bitty-terminal.search:search with { panel = \"<panel-id>\", needle = \"error\", row_count = 10 } and the command returns ok while caching the bounded matching page; next and prev then walk that page and clear drops it. Search paints no overlay of its own: the cached page and its cursor are the presentation state.",
+      "highlights": []
+    }
+  }
+]

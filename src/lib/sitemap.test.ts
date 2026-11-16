@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
+import { OFFICIAL_PLUGIN_SLUGS } from "./pluginDetails.ts";
 import {
   CORE_SITE_PATHS,
   collectSitePaths,
@@ -16,6 +17,10 @@ describe("sitemap", () => {
     expect(paths).toContain("/zh-CN/plugins/");
     expect(paths).toContain("/ai/");
     expect(paths).toContain("/zh-CN/ai/");
+    for (const slug of OFFICIAL_PLUGIN_SLUGS) {
+      expect(paths).toContain(`/plugins/${slug}/`);
+      expect(paths).toContain(`/zh-CN/plugins/${slug}/`);
+    }
   });
 
   test("renders and parses sitemap XML routes", () => {

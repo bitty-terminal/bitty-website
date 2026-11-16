@@ -43,7 +43,6 @@ export interface OfficialLuaPlugin {
   readonly href: string;
   readonly manualHref: string;
   readonly repoUrl: string;
-  readonly registryUrl: string;
 }
 
 export interface ExtensionCatalog {
@@ -502,7 +501,7 @@ export function getExtensionCatalog(
       name,
       href: page
         ? `${prefix}/${page.fullSlug}/`
-        : `https://plugins.bitty.run/plugins/${id}`,
+        : `${locale === "zh-CN" ? "/zh-CN" : ""}/plugins/`,
     };
   });
 
@@ -525,7 +524,6 @@ export function getExtensionCatalog(
         href: manualHref,
         manualHref,
         repoUrl: `https://github.com/bitty-terminal/${meta.slug}`,
-        registryUrl: `https://plugins.bitty.run/plugins/${meta.id}`,
       };
     },
   );

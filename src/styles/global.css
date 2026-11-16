@@ -1136,22 +1136,12 @@ main.docs-main {
 
 @media (width >= 50rem) {
   .docs-layout {
-    grid-template-columns: var(--docs-sidebar-width) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     align-items: start;
   }
 
-  .docs-layout > .docs-nav-drawer {
-    grid-column: 1;
-    grid-row: 1;
-    align-self: stretch;
-  }
-
-  .docs-layout > .docs-nav-drawer::details-content {
-    block-size: 100%;
-  }
-
   .docs-layout > .docs-article {
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 1;
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--docs-toc-width);

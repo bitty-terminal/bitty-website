@@ -2,21 +2,19 @@
 import SiteFooter from "./SiteFooter.astro";
 import SiteHeader from "./SiteHeader.astro";
 import { packageChannels, primaryChannels } from "../data/installChannels.ts";
-import { getExtensionCatalog } from "../lib/extensionCatalog.ts";
-import { getUiMessages, type SiteLocale } from "../lib/i18n.ts";
+import { getUiMessages, localePath, type SiteLocale } from "../lib/i18n.ts";
 import "../styles/global.css";
 
 const locale = (Astro.props as { locale?: SiteLocale }).locale ?? "en";
 const isZh = locale === "zh-CN";
 const t = getUiMessages(locale);
-const extensions = getExtensionCatalog(locale);
 const allInstallTabs = [...primaryChannels, ...packageChannels];
 
 const shortTabLabel = (id: string, fallback: string): string => {
   const map: Record<string, { en: string; "zh-CN": string }> = {
     "unix-installer": { en: "Linux / macOS", "zh-CN": "Linux / macOS" },
     "windows-installer": { en: "Windows", "zh-CN": "Windows" },
-    source: { en: "Cargo", "zh-CN": "源码 (Cargo)" },
+    source: { en: "Cargo", "zh-CN": "Cargo" },
     apt: { en: "Debian / Ubuntu", "zh-CN": "Debian / Ubuntu" },
     copr: { en: "Fedora / RHEL", "zh-CN": "Fedora / RHEL" },
     aur: { en: "Arch", "zh-CN": "Arch" },
@@ -29,10 +27,13 @@ const shortTabLabel = (id: string, fallback: string): string => {
   return map[id]?.[locale] ?? fallback;
 };
 
-const docsHref = isZh
-  ? "/zh-CN/docs/getting-started/quickstart/"
-  : "/docs/getting-started/quickstart/";
+const docsHref = localePath(locale, "/docs/getting-started/quickstart/");
+const pluginsHref = localePath(locale, "/plugins/");
+const aiHref = localePath(locale, "/ai/");
 const alternateHref = isZh ? "/" : "/zh-CN/";
+const pageTitle = isZh
+  ? "bitty — 现代可编程终端工作区"
+  : "bitty — Programmable Terminal Workspace";
 ---
 
 <!doctype html>
@@ -46,7 +47,7 @@ const alternateHref = isZh ? "/" : "/zh-CN/";
     <link rel="alternate" hreflang="zh-CN" href="https://bitty.run/zh-CN/" />
     <link rel="alternate" hreflang="x-default" href="https://bitty.run/" />
     <link rel="icon" type="image/x-icon" href="/icons/favicon.ico" />
-    <title>{isZh ? "Bitty — 现代可编程终端工作区" : "Bitty — Programmable Terminal Workspace"}</title>
+    <title>{pageTitle}</title>
     <script is:inline>
       try {
         const stored = window.localStorage.getItem("bitty-theme");
@@ -66,62 +67,31 @@ const alternateHref = isZh ? "/" : "/zh-CN/";
       alternateHref={alternateHref}
     />
 
-    <main id="main-content" class="home-main" tabindex="-1">
-      <div class="hero-backdrop" aria-hidden="true"></div>
-
-      <!-- 1. Minimal Centered Hero -->
-      <section class="hero-minimal" aria-labelledby="hero-title">
-        <span class="hero-kicker">
-          <span class="hero-dot" aria-hidden="true"></span>
-          {t.heroBadge}
-        </span>
-
-        <h1 id="hero-title">{t.heroTitle}</h1>
-        <p class="hero-description">
-          <span class="hero-desc-line">{t.heroSubtitleLine1}</span>{" "}
-          <span class="hero-desc-line">{t.heroSubtitleLine2}</span>
+    <main id="main-content" class="minimal-main" tabindex="-1">
+      <section class="minimal-intro" aria-labelledby="home-title">
+        <h1 id="home-title">bitty</h1>
+        <p class="minimal-lead">
+          {
+            isZh
+              ? "基于 Rust 与低延迟 wgpu 渲染管线构建的 GPU 加速可编程终端工作区。内置 Hyprland 风格原生分屏与标签页、沙箱化 Phodopus Lua 5.4 插件，以及基于 bittyd 与 wheel 的进程隔离 AI 能力。"
+              : "A GPU-accelerated, programmable terminal workspace built in Rust on a low-latency wgpu frame pipeline. Features Hyprland-style native tiling and tabs, sandboxed Phodopus Lua 5.4 plugins, and out-of-process AI via bittyd and wheel."
+          }
         </p>
 
-        <div class="hero-actions">
-          <a class="primary-action" href={docsHref}>
-            <span>{t.heroDocsCta}</span>
-            <span aria-hidden="true">→</span>
-          </a>
-          <a class="secondary-action" href="#install">
-            <span>{t.heroInstallCta}</span>
-            <span aria-hidden="true">↓</span>
-          </a>
-        </div>
+        <nav class="quick-links" aria-label={isZh ? "快速入口" : "Quick links"}>
+          <a href={docsHref}>{isZh ? "快速开始" : "Getting started"}</a>
+          <span aria-hidden="true">·</span>
+          <a href="#install">{isZh ? "安装方式" : "Installation"}</a>
+          <span aria-hidden="true">·</span>
+          <a href={pluginsHref}>{isZh ? "插件与扩展" : "Plugins"}</a>
+          <span aria-hidden="true">·</span>
+          <a href={aiHref}>{isZh ? "AI 与 Wheel" : "AI & Wheel"}</a>
+        </nav>
       </section>
 
-      <!-- 2. Bitty Core Highlights (3 Clean Cards) -->
-      <section class="features-shell" aria-labelledby="features-title">
-        <h2 id="features-title" class="visually-hidden">
-          {t.featuresTitle}
-        </h2>
-        <div class="features-grid">
-          <article class="feature-card">
-            <span class="feature-num">01</span>
-            <h3>{t.feat1Title}</h3>
-            <p>{t.feat1Desc}</p>
-          </article>
-          <article class="feature-card">
-            <span class="feature-num">02</span>
-            <h3>{t.feat2Title}</h3>
-            <p>{t.feat2Desc}</p>
-          </article>
-          <article class="feature-card">
-            <span class="feature-num">03</span>
-            <h3>{t.feat3Title}</h3>
-            <p>{t.feat3Desc}</p>
-          </article>
-        </div>
-      </section>
-
-      <!-- 3. Install Section (Clean Tabbed Dock without pending channels footer) -->
       <section
         id="install"
-        class="install-shell"
+        class="install-section"
         aria-labelledby="install-title"
       >
         <div class="section-header-bar">
@@ -131,19 +101,17 @@ const alternateHref = isZh ? "/" : "/zh-CN/";
               href="https://cdn.bitty.run/install/latest.txt"
               target="_blank"
               rel="noopener noreferrer"
-              class="meta-pill-link"
+              class="meta-link"
             >
-              <span>{t.installPointer}</span>
-              <span aria-hidden="true">↗</span>
+              {t.installPointer} ↗
             </a>
             <a
               href="https://github.com/bitty-terminal/bitty/blob/main/packaging/INSTALL.md"
               target="_blank"
               rel="noopener noreferrer"
-              class="meta-pill-link"
+              class="meta-link"
             >
-              <span>{t.installPackaging}</span>
-              <span aria-hidden="true">↗</span>
+              {t.installPackaging} ↗
             </a>
           </div>
         </div>
@@ -213,25 +181,33 @@ const alternateHref = isZh ? "/" : "/zh-CN/";
         </div>
       </section>
 
-      <!-- Preserves validate-dist.mjs 11+11 extension/plugin contract without cluttering Hero visual surface -->
-      <section hidden aria-label={t.extensionsTitle}>
-        <h2>{t.extensionsTitle}</h2>
-        <ul>
-          {extensions.native.map((extension) => (
-            <li>
-              <a class="extension-card" href={extension.href}>
-                {extension.name}
-              </a>
-            </li>
-          ))}
-        </ul>
-        <ul class="plugin-list">
-          {extensions.plugins.map((plugin) => (
-            <li>
-              <a href={plugin.href}>{plugin.id}</a>
-            </li>
-          ))}
-        </ul>
+      <hr class="minimal-rule" />
+
+      <section class="minimal-note" aria-labelledby="contribute-title">
+        <h2 id="contribute-title">{isZh ? "源码与贡献" : "Source & Contributing"}</h2>
+        <p>
+          {
+            isZh
+              ? "Bitty 为开源项目，源码与问题追踪托管在 GitHub："
+              : "Bitty is open source. Source code, issue tracking, and documentation live on GitHub:"
+          }
+          {" "}
+          <a
+            href="https://github.com/bitty-terminal/bitty"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            bitty-terminal/bitty
+          </a>
+          {" · "}
+          <a
+            href="https://github.com/bitty-terminal/bitty-manual"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            bitty-terminal/bitty-manual
+          </a>
+        </p>
       </section>
     </main>
 
@@ -325,296 +301,132 @@ const alternateHref = isZh ? "/" : "/zh-CN/";
     color: var(--ink);
   }
 
-  .home-main {
-    flex: 1;
-    position: relative;
-    width: 100%;
-    max-width: none;
-    padding-block: 0 3.5rem;
-    overflow-x: clip;
-  }
-
-  .hero-backdrop {
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 24rem;
-    background-image:
-      radial-gradient(
-        ellipse 50% 45% at 50% -15%,
-        var(--accent-soft),
-        transparent 70%
-      ),
-      radial-gradient(var(--grid-dot) 1px, transparent 1px);
-    background-size:
-      100% 100%,
-      24px 24px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .hero-minimal,
-  .features-shell,
-  .install-shell {
-    position: relative;
-    z-index: 1;
-    width: min(64rem, calc(100% - 2rem));
+  .minimal-main {
+    flex: 1 0 auto;
+    width: min(48rem, calc(100% - 2rem));
     margin-inline: auto;
+    padding-block: 3rem 4.5rem;
   }
 
-  /* ==========================================================================
-     1. MINIMAL CENTERED HERO
-     ========================================================================== */
-
-  .hero-minimal {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding-block: clamp(2.75rem, 6vw, 4.25rem) clamp(2rem, 4vw, 2.75rem);
-  }
-
-  .hero-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin-bottom: 0.75rem;
-    padding: 0.2rem 0.65rem;
-    border: 1px solid var(--accent-border);
-    border-radius: 999px;
-    background: var(--accent-soft);
-    color: var(--accent);
+  .minimal-intro h1 {
+    margin: 0 0 0.9rem;
     font-family: var(--font-mono);
-    font-size: 0.68rem;
-    font-weight: 600;
-  }
-
-  .hero-dot {
-    width: 0.38rem;
-    height: 0.38rem;
-    border-radius: 50%;
-    background: var(--accent);
-  }
-
-  .hero-minimal h1 {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: clamp(1.85rem, 3.2vw, 2.6rem);
+    font-size: clamp(2rem, 4vw, 2.5rem);
     font-weight: 700;
-    line-height: 1.14;
-    letter-spacing: -0.028em;
-    color: var(--fg-primary);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
   }
 
-  .hero-description {
-    max-width: 44rem;
-    margin: 0.75rem 0 0;
+  .minimal-lead {
+    margin: 0 0 1.4rem;
     color: var(--fg-secondary);
-    font-size: 0.96875rem;
-    line-height: 1.65;
+    font-size: 1.02rem;
+    line-height: 1.7;
   }
 
-  .hero-desc-line {
-    display: block;
-  }
-
-  @media (width < 36rem) {
-    .hero-desc-line {
-      display: inline;
-    }
-  }
-
-  .hero-actions {
+  .quick-links {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.65rem;
-    margin-top: 1.5rem;
-  }
-
-  .primary-action,
-  .secondary-action {
-    display: inline-flex;
-    min-height: 2.5rem;
     align-items: center;
-    gap: 0.45rem;
-    padding: 0.5rem 1.15rem;
-    border-radius: var(--radius-sm);
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    font-weight: 600;
-    text-decoration: none;
-    box-shadow: var(--shadow-xs);
+    gap: 0.45rem 0.75rem;
+    margin-bottom: 2.75rem;
+    font-size: 0.92rem;
   }
 
-  .primary-action {
-    border: 1px solid var(--accent);
-    background: var(--accent);
-    color: var(--accent-ink);
-  }
-
-  .primary-action:hover {
-    border-color: var(--accent-hover);
-    background: var(--accent-hover);
-    color: var(--accent-ink);
-  }
-
-  .secondary-action {
-    border: 1px solid var(--line);
-    background: var(--bg-surface);
-    color: var(--fg-primary);
-  }
-
-  .secondary-action:hover {
-    border-color: var(--border-strong);
-    background: var(--bg-elevated);
-  }
-
-  /* ==========================================================================
-     2. THREE CORE HIGHLIGHTS
-     ========================================================================== */
-
-  .features-shell {
-    padding-block: 0.5rem 2.25rem;
-  }
-
-  .features-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 1rem;
-  }
-
-  .feature-card {
-    padding: 1.15rem 1.25rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    background: var(--bg-surface);
-    box-shadow: var(--shadow);
-  }
-
-  .feature-num {
-    display: inline-block;
-    margin-bottom: 0.45rem;
+  .quick-links a {
     color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.05em;
+    text-decoration: none;
+    font-weight: 500;
   }
 
-  .feature-card h3 {
-    margin: 0 0 0.4rem;
-    font: 600 0.96875rem var(--font-display);
-    color: var(--fg-primary);
+  .quick-links a:hover {
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
   }
 
-  .feature-card p {
-    margin: 0;
-    color: var(--fg-secondary);
-    font-size: 0.825rem;
-    line-height: 1.58;
+  .quick-links span[aria-hidden="true"] {
+    color: var(--fg-muted);
   }
 
-  /* ==========================================================================
-     3. UNIFIED INSTALL DOCK
-     ========================================================================== */
-
-  .install-shell {
-    padding-top: 0.5rem;
+  .install-section {
+    scroll-margin-top: 4.5rem;
   }
 
   .section-header-bar {
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: baseline;
     justify-content: space-between;
-    gap: 0.75rem;
+    gap: 0.5rem 1rem;
     margin-bottom: 0.85rem;
   }
 
   .section-header-bar h2 {
     margin: 0;
-    font: 700 1.15rem var(--font-display);
-    letter-spacing: -0.02em;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.015em;
   }
 
   .section-meta-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
-  }
-
-  .meta-pill-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.24rem 0.6rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    background: var(--bg-surface);
-    color: var(--fg-secondary);
+    gap: 0.85rem;
     font-family: var(--font-mono);
-    font-size: 0.68rem;
-    text-decoration: none;
-    box-shadow: var(--shadow-xs);
+    font-size: 0.78rem;
   }
 
-  .meta-pill-link:hover {
-    border-color: var(--accent);
+  .meta-link {
+    color: var(--fg-secondary);
+    text-decoration: none;
+  }
+
+  .meta-link:hover {
     color: var(--accent);
+    text-decoration: underline;
   }
 
   .install-dock {
     border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-md);
     background: var(--bg-surface);
-    box-shadow: var(--shadow);
     overflow: hidden;
   }
 
   .install-dock-tabs {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.2rem;
-    padding: 0.45rem 0.6rem;
+    gap: 0.25rem;
+    padding: 0.55rem 0.65rem;
     border-bottom: 1px solid var(--line);
-    background: var(--bg-subtle);
+    background: var(--bg-elevated);
   }
 
   .dock-tab {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-block-size: var(--touch-target);
-    padding: 0.32rem 0.68rem;
+    min-block-size: 2rem;
+    padding: 0.25rem 0.6rem;
     border: 1px solid transparent;
     border-radius: var(--radius-xs);
     background: transparent;
     color: var(--fg-secondary);
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 500;
+    font-size: 0.75rem;
     cursor: pointer;
   }
 
   .dock-tab:hover {
-    color: var(--fg-primary);
-    background: var(--bg-elevated);
+    color: var(--ink);
   }
 
   .dock-tab.is-active {
-    border-color: var(--accent-border);
     background: var(--bg-surface);
-    color: var(--accent);
+    border-color: var(--line);
+    color: var(--ink);
     font-weight: 600;
-    box-shadow: var(--shadow-xs);
   }
 
   .install-dock-pane {
-    padding: 1.1rem 1.25rem;
-  }
-
-  .install-dock-pane[hidden] {
-    display: none;
+    padding: 1rem 1.15rem;
   }
 
   .dock-pane-meta {
@@ -622,83 +434,72 @@ const alternateHref = isZh ? "/" : "/zh-CN/";
     align-items: flex-start;
     justify-content: space-between;
     gap: 0.75rem;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.85rem;
   }
 
   .dock-pane-meta h3 {
-    margin: 0;
-    font: 600 0.92rem var(--font-display);
-    color: var(--fg-primary);
+    margin: 0 0 0.2rem;
+    font-size: 0.95rem;
+    font-weight: 600;
   }
 
   .dock-pane-summary {
-    margin: 0.2rem 0 0;
+    margin: 0;
     color: var(--fg-secondary);
-    font-size: 0.8rem;
-    line-height: 1.5;
+    font-size: 0.84rem;
   }
 
   .arch-chip {
+    flex-shrink: 0;
+    padding: 0.15rem 0.45rem;
     border: 1px solid var(--line);
     border-radius: var(--radius-xs);
-    padding: 0.1rem 0.45rem;
-    background: var(--bg-elevated);
     color: var(--fg-muted);
     font-family: var(--font-mono);
-    font-size: 0.64rem;
-    white-space: nowrap;
+    font-size: 0.7rem;
   }
 
   .command-stack {
     display: grid;
-    gap: 0.5rem;
-  }
-
-  .command-entry {
-    display: grid;
-    gap: 0.22rem;
+    gap: 0.7rem;
   }
 
   .command-label {
-    margin: 0;
+    margin: 0 0 0.25rem;
     color: var(--fg-muted);
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    text-transform: uppercase;
+    font-size: 0.78rem;
   }
 
   .command-block {
     display: flex;
-    min-width: 0;
     align-items: center;
-    gap: 0.5rem;
+    justify-content: space-between;
+    gap: 0.75rem;
     padding: 0.55rem 0.75rem;
-    border: 1px solid var(--cmd-line);
+    border: 1px solid var(--line);
     border-radius: var(--radius-sm);
-    background: var(--cmd-bg);
-    color: var(--cmd-ink);
+    background: var(--bg-canvas);
   }
 
   .command-block code {
-    min-width: 0;
-    flex: 1;
-    overflow-wrap: anywhere;
-    white-space: pre-wrap;
-    font: 0.74rem/1.55 var(--font-mono);
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--ink);
+    white-space: nowrap;
   }
 
   .command-block button {
     flex-shrink: 0;
-    min-block-size: 1.5rem;
-    min-inline-size: 1.5rem;
-    border: 1px solid var(--cmd-line);
+    min-block-size: 1.9rem;
+    padding: 0.2rem 0.55rem;
+    border: 1px solid var(--line);
     border-radius: var(--radius-xs);
-    padding: 0.24rem 0.58rem;
-    background: var(--cmd-panel);
+    background: var(--bg-surface);
     color: var(--fg-secondary);
-    font: 600 0.66rem var(--font-mono);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
     cursor: pointer;
-    box-shadow: var(--shadow-xs);
   }
 
   .command-block button:hover {
@@ -706,28 +507,31 @@ const alternateHref = isZh ? "/" : "/zh-CN/";
     color: var(--accent);
   }
 
-  .command-block button[data-copied-state="true"] {
-    border-color: var(--ok);
-    color: var(--ok);
+  .minimal-rule {
+    margin-block: 2.5rem;
+    border: 0;
+    border-top: 1px solid var(--line);
   }
 
-  @media (max-width: 780px) {
-    .features-grid {
-      grid-template-columns: 1fr;
-    }
+  .minimal-note h2 {
+    margin: 0 0 0.45rem;
+    font-size: 1.05rem;
+    font-weight: 700;
   }
 
-  /* English body copy: Inter's x-height is much smaller than a CJK glyph,
-   * so the same computed size reads smaller. Lift only English body text. */
-  :global(html[lang="en"]) .hero-description {
-    font-size: 1.04rem;
+  .minimal-note p {
+    margin: 0;
+    color: var(--fg-secondary);
+    font-size: 0.92rem;
+    line-height: 1.6;
   }
 
-  :global(html[lang="en"]) .feature-card p {
-    font-size: 0.875rem;
+  .minimal-note a {
+    color: var(--accent);
+    text-decoration: none;
   }
 
-  :global(html[lang="en"]) .dock-pane-summary {
-    font-size: 0.85rem;
+  .minimal-note a:hover {
+    text-decoration: underline;
   }
 </style>

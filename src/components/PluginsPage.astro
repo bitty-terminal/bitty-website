@@ -22,162 +22,13 @@ const manualSandboxHref = localePath(
   "/docs/plugins/capabilities-and-sandbox/",
 );
 const manualExtensionsHref = localePath(locale, "/docs/extensions/overview/");
-const manualApiHref = localePath(locale, "/docs/api/overview/");
 
 const pageTitle = isZh
-  ? "Bitty 插件与原生扩展 — 双层安全可编程终端生态"
-  : "Bitty Plugins & Native Extensions — Two-Tier Programmable Terminal Ecosystem";
+  ? "插件与原生扩展 — Bitty"
+  : "Plugins & Native Extensions — Bitty";
 const pageDescription = isZh
-  ? "探索 Bitty 的 L1 原生 Rust 扩展与 L2 Phodopus 无栈 Lua 5.4 沙箱插件体系：零环境权限清单、零 VM 延迟激活、RC-1 帧预算保护与 13 款官方插件。"
-  : "Explore Bitty's L1 Native Rust Extensions and L2 Phodopus stackless Lua 5.4 sandboxed plugins: zero ambient authority manifests, zero-VM lazy activation, RC-1 wall-slice budgets, and 13 official plugins.";
-
-const flagshipPlugins = catalog.luaPlugins.filter((plugin) => plugin.featured);
-
-const pillars = isZh
-  ? [
-      {
-        num: "01",
-        badge: "bitty-plugin.toml",
-        title: "能力围栏清单与零默认权限",
-        desc: "每个插件通过 bitty-plugin.toml 显式声明 ui.*、workspace.*、storage.*、history.*、process.* 细粒度能力授权。未经声明的操作一律按默认拒绝（Fail Closed）处理，杜绝任何隐式环境权限。",
-        linkHref: manualSandboxHref,
-        linkLabel: "阅读能力鉴权规范 →",
-      },
-      {
-        num: "02",
-        badge: "Phodopus VM · RC-1",
-        title: "无栈 Lua 5.4 虚拟机与 RC-1 时间片预算",
-        desc: "基于燃料计量（Fuel-metered）的无栈 Phodopus Lua 5.4 引擎，支持 Installed → Loaded → Active 零 VM 延迟激活。RC-1 时间片预算（单回调 50ms 上限、8ms 预警与瞬态自动恢复）确保插件绝不阻塞 120Hz+ GPU 渲染主循环。",
-        linkHref: manualPluginsHref,
-        linkLabel: "查看生命周期与配额 →",
-      },
-      {
-        num: "03",
-        badge: "SHA-256 · Ed25519",
-        title: "签名注册表与离线完整性校验",
-        desc: "官方目录内嵌 40 位 Git 提交锁定与原始 bitty-plugin.toml SHA-256 摘要绑定，配合 bitty-plugin-lint 静态契约检查、Ed25519 签名验证与事务性 current.json 存储自愈（bitty plugin doctor --repair）。",
-        linkHref: "https://github.com/bitty-terminal/bitty-plugin-sdk",
-        linkLabel: "浏览 Plugin SDK ↗",
-        external: true,
-      },
-      {
-        num: "04",
-        badge: "L1 Rust + L2 Lua",
-        title: "L1 原生扩展与 L2 纯策略插件解耦",
-        desc: "图形解码、进程监管、IPC 传输、无障碍桥接与 AI 运行时等重型系统能力沉淀为 11 个受控 L1 原生 Rust 扩展；L2 Lua 插件专注于轻量级声明式 UI 与交互策略，跨平台零编译即装即用。",
-        linkHref: manualExtensionsHref,
-        linkLabel: "探索原生组件边界 →",
-      },
-    ]
-  : [
-      {
-        num: "01",
-        badge: "bitty-plugin.toml",
-        title: "Capability-Fenced Manifests",
-        desc: "Plugins declare explicit ui.*, workspace.*, storage.*, history.*, and process.* grants in bitty-plugin.toml. Untrusted code receives zero ambient authority, and any undeclared host call fails closed before execution.",
-        linkHref: manualSandboxHref,
-        linkLabel: "Capabilities & Sandboxing →",
-      },
-      {
-        num: "02",
-        badge: "Phodopus VM · RC-1",
-        title: "Stackless Phodopus VM & RC-1 Budgets",
-        desc: "Powered by a fuel-metered stackless Lua 5.4 VM with zero-VM lazy activation (0 bytes until an event or command fires) and RC-1 wall-slice budgets (50ms cap, 8ms advisory, automatic transient recovery) that never block the 120Hz+ GPU render loop.",
-        linkHref: manualPluginsHref,
-        linkLabel: "Lifecycle & Budgets →",
-      },
-      {
-        num: "03",
-        badge: "SHA-256 · Ed25519",
-        title: "Signed Registry & Offline Verification",
-        desc: "Authoritative validation with bitty-plugin-lint, 40-hex commit pins, SHA-256 manifest grant binding, Ed25519 artifact verification, and transactional store recovery via bitty plugin doctor --repair.",
-        linkHref: "https://github.com/bitty-terminal/bitty-plugin-sdk",
-        linkLabel: "Explore Plugin SDK ↗",
-        external: true,
-      },
-      {
-        num: "04",
-        badge: "L1 Rust + L2 Lua",
-        title: "Two-Tier L1 / L2 Separation",
-        desc: "System-heavy mechanics—inline graphics, process supervision, IPC, accessibility, and AI—run in 11 audited L1 Rust extensions, while L2 Lua plugins remain portable, declarative policy packages.",
-        linkHref: manualExtensionsHref,
-        linkLabel: "Native Component Boundary →",
-      },
-    ];
-
-const cliCommands = isZh
-  ? [
-      {
-        label: "列出已安装与官方目录可用插件",
-        code: "bitty plugin list",
-      },
-      {
-        label: "安装并启用官方统一状态栏插件 (Bar)",
-        code: "bitty plugin install bitty-terminal.bar && bitty plugin enable bitty-terminal.bar",
-      },
-      {
-        label: "检查并启用 L1 原生 Rust 扩展状态",
-        code: "bitty ext status && bitty ext enable graphics",
-      },
-      {
-        label: "诊断并修复本地插件存储与权限账本",
-        code: "bitty plugin doctor --repair",
-      },
-      {
-        label: "使用官方 SDK 静态校验插件清单契约",
-        code: "bunx bitty-plugin-lint bitty-plugin.toml",
-      },
-    ]
-  : [
-      {
-        label: "List installed and available official catalog plugins",
-        code: "bitty plugin list",
-      },
-      {
-        label: "Install and enable the official Unified Bar plugin",
-        code: "bitty plugin install bitty-terminal.bar && bitty plugin enable bitty-terminal.bar",
-      },
-      {
-        label: "Inspect and enable L1 native Rust extensions",
-        code: "bitty ext status && bitty ext enable graphics",
-      },
-      {
-        label: "Audit and repair the transactional plugin store",
-        code: "bitty plugin doctor --repair",
-      },
-      {
-        label: "Validate a plugin manifest with the SDK linter",
-        code: "bunx bitty-plugin-lint bitty-plugin.toml",
-      },
-    ];
-
-const sampleManifest = `[plugin]
-id = "bitty-terminal.bar"
-name = "Unified Bar"
-version = "0.0.1"
-description = "Consolidated workspace-bar, tabs, and statusline"
-license = "MIT"
-
-[compat]
-bitty = ">=0.0.24"
-plugin-api = "^1.0"
-
-[capabilities]
-ui.rich = true
-ui.overlay = true
-workspace.read = true
-workspace.control = true
-platform.notify = true
-
-[lazy]
-commands = ["bitty-terminal.bar:focus", "bitty-terminal.bar:detail"]
-events = ["workspace.focused", "workspace.changed", "config.reloaded"]
-
-[limits]
-fuel_instructions = 4000000
-wall_ms = 25
-memory_bytes = 8388608
-warning_ms = 4`;
+  ? "Bitty 双层扩展体系：L1 原生 Rust 扩展与 L2 Phodopus Lua 5.4 沙箱插件目录。"
+  : "Bitty's two-tier extensibility: 11 L1 Native Rust Extensions and 13 L2 Phodopus Lua 5.4 sandboxed plugins.";
 ---
 
 <BaseLayout
@@ -194,962 +45,271 @@ warning_ms = 4`;
     alternateHref={alternatePath}
   />
 
-  <main id="main-content" class="product-main" tabindex="-1">
-    <div class="hero-backdrop" aria-hidden="true"></div>
-
-    <!-- 1. Hero Section -->
-    <section class="product-hero" aria-labelledby="plugins-hero-title">
-      <span class="hero-kicker">
-        <span class="hero-dot" aria-hidden="true"></span>
+  <main id="main-content" class="minimal-main" tabindex="-1">
+    <header class="minimal-header">
+      <h1>{isZh ? "插件与原生扩展" : "Plugins & Native Extensions"}</h1>
+      <p class="minimal-lead">
         {
           isZh
-            ? "L1 原生 Rust 扩展 · L2 Phodopus Lua 虚拟机 · 细粒度能力鉴权"
-            : "L1 Native Rust Extensions · L2 Phodopus Lua VM · Capability-Fenced"
-        }
-      </span>
-
-      <h1 id="plugins-hero-title">
-        {
-          isZh
-            ? "双层安全架构的可编程终端扩展体系"
-            : "Two-Tier Programmable Terminal Extensibility"
-        }
-      </h1>
-
-      <p class="hero-lead">
-        {
-          isZh
-            ? "Bitty 将底层系统能力与上层界面策略严格解耦：L1 原生 Rust 扩展提供经过签名与边界隔离的系统级集成（通过 bitty ext status / bitty ext enable 管理），L2 沙箱化 Lua 插件运行于无栈 Phodopus Lua 5.4 虚拟机之上，具备零 VM 延迟激活、声明式 bitty-plugin.toml 能力授权以及 RC-1 帧预算自动恢复机制。"
-            : "Bitty separates low-level system mechanics from UI policy across two defensive tiers: L1 Native Rust Extensions deliver signed, capability-fenced system integrations (managed via bitty ext status / bitty ext enable), while L2 Sandboxed Lua Plugins run inside the stackless Phodopus Lua 5.4 VM with zero-VM lazy activation, declarative bitty-plugin.toml grants, and RC-1 wall-slice budgets with auto-recovery."
+            ? "Bitty 采用双层安全扩展模型：L1 原生 Rust 扩展（bitty ext）负责图形解码、IPC、无障碍与进程监管等系统级能力；L2 Phodopus Lua 5.4 插件运行于无栈沙箱虚拟机中，通过 bitty-plugin.toml 显式声明能力并遵循 RC-1 帧预算。使用 bitty plugin install 即可安装并启用官方插件。"
+            : "Bitty separates system mechanics from UI policy across two tiers: L1 Native Rust Extensions (bitty ext) provide signed system capabilities, while L2 Phodopus Lua 5.4 Plugins run in a stackless sandbox with explicit bitty-plugin.toml capability grants and RC-1 frame budgets. Install official plugins with bitty plugin install."
         }
       </p>
-
-      <div class="hero-actions">
-        <a class="primary-action" href={manualPluginsHref}>
-          <span>{isZh ? "阅读插件开发手册" : "Browse Manual Docs"}</span>
-          <span aria-hidden="true">→</span>
+      <nav class="quick-links" aria-label={isZh ? "相关文档" : "Related docs"}>
+        <a href={manualPluginsHref}>
+          {isZh ? "插件快速开始" : "Plugin quickstart"}
         </a>
-        <a
-          class="secondary-action"
-          href="https://plugins.bitty.run"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span>{isZh ? "探索插件注册表" : "Explore Registry"}</span>
-          <span aria-hidden="true">↗</span>
+        <span aria-hidden="true">·</span>
+        <a href={manualSandboxHref}>
+          {isZh ? "能力与沙箱" : "Capabilities & sandbox"}
         </a>
+        <span aria-hidden="true">·</span>
+        <a href={manualExtensionsHref}>
+          {isZh ? "原生扩展概览" : "Native extensions"}
+        </a>
+        <span aria-hidden="true">·</span>
         <a
-          class="secondary-action"
           href="https://github.com/bitty-terminal/bitty-plugins"
           target="_blank"
           rel="noopener noreferrer"
         >
-          <span>{isZh ? "官方插件仓库" : "bitty-plugins Repo"}</span>
-          <span aria-hidden="true">↗</span>
+          bitty-plugins ↗
         </a>
-        <a
-          class="secondary-action"
-          href="https://github.com/bitty-terminal/bitty-plugin-sdk"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span>{isZh ? "Plugin SDK 与校验器" : "Plugin SDK"}</span>
-          <span aria-hidden="true">↗</span>
-        </a>
-      </div>
+      </nav>
+    </header>
 
-      <div class="tier-summary-strip" role="list" aria-label={isZh ? "双层扩展架构概览" : "Two-tier architecture summary"}>
-        <div class="tier-pill" role="listitem">
-          <span class="tier-tag">L1 · Rust</span>
-          <span class="tier-text">
-            {
-              isZh
-                ? "11 个原生扩展 · 独立进程/受控边界 · bitty ext status"
-                : "11 Native Extensions · Process & capability fenced · bitty ext status"
-            }
-          </span>
-        </div>
-        <div class="tier-pill" role="listitem">
-          <span class="tier-tag">L2 · Lua 5.4</span>
-          <span class="tier-text">
-            {
-              isZh
-                ? "13 个官方插件 · Phodopus 无栈 VM · 0 字节惰性待机"
-                : "13 Official Plugins · Phodopus stackless VM · 0-byte lazy standby"
-            }
-          </span>
-        </div>
-      </div>
+    <section class="minimal-section" aria-labelledby="quickstart-title">
+      <h2 id="quickstart-title">{isZh ? "常用命令" : "Quickstart"}</h2>
+      <pre class="cli-block"><code>{`bitty plugin list
+bitty plugin install bitty-terminal.bar && bitty plugin enable bitty-terminal.bar
+bitty ext status`}</code></pre>
     </section>
 
-    <!-- 2. Architecture & Security Pillars Grid -->
-    <section class="product-section" aria-labelledby="pillars-title">
-      <div class="section-header-bar">
-        <div>
-          <p class="eyebrow">
-            {isZh ? "SECURITY & RUNTIME ARCHITECTURE" : "SECURITY & RUNTIME ARCHITECTURE"}
-          </p>
-          <h2 id="pillars-title">
-            {isZh ? "架构与安全四大支柱" : "Architecture & Security Pillars"}
-          </h2>
-        </div>
-        <a class="meta-pill-link" href={manualApiHref}>
-          <span>{isZh ? "Lua API 参考手册" : "Lua API Reference"}</span>
-          <span aria-hidden="true">→</span>
-        </a>
-      </div>
-
-      <div class="pillars-grid">
-        {
-          pillars.map((pillar) => (
-            <article class="pillar-card">
-              <div class="pillar-top">
-                <span class="feature-num">{pillar.num}</span>
-                <span class="code-badge">{pillar.badge}</span>
-              </div>
-              <h3>{pillar.title}</h3>
-              <p>{pillar.desc}</p>
-              <a
-                class="card-inline-link"
-                href={pillar.linkHref}
-                target={pillar.external ? "_blank" : undefined}
-                rel={pillar.external ? "noopener noreferrer" : undefined}
-              >
-                {pillar.linkLabel}
-              </a>
-            </article>
-          ))
-        }
-      </div>
-    </section>
-
-    <!-- 3. Flagship Lua Plugins Highlight -->
-    <section class="product-section" aria-labelledby="flagship-title">
-      <div class="section-header-bar">
-        <div>
-          <p class="eyebrow">
-            {isZh ? "FLAGSHIP WORKSPACE PLUGINS" : "FLAGSHIP WORKSPACE PLUGINS"}
-          </p>
-          <h2 id="flagship-title">
-            {isZh ? "核心旗舰插件亮点" : "Flagship Official Plugins"}
-          </h2>
-        </div>
-        <span class="section-count-pill">
-          {
-            isZh
-              ? `${flagshipPlugins.length} 款旗舰组件`
-              : `${flagshipPlugins.length} Flagship Packages`
-          }
-        </span>
-      </div>
-
-      <div class="flagship-grid">
-        {
-          flagshipPlugins.map((plugin) => (
-            <article class="flagship-card">
-              <div class="plugin-card-head">
-                <div>
-                  <span class="plugin-id-badge">{plugin.id}</span>
-                  <h3>{plugin.title}</h3>
-                </div>
-                <span class="version-chip">v{plugin.version}</span>
-              </div>
-              <p class="plugin-summary">{plugin.summary}</p>
-              <div class="cap-tag-list" aria-label={isZh ? "声明的能力授权" : "Declared capabilities"}>
-                {plugin.capabilities.map((cap) => (
-                  <code class="cap-tag">{cap}</code>
-                ))}
-              </div>
-              <div class="plugin-card-links">
-                <a href={plugin.manualHref} class="card-action-link">
-                  <span>{isZh ? "手册说明" : "Manual"}</span>
-                  <span aria-hidden="true">→</span>
-                </a>
-                <a
-                  href={plugin.registryUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="card-action-link"
-                >
-                  <span>{isZh ? "注册表" : "Registry"}</span>
-                  <span aria-hidden="true">↗</span>
-                </a>
-                <a
-                  href={plugin.repoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="card-action-link"
-                >
-                  <span>GitHub ({plugin.slug})</span>
-                  <span aria-hidden="true">↗</span>
-                </a>
-              </div>
-            </article>
-          ))
-        }
-      </div>
-    </section>
-
-    <!-- 4. Complete Official Lua Plugins Suite (All 13 Official Plugins) -->
-    <section class="product-section" aria-labelledby="lua-catalog-title">
-      <div class="section-header-bar">
-        <div>
-          <p class="eyebrow">
-            {isZh ? "L2 OFFICIAL LUA PLUGIN SUITE" : "L2 OFFICIAL LUA PLUGIN SUITE"}
-          </p>
-          <h2 id="lua-catalog-title">
-            {
-              isZh
-                ? `全部 ${catalog.luaPlugins.length} 款官方 Lua 插件目录`
-                : `All ${catalog.luaPlugins.length} Official Lua Plugins`
-            }
-          </h2>
-        </div>
-        <a
-          class="meta-pill-link"
-          href="https://plugins.bitty.run"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span>plugins.bitty.run</span>
-          <span aria-hidden="true">↗</span>
-        </a>
-      </div>
-
-      <p class="section-lead">
+    <section class="minimal-section" aria-labelledby="lua-plugins-title">
+      <h2 id="lua-plugins-title">
         {
           isZh
-            ? "所有官方插件均托管于 github.com/bitty-terminal/<slug>，通过 bitty-plugin-lint 契约检查并在构建期锁定 40 位提交哈希与 SHA-256 清单摘要。"
-            : "Every official plugin lives in its own repository at github.com/bitty-terminal/<slug>, passes bitty-plugin-lint contract checks, and pins an exact commit SHA and SHA-256 manifest digest."
+            ? `官方 Lua 插件 (${catalog.luaPlugins.length})`
+            : `Official Lua Plugins (${catalog.luaPlugins.length})`
         }
-      </p>
-
-      <div class="catalog-grid">
-        {
-          catalog.luaPlugins.map((plugin) => (
-            <article class="catalog-card">
-              <div class="plugin-card-head">
-                <div>
-                  <div class="badge-row">
-                    <span class="plugin-id-badge">{plugin.id}</span>
-                    {plugin.featured && (
-                      <span class="featured-pill">
-                        {isZh ? "旗舰" : "Flagship"}
-                      </span>
-                    )}
-                  </div>
-                  <h3>{plugin.title}</h3>
-                </div>
-                <span class="version-chip" title={`compat.bitty ${plugin.compat}`}>
-                  v{plugin.version} · {plugin.compat}
-                </span>
-              </div>
-
-              <p class="plugin-summary">{plugin.summary}</p>
-
-              <div class="cap-tag-list">
-                {plugin.capabilities.map((cap) => (
-                  <code class="cap-tag">{cap}</code>
-                ))}
-              </div>
-
-              <div class="plugin-card-links">
-                <a href={plugin.manualHref} class="card-action-link">
-                  <span>{isZh ? "手册文档" : "Manual"}</span>
-                  <span aria-hidden="true">→</span>
-                </a>
-                <a
-                  href={plugin.repoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="card-action-link"
-                >
-                  <span>github.com/bitty-terminal/{plugin.slug}</span>
-                  <span aria-hidden="true">↗</span>
-                </a>
-              </div>
-            </article>
-          ))
-        }
+      </h2>
+      <div class="table-scroll" tabindex="0">
+        <table class="catalog-table">
+          <thead>
+            <tr>
+              <th>{isZh ? "插件" : "Plugin"}</th>
+              <th>{isZh ? "说明" : "Summary"}</th>
+              <th>{isZh ? "链接" : "Links"}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {catalog.luaPlugins.map((plugin) => (
+              <tr class="lua-plugin-row">
+                <td class="col-name">
+                  <span class="item-title">{plugin.title}</span>
+                  <code class="item-id">{plugin.id}</code>
+                </td>
+                <td class="col-summary">{plugin.summary}</td>
+                <td class="col-links">
+                  <a href={plugin.manualHref}>{t.statusDocs}</a>
+                  <span aria-hidden="true">·</span>
+                  <a
+                    href={plugin.repoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    GitHub ↗
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
 
-    <!-- 5. Native Rust Extensions Matrix (All 11 L1 Extensions) -->
-    <section class="product-section" aria-labelledby="native-matrix-title">
-      <div class="section-header-bar">
-        <div>
-          <p class="eyebrow">
-            {isZh ? "L1 NATIVE RUST EXTENSIONS" : "L1 NATIVE RUST EXTENSIONS"}
-          </p>
-          <h2 id="native-matrix-title">
-            {
-              isZh
-                ? `全部 ${catalog.nativeExtensions.length} 个 L1 原生 Rust 扩展矩阵`
-                : `All ${catalog.nativeExtensions.length} L1 Native Rust Extensions`
-            }
-          </h2>
-        </div>
-        <a class="meta-pill-link" href={manualExtensionsHref}>
-          <span>{isZh ? "扩展目录总览" : "Extension Catalog Overview"}</span>
-          <span aria-hidden="true">→</span>
-        </a>
-      </div>
-
-      <p class="section-lead">
+    <section class="minimal-section" aria-labelledby="native-ext-title">
+      <h2 id="native-ext-title">
         {
           isZh
-            ? "L1 原生扩展遵循 DIR-030 原生组件边界契约，提供经过独立验证的 Rust 子系统。通过 bitty ext status 或 bitty extension list 检查本地阶段化状态。"
-            : "L1 Native Extensions follow the DIR-030 Native Component Boundary contract, providing audited Rust subsystems. Inspect local staging with bitty ext status or bitty extension list."
+            ? `L1 原生 Rust 扩展 (${catalog.nativeExtensions.length})`
+            : `L1 Native Rust Extensions (${catalog.nativeExtensions.length})`
         }
-      </p>
-
-      <div class="native-grid">
-        {
-          catalog.nativeExtensions.map((ext) => (
-            <article class="native-card">
-              <div class="plugin-card-head">
-                <div>
-                  <span class="plugin-id-badge">bitty-{ext.id}</span>
-                  <h3>{ext.title}</h3>
-                </div>
-                <span
-                  class:list={[
-                    "status-pill",
-                    { "is-published": ext.status === "published" },
-                  ]}
-                >
-                  {ext.statusLabel}
-                  {ext.version ? ` · v${ext.version}` : ""}
-                </span>
-              </div>
-
-              <p class="plugin-summary">{ext.summary}</p>
-
-              <div class="plugin-card-links">
-                <a href={ext.href} class="card-action-link">
-                  <span>
-                    {isZh ? `${ext.id} 扩展文档` : `${ext.id} Manual`}
-                  </span>
-                  <span aria-hidden="true">→</span>
-                </a>
-                <a
-                  href={ext.repoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="card-action-link"
-                >
-                  <span>bitty-{ext.id}</span>
-                  <span aria-hidden="true">↗</span>
-                </a>
-              </div>
-            </article>
-          ))
-        }
-      </div>
-    </section>
-
-    <!-- 6. Quickstart CLI & Authoring Section -->
-    <section class="product-section" aria-labelledby="quickstart-cli-title">
-      <div class="section-header-bar">
-        <div>
-          <p class="eyebrow">
-            {isZh ? "CLI & MANIFEST AUTHORING" : "CLI & MANIFEST AUTHORING"}
-          </p>
-          <h2 id="quickstart-cli-title">
-            {
-              isZh
-                ? "CLI 快速上手与插件清单编写"
-                : "Quickstart CLI & Manifest Authoring"
-            }
-          </h2>
-        </div>
-        <a
-          class="meta-pill-link"
-          href="https://github.com/bitty-terminal/bitty-plugin-template"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span>{isZh ? "插件脚手架模板" : "Plugin Template"}</span>
-          <span aria-hidden="true">↗</span>
-        </a>
-      </div>
-
-      <div class="authoring-split">
-        <div class="authoring-pane">
-          <h3>
-            {isZh ? "日常插件与扩展管理命令" : "Plugin & Extension CLI Commands"}
-          </h3>
-          <div class="command-stack">
-            {
-              cliCommands.map((cmd) => (
-                <div class="command-entry">
-                  <p class="command-label">{cmd.label}</p>
-                  <div class="command-block">
-                    <code>{cmd.code}</code>
-                    <button
-                      type="button"
-                      data-copy={cmd.code}
-                      aria-label={`${t.copy}: ${cmd.label}`}
-                    >
-                      {t.copy}
-                    </button>
-                  </div>
-                </div>
-              ))
-            }
-          </div>
-        </div>
-
-        <div class="authoring-pane">
-          <h3>
-            {
-              isZh
-                ? "标准 bitty-plugin.toml 清单结构"
-                : "Canonical bitty-plugin.toml Manifest"
-            }
-          </h3>
-          <pre class="manifest-pre"><code>{sampleManifest}</code></pre>
-        </div>
+      </h2>
+      <div class="table-scroll" tabindex="0">
+        <table class="catalog-table">
+          <thead>
+            <tr>
+              <th>{isZh ? "扩展" : "Extension"}</th>
+              <th>{isZh ? "说明" : "Summary"}</th>
+              <th>{isZh ? "链接" : "Links"}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {catalog.nativeExtensions.map((ext) => (
+              <tr class="native-ext-row">
+                <td class="col-name">
+                  <span class="item-title">{ext.title}</span>
+                  <code class="item-id">{ext.name}</code>
+                </td>
+                <td class="col-summary">{ext.summary}</td>
+                <td class="col-links">
+                  <a href={ext.href}>{t.statusDocs}</a>
+                  <span aria-hidden="true">·</span>
+                  <a
+                    href={ext.repoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    GitHub ↗
+                  </a>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </section>
   </main>
 
   <SiteFooter locale={locale} />
-
-  <script
-    define:vars={{
-      copiedMessage: t.copied,
-      copyFailedMessage: t.copyFailed,
-    }}
-  >
-    const copied = copiedMessage;
-    const copyFailed = copyFailedMessage;
-    for (const element of document.querySelectorAll("[data-copy]")) {
-      if (!(element instanceof HTMLButtonElement)) continue;
-      const button = element;
-      const original = button.textContent ?? "Copy";
-      button.addEventListener("click", async () => {
-        const command = button.dataset.copy ?? "";
-        try {
-          await navigator.clipboard.writeText(command);
-          button.textContent = copied;
-          button.dataset.copiedState = "true";
-          window.setTimeout(() => {
-            button.textContent = original;
-            delete button.dataset.copiedState;
-          }, 1500);
-        } catch {
-          button.textContent = copyFailed;
-        }
-      });
-    }
-  </script>
 </BaseLayout>
 
 <style>
-  .product-main {
-    flex: 1;
-    position: relative;
-    width: 100%;
-    padding-block: 0 4rem;
-    overflow-x: clip;
-  }
-
-  .hero-backdrop {
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 26rem;
-    background-image:
-      radial-gradient(
-        ellipse 55% 45% at 50% -15%,
-        var(--accent-soft),
-        transparent 70%
-      ),
-      radial-gradient(var(--grid-dot) 1px, transparent 1px);
-    background-size:
-      100% 100%,
-      24px 24px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .product-hero,
-  .product-section {
-    position: relative;
-    z-index: 1;
-    width: min(68rem, calc(100% - 2rem));
+  .minimal-main {
+    flex: 1 0 auto;
+    width: min(52rem, calc(100% - 2rem));
     margin-inline: auto;
+    padding-block: 2.75rem 4.5rem;
   }
 
-  .product-hero {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding-block: clamp(2.5rem, 5vw, 4rem) clamp(1.75rem, 3.5vw, 2.5rem);
+  .minimal-header {
+    margin-bottom: 2.25rem;
   }
 
-  .hero-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    margin-bottom: 0.8rem;
-    padding: 0.22rem 0.7rem;
-    border: 1px solid var(--accent-border);
-    border-radius: 999px;
-    background: var(--accent-soft);
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    font-weight: 600;
-  }
-
-  .hero-dot {
-    width: 0.38rem;
-    height: 0.38rem;
-    border-radius: 50%;
-    background: var(--accent);
-  }
-
-  .product-hero h1 {
-    max-width: 28ch;
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: clamp(1.8rem, 3.2vw, 2.55rem);
+  .minimal-header h1 {
+    margin: 0 0 0.85rem;
+    font-size: clamp(1.75rem, 3.5vw, 2.2rem);
     font-weight: 700;
+    letter-spacing: -0.025em;
     line-height: 1.15;
-    letter-spacing: -0.028em;
-    color: var(--fg-primary);
   }
 
-  .hero-lead {
-    max-width: 50rem;
-    margin: 0.85rem 0 0;
-    color: var(--fg-secondary);
-    font-size: 0.95rem;
-    line-height: 1.68;
-  }
-
-  :global(html[lang="en"]) .hero-lead {
-    font-size: 1.02rem;
-  }
-
-  .hero-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.6rem;
-    margin-top: 1.45rem;
-  }
-
-  .primary-action,
-  .secondary-action {
-    display: inline-flex;
-    min-block-size: var(--touch-target);
-    align-items: center;
-    gap: 0.45rem;
-    padding: 0.5rem 1.05rem;
-    border-radius: var(--radius-sm);
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    font-weight: 600;
-    text-decoration: none;
-    box-shadow: var(--shadow-xs);
-  }
-
-  .primary-action {
-    border: 1px solid var(--accent);
-    background: var(--accent);
-    color: var(--accent-ink);
-  }
-
-  .primary-action:hover {
-    border-color: var(--accent-hover);
-    background: var(--accent-hover);
-    color: var(--accent-ink);
-  }
-
-  .secondary-action {
-    border: 1px solid var(--line);
-    background: var(--bg-surface);
-    color: var(--fg-primary);
-  }
-
-  .secondary-action:hover {
-    border-color: var(--border-strong);
-    background: var(--bg-elevated);
-    color: var(--fg-primary);
-  }
-
-  .tier-summary-strip {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.65rem;
-    margin-top: 1.5rem;
-  }
-
-  .tier-pill {
-    display: inline-flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.4rem 0.75rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    background: var(--bg-surface);
-    box-shadow: var(--shadow-xs);
-    font-size: 0.78rem;
-  }
-
-  .tier-tag {
-    padding: 0.12rem 0.45rem;
-    border-radius: var(--radius-xs);
-    background: var(--accent-soft);
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    font-weight: 700;
-  }
-
-  .tier-text {
-    color: var(--fg-secondary);
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-  }
-
-  .product-section {
-    padding-top: 2.25rem;
-  }
-
-  .section-header-bar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
-    padding-bottom: 0.65rem;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .section-header-bar h2 {
-    margin: 0;
-    font: 700 1.25rem var(--font-display);
-    letter-spacing: -0.02em;
-    color: var(--fg-primary);
-  }
-
-  .section-lead {
+  .minimal-lead {
     margin: 0 0 1.1rem;
     color: var(--fg-secondary);
-    font-size: 0.88rem;
-    line-height: 1.6;
+    font-size: 0.98rem;
+    line-height: 1.7;
   }
 
-  :global(html[lang="en"]) .section-lead {
-    font-size: 0.94rem;
-  }
-
-  .meta-pill-link,
-  .section-count-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    padding: 0.28rem 0.65rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-sm);
-    background: var(--bg-surface);
-    color: var(--fg-secondary);
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    text-decoration: none;
-    box-shadow: var(--shadow-xs);
-  }
-
-  .meta-pill-link:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  .pillars-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
-  }
-
-  .pillar-card,
-  .flagship-card,
-  .catalog-card,
-  .native-card,
-  .authoring-pane {
+  .quick-links {
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 1.15rem 1.25rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    background: var(--bg-surface);
-    box-shadow: var(--shadow);
-  }
-
-  .pillar-top {
-    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
+    gap: 0.4rem 0.7rem;
+    font-size: 0.9rem;
   }
 
-  .feature-num {
+  .quick-links a {
     color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-  }
-
-  .code-badge {
-    padding: 0.14rem 0.48rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-xs);
-    background: var(--bg-elevated);
-    color: var(--fg-secondary);
-    font-family: var(--font-mono);
-    font-size: 0.66rem;
-    font-weight: 600;
-  }
-
-  .pillar-card h3,
-  .flagship-card h3,
-  .catalog-card h3,
-  .native-card h3,
-  .authoring-pane h3 {
-    margin: 0 0 0.4rem;
-    font: 600 0.98rem var(--font-display);
-    color: var(--fg-primary);
-  }
-
-  .pillar-card p,
-  .plugin-summary {
-    margin: 0 0 0.85rem;
-    color: var(--fg-secondary);
-    font-size: 0.825rem;
-    line-height: 1.58;
-  }
-
-  :global(html[lang="en"]) .pillar-card p,
-  :global(html[lang="en"]) .plugin-summary {
-    font-size: 0.875rem;
-  }
-
-  .card-inline-link {
-    align-self: flex-start;
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 0.74rem;
-    font-weight: 600;
     text-decoration: none;
+    font-weight: 500;
   }
 
-  .card-inline-link:hover {
+  .quick-links a:hover {
     text-decoration: underline;
   }
 
-  .flagship-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
-    gap: 1rem;
+  .quick-links span[aria-hidden="true"] {
+    color: var(--fg-muted);
   }
 
-  .catalog-grid,
-  .native-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(19.5rem, 1fr));
-    gap: 0.9rem;
+  .minimal-section + .minimal-section {
+    margin-top: 2.5rem;
   }
 
-  .plugin-card-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.6rem;
-    margin-bottom: 0.45rem;
-  }
-
-  .badge-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.35rem;
-    margin-bottom: 0.25rem;
-  }
-
-  .plugin-id-badge {
-    display: inline-block;
-    margin-bottom: 0.2rem;
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 0.68rem;
-    font-weight: 600;
-  }
-
-  .featured-pill {
-    padding: 0.08rem 0.4rem;
-    border: 1px solid var(--accent-border);
-    border-radius: 999px;
-    background: var(--accent-soft);
-    color: var(--accent);
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
+  .minimal-section h2 {
+    margin: 0 0 0.85rem;
+    font-size: 1.15rem;
     font-weight: 700;
+    letter-spacing: -0.015em;
   }
 
-  .version-chip,
-  .status-pill {
-    flex-shrink: 0;
-    padding: 0.14rem 0.48rem;
+  .cli-block {
+    margin: 0;
+    padding: 0.85rem 1rem;
     border: 1px solid var(--line);
-    border-radius: var(--radius-xs);
-    background: var(--bg-elevated);
-    color: var(--fg-secondary);
+    border-radius: var(--radius-md);
+    background: var(--bg-surface);
+    overflow-x: auto;
     font-family: var(--font-mono);
-    font-size: 0.64rem;
+    font-size: 0.82rem;
+    line-height: 1.6;
+  }
+
+  .catalog-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+
+  .catalog-table th,
+  .catalog-table td {
+    padding: 0.65rem 0.75rem;
+    text-align: start;
+    vertical-align: top;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .catalog-table th {
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .col-name {
+    min-inline-size: 11rem;
+  }
+
+  .item-title {
+    display: block;
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .item-id {
+    display: inline-block;
+    margin-top: 0.15rem;
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+  }
+
+  .col-summary {
+    color: var(--fg-secondary);
+    line-height: 1.55;
+  }
+
+  .col-links {
     white-space: nowrap;
-  }
-
-  .status-pill.is-published {
-    border-color: var(--ok);
-    background: var(--ok-soft);
-    color: var(--ok);
-  }
-
-  .cap-tag-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.3rem;
-    margin-bottom: 0.85rem;
-  }
-
-  .cap-tag {
-    padding: 0.12rem 0.4rem;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-xs);
-    background: var(--bg-subtle);
-    color: var(--fg-secondary);
     font-family: var(--font-mono);
-    font-size: 0.64rem;
+    font-size: 0.76rem;
   }
 
-  .plugin-card-links {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.55rem 0.85rem;
-    padding-top: 0.65rem;
-    border-top: 1px solid var(--border-subtle);
-    margin-top: auto;
-  }
-
-  .card-action-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    color: var(--fg-primary);
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    font-weight: 600;
+  .col-links a {
+    color: var(--accent);
     text-decoration: none;
   }
 
-  .card-action-link:hover {
-    color: var(--accent);
+  .col-links a:hover {
+    text-decoration: underline;
   }
 
-  .authoring-split {
-    display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
-    gap: 1rem;
-  }
-
-  .command-stack {
-    display: grid;
-    gap: 0.6rem;
-    margin-top: 0.4rem;
-  }
-
-  .command-entry {
-    display: grid;
-    gap: 0.22rem;
-  }
-
-  .command-label {
-    margin: 0;
+  .col-links span[aria-hidden="true"] {
+    margin-inline: 0.3rem;
     color: var(--fg-muted);
-    font-family: var(--font-mono);
-    font-size: 0.64rem;
-  }
-
-  .command-block {
-    display: flex;
-    min-width: 0;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.7rem;
-    border: 1px solid var(--cmd-line);
-    border-radius: var(--radius-sm);
-    background: var(--cmd-bg);
-    color: var(--cmd-ink);
-  }
-
-  .command-block code {
-    min-width: 0;
-    flex: 1;
-    overflow-wrap: anywhere;
-    white-space: pre-wrap;
-    font: 0.73rem/1.5 var(--font-mono);
-  }
-
-  .command-block button {
-    flex-shrink: 0;
-    min-block-size: 1.5rem;
-    min-inline-size: 1.5rem;
-    border: 1px solid var(--cmd-line);
-    border-radius: var(--radius-xs);
-    padding: 0.24rem 0.58rem;
-    background: var(--cmd-panel);
-    color: var(--fg-secondary);
-    font: 600 0.66rem var(--font-mono);
-    cursor: pointer;
-    box-shadow: var(--shadow-xs);
-  }
-
-  .command-block button:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-
-  .command-block button[data-copied-state="true"] {
-    border-color: var(--ok);
-    color: var(--ok);
-  }
-
-  .manifest-pre {
-    margin: 0.4rem 0 0;
-    padding: 0.85rem 1rem;
-    border: 1px solid var(--cmd-line);
-    border-radius: var(--radius-sm);
-    background: var(--cmd-bg);
-    color: var(--cmd-ink);
-    font: 0.72rem/1.55 var(--font-mono);
-    overflow-x: auto;
-  }
-
-  @media (max-width: 820px) {
-    .pillars-grid,
-    .authoring-split {
-      grid-template-columns: 1fr;
-    }
   }
 </style>

@@ -1,0 +1,406 @@
+---
+/**
+ * Unified, hidden-by-default left navigation sidebar drawer.
+ *
+ * Rendered across all routes (Home, Plugins, AI, Docs Index, and Manual pages)
+ * and opened on demand via `#site-sidebar-toggle` in `SiteHeader.astro`.
+ * Always starts hidden on fresh page loads (`data-sidebar-open="false"` + `hidden`).
+ */
+import {
+  getUiMessages,
+  localePath,
+  type SiteLocale,
+} from "../lib/i18n.ts";
+import { getManualNavGroups } from "../lib/manualDocs.ts";
+
+type Props = {
+  locale?: SiteLocale;
+  activeNav?: "hero" | "docs" | "plugins" | "ai";
+  currentSlug?: string;
+};
+
+const {
+  locale = "en",
+  activeNav,
+  currentSlug = "",
+} = Astro.props as Props;
+
+const isZh = locale === "zh-CN";
+const t = getUiMessages(locale);
+const groups = getManualNavGroups(currentSlug, locale);
+const homeHref = localePath(locale, "/");
+const installHref = `${homeHref}#install`;
+const pluginsHref = localePath(locale, "/plugins/");
+const aiHref = localePath(locale, "/ai/");
+const docsHref = localePath(locale, "/docs/");
+const docsPrefix = isZh ? "/zh-CN/docs" : "/docs";
+
+const topLinks = [
+  {
+    label: isZh ? "概览" : "Overview",
+    href: homeHref,
+    isCurrent: activeNav === "hero",
+  },
+  {
+    label: t.navInstall,
+    href: installHref,
+    isCurrent: false,
+  },
+  {
+    label: t.navPlugins,
+    href: pluginsHref,
+    isCurrent: activeNav === "plugins",
+  },
+  {
+    label: isZh ? "AI 与 Wheel" : "AI & Wheel",
+    href: aiHref,
+    isCurrent: activeNav === "ai",
+  },
+  {
+    label: isZh ? "手册目录" : "Docs Index",
+    href: docsHref,
+    isCurrent: activeNav === "docs" && currentSlug === "",
+  },
+];
+---
+
+<div
+  id="site-sidebar-backdrop"
+  class="site-sidebar-backdrop"
+  hidden
+  aria-hidden="true"
+></div>
+
+<aside
+  id="site-sidebar"
+  class="site-sidebar-drawer"
+  data-sidebar-open="false"
+  hidden
+  aria-label={t.sidebarAria}
+>
+  <div class="site-sidebar-head">
+    <span class="site-sidebar-title">{t.sidebarNavTitle}</span>
+    <button
+      type="button"
+      id="site-sidebar-close"
+      class="site-sidebar-close"
+      aria-label={t.sidebarCloseLabel}
+      title={t.sidebarCloseLabel}
+    >
+      <svg
+        viewBox="0 0 16 16"
+        width="14"
+        height="14"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        aria-hidden="true"
+      >
+        <path d="M3.5 3.5l9 9M12.5 3.5l-9 9"></path>
+      </svg>
+    </button>
+  </div>
+
+  <nav class="docs-sidebar" aria-label={t.sidebarAria}>
+    <ul class="sidebar-top-links">
+      {topLinks.map((item) => (
+        <li>
+          <a
+            href={item.href}
+            aria-current={item.isCurrent ? "page" : undefined}
+            class={item.isCurrent ? "active" : undefined}
+          >
+            {item.label}
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <p class="sidebar-section-label">{t.sidebarSectionsTitle}</p>
+
+    <ul class="docs-nav-tree">
+      {groups.map((group) => {
+        const isGroupOpen = Boolean(currentSlug) && group.isCurrent;
+        return (
+          <li class="docs-nav-group">
+            <details
+              class="docs-nav-group-details"
+              open={isGroupOpen ? true : undefined}
+            >
+              <summary>{group.label}</summary>
+              <ul>
+                {group.entries.map((entry) => {
+                  const isActive =
+                    Boolean(currentSlug) && entry.fullSlug === currentSlug;
+                  const href = `${docsPrefix}/${entry.fullSlug}/`;
+                  return (
+                    <li class="docs-nav-entry">
+                      <a
+                        href={href}
+                        aria-current={isActive ? "page" : undefined}
+                        class={isActive ? "active" : undefined}
+                      >
+                        {entry.title}
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            </details>
+          </li>
+        );
+      })}
+    </ul>
+  </nav>
+</aside>
+
+<script is:inline>
+  (() => {
+    const toggleBtn = document.getElementById("site-sidebar-toggle");
+    const closeBtn = document.getElementById("site-sidebar-close");
+    const sidebar = document.getElementById("site-sidebar");
+    const backdrop = document.getElementById("site-sidebar-backdrop");
+    if (!(sidebar instanceof HTMLElement)) return;
+
+    const setOpen = (open, restoreFocus = false) => {
+      sidebar.hidden = !open;
+      sidebar.setAttribute("data-sidebar-open", String(open));
+      if (backdrop instanceof HTMLElement) {
+        backdrop.hidden = !open;
+      }
+      if (toggleBtn instanceof HTMLButtonElement) {
+        toggleBtn.setAttribute("aria-expanded", String(open));
+        if (!open && restoreFocus) {
+          toggleBtn.focus();
+        }
+      }
+      if (open && closeBtn instanceof HTMLButtonElement) {
+        closeBtn.focus();
+      }
+    };
+
+    toggleBtn?.addEventListener("click", () => {
+      const isOpen = sidebar.getAttribute("data-sidebar-open") === "true";
+      setOpen(!isOpen);
+    });
+
+    closeBtn?.addEventListener("click", () => {
+      setOpen(false, true);
+    });
+
+    backdrop?.addEventListener("click", () => {
+      setOpen(false);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (
+        event.key === "Escape" &&
+        sidebar.getAttribute("data-sidebar-open") === "true"
+      ) {
+        setOpen(false, true);
+      }
+    });
+
+    for (const link of sidebar.querySelectorAll("a[href]")) {
+      link.addEventListener("click", () => {
+        setOpen(false);
+      });
+    }
+  })();
+</script>
+
+<style>
+  .site-sidebar-backdrop[hidden],
+  .site-sidebar-drawer[hidden] {
+    display: none;
+  }
+
+  .site-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--layer-modal, 100) - 1);
+    background: color-mix(in srgb, var(--ink) 28%, transparent);
+  }
+
+  .site-sidebar-drawer {
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    z-index: var(--layer-modal, 100);
+    inline-size: min(20rem, 86vw);
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-surface);
+    border-inline-end: 1px solid var(--line);
+    box-shadow: var(--shadow-lg);
+    overflow-y: auto;
+  }
+
+  .site-sidebar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid var(--line);
+    position: sticky;
+    top: 0;
+    background: var(--bg-surface);
+    z-index: 1;
+  }
+
+  .site-sidebar-title {
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .site-sidebar-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-block-size: var(--touch-target);
+    min-inline-size: var(--touch-target);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--fg-secondary);
+    cursor: pointer;
+  }
+
+  .site-sidebar-close:hover {
+    border-color: var(--border-strong);
+    color: var(--ink);
+  }
+
+  .docs-sidebar {
+    padding: 0.85rem 1rem 2rem;
+    font-size: var(--text-xs);
+    line-height: 1.45;
+  }
+
+  .sidebar-top-links,
+  .docs-nav-tree,
+  .docs-nav-tree ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sidebar-top-links {
+    display: grid;
+    gap: 0.15rem;
+    padding-bottom: 0.85rem;
+    margin-bottom: 0.85rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sidebar-top-links a {
+    display: flex;
+    align-items: center;
+    min-block-size: 2.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-xs);
+    color: var(--fg-primary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .sidebar-top-links a:hover {
+    background: var(--bg-elevated);
+    color: var(--accent);
+  }
+
+  .sidebar-top-links a.active {
+    background: var(--bg-elevated);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .sidebar-section-label {
+    margin: 0 0 0.5rem;
+    padding-inline: 0.35rem;
+    color: var(--fg-muted);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .docs-nav-group + .docs-nav-group {
+    margin-top: 0.45rem;
+  }
+
+  .docs-nav-tree ul {
+    margin: 0.25rem 0 0 0.25rem;
+    padding-inline-start: 0.65rem;
+    border-inline-start: 1px solid var(--line);
+  }
+
+  .docs-nav-group-details > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-block-size: 2.1rem;
+    padding: 0.25rem 0.35rem;
+    border-radius: var(--radius-xs);
+    cursor: pointer;
+    color: var(--fg-primary);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    list-style: none;
+    user-select: none;
+  }
+
+  .docs-nav-group-details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .docs-nav-group-details > summary:hover {
+    color: var(--accent);
+  }
+
+  .docs-nav-group-details > summary::after {
+    content: "\25B8";
+    color: var(--fg-muted);
+    font-size: 0.65rem;
+    transition: transform 0.15s ease;
+  }
+
+  .docs-nav-group-details[open] > summary::after {
+    transform: rotate(90deg);
+  }
+
+  .docs-nav-entry a {
+    display: block;
+    min-block-size: 1.9rem;
+    align-content: center;
+    padding: 0.24rem 0.6rem;
+    margin-inline-start: -1px;
+    border-inline-start: 2px solid transparent;
+    color: var(--fg-secondary);
+    font-size: 0.8rem;
+    text-decoration: none;
+    border-radius: 0 var(--radius-xs) var(--radius-xs) 0;
+  }
+
+  .docs-nav-entry a:hover {
+    color: var(--fg-primary);
+    background-color: var(--bg-elevated);
+  }
+
+  .docs-nav-entry a.active {
+    color: var(--accent);
+    border-inline-start-color: var(--accent);
+    background-color: var(--bg-elevated);
+    font-weight: 600;
+  }
+</style>

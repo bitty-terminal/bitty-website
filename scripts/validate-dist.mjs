@@ -138,53 +138,72 @@ async function assertDesignSheet(directory = dist) {
 
 await assertDesignSheet();
 
-/** Both home pages must render the full extension overview derived from the
- * pinned manual. A locale that omits the official plugin table would
- * otherwise ship an empty list without failing the build. */
+/** Verify simplified niri-style pages, hidden-by-default sidebar, and absence of the retired plugin store host. */
+const RETIRED_STORE_HOST = ["plugins", "bitty", "run"].join(".");
+
 for (const page of ["index.html", "zh-CN/index.html"]) {
   const html = await readFile(new URL(page, dist), "utf8");
-  const cards = (html.match(/class="extension-card"/gu) ?? []).length;
-  const pluginList = html.match(
-    /<ul[^>]*class="plugin-list"[^>]*>([\s\S]*?)<\/ul>/u,
-  );
-  const plugins = (pluginList?.[1]?.match(/<li\b/gu) ?? []).length;
-  if (cards !== 11) {
-    throw new Error(`${page}: expected 11 native extensions, found ${cards}`);
+  const installTabs = (html.match(/data-install-tab=/gu) ?? []).length;
+  if (installTabs < 1) {
+    throw new Error(
+      `${page}: expected install channel tabs, found ${installTabs}`,
+    );
   }
-  if (plugins !== 11) {
-    throw new Error(`${page}: expected 11 official plugins, found ${plugins}`);
+  if (
+    !html.includes('id="site-sidebar"') ||
+    !html.includes('data-sidebar-open="false"')
+  ) {
+    throw new Error(`${page}: expected hidden-by-default #site-sidebar`);
+  }
+  if (html.includes(RETIRED_STORE_HOST)) {
+    throw new Error(`${page}: unexpected ${RETIRED_STORE_HOST} reference`);
   }
 }
 
 for (const page of ["plugins/index.html", "zh-CN/plugins/index.html"]) {
   const html = await readFile(new URL(page, dist), "utf8");
-  const luaCards = (html.match(/class="catalog-card"/gu) ?? []).length;
-  const nativeCards = (html.match(/class="native-card"/gu) ?? []).length;
-  if (luaCards !== 13) {
+  const luaRows = (html.match(/class="lua-plugin-row"/gu) ?? []).length;
+  const nativeRows = (html.match(/class="native-ext-row"/gu) ?? []).length;
+  if (luaRows !== 13) {
     throw new Error(
-      `${page}: expected 13 official Lua plugin cards, found ${luaCards}`,
+      `${page}: expected 13 official Lua plugin rows, found ${luaRows}`,
     );
   }
-  if (nativeCards !== 11) {
+  if (nativeRows !== 11) {
     throw new Error(
-      `${page}: expected 11 native extension cards, found ${nativeCards}`,
+      `${page}: expected 11 native extension rows, found ${nativeRows}`,
     );
+  }
+  if (
+    !html.includes('id="site-sidebar"') ||
+    !html.includes('data-sidebar-open="false"')
+  ) {
+    throw new Error(`${page}: expected hidden-by-default #site-sidebar`);
+  }
+  if (html.includes(RETIRED_STORE_HOST)) {
+    throw new Error(`${page}: unexpected ${RETIRED_STORE_HOST} reference`);
   }
 }
 
 for (const page of ["ai/index.html", "zh-CN/ai/index.html"]) {
   const html = await readFile(new URL(page, dist), "utf8");
-  const capCards = (html.match(/class="pillar-card"/gu) ?? []).length;
-  const stackCards = (html.match(/class="stack-card"/gu) ?? []).length;
-  if (capCards !== 4) {
-    throw new Error(
-      `${page}: expected 4 AI capability cards, found ${capCards}`,
-    );
+  for (const slug of [
+    "/docs/extensions/ai/",
+    "/docs/extensions/agent/",
+    "/docs/extensions/execution/",
+  ]) {
+    if (!html.includes(slug)) {
+      throw new Error(`${page}: missing required AI doc link ${slug}`);
+    }
   }
-  if (stackCards !== 3) {
-    throw new Error(
-      `${page}: expected 3 AI extension stack cards, found ${stackCards}`,
-    );
+  if (
+    !html.includes('id="site-sidebar"') ||
+    !html.includes('data-sidebar-open="false"')
+  ) {
+    throw new Error(`${page}: expected hidden-by-default #site-sidebar`);
+  }
+  if (html.includes(RETIRED_STORE_HOST)) {
+    throw new Error(`${page}: unexpected ${RETIRED_STORE_HOST} reference`);
   }
 }
 

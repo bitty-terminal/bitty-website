@@ -61,6 +61,10 @@ export interface UiMessages {
   readonly manualTitle: string;
   readonly manualSubtitle: string;
   readonly sidebarToggle: string;
+  readonly sidebarOpenLabel: string;
+  readonly sidebarCloseLabel: string;
+  readonly sidebarNavTitle: string;
+  readonly sidebarSectionsTitle: string;
   readonly sidebarAria: string;
   readonly sidebarSource: string;
   readonly sidebarPinned: string;
@@ -142,7 +146,11 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     manualSubtitle:
       "Installation, configuration, plugin, and Lua API reference.",
     sidebarToggle: "Browse manual",
-    sidebarAria: "Manual navigation",
+    sidebarOpenLabel: "Toggle navigation sidebar",
+    sidebarCloseLabel: "Close navigation sidebar",
+    sidebarNavTitle: "Sections",
+    sidebarSectionsTitle: "Manual",
+    sidebarAria: "Site and manual navigation",
     sidebarSource: "SOURCE",
     sidebarPinned: "R2 pinned",
     tocSummary: "On this page",
@@ -163,7 +171,7 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     footerManual: "Document",
     footerPlugins: "Plugins",
     footerAi: "Bitty AI",
-    footerStore: "Plugin Store",
+    footerStore: "bitty-plugins",
     footerInstall: "Install",
     footerManifest: "R2 Manifest",
   },
@@ -219,7 +227,11 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     manualTitle: "Bitty 手册",
     manualSubtitle: "安装、配置、插件与 Lua API 参考。",
     sidebarToggle: "浏览文档目录",
-    sidebarAria: "文档导航",
+    sidebarOpenLabel: "切换导航侧边栏",
+    sidebarCloseLabel: "关闭导航侧边栏",
+    sidebarNavTitle: "页面导航",
+    sidebarSectionsTitle: "手册目录",
+    sidebarAria: "站点与手册导航",
     sidebarSource: "内容源",
     sidebarPinned: "R2 已锁定",
     tocSummary: "本页目录",
@@ -240,7 +252,7 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     footerManual: "文档",
     footerPlugins: "插件",
     footerAi: "Bitty AI",
-    footerStore: "插件商店",
+    footerStore: "bitty-plugins",
     footerInstall: "安装",
     footerManifest: "R2 清单",
   },

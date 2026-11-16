@@ -9,6 +9,7 @@
  * cadence while documentation updates flow through Cloudflare R2.
  */
 import SiteSearch from "./SiteSearch.astro";
+import SiteSidebar from "./SiteSidebar.astro";
 import BittyLogo from "./BittyLogo.astro";
 import {
   getUiMessages,
@@ -21,6 +22,7 @@ type Props = {
   locale?: SiteLocale;
   showSearch?: boolean;
   activeNav?: "hero" | "docs" | "plugins" | "ai";
+  currentSlug?: string;
   alternateHref?: string;
   currentPath?: string;
 };
@@ -29,6 +31,7 @@ const {
   locale = "en",
   showSearch = true,
   activeNav,
+  currentSlug = "",
   alternateHref,
   currentPath,
 } = Astro.props as Props;
@@ -36,10 +39,6 @@ const isZh = locale === "zh-CN";
 const t = getUiMessages(locale);
 const GITHUB_REPO_URL = "https://github.com/bitty-terminal/bitty";
 const homeHref = localePath(locale, "/");
-const docsHref = localePath(locale, "/docs/");
-const pluginsHref = localePath(locale, "/plugins/");
-const aiHref = localePath(locale, "/ai/");
-const installHref = `${homeHref}#install`;
 const targetLocale: SiteLocale = isZh ? "en" : "zh-CN";
 const languageHref =
   alternateHref ??
@@ -49,10 +48,33 @@ const languageHref =
 <header class="site-header-wrap">
   <div class="site-header">
     <nav aria-label={t.navAriaLabel}>
-      <a href={homeHref} class="brand" aria-label={t.homeAriaLabel}>
-        <BittyLogo />
-        <span class="brand-name">bitty</span>
-      </a>
+      <div class="header-left">
+        <button
+          type="button"
+          id="site-sidebar-toggle"
+          class="header-icon-btn sidebar-toggle-btn"
+          aria-expanded="false"
+          aria-controls="site-sidebar"
+          aria-label={t.sidebarOpenLabel}
+          title={t.sidebarOpenLabel}
+        >
+          <svg
+            class="header-svg-icon"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"
+            aria-hidden="true"
+          >
+            <path d="M2.5 4h11M2.5 8h11M2.5 12h11"></path>
+          </svg>
+        </button>
+        <a href={homeHref} class="brand" aria-label={t.homeAriaLabel}>
+          <BittyLogo />
+          <span class="brand-name">bitty</span>
+        </a>
+      </div>
 
       {showSearch && (
         <div class="header-search">
@@ -61,49 +83,6 @@ const languageHref =
       )}
 
       <ul class="header-links">
-        <li>
-          <a href={installHref} class="header-link header-link-secondary">
-            <span>{t.navInstall}</span>
-          </a>
-        </li>
-        <li>
-          <a
-            href={docsHref}
-            class:list={[
-              "header-link",
-              "nav-link",
-              { "is-active": activeNav === "docs" },
-            ]}
-          >
-            <span>{t.navDocs}</span>
-          </a>
-        </li>
-        <li>
-          <a
-            href={pluginsHref}
-            class:list={[
-              "header-link",
-              "nav-link",
-              { "is-active": activeNav === "plugins" },
-            ]}
-            aria-current={activeNav === "plugins" ? "page" : undefined}
-          >
-            <span>{t.navPlugins}</span>
-          </a>
-        </li>
-        <li>
-          <a
-            href={aiHref}
-            class:list={[
-              "header-link",
-              "nav-link",
-              { "is-active": activeNav === "ai" },
-            ]}
-            aria-current={activeNav === "ai" ? "page" : undefined}
-          >
-            <span>{t.navAi}</span>
-          </a>
-        </li>
         <li>
           <a
             href={languageHref}
@@ -178,6 +157,12 @@ const languageHref =
   </div>
 </header>
 
+<SiteSidebar
+  locale={locale}
+  activeNav={activeNav}
+  currentSlug={currentSlug}
+/>
+
 <script is:inline>
   (() => {
     const root = document.documentElement;
@@ -227,6 +212,12 @@ const languageHref =
 </script>
 
 <style>
+  .header-left {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+  }
+
   .brand-name {
     font-family: var(--font-mono);
     font-size: 0.95rem;

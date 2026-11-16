@@ -1,9 +1,11 @@
 ---
 /**
- * Unified site-wide sidebar drawer (hidden by default on every page).
+ * Unified site-wide sidebar: persistent left rail on desktop (>= 64rem) and
+ * hidden-by-default slide-over drawer on mobile (< 64rem).
  *
  * Includes top-level site sections (Overview, Plugins, AI, Manual) and all
- * 6 canonical manual sections inside collapsible `<details>` groups.
+ * 6 canonical manual sections inside collapsible `<details>` groups (collapsed
+ * by default except the active group on a docs page).
  * Toggled by `#sidebar-toggle-btn` in `SiteHeader.astro` with zero layout shift.
  */
 import { getUiMessages, localePath, type SiteLocale } from "../lib/i18n.ts";
@@ -97,11 +99,10 @@ const topLinks = [
     <ul class="docs-nav-tree">
       {
         groups.map((group) => {
-          const hasActive = group.entries.some(
-            (entry) => entry.fullSlug === currentSlug,
-          );
-          const defaultOpen =
-            hasActive || (!currentSlug && group.id === "getting-started");
+          const hasActive =
+            activeSection === "docs" &&
+            group.entries.some((entry) => entry.fullSlug === currentSlug);
+          const defaultOpen = hasActive;
           return (
             <li class="docs-nav-group">
               <details class="docs-nav-group-details" open={defaultOpen}>
@@ -163,6 +164,39 @@ const topLinks = [
 
   .site-sidebar-drawer[hidden] {
     display: none;
+  }
+
+  @media (width >= 64rem) {
+    .site-sidebar-backdrop {
+      display: none !important;
+    }
+
+    .site-sidebar-drawer,
+    .site-sidebar-drawer[hidden] {
+      display: flex;
+      position: fixed;
+      inset-block-start: var(--header-height, 3.7rem);
+      inset-block-end: 0;
+      inset-inline-start: 0;
+      z-index: calc(var(--layer-sticky, 30) - 1);
+      inline-size: var(--docs-sidebar-width);
+      background: var(--bg-canvas);
+      border-inline-end: 1px solid var(--line);
+      box-shadow: none;
+      transition:
+        opacity 0.14s ease,
+        visibility 0.14s ease;
+    }
+
+    .site-sidebar-head {
+      display: none;
+    }
+
+    :global(html[data-left-collapsed="true"]) .site-sidebar-drawer {
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
   }
 
   .site-sidebar-head {

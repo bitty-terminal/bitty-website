@@ -58,6 +58,11 @@ const aiHref = localePath(locale, "/ai/");
     font-family: var(--font-mono);
     font-size: var(--text-2xs);
   }
+  @media (width >= 64rem) {
+    .site-footer {
+      padding-inline-start: calc(var(--docs-sidebar-width) + 1rem);
+    }
+  }
   .footer-inner {
     width: min(var(--content-width), calc(100% - 2rem));
     margin-inline: auto;

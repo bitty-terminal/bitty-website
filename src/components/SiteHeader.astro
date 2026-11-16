@@ -202,6 +202,25 @@ const languageHref =
     const closeBtn = document.getElementById("sidebar-close-btn");
     const sidebar = document.getElementById("site-sidebar");
     const backdrop = document.getElementById("site-sidebar-backdrop");
+    const desktopMq = window.matchMedia("(min-width: 64rem)");
+
+    try {
+      if (window.localStorage.getItem("bitty-docs-left") === "collapsed") {
+        root.setAttribute("data-left-collapsed", "true");
+      }
+    } catch {}
+
+    const syncSidebarState = () => {
+      if (!toggleBtn || !sidebar) return;
+      if (desktopMq.matches) {
+        const collapsed = root.getAttribute("data-left-collapsed") === "true";
+        toggleBtn.setAttribute("aria-expanded", String(!collapsed));
+        backdrop?.setAttribute("hidden", "");
+      } else {
+        const isOpen = !sidebar.hasAttribute("hidden");
+        toggleBtn.setAttribute("aria-expanded", String(isOpen));
+      }
+    };
 
     const setSidebarOpen = (open) => {
       if (!sidebar || !toggleBtn) return;
@@ -217,7 +236,28 @@ const languageHref =
       }
     };
 
+    syncSidebarState();
+    desktopMq.addEventListener("change", syncSidebarState);
+
     toggleBtn?.addEventListener("click", () => {
+      if (desktopMq.matches) {
+        const next = root.getAttribute("data-left-collapsed") !== "true";
+        if (next) root.setAttribute("data-left-collapsed", "true");
+        else root.removeAttribute("data-left-collapsed");
+        const layout = document.querySelector(".docs-layout");
+        if (layout) {
+          if (next) layout.setAttribute("data-left-collapsed", "true");
+          else layout.removeAttribute("data-left-collapsed");
+        }
+        try {
+          window.localStorage.setItem(
+            "bitty-docs-left",
+            next ? "collapsed" : "open",
+          );
+        } catch {}
+        syncSidebarState();
+        return;
+      }
       const isOpen = toggleBtn.getAttribute("aria-expanded") === "true";
       setSidebarOpen(!isOpen);
     });
@@ -233,6 +273,7 @@ const languageHref =
 
     document.addEventListener("keydown", (event) => {
       if (
+        !desktopMq.matches &&
         event.key === "Escape" &&
         toggleBtn?.getAttribute("aria-expanded") === "true"
       ) {

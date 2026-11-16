@@ -105,6 +105,20 @@ const description = isZh
     padding-block: 2rem 3.5rem;
   }
 
+  @media (width >= 64rem) {
+    .manual-index {
+      width: min(
+        var(--content-width),
+        calc(100% - var(--docs-sidebar-width) - 4rem)
+      );
+      margin-inline-start: max(
+        calc(var(--docs-sidebar-width) + 2rem),
+        calc((100% - var(--content-width)) / 2)
+      );
+      margin-inline-end: auto;
+    }
+  }
+
   .manual-index-header {
     display: flex;
     flex-wrap: wrap;

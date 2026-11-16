@@ -36,7 +36,10 @@ const docsPrefix = locale === "zh-CN" ? "/zh-CN/docs" : "/docs";
     <ul class="docs-nav-tree">
       {groups.map((group) => (
         <li class="docs-nav-group">
-          <details class="docs-nav-group-details" open>
+          <details
+            class="docs-nav-group-details"
+            open={group.entries.some((entry) => entry.fullSlug === currentSlug)}
+          >
             <summary>{group.label}</summary>
             <ul>
               {group.entries.map((entry) => {

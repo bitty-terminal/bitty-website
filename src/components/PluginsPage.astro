@@ -1,8 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import SiteFooter from "./SiteFooter.astro";
 import SiteHeader from "./SiteHeader.astro";
-import SiteSidebar from "./SiteSidebar.astro";
+import SiteShell from "./SiteShell.astro";
 import { getExtensionCatalog } from "../lib/extensionCatalog.ts";
 import { localePath, type SiteLocale } from "../lib/i18n.ts";
 import { getPluginDetailHref } from "../lib/pluginDetails.ts";
@@ -45,9 +44,9 @@ const pageDescription = isZh
     alternateHref={alternatePath}
     currentPath={currentPath}
   />
-  <SiteSidebar locale={locale} activeSection="plugins" />
 
-  <main id="main-content" class="niri-main" tabindex="-1">
+  <SiteShell locale={locale} activeSection="plugins">
+    <main id="main-content" class="niri-main" tabindex="-1">
     <article class="niri-prose">
       <h1>{isZh ? "插件与原生扩展" : "Plugins & Native Extensions"}</h1>
 
@@ -200,6 +199,5 @@ bitty ext status</code></pre>
       </div>
     </article>
   </main>
-
-  <SiteFooter locale={locale} />
+  </SiteShell>
 </BaseLayout>

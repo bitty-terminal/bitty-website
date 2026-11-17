@@ -1,8 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import SiteFooter from "./SiteFooter.astro";
 import SiteHeader from "./SiteHeader.astro";
-import SiteSidebar from "./SiteSidebar.astro";
+import SiteShell from "./SiteShell.astro";
 import { localePath, type SiteLocale } from "../lib/i18n.ts";
 
 type Props = {
@@ -53,9 +52,9 @@ const commands = isZh
     alternateHref={alternatePath}
     currentPath={currentPath}
   />
-  <SiteSidebar locale={locale} activeSection="ai" />
 
-  <main id="main-content" class="niri-main" tabindex="-1">
+  <SiteShell locale={locale} activeSection="ai">
+    <main id="main-content" class="niri-main" tabindex="-1">
     <article class="niri-prose">
       <h1>{isZh ? "Bitty AI 与 Wheel" : "Bitty AI & Wheel"}</h1>
 
@@ -160,6 +159,5 @@ wheel approve &lt;id&gt;</code></pre>
       </ul>
     </article>
   </main>
-
-  <SiteFooter locale={locale} />
+  </SiteShell>
 </BaseLayout>

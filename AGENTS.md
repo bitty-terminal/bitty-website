@@ -93,7 +93,8 @@
 - Do not select a framework extension, component library, analytics provider,
   or deployment service without a task and recorded decision.
 - Cross-browser and cross-platform claims require CI or test evidence; the local
-  CachyOS, Hyprland, and Ghostty environment is not sufficient proof.
+  CachyOS + Koma (the owner's live dogfooding session) + Ghostty environment is
+  not sufficient proof.
 
 ## Security and privacy
 

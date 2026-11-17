@@ -202,6 +202,26 @@ async function auditCss() {
   } else {
     fail("docs shell css: .docs-layout > .docs-article is not placed");
   }
+
+  if (
+    /\.site-shell\s*\{[^}]*grid-template-columns\s*:\s*var\(--docs-sidebar-width\)\s+minmax\(0,\s*1fr\)/iu.test(
+      css,
+    )
+  ) {
+    pass("site shell css: desktop sidebar sits in non-overlapping grid track");
+  } else {
+    fail("site shell css: .site-shell desktop grid track is missing");
+  }
+
+  for (const token of [
+    "data-left-collapsed",
+    "data-right-collapsed",
+    "docs-rail-collapse-btn",
+  ]) {
+    if (css.includes(token)) {
+      fail(`site shell css: obsolete collapse selector "${token}" present`);
+    }
+  }
 }
 
 async function auditFavicons() {

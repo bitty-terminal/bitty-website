@@ -1,0 +1,35 @@
+---
+/**
+ * Shared responsive shell pairing the site-wide navigation sidebar with main
+ * page content and footer in non-overlapping CSS Grid tracks on desktop
+ * (>= 56rem), falling back to a slide-over drawer on mobile (< 56rem).
+ */
+import SiteFooter from "./SiteFooter.astro";
+import SiteSidebar from "./SiteSidebar.astro";
+import type { SiteLocale } from "../lib/i18n.ts";
+
+type Props = {
+  locale?: SiteLocale;
+  activeSection?: "home" | "plugins" | "ai" | "manual-index" | "docs";
+  currentSlug?: string;
+  currentPluginSlug?: string;
+};
+
+const {
+  locale = "en",
+  activeSection,
+  currentSlug = "",
+  currentPluginSlug = "",
+} = Astro.props as Props;
+---
+
+<div class="site-shell">
+  <SiteSidebar
+    locale={locale}
+    activeSection={activeSection}
+    currentSlug={currentSlug}
+    currentPluginSlug={currentPluginSlug}
+  />
+  <slot />
+  <SiteFooter locale={locale} />
+</div>

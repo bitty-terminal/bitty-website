@@ -140,13 +140,14 @@
   --reading-width: 65ch;
   --touch-target: 2.75rem;
   --layer-sticky: 30;
+  --header-height: calc(var(--touch-target) + 0.9rem + 1px);
 
-  /* Fluid 3-column documentation widths so Left | Middle | Right fit cleanly from 50rem (800px) up */
-  --docs-sidebar-width: clamp(12rem, 16.5vw, 15.5rem);
-  --docs-toc-width: clamp(11rem, 14.5vw, 14rem);
+  /* Fluid 3-column documentation widths so Left | Middle | Right fit cleanly from 56rem (896px) up */
+  --docs-sidebar-width: clamp(11.75rem, 16vw, 15.5rem);
+  --docs-toc-width: clamp(10.5rem, 14vw, 14rem);
   --docs-content-width: 82rem;
-  --docs-layout-gap: clamp(1.25rem, 2.2vw, 2rem);
-  --docs-scroll-margin: 4.5rem;
+  --docs-layout-gap: clamp(1rem, 2vw, 2rem);
+  --docs-scroll-margin: calc(var(--header-height) + 0.8rem);
 
   /* Concrete 44px floor asserted by scripts/audit-a11y.mjs */
   min-block-size: 2.75rem;
@@ -281,6 +282,8 @@ html {
 
 body {
   min-block-size: 100vh;
+  display: flex;
+  flex-direction: column;
   margin: 0;
   background-color: var(--bg-canvas);
   color: var(--fg-primary);
@@ -1076,9 +1079,41 @@ html[lang="en"] .prose table {
 }
 
 /* ==========================================================================
-   DOCS SHELL LAYOUT (CTX-0039, CTX-0044, CTX-0050)
-   True 3-column reader: Left = Document List | Middle = Article | Right = TOC
+   DOCS SHELL LAYOUT (CTX-0039, CTX-0044, CTX-0050, CTX-0089)
+   Non-overlapping layout shell: Left = SiteSidebar | Middle = Content | Right = TOC
    ========================================================================== */
+
+.site-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.site-shell > main {
+  flex: 1;
+}
+
+@media (width >= 56rem) {
+  .site-shell {
+    display: grid;
+    grid-template-columns: var(--docs-sidebar-width) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    align-items: start;
+  }
+
+  .site-shell > main {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 0;
+  }
+
+  .site-shell > footer {
+    grid-column: 2;
+    grid-row: 2;
+    min-width: 0;
+  }
+}
 
 main,
 footer,
@@ -1134,7 +1169,7 @@ main.docs-main {
   scroll-margin-top: var(--docs-scroll-margin);
 }
 
-@media (width >= 50rem) {
+@media (width >= 56rem) {
   .docs-layout {
     grid-template-columns: minmax(0, 1fr);
     align-items: start;
@@ -1150,6 +1185,10 @@ main.docs-main {
     row-gap: 0;
   }
 
+  .docs-article > * {
+    min-width: 0;
+  }
+
   .docs-article > .docs-metadata-bar,
   .docs-article > .eyebrow,
   .docs-header {
@@ -1161,6 +1200,7 @@ main.docs-main {
     grid-column: 1;
     grid-row: 2;
     max-width: 100%;
+    min-width: 0;
   }
 
   .docs-article .docs-pager {
@@ -1180,80 +1220,23 @@ main.docs-main {
     padding-inline-start: 1rem;
     border-inline-start: 1px solid var(--line);
     position: sticky;
-    top: 4.25rem;
-    max-block-size: calc(100vh - 5.25rem);
+    top: calc(var(--header-height) + 0.75rem);
+    max-block-size: calc(100vh - var(--header-height) - 1.5rem);
     overflow-block: auto;
-    transition:
-      opacity 0.14s ease,
-      visibility 0.14s ease;
   }
-
-  .docs-layout[data-right-collapsed="true"] .docs-toc {
-    visibility: hidden;
-    opacity: 0;
-    pointer-events: none;
-  }
-}
-
-@media (width >= 64rem) {
-  .docs-main {
-    inline-size: min(
-      calc(100% - var(--docs-sidebar-width) - 2rem),
-      var(--docs-content-width)
-    );
-    margin-inline-start: max(
-      calc(var(--docs-sidebar-width) + 1rem),
-      calc((100% - var(--docs-content-width)) / 2)
-    );
-    margin-inline-end: auto;
-  }
-}
-
-.docs-rail-collapse-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.24rem 0.55rem;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--bg-surface);
-  color: var(--fg-muted);
-  font-family: var(--font-mono);
-  font-size: var(--text-2xs);
-  line-height: 1.2;
-  cursor: pointer;
-  transition:
-    color 0.14s ease,
-    border-color 0.14s ease,
-    background 0.14s ease;
-}
-
-.docs-rail-collapse-btn:hover {
-  color: var(--fg-primary);
-  border-color: var(--border-strong);
 }
 
 /* Clean, minimal niri-docs style page container for top-level pages */
 .niri-main {
   flex: 1;
-  width: min(52rem, calc(100% - 2rem));
+  inline-size: min(52rem, 100% - 2rem);
   margin-inline: auto;
   padding-block: 2.5rem 4rem;
 }
 
-@media (width >= 64rem) {
-  .niri-main {
-    width: min(52rem, calc(100% - var(--docs-sidebar-width) - 4rem));
-    margin-inline-start: max(
-      calc(var(--docs-sidebar-width) + 2rem),
-      calc((100% - 52rem) / 2)
-    );
-    margin-inline-end: auto;
-  }
-}
-
 .niri-prose {
   max-width: 100%;
+  min-width: 0;
 }
 
 .niri-prose h1 {

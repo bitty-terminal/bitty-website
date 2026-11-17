@@ -67,9 +67,6 @@ export interface UiMessages {
   readonly sidebarSource: string;
   readonly sidebarPinned: string;
   readonly tocSummary: string;
-  readonly toggleLeftRail: string;
-  readonly toggleRightRail: string;
-  readonly hideRailLabel: string;
   readonly breadcrumbAria: string;
   readonly breadcrumbRoot: string;
   readonly pagerAria: string;
@@ -150,9 +147,6 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     sidebarSource: "SOURCE",
     sidebarPinned: "R2 pinned",
     tocSummary: "On this page",
-    toggleLeftRail: "Documents",
-    toggleRightRail: "On this page",
-    hideRailLabel: "Hide",
     breadcrumbAria: "Breadcrumb",
     breadcrumbRoot: "docs",
     pagerAria: "Pagination",
@@ -229,9 +223,6 @@ export const UI_MESSAGES: Readonly<Record<SiteLocale, UiMessages>> = {
     sidebarSource: "内容源",
     sidebarPinned: "R2 已锁定",
     tocSummary: "本页目录",
-    toggleLeftRail: "文档列表",
-    toggleRightRail: "本页目录",
-    hideRailLabel: "收起",
     breadcrumbAria: "面包屑导航",
     breadcrumbRoot: "文档",
     pagerAria: "分页导航",

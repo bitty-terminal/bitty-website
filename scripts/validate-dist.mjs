@@ -153,6 +153,46 @@ async function assertDesignSheet(directory = dist) {
 
 await assertDesignSheet();
 
+/** Every page with the site sidebar must place it inside `.site-shell`, and
+ * no rendered page may expose desktop rail collapse/expand toggles. */
+const FORBIDDEN_RAIL_TOKENS = [
+  "data-toggle-rail",
+  "data-left-collapsed",
+  "data-right-collapsed",
+  "docs-rail-collapse-btn",
+  "docs-rail-toggle",
+  "bitty-docs-left",
+  "bitty-docs-right",
+];
+
+async function assertPermanentSidebarShell(directory = dist) {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      await assertPermanentSidebarShell(new URL(`${entry.name}/`, directory));
+      continue;
+    }
+    if (!entry.name.endsWith(".html")) continue;
+    const html = await readFile(new URL(entry.name, directory), "utf8");
+    if (
+      html.includes('id="site-sidebar"') &&
+      !html.includes('class="site-shell"')
+    ) {
+      throw new Error(
+        `${entry.name}: renders #site-sidebar without .site-shell layout wrapper`,
+      );
+    }
+    for (const token of FORBIDDEN_RAIL_TOKENS) {
+      if (html.includes(token)) {
+        throw new Error(
+          `${entry.name}: unexpected desktop rail collapse token "${token}"`,
+        );
+      }
+    }
+  }
+}
+
+await assertPermanentSidebarShell();
+
 /** Top-level pages must render the unified sidebar with collapsed manual groups and core links. */
 for (const page of ["index.html", "zh-CN/index.html"]) {
   const html = await readFile(new URL(page, dist), "utf8");

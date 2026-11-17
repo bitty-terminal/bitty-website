@@ -1,8 +1,9 @@
 ---
 /**
  * Per-article table of contents (CTX-0039, CTX-0050): the H2/H3 headings of
- * the rendered article as plain anchor links in the right column, with a
- * collapse button to hide the right TOC rail.
+ * the rendered article as plain anchor links, permanently expanded in the
+ * right column on desktop (>= 56rem) and collapsible inline below the desktop
+ * breakpoint (< 56rem).
  */
 import { getUiMessages, type SiteLocale } from "../lib/i18n.ts";
 
@@ -30,15 +31,6 @@ const items = headings.filter(
     <nav class="docs-toc-nav" aria-label={t.tocSummary}>
       <div class="docs-toc-head">
         <p class="docs-toc-title">{t.tocSummary}</p>
-        <button
-          type="button"
-          class="docs-rail-collapse-btn"
-          data-toggle-rail="right"
-          title={t.hideRailLabel}
-        >
-          <span>{t.hideRailLabel}</span>
-          <span aria-hidden="true">»</span>
-        </button>
       </div>
       <ul>
         {items.map((item) => (
@@ -51,16 +43,18 @@ const items = headings.filter(
   </details>
 )}
 
-<script>
-  const toc = document.querySelector("details.docs-toc");
-  const narrow = window.matchMedia("(max-width: 49.9375rem)");
-  const syncToc = () => {
-    if (toc instanceof HTMLDetailsElement) {
-      toc.open = !narrow.matches;
-    }
-  };
-  syncToc();
-  narrow.addEventListener("change", syncToc);
+<script is:inline>
+  (() => {
+    const toc = document.querySelector("details.docs-toc");
+    const narrow = window.matchMedia("(max-width: 55.9375rem)");
+    const syncToc = () => {
+      if (toc instanceof HTMLDetailsElement) {
+        toc.open = !narrow.matches;
+      }
+    };
+    syncToc();
+    narrow.addEventListener("change", syncToc);
+  })();
 </script>
 
 <script>
@@ -170,6 +164,7 @@ const items = headings.filter(
     border-inline-start: 2px solid transparent;
     color: var(--fg-muted);
     text-decoration: none;
+    overflow-wrap: anywhere;
     font-size: 0.76rem;
     transition:
       color 0.14s ease,
@@ -186,7 +181,7 @@ const items = headings.filter(
     font-weight: 600;
   }
 
-  @media (width >= 50rem) {
+  @media (width >= 56rem) {
     .docs-toc {
       margin-block-end: 0;
     }

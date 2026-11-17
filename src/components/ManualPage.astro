@@ -5,12 +5,11 @@ import DocsCodeEnhancer from "./DocsCodeEnhancer.astro";
 import DocsOfflinePackage from "./DocsOfflinePackage.astro";
 import DocsPager from "./DocsPager.astro";
 import DocsToc from "./DocsToc.astro";
-import SiteSidebar from "./SiteSidebar.astro";
 import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
 import jetbrainsLatin from "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url";
 import literataLatin from "@fontsource-variable/literata/files/literata-latin-wght-normal.woff2?url";
-import SiteFooter from "./SiteFooter.astro";
 import SiteHeader from "./SiteHeader.astro";
+import SiteShell from "./SiteShell.astro";
 import "../styles/global.css";
 import { getUiMessages, type SiteLocale } from "../lib/i18n.ts";
 import {
@@ -112,25 +111,25 @@ const pageDescription = `${localizedTitle} — Bitty Manual`;
       activeNav="docs"
       alternateHref={alternatePath}
     />
-    <SiteSidebar
+    <SiteShell
       locale={locale}
       activeSection="docs"
       currentSlug={activeSlug}
-    />
-    <main id="main-content" class="docs-main" tabindex="-1">
-      <div class="docs-layout">
-        <div class="docs-article">
-          <DocsBreadcrumbs slug={activeSlug} locale={locale} />
-          <DocsToc headings={headings} locale={locale} />
-          <article class="prose bitty-prose">
-            <Content />
-          </article>
-          <DocsPager locale={locale} currentSlug={activeSlug} />
-          <DocsOfflinePackage locale={locale} version={manifest.version} />
+    >
+      <main id="main-content" class="docs-main" tabindex="-1">
+        <div class="docs-layout">
+          <div class="docs-article">
+            <DocsBreadcrumbs slug={activeSlug} locale={locale} />
+            <DocsToc headings={headings} locale={locale} />
+            <article class="prose bitty-prose">
+              <Content />
+            </article>
+            <DocsPager locale={locale} currentSlug={activeSlug} />
+            <DocsOfflinePackage locale={locale} version={manifest.version} />
+          </div>
         </div>
-      </div>
-    </main>
-    <SiteFooter locale={locale} />
+      </main>
+    </SiteShell>
     <DocsCodeEnhancer />
   </body>
 </html>

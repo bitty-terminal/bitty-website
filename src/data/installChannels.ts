@@ -2,7 +2,11 @@
  * Install channels published for Bitty.
  *
  * Every `available` entry below is backed by a live channel that was verified
- * on 2026-11-04 for v0.0.31 (see `scripts/check-install-channels.mjs`). A
+ * on 2026-11-18 for v0.0.45 (see `scripts/check-install-channels.mjs`): the
+ * v0.0.45 GitHub Release published on 2026-11-17 with the universal DMG,
+ * Windows setup/zip, Linux gnu/musl/aarch64 tarballs, FreeBSD tarball,
+ * AppImage, .deb/.rpm/.apk, and bittyd binaries, and the Homebrew tap
+ * (`e05f388`) and Scoop bucket (`92d4ae4`) bumped to 0.0.45 that evening. A
  * channel moves here only after its artifacts are published; a planned channel
  * stays `pending` with the reason it is not usable yet. Commands are copied
  * from the packaging documentation in `bitty-terminal/bitty` and must remain
